@@ -40,7 +40,7 @@ class DataPreprocessor:
         df[numeric_cols] = df[numeric_cols].interpolate(method='linear', limit_direction='both')
         
         # Fill remaining NaNs with forward fill
-        df = df.fillna(method='ffill').fillna(method='bfill')
+        df = df.ffill().bfill()
         
         missing_after = df.isnull().sum().sum()
         
