@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import pickle
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -71,14 +72,10 @@ class RandomForestGlucoseModel(BaseGlucoseModel):
 		model_path = Path(filepath)
 		model_path.parent.mkdir(parents=True, exist_ok=True)
 
-		import pickle
-
 		with open(model_path, "wb") as f:
 			pickle.dump(self.model, f)
 
 	def load(self, filepath: str) -> None:
-		import pickle
-
 		with open(filepath, "rb") as f:
 			self.model = pickle.load(f)
 
@@ -119,6 +116,16 @@ def train_random_forest_from_config(config_path: str = "config.yaml") -> Dict:
 	model_path = Path("models") / "rf_baseline.pkl"
 	model.save(str(model_path))
 
+	bundle_path = Path("models") / "rf_inference_bundle.pkl"
+	bundle = {
+		"model": model.model,
+		"scaler": preprocessor.scaler,
+		"features": config["model"]["features"],
+		"sequence_length": sequence_length,
+	}
+	with open(bundle_path, "wb") as f:
+		pickle.dump(bundle, f)
+
 	metrics_path = Path("models") / "rf_baseline_metrics.json"
 	with open(metrics_path, "w", encoding="utf-8") as f:
 		json.dump({k: float(v) for k, v in metrics.items()}, f, indent=2)
@@ -135,6 +142,7 @@ def train_random_forest_from_config(config_path: str = "config.yaml") -> Dict:
 		print(f"{key:12s}: {value:.4f}")
 	print("-" * 60)
 	print(f"Model saved   : {model_path}")
+	print(f"Bundle saved  : {bundle_path}")
 	print(f"Metrics saved : {metrics_path}")
 
 	return metrics
