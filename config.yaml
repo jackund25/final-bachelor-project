@@ -1,0 +1,67 @@
+# Configuration for Diabetes Digital Twin System
+
+# Data Generation Settings
+data:
+  num_patients: 10
+  days_per_patient: 7
+  sampling_interval_min: 5
+  output_dir: "data/raw"
+  seed: 42
+
+# Patient Parameters (for simulation)
+patient:
+  baseline_glucose: 100  # mg/dL
+  glucose_threshold_low: 70
+  glucose_threshold_high: 180
+  insulin_sensitivity: 50  # mg/dL per unit
+  carb_ratio: 10  # grams per unit
+
+# Digital Twin Settings
+digital_twin:
+  update_frequency_min: 5
+  history_window_hours: 24
+  state_file: "data/processed/patient_states.json"
+
+# Model Training
+model:
+  name: "LSTM"  # Options: LSTM, RandomForest, Simulation
+  sequence_length: 12  # 1 hour with 5-min intervals
+  features: ["glucose", "carbs", "insulin", "activity", "stress"]
+  
+  lstm:
+    units: [64, 32]
+    dropout: 0.2
+    learning_rate: 0.001
+    batch_size: 32
+    epochs: 50
+    
+  random_forest:
+    n_estimators: 200
+    max_depth: 20
+    min_samples_split: 5
+
+# RAG Settings
+rag:
+  knowledge_base_dir: "data/knowledge_base"
+  chunk_size: 500
+  chunk_overlap: 50
+  embedding_model: "all-MiniLM-L6-v2"
+  top_k_retrieval: 3
+  
+  llm:
+    provider: "groq"  # Options: groq, local, template
+    model: "llama-3.1-70b-versatile"
+    temperature: 0.7
+    max_tokens: 300
+
+# Evaluation
+evaluation:
+  test_split: 0.2
+  metrics: ["RMSE", "MAE", "MAPE", "ClarkeErrorGrid"]
+  clarke_zones: ["A", "B", "C", "D", "E"]
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/system.log"

@@ -1,0 +1,26 @@
+{
+  "generation_date": "2026-04-02T01:20:29.375830",
+  "num_patients": 10,
+  "days_per_patient": 7,
+  "total_records": 20160,
+  "features": [
+    "patient_id",
+    "timestamp",
+    "glucose",
+    "carbs",
+    "insulin",
+    "activity",
+    "stress",
+    "sleep",
+    "work",
+    "illness",
+    "meal_type",
+    "glucose_change"
+  ],
+  "glucose_stats": {
+    "mean": 196.10733134920633,
+    "std": 128.59525048062267,
+    "min": 65.7,
+    "max": 400.0
+  }
+}

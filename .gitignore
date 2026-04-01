@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Data
+data/raw/*.csv
+data/processed/*.csv
+*.pkl
+*.h5
+
+# Models
+models/*.h5
+models/*.pkl
+models/*.gguf
+
+# Logs
+logs/*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment
+.env
+config_local.yaml
+
+# Large files
+*.zip
+*.tar.gz
