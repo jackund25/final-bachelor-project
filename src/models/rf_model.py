@@ -82,13 +82,17 @@ class RandomForestGlucoseModel(BaseGlucoseModel):
 		self.is_trained = True
 
 
-def train_random_forest_from_config(config_path: str = "config.yaml") -> Dict:
+def train_random_forest_from_config(config_path: str = "config.yaml", data_source: str = "latest") -> Dict:
 	"""Train RF baseline using dataset and config, then save model + metrics."""
 	with open(config_path, "r", encoding="utf-8") as f:
 		config = yaml.safe_load(f)
 
 	loader = DiabetesDataLoader(config["data"]["output_dir"])
-	df = loader.load_latest_dataset().sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
+	if data_source == "ohio_t1dm":
+		df = loader.load_csv("ohio_t1dm_merged.csv")
+	else:
+		df = loader.load_latest_dataset()
+	df = df.sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
 
 	preprocessor = DataPreprocessor(config)
 	df = preprocessor.handle_missing_values(df)
@@ -151,9 +155,11 @@ def train_random_forest_from_config(config_path: str = "config.yaml") -> Dict:
 def main() -> None:
 	parser = argparse.ArgumentParser(description="Train Random Forest baseline model")
 	parser.add_argument("--config", default="config.yaml", help="Path to YAML config")
+	parser.add_argument("--data_source", default="latest", choices=["latest", "ohio_t1dm"],
+					  help="Data source to train on (latest generated or ohio_t1dm)")
 	args = parser.parse_args()
 
-	train_random_forest_from_config(args.config)
+	train_random_forest_from_config(args.config, args.data_source)
 
 
 if __name__ == "__main__":

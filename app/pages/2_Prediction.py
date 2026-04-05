@@ -80,6 +80,8 @@ if metrics:
 st.subheader("Run Prediction")
 
 loader = DiabetesDataLoader("data/raw")
+manual_logbook_path = Path("data/raw/manual_logbook.csv")
+
 try:
 	df = loader.load_latest_dataset().sort_values(["patient_id", "timestamp"])
 except FileNotFoundError:
@@ -91,14 +93,54 @@ if not patient_ids:
 	st.error("Dataset kosong")
 	st.stop()
 
+source_mode = st.radio(
+    "Data Source",
+    ["Generated dataset", "Manual logbook"],
+    horizontal=True,
+)
+
+if source_mode == "Manual logbook" and manual_logbook_path.exists():
+    source_df = loader.load_csv("manual_logbook.csv").sort_values(["patient_id", "timestamp"])
+    patient_ids = sorted(source_df["patient_id"].unique().tolist()) or patient_ids
+    st.info("Prediction akan memprioritaskan data dari manual logbook.")
+else:
+    source_df = df
+    if source_mode == "Manual logbook":
+        st.warning("Manual logbook belum ada. Menggunakan generated dataset sebagai fallback.")
+
 selected_patient = st.selectbox("Pilih Patient ID", patient_ids)
-patient_df = df[df["patient_id"] == selected_patient].copy()
+
+
+def build_prediction_window(source_data: pd.DataFrame, fallback_data: pd.DataFrame, patient_id: str, seq_len: int) -> pd.DataFrame:
+	"""Build a sequence window prioritizing source data and falling back to generated data if needed."""
+	source_patient = source_data[source_data["patient_id"] == patient_id].copy()
+	if not source_patient.empty:
+		source_patient = source_patient.sort_values("timestamp")
+
+	if len(source_patient) >= seq_len:
+		return source_patient.tail(seq_len).reset_index(drop=True)
+
+	fallback_patient = fallback_data[fallback_data["patient_id"] == patient_id].copy().sort_values("timestamp")
+	combined = pd.concat([fallback_patient, source_patient], ignore_index=True)
+	combined = combined.drop_duplicates(subset=["timestamp"], keep="last").sort_values("timestamp")
+
+	if len(combined) < seq_len:
+		return combined.reset_index(drop=True)
+
+	return combined.tail(seq_len).reset_index(drop=True)
+
+
+patient_df = build_prediction_window(source_df, df, selected_patient, artifacts["sequence_length"])
 
 features = artifacts["features"]
 sequence_length = artifacts["sequence_length"]
 
 if len(patient_df) < sequence_length:
-	st.error(f"Data pasien {selected_patient} kurang dari {sequence_length} baris")
+	st.warning(
+		f"Data pasien {selected_patient} belum cukup {sequence_length} baris. "
+		"Prediction akan memakai data yang tersedia, atau fallback dari generated dataset bila ada."
+	)
+	st.dataframe(patient_df[["timestamp"] + [c for c in features if c in patient_df.columns]], use_container_width=True)
 	st.stop()
 
 window_df = patient_df.tail(sequence_length).copy().reset_index(drop=True)
@@ -142,3 +184,5 @@ if st.button("Predict Next Glucose", type="primary"):
 	history = window_df["glucose"].tolist() + [pred]
 	chart_df = pd.DataFrame({"step": np.arange(len(history)), "glucose": history})
 	st.line_chart(chart_df.set_index("step"))
+
+st.caption("Jika memilih Manual logbook, prediction akan memprioritaskan input pasien terbaru dari data/manual_logbook.csv.")
