@@ -1,6 +1,7 @@
 from pathlib import Path
 from datetime import datetime
 
+import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 
@@ -34,7 +35,9 @@ def load_logbook() -> pd.DataFrame:
 		)
 
 	df = pd.read_csv(LOGBOOK_PATH, parse_dates=["timestamp"])
-	return df.sort_values("timestamp", ascending=False).reset_index(drop=True)
+	# BRUTAL FIX: Reconstruct from dict to strip Narwhals wrapper, then sort
+	df_native = pd.DataFrame(df.to_dict('list'))
+	return df_native.sort_values("timestamp", ascending=False).reset_index(drop=True)
 
 
 def save_entry(entry: dict) -> None:
@@ -47,7 +50,9 @@ def save_entry(entry: dict) -> None:
 	else:
 		combined = pd.concat([new_row, df], ignore_index=True)
 
+	combined["timestamp"] = pd.to_datetime(combined["timestamp"], errors="coerce")
 	combined = combined.sort_values("timestamp", ascending=False)
+	combined["timestamp"] = combined["timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S")
 	combined.to_csv(LOGBOOK_PATH, index=False)
 
 
@@ -81,7 +86,7 @@ with left:
 	if submitted:
 		timestamp = datetime.combine(date_value, time_value)
 		entry = {
-			"timestamp": pd.to_datetime(timestamp).isoformat(),
+			"timestamp": pd.to_datetime(timestamp),
 			"patient_id": patient_id.strip(),
 			"glucose": float(glucose),
 			"carbs": float(carbs),
@@ -122,7 +127,14 @@ with right:
 
 		st.markdown("### Glucose Snapshot")
 		chart_df = current_logbook[["timestamp", "glucose"]].sort_values("timestamp").tail(100)
-		st.line_chart(chart_df.set_index("timestamp"))
+		glucose_values = chart_df["glucose"].tolist()
+		fig, ax = plt.subplots(figsize=(8, 3))
+		ax.plot(range(1, len(glucose_values) + 1), glucose_values, linewidth=2)
+		ax.set_title("Recent Glucose")
+		ax.set_xlabel("Recent Point")
+		ax.set_ylabel("mg/dL")
+		ax.grid(alpha=0.25)
+		st.pyplot(fig, clear_figure=True)
 
 st.markdown("---")
 st.caption("Logbook ini disimpan ke data/raw/manual_logbook.csv sebagai sumber input manual pasien.")

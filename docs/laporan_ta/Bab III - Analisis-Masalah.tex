@@ -1,0 +1,141 @@
+% ============================================================================================
+% BAB III ANALISIS MASALAH
+% ============================================================================================
+\chapter{ANALISIS MASALAH}
+\label{chap:analisis-masalah}
+
+\section{Analisis Kondisi Saat Ini}
+
+Analisis kondisi sistem saat ini dilakukan untuk memahami bagaimana sistem pengelolaan \textit{Diabetes Mellitus} (DM) beroperasi, baik pada tataran global maupun nasional, sebelum dilakukan perancangan sistem baru. Pada konteks global, manajemen penyakit diabetes telah berkembang menuju sistem pemantauan \textit{real-time} berbasis perangkat medis seperti \textit{Continuous Glucose Monitoring} (CGM) dan \textit{insulin pump}. Teknologi ini memungkinkan pasien dan tenaga medis untuk memperoleh data kadar glukosa darah secara berkelanjutan, yang selanjutnya dapat digunakan untuk menyesuaikan dosis insulin serta pola makan secara dinamis \autocite{Battelino2019}.
+
+Namun demikian, sebagian besar sistem tersebut masih bersifat reaktif. Artinya, tindakan medis baru dilakukan setelah kadar glukosa pasien menunjukkan penyimpangan dari nilai normal. Selain itu, sistem pemantauan tersebut belum sepenuhnya memanfaatkan potensi analisis prediktif atau simulasi perilaku metabolik pasien secara digital. Inovasi seperti \textit{Digital Twin} mulai diterapkan di beberapa penelitian untuk menciptakan representasi virtual kondisi pasien yang dapat digunakan dalam simulasi terapi \autocite{Bruynseels2018}, tetapi implementasinya masih terbatas pada institusi dengan sumber daya dan infrastruktur digital yang tinggi.
+
+Di Indonesia, sebagian besar pengelolaan data pasien diabetes masih dilakukan secara manual atau semi-digital. Pencatatan hasil pemeriksaan laboratorium, kadar glukosa darah, dan riwayat terapi umumnya dilakukan melalui sistem informasi rumah sakit yang belum terintegrasi antarfasilitas. Meskipun pemerintah telah mendorong adopsi \textit{Electronic Medical Record} (EMR), tingkat interoperabilitas antar sistem masih rendah \autocite{Harahap2023, Aisyah2024}. Kondisi ini menyebabkan data pasien sering kali terfragmentasi, sehingga sulit digunakan untuk analisis longitudinal maupun pengembangan model prediktif.
+
+\begin{figure}[H]
+    \centering
+    \captionsetup{justification=centering}
+    \includegraphics[width=0.9\textwidth]{image/Model_Eksisting_Sistem.jpg}
+    \caption{Model konseptual sistem manajemen diabetes konvensional. Sistem saat ini terdiri atas subsistem klinis, pasien, dan perangkat medis dengan aliran data satu arah tanpa integrasi analitik cerdas.}
+    \label{gambar:model-sistem-eksisting}
+\end{figure}
+
+Gambar~\ref{gambar:model-sistem-eksisting} memvisualisasikan arsitektur sistem manajemen diabetes konvensional (\textit{as-is}) yang terbagi menjadi empat lapisan (\textit{layer}) utama. Berdasarkan model tersebut, kondisi \textit{as-is} saat ini memiliki karakteristik operasional sebagai berikut:
+
+\begin{enumerate}
+    \item \textbf{\textit{Presentation Layer} (Dominasi Manual)} \\
+    Interaksi pasien dengan data kesehatan masih didominasi oleh proses manual. Pengukuran gula darah dilakukan menggunakan \textit{fingerstick glucometer}, namun pencatatannya sering kali masih mengandalkan \textbf{catatan kertas} atau aplikasi ponsel yang tidak terhubung ke sistem rumah sakit. Akibatnya, dokter hanya menerima informasi secara verbal atau fisik saat konsultasi tatap muka.
+    
+    \item \textbf{\textit{Application Layer} (Evaluasi Tanpa Bantuan Cerdas)} \\
+    Proses pengambilan keputusan medis sepenuhnya bergantung pada \textbf{evaluasi manual} dokter. Tidak ada sistem komputasi di lapisan aplikasi yang berjalan secara otomatis untuk memantau tren atau mendeteksi anomali di antara jadwal kunjungan (\textit{in-between visits}). Keputusan medis murni didasarkan pada intuisi dan analisis sesaat dokter terhadap data yang dibawa pasien.
+    
+    \item \textbf{\textit{Data Layer} (Penyimpanan Terfragmentasi)} \\
+    Data kesehatan tersimpan secara terpisah-pisah (\textit{silo}). Data pengukuran harian ada di tangan pasien (kertas), sementara riwayat pengobatan dan hasil laboratorium tersimpan di \textbf{EMR Lokal} rumah sakit atau dalam format dokumen statis (PDF). Ketiadaan repositori data terpusat menyebabkan data historis sulit diakses untuk analisis longitudinal.
+    
+    \item \textbf{\textit{Security Layer} (Rentan)} \\
+    Aspek keamanan data belum terstandarisasi, yang ditandai dengan status \textbf{"No Encryption"} pada jalur komunikasi. Pertukaran informasi sering terjadi melalui saluran tidak aman, yang berisiko terhadap privasi data medis pasien.
+\end{enumerate}
+
+Kondisi infrastruktur yang digambarkan di atas menciptakan aliran data yang bersifat satu arah dan memiliki latensi tinggi. Akibatnya, sistem saat ini menghadapi masalah kritis:
+
+\begin{itemize}
+    \item \textbf{Latensi Keputusan}: Tindakan medis bersifat reaktif karena dokter sering kali baru mengetahui adanya pemburukan kondisi gula darah berminggu-minggu setelah kejadian (saat jadwal kontrol berikutnya).
+    \item \textbf{Data \textit{Dark Silo}}: Data pengukuran harian yang berharga terkunci dalam format kertas, sehingga tidak dapat dimanfaatkan (\textit{mined}) oleh algoritma prediktif.
+    \item \textbf{Absennya Personalisasi}: Tanpa integrasi data historis yang lengkap, rekomendasi terapi menjadi bersifat general dan kurang adaptif terhadap gaya hidup spesifik pasien.
+\end{itemize}
+
+Oleh karena itu, diperlukan transformasi dari sistem berbasis pencatatan manual dan evaluasi episodik ini menjadi sistem berbasis \textit{Digital Twin} yang mampu melakukan akuisisi data digital secara kontinu dan memberikan prediksi otomatis.
+
+\section{Analisis Kebutuhan}
+
+Analisis kebutuhan dilakukan untuk mengidentifikasi permasalahan utama yang dihadapi pengguna dan menentukan kebutuhan sistem baru yang akan dikembangkan. Analisis ini mencakup dua aspek, yaitu kebutuhan fungsional dan kebutuhan nonfungsional. Tujuannya adalah untuk memastikan bahwa sistem yang dirancang mampu menjawab kebutuhan nyata pengguna sekaligus sesuai dengan batasan teknis dan operasional di lapangan.
+
+\subsection{Identifikasi Masalah Pengguna}
+
+Berdasarkan analisis kondisi eksisting, dapat diidentifikasi beberapa permasalahan yang dihadapi oleh para pemangku kepentingan utama (\textit{stakeholder}) dalam sistem manajemen diabetes, yaitu pasien, tenaga medis, dan peneliti di bidang kesehatan digital:
+
+\begin{enumerate}
+    \item \textbf{Pasien}: sebagian besar pasien belum memiliki akses terhadap perangkat pemantauan \textit{real-time} seperti \textit{Continuous Glucose Monitoring (CGM)} karena harganya yang relatif mahal \autocite{Ramadaniati2024}. Pasien juga kesulitan memahami hubungan antara aktivitas harian, pola makan, dan fluktuasi kadar glukosa karena kurangnya alat bantu prediktif yang mudah digunakan.
+    
+    \item \textbf{Tenaga Medis}: dokter dan tenaga kesehatan masih mengandalkan data hasil pemeriksaan laboratorium atau catatan pasien untuk menentukan terapi, sehingga keputusan bersifat retrospektif. Minimnya dukungan sistem prediktif membuat tenaga medis sulit melakukan intervensi dini terhadap risiko hipoglikemia atau hiperglikemia \autocite{Aisyah2024}.
+    
+    \item \textbf{Peneliti dan Pengembang Sistem Kesehatan Digital}: sulit mendapatkan data medis terintegrasi yang konsisten karena rendahnya interoperabilitas antar sistem informasi kesehatan \autocite{Harahap2023}. Kondisi ini menghambat pengembangan model analitik yang dapat digeneralisasi.
+\end{enumerate}
+
+Permasalahan-permasalahan tersebut menunjukkan perlunya sistem yang mampu memanfaatkan data simulatif sebagai alternatif sumber data pasien. Sistem tersebut diharapkan dapat melakukan prediksi kadar glukosa darah serta menyediakan simulasi perilaku metabolik pasien dengan biaya rendah dan tanpa ketergantungan pada perangkat medis \textit{real-time}.
+
+\subsection{Kebutuhan Fungsional}
+
+Kebutuhan fungsional menggambarkan perilaku sistem yang diharapkan dari perspektif pengguna. Berdasarkan permasalahan yang diidentifikasi, kebutuhan fungsional dari sistem yang diusulkan meliputi:
+
+\input{table/tabelIII1.tex}
+
+Kebutuhan fungsional ini menjadi dasar dalam perancangan arsitektur sistem \textit{RAG Digital Twin}, di mana setiap modul berfungsi untuk menangani satu proses utama dari pipeline prediksi dan pembelajaran adaptif berbasis data.
+
+\subsection{Kebutuhan Nonfungsional}
+
+Kebutuhan nonfungsional berkaitan dengan aspek kualitas dan batasan teknis yang harus dipenuhi agar sistem dapat berjalan secara optimal. Beberapa kebutuhan nonfungsional yang diidentifikasi adalah sebagai berikut:
+
+\input{table/tabelIII2.tex}
+
+Kebutuhan fungsional dan nonfungsional tersebut menjadi acuan dalam perancangan sistem yang akan dijelaskan lebih lanjut pada Bab IV. Sistem ini diharapkan mampu mengisi kesenjangan antara kebutuhan prediksi glukosa yang akurat dan keterbatasan infrastruktur digital di Indonesia melalui penerapan konsep \textit{RAG Digital Twin} berbasis data simulatif.
+
+\section{Analisis Pemilihan Solusi}
+
+Untuk menjawab kebutuhan pengguna dan mengatasi kendala infrastruktur yang telah diidentifikasi, dilakukan analisis perbandingan terhadap lima pendekatan solusi potensial. Kelima solusi ini mewakili spektrum teknologi mulai dari pendekatan konvensional hingga pendekatan berbasis kecerdasan buatan tingkat lanjut.
+
+\subsection{Alternatif Solusi}
+Berikut adalah lima alternatif solusi yang dievaluasi:
+
+\begin{enumerate}
+    \item \textbf{Sistem Pakar Berbasis Aturan (\textit{Rule-Based Expert System})} \\
+    Pendekatan ini menggunakan logika statis \textit{"If-Then"} yang didefinisikan oleh dokter (misal: "Jika glukosa > 200 mg/dL, sarankan tambah insulin 2 unit").
+    \begin{itemize}
+        \item \textit{Kelebihan}: Sangat sederhana, murah, dan transparan.
+        \item \textit{Kekurangan}: Kaku dan tidak mampu menangkap hubungan non-linear yang kompleks (misalnya interaksi antara stres tinggi dan olahraga ringan). Tidak adaptif terhadap perubahan fisiologis pasien.
+    \end{itemize}
+
+    \item \textbf{Model \textit{Machine Learning Black-Box} (LSTM Standar)} \\
+    Menggunakan algoritma \textit{Deep Learning} (LSTM) murni untuk memprediksi angka glukosa masa depan berdasarkan data historis.
+    \begin{itemize}
+        \item \textit{Kelebihan}: Akurasi prediksi numerik sangat tinggi untuk data deret waktu.
+        \item \textit{Kekurangan}: Bersifat \textit{Black Box}; sistem hanya mengeluarkan angka prediksi tanpa memberikan penjelasan penyebabnya atau saran aksi. Pasien sering bingung harus berbuat apa dengan angka tersebut.
+    \end{itemize}
+
+    \item \textbf{\textit{Generative AI Chatbot} (RAG Tanpa Prediksi)} \\
+    Menggunakan LLM (seperti GPT/Mistral) yang terhubung dengan buku medis (RAG) untuk menjawab pertanyaan pasien (misal: "Bagaimana cara menurunkan gula darah?").
+    \begin{itemize}
+        \item \textit{Kelebihan}: Memberikan edukasi dan penjelasan yang sangat natural dan mudah dipahami.
+        \item \textit{Kekurangan}: Tidak memprediksi kondisi masa depan pasien. Saran bersifat umum (edukatif) dan tidak didasarkan pada data tren glukosa pasien yang spesifik (\textit{non-personalized}).
+    \end{itemize}
+
+    \item \textbf{\textit{Physiological Digital Twin} (Full-Scale)} \\
+    Membangun replika virtual organ tubuh yang sangat detail secara biologis (model mekanistik), biasanya membutuhkan input dari sensor \textit{Continuous Glucose Monitoring} (CGM) secara \textit{real-time}.
+    \begin{itemize}
+        \item \textit{Kelebihan}: Kemampuan simulasi paling akurat dan ilmiah.
+        \item \textit{Kekurangan}: Biaya sangat tinggi (memerlukan sensor mahal) dan infrastruktur komputasi berat. Tidak sesuai untuk konteks negara berkembang dengan sumber daya terbatas \autocite{Ramadaniati2024}.
+    \end{itemize}
+
+    \item \textbf{\textit{Simplified RAG Digital Twin Framework} (Solusi Usulan)} \\
+    Pendekatan hibrida yang menggabungkan model prediksi \textit{Machine Learning} (sebagai representasi \textit{Digital Twin} sederhana) dengan mekanisme RAG untuk penjelasan.
+    \begin{itemize}
+        \item \textit{Kelebihan}: Menggabungkan akurasi prediksi (dari ML), personalisasi data (dari input logbook), dan penjelasan semantik yang mudah dimengerti (dari RAG).
+        \item \textit{Kekurangan}: Arsitektur sistem lebih kompleks daripada sekadar sistem pakar atau ML biasa, namun masih dapat dijalankan pada perangkat standar.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Analisis Penentuan Solusi}
+Untuk menentukan solusi terbaik, kelima alternatif dibandingkan berdasarkan lima kriteria utama: (1) Akurasi Prediksi, (2) Kemampuan Simulasi (\textit{What-If}), (3) Kemampuan Penjelasan (\textit{Explainability}), (4) Fleksibilitas Input Data (Tanpa Sensor Mahal), dan (5) Biaya Implementasi.
+
+Perbandingan karakteristik kelima alternatif solusi dirangkum pada Tabel~\ref{tbl:perbandingan-solusi}.
+
+\input{table/tabelIII3.tex}
+
+\textbf{Kesimpulan Pemilihan Solusi:}
+
+Berdasarkan Tabel~\ref{tbl:perbandingan-solusi}, \textbf{Solusi 5 (\textit{Simplified RAG Digital Twin Framework})} dipilih karena menawarkan keseimbangan terbaik (\textit{trade-off}) untuk konteks permasalahan di Indonesia:
+\begin{enumerate}
+    \item Unggul dibandingkan \textbf{Solusi 1 dan 3} karena memiliki kemampuan prediksi numerik personal yang akurat.
+    \item Unggul dibandingkan \textbf{Solusi 2} karena tidak bersifat "kotak hitam", melainkan mampu memberikan penjelasan dan saran aksi yang dimengerti pasien.
+    \item Unggul dibandingkan \textbf{Solusi 4} dari sisi biaya dan kelayakan implementasi, karena tidak mewajibkan penggunaan sensor CGM yang mahal, namun tetap menyediakan fitur simulasi skenario yang cukup handal untuk kebutuhan harian.
+\end{enumerate}

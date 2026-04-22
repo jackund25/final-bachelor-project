@@ -82,17 +82,24 @@ class RandomForestGlucoseModel(BaseGlucoseModel):
 		self.is_trained = True
 
 
-def train_random_forest_from_config(config_path: str = "config.yaml", data_source: str = "latest") -> Dict:
+def train_random_forest_from_config(config_path: str = "config.yaml", data_source: str = "auto") -> Dict:
 	"""Train RF baseline using dataset and config, then save model + metrics."""
 	with open(config_path, "r", encoding="utf-8") as f:
 		config = yaml.safe_load(f)
 
 	loader = DiabetesDataLoader(config["data"]["output_dir"])
-	if data_source == "ohio_t1dm":
+	if data_source == "auto":
+		primary_source = config.get("data", {}).get("primary_source", "ohio_t1dm")
+		fallback_source = config.get("data", {}).get("fallback_source", "latest_generated")
+		df, used_source = loader.load_preferred_dataset(primary_source, fallback_source)
+	elif data_source == "ohio_t1dm":
 		df = loader.load_csv("ohio_t1dm_merged.csv")
+		used_source = "ohio_t1dm"
 	else:
 		df = loader.load_latest_dataset()
+		used_source = "latest_generated"
 	df = df.sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
+	print(f"Data source  : {used_source}")
 
 	preprocessor = DataPreprocessor(config)
 	df = preprocessor.handle_missing_values(df)
@@ -155,8 +162,12 @@ def train_random_forest_from_config(config_path: str = "config.yaml", data_sourc
 def main() -> None:
 	parser = argparse.ArgumentParser(description="Train Random Forest baseline model")
 	parser.add_argument("--config", default="config.yaml", help="Path to YAML config")
-	parser.add_argument("--data_source", default="latest", choices=["latest", "ohio_t1dm"],
-					  help="Data source to train on (latest generated or ohio_t1dm)")
+	parser.add_argument(
+		"--data_source",
+		default="auto",
+		choices=["auto", "latest", "ohio_t1dm"],
+		help="Data source to train on (auto: config primary/fallback, latest, or ohio_t1dm)",
+	)
 	args = parser.parse_args()
 
 	train_random_forest_from_config(args.config, args.data_source)

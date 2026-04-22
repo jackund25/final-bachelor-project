@@ -1,0 +1,1139 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{cms/global//global/global}
+    \entry{Abodunrin2020}{article}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=b4acc795dfb97bc397f51fdd309c82d5}{%
+           family={Abodunrin},
+           familyi={A\bibinitperiod},
+           given={O.},
+           giveni={O\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=620b4409929ccdfff886b67e783d2b48}{%
+           family={Akande},
+           familyi={A\bibinitperiod},
+           given={T.},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=719d36557e2e00cfca498a6d63d06ac8}{%
+           family={Osagbemi},
+           familyi={O\bibinitperiod},
+           given={G.},
+           giveni={G\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{3ff7fd4735140cc801dfb20f94723fc6}
+      \strng{fullhash}{3ff7fd4735140cc801dfb20f94723fc6}
+      \strng{bibnamehash}{3ff7fd4735140cc801dfb20f94723fc6}
+      \strng{authorbibnamehash}{3ff7fd4735140cc801dfb20f94723fc6}
+      \strng{authornamehash}{3ff7fd4735140cc801dfb20f94723fc6}
+      \strng{authorfullhash}{3ff7fd4735140cc801dfb20f94723fc6}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{Health Information Management Journal}
+      \field{number}{2-3}
+      \field{title}{Awareness and Perception Toward Electronic Health Records Among Healthcare Professionals in a Developing Country}
+      \field{volume}{49}
+      \field{year}{2020}
+      \field{pages}{98\bibrangedash 107}
+      \range{pages}{10}
+      \verb{doi}
+      \verb 10.1177/1833358319887257
+      \endverb
+    \endentry
+    \entry{Aisyah2024}{article}{}
+      \name{author}{7}{}{%
+        {{un=0,uniquepart=base,hash=c74bd714bd35947d2336a5a84482c077}{%
+           family={Aisyah},
+           familyi={A\bibinitperiod},
+           given={D.\bibnamedelimi N.},
+           giveni={D\bibinitperiod\bibinitdelim N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=7695718f7916f249a760092be07bdaac}{%
+           family={Setiawan},
+           familyi={S\bibinitperiod},
+           given={A.\bibnamedelimi H.},
+           giveni={A\bibinitperiod\bibinitdelim H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e1ae993613810f73b3af73f5bb05738c}{%
+           family={Lokopessy},
+           familyi={L\bibinitperiod},
+           given={A.\bibnamedelimi F.},
+           giveni={A\bibinitperiod\bibinitdelim F\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a16baffe7dca3c671e8e5cdeed7c0a6e}{%
+           family={Faradiba},
+           familyi={F\bibinitperiod},
+           given={N.},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4afa1abd6b10a14bacd69f5f29980dba}{%
+           family={Setiaji},
+           familyi={S\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=34e83018ab44a409a13f102113d968ca}{%
+           family={Manikam},
+           familyi={M\bibinitperiod},
+           given={L.},
+           giveni={L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=20293499a4207f809a40d1b36b035632}{%
+           family={Kozlakidis},
+           familyi={K\bibinitperiod},
+           given={Z.},
+           giveni={Z\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{eb8046e96c7da1b4739d06a5e0c3f6e7}
+      \strng{fullhash}{8c77f5be5023395824e204fa0c9894fc}
+      \strng{bibnamehash}{8c77f5be5023395824e204fa0c9894fc}
+      \strng{authorbibnamehash}{8c77f5be5023395824e204fa0c9894fc}
+      \strng{authornamehash}{eb8046e96c7da1b4739d06a5e0c3f6e7}
+      \strng{authorfullhash}{8c77f5be5023395824e204fa0c9894fc}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{JMIR Medical Informatics}
+      \field{title}{The Information and Communication Technology Maturity Assessment at Primary Health Care Services Across 9 Provinces in Indonesia: Evaluation Study}
+      \field{volume}{12}
+      \field{year}{2024}
+      \field{pages}{e55959}
+      \range{pages}{-1}
+      \verb{doi}
+      \verb 10.2196/55959
+      \endverb
+    \endentry
+    \entry{Alkaff2021}{article}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=1cc6add1989a314990d765499577ab40}{%
+           family={Alkaff},
+           familyi={A\bibinitperiod},
+           given={F.\bibnamedelimi F.},
+           giveni={F\bibinitperiod\bibinitdelim F\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=14959d3b5db0ed84b174d0a9120aa51e}{%
+           family={Suwantika},
+           familyi={S\bibinitperiod},
+           given={A.\bibnamedelimi A.},
+           giveni={A\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4f649eff4764d478f46760b525e0e085}{%
+           family={Abdulah},
+           familyi={A\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a858dad64073c08d15653cc8e9636999}{%
+           family={Lestari},
+           familyi={L\bibinitperiod},
+           given={K.},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{9494249945fb90043c82d8352c3a09bd}
+      \strng{fullhash}{27353403464ca543abd662ad13e01922}
+      \strng{bibnamehash}{27353403464ca543abd662ad13e01922}
+      \strng{authorbibnamehash}{27353403464ca543abd662ad13e01922}
+      \strng{authornamehash}{9494249945fb90043c82d8352c3a09bd}
+      \strng{authorfullhash}{27353403464ca543abd662ad13e01922}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{Journal of Global Health Science}
+      \field{number}{2}
+      \field{title}{Challenges and Opportunities in the Management of Diabetes Mellitus in Indonesia: A Systematic Review}
+      \field{volume}{3}
+      \field{year}{2021}
+      \field{pages}{e25}
+      \range{pages}{-1}
+      \verb{doi}
+      \verb 10.35500/jghs.2021.3.e25
+      \endverb
+    \endentry
+    \entry{ADA2023}{article}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=88b85efc67bbb8c15d8d7c3802cc9233}{%
+           family={{American Diabetes Association}},
+           familyi={A\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {American Diabetes Association}%
+      }
+      \strng{namehash}{88b85efc67bbb8c15d8d7c3802cc9233}
+      \strng{fullhash}{88b85efc67bbb8c15d8d7c3802cc9233}
+      \strng{bibnamehash}{88b85efc67bbb8c15d8d7c3802cc9233}
+      \strng{authorbibnamehash}{88b85efc67bbb8c15d8d7c3802cc9233}
+      \strng{authornamehash}{88b85efc67bbb8c15d8d7c3802cc9233}
+      \strng{authorfullhash}{88b85efc67bbb8c15d8d7c3802cc9233}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{Diabetes Care}
+      \field{number}{Supplement 1}
+      \field{title}{Standards of Care in Diabetes—2023}
+      \field{volume}{46}
+      \field{year}{2023}
+      \field{pages}{S1\bibrangedash S291}
+      \range{pages}{-1}
+      \verb{urlraw}
+      \verb https://diabetesjournals.org/care/issue/46/Supplement_1
+      \endverb
+      \verb{url}
+      \verb https://diabetesjournals.org/care/issue/46/Supplement_1
+      \endverb
+    \endentry
+    \entry{Battelino2019}{article}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=c918ea7329f090e44ab7c387aa7fb646}{%
+           family={Battelino},
+           familyi={B\bibinitperiod},
+           given={T.},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=dd8ba5e971f9218491814bf04868e836}{%
+           family={Danne},
+           familyi={D\bibinitperiod},
+           given={T.},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b76d774b2ceb4669904bcdc80de57005}{%
+           family={Bergenstal},
+           familyi={B\bibinitperiod},
+           given={R.\bibnamedelimi M.},
+           giveni={R\bibinitperiod\bibinitdelim M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{713d6ba07884036c20486734d460a263}
+      \strng{fullhash}{713d6ba07884036c20486734d460a263}
+      \strng{bibnamehash}{713d6ba07884036c20486734d460a263}
+      \strng{authorbibnamehash}{713d6ba07884036c20486734d460a263}
+      \strng{authornamehash}{713d6ba07884036c20486734d460a263}
+      \strng{authorfullhash}{713d6ba07884036c20486734d460a263}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{Diabetes Care}
+      \field{number}{8}
+      \field{title}{Clinical Targets for Continuous Glucose Monitoring Data Interpretation: Recommendations From the International Consensus on Time in Range}
+      \field{volume}{42}
+      \field{year}{2019}
+      \field{pages}{1593\bibrangedash 1603}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.2337/dci19-0028
+      \endverb
+    \endentry
+    \entry{Borgeaud2022}{article}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=c28d74501d531d6672ccf4c28016c7ac}{%
+           family={Borgeaud},
+           familyi={B\bibinitperiod},
+           given={Sebastian},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e9a587c57b1dcb4834850800386d8aca}{%
+           family={Mensch},
+           familyi={M\bibinitperiod},
+           given={Arthur},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=92d226c4ea870c0e9df2ceb8bf03d8ff}{%
+           family={Hoffmann},
+           familyi={H\bibinitperiod},
+           given={Jordan},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3d7a83ed6eb983ca17cec804631dc22e}{%
+           family={Cai},
+           familyi={C\bibinitperiod},
+           given={Trevor},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1d5b54954d5e123c297f4250ee59711c}
+      \strng{fullhash}{6c454a2da19c48ff44df9d8a9946c510}
+      \strng{bibnamehash}{6c454a2da19c48ff44df9d8a9946c510}
+      \strng{authorbibnamehash}{6c454a2da19c48ff44df9d8a9946c510}
+      \strng{authornamehash}{1d5b54954d5e123c297f4250ee59711c}
+      \strng{authorfullhash}{6c454a2da19c48ff44df9d8a9946c510}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{Nature}
+      \field{number}{7902}
+      \field{title}{Improving language models by retrieving from trillions of tokens}
+      \field{volume}{603}
+      \field{year}{2022}
+      \field{pages}{587\bibrangedash 593}
+      \range{pages}{7}
+      \verb{doi}
+      \verb 10.1038/s41586-022-04587-z
+      \endverb
+    \endentry
+    \entry{Bruynseels2018}{article}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=a1cd856075f924279dd7ebd82f9be19b}{%
+           family={Bruynseels},
+           familyi={B\bibinitperiod},
+           given={K.},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=bb769de594ccfa66e680b783663b97e1}{%
+           family={Santoni\bibnamedelimb de\bibnamedelima Sio},
+           familyi={S\bibinitperiod\bibinitdelim d\bibinitperiod\bibinitdelim S\bibinitperiod},
+           given={F.},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=033b075fb1ee5c75d7a996f3644ae2df}{%
+           family={Hoven},
+           familyi={H\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod},
+           givenun=0,
+           prefix={van\bibnamedelima den},
+           prefixi={v\bibinitperiod\bibinitdelim d\bibinitperiod},
+           prefixun=0}}%
+      }
+      \strng{namehash}{026376ac033b2cad2f4738c021b4394b}
+      \strng{fullhash}{026376ac033b2cad2f4738c021b4394b}
+      \strng{bibnamehash}{026376ac033b2cad2f4738c021b4394b}
+      \strng{authorbibnamehash}{026376ac033b2cad2f4738c021b4394b}
+      \strng{authornamehash}{026376ac033b2cad2f4738c021b4394b}
+      \strng{authorfullhash}{026376ac033b2cad2f4738c021b4394b}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{Frontiers in Genetics}
+      \field{title}{Digital Twins in Health Care: Ethical Implications of an Emerging Engineering Paradigm}
+      \field{volume}{9}
+      \field{year}{2018}
+      \field{pages}{31}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3389/fgene.2018.00066
+      \endverb
+    \endentry
+    \entry{Cappon2024}{article}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=ad2d166e3672a56f7f472b5044bc895b}{%
+           family={Cappon},
+           familyi={C\bibinitperiod},
+           given={G.},
+           giveni={G\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=bbd6e2e7c10f93364412bbb1be8b54c2}{%
+           family={Facchinetti},
+           familyi={F\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=64c5d33d7a2309efc05db4100b14f8f1}{%
+           family={Sparacino},
+           familyi={S\bibinitperiod},
+           given={G.},
+           giveni={G\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{f566bc7b7599b0fa959b3b7d2c739081}
+      \strng{fullhash}{f566bc7b7599b0fa959b3b7d2c739081}
+      \strng{bibnamehash}{f566bc7b7599b0fa959b3b7d2c739081}
+      \strng{authorbibnamehash}{f566bc7b7599b0fa959b3b7d2c739081}
+      \strng{authornamehash}{f566bc7b7599b0fa959b3b7d2c739081}
+      \strng{authorfullhash}{f566bc7b7599b0fa959b3b7d2c739081}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{IEEE Reviews in Biomedical Engineering}
+      \field{title}{Digital Twins in Type 1 Diabetes: A Systematic Review}
+      \field{volume}{17}
+      \field{year}{2024}
+      \field{pages}{166\bibrangedash 180}
+      \range{pages}{15}
+      \verb{doi}
+      \verb 10.1109/RBME.2023.3296229
+      \endverb
+    \endentry
+    \entry{Colberg2016}{article}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=b19bc3f87d9794cab4f091336f9d0eb5}{%
+           family={Colberg},
+           familyi={C\bibinitperiod},
+           given={Sheri\bibnamedelima R},
+           giveni={S\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ccd7472873d509e5445716d5e6e48f22}{%
+           family={Sigal},
+           familyi={S\bibinitperiod},
+           given={Ronald\bibnamedelima J},
+           giveni={R\bibinitperiod\bibinitdelim J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=8331c6857fdabf5a35d157811e1e1296}{%
+           family={Yardley},
+           familyi={Y\bibinitperiod},
+           given={Jane\bibnamedelima E},
+           giveni={J\bibinitperiod\bibinitdelim E\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {American Diabetes Association}%
+      }
+      \strng{namehash}{919f1c7458c33bd217ebca60e31e6861}
+      \strng{fullhash}{919f1c7458c33bd217ebca60e31e6861}
+      \strng{bibnamehash}{919f1c7458c33bd217ebca60e31e6861}
+      \strng{authorbibnamehash}{919f1c7458c33bd217ebca60e31e6861}
+      \strng{authornamehash}{919f1c7458c33bd217ebca60e31e6861}
+      \strng{authorfullhash}{919f1c7458c33bd217ebca60e31e6861}
+      \field{sortinit}{C}
+      \field{sortinithash}{4d103a86280481745c9c897c925753c0}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{Diabetes Care}
+      \field{number}{11}
+      \field{title}{Physical activity/exercise and diabetes: a position statement of the American Diabetes Association}
+      \field{volume}{39}
+      \field{year}{2016}
+      \field{pages}{2065\bibrangedash 2079}
+      \range{pages}{15}
+      \verb{doi}
+      \verb 10.2337/dc16-1728
+      \endverb
+    \endentry
+    \entry{Ghimire2024}{article}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=5919e8255d8910dcbc898c4016af3438}{%
+           family={Ghimire},
+           familyi={G\bibinitperiod},
+           given={Saurav},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d33527b406f00251cc35af509b59545e}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Xuefeng},
+           giveni={X\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0ff9ab0f83259bbec3028f85f5c2a1f4}{%
+           family={Schenck},
+           familyi={S\bibinitperiod},
+           given={Helene},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{1d276370ef430c4b619c0b56595d2a4f}
+      \strng{fullhash}{1d276370ef430c4b619c0b56595d2a4f}
+      \strng{bibnamehash}{1d276370ef430c4b619c0b56595d2a4f}
+      \strng{authorbibnamehash}{1d276370ef430c4b619c0b56595d2a4f}
+      \strng{authornamehash}{1d276370ef430c4b619c0b56595d2a4f}
+      \strng{authorfullhash}{1d276370ef430c4b619c0b56595d2a4f}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{npj Digital Medicine}
+      \field{number}{1}
+      \field{title}{Deep learning for blood glucose level prediction: How well do models generalize across different data sets?}
+      \field{volume}{7}
+      \field{year}{2024}
+      \field{pages}{166}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1038/s41746-024-01021-0
+      \endverb
+    \endentry
+    \entry{grieves2017digital}{incollection}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=4b5d6786e8fb5cd63db15f454210559d}{%
+           family={Grieves},
+           familyi={G\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=8481067f6e37ac5d92e78a1bc1412167}{%
+           family={Vickers},
+           familyi={V\bibinitperiod},
+           given={John},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Cham, Switzerland}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{57202742903dc1ba80c3fbb8fcfd93b5}
+      \strng{fullhash}{57202742903dc1ba80c3fbb8fcfd93b5}
+      \strng{bibnamehash}{57202742903dc1ba80c3fbb8fcfd93b5}
+      \strng{authorbibnamehash}{57202742903dc1ba80c3fbb8fcfd93b5}
+      \strng{authornamehash}{57202742903dc1ba80c3fbb8fcfd93b5}
+      \strng{authorfullhash}{57202742903dc1ba80c3fbb8fcfd93b5}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Transdisciplinary Perspectives on Complex Systems}
+      \field{title}{Digital Twin: Mitigating Unpredictable, Undesirable Emergent Behavior in Complex Systems}
+      \field{year}{2017}
+      \field{pages}{85\bibrangedash 113}
+      \range{pages}{29}
+      \verb{doi}
+      \verb 10.1007/978-3-319-38756-7_4
+      \endverb
+    \endentry
+    \entry{Hackett2017}{article}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=5b27adc1fd4b10168378ea96469798a1}{%
+           family={Hackett},
+           familyi={H\bibinitperiod},
+           given={Ruth\bibnamedelima A},
+           giveni={R\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2c7ebc4b3b789336037fc20ef180b935}{%
+           family={Steptoe},
+           familyi={S\bibinitperiod},
+           given={Andrew},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Nature Publishing Group}%
+      }
+      \strng{namehash}{84ef936119ce9517f2950d045dce650a}
+      \strng{fullhash}{84ef936119ce9517f2950d045dce650a}
+      \strng{bibnamehash}{84ef936119ce9517f2950d045dce650a}
+      \strng{authorbibnamehash}{84ef936119ce9517f2950d045dce650a}
+      \strng{authornamehash}{84ef936119ce9517f2950d045dce650a}
+      \strng{authorfullhash}{84ef936119ce9517f2950d045dce650a}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{Nature Reviews Endocrinology}
+      \field{number}{10}
+      \field{title}{Psychosocial stress and type 2 diabetes: current knowledge and future concepts}
+      \field{volume}{13}
+      \field{year}{2017}
+      \field{pages}{547\bibrangedash 560}
+      \range{pages}{14}
+      \verb{doi}
+      \verb 10.1038/nrendo.2017.87
+      \endverb
+    \endentry
+    \entry{Harahap2023}{article}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=e67b6c55e89e9611b24e80c5b4d0478a}{%
+           family={Harahap},
+           familyi={H\bibinitperiod},
+           given={N.\bibnamedelimi C.},
+           giveni={N\bibinitperiod\bibinitdelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=876e0e4c5c4d048c99c1255a1f7af142}{%
+           family={Handayani},
+           familyi={H\bibinitperiod},
+           given={P.\bibnamedelimi W.},
+           giveni={P\bibinitperiod\bibinitdelim W\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=206fd3cf6987790c3d71cd531ca19a62}{%
+           family={Hidayanto},
+           familyi={H\bibinitperiod},
+           given={A.\bibnamedelimi N.},
+           giveni={A\bibinitperiod\bibinitdelim N\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{effddf7bdfb8d4209d60876b4846fa47}
+      \strng{fullhash}{effddf7bdfb8d4209d60876b4846fa47}
+      \strng{bibnamehash}{effddf7bdfb8d4209d60876b4846fa47}
+      \strng{authorbibnamehash}{effddf7bdfb8d4209d60876b4846fa47}
+      \strng{authornamehash}{effddf7bdfb8d4209d60876b4846fa47}
+      \strng{authorfullhash}{effddf7bdfb8d4209d60876b4846fa47}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{JMIR Medical Informatics}
+      \field{title}{Integrated Personal Health Record in Indonesia: Design Science Research Study}
+      \field{volume}{11}
+      \field{year}{2023}
+      \field{pages}{e44784}
+      \range{pages}{-1}
+      \verb{doi}
+      \verb 10.2196/44784
+      \endverb
+    \endentry
+    \entry{Harahap2024}{article}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=e67b6c55e89e9611b24e80c5b4d0478a}{%
+           family={Harahap},
+           familyi={H\bibinitperiod},
+           given={N.\bibnamedelimi C.},
+           giveni={N\bibinitperiod\bibinitdelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=876e0e4c5c4d048c99c1255a1f7af142}{%
+           family={Handayani},
+           familyi={H\bibinitperiod},
+           given={P.\bibnamedelimi W.},
+           giveni={P\bibinitperiod\bibinitdelim W\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=206fd3cf6987790c3d71cd531ca19a62}{%
+           family={Hidayanto},
+           familyi={H\bibinitperiod},
+           given={A.\bibnamedelimi N.},
+           giveni={A\bibinitperiod\bibinitdelim N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2268c89a004f002cdb16d65f8c647f72}{%
+           family={Budi},
+           familyi={B\bibinitperiod},
+           given={I.},
+           giveni={I\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{ea717d23df1b85c1a7e29e55896ced49}
+      \strng{fullhash}{47ecf0c30458675e10652f97d0a5b4ad}
+      \strng{bibnamehash}{47ecf0c30458675e10652f97d0a5b4ad}
+      \strng{authorbibnamehash}{47ecf0c30458675e10652f97d0a5b4ad}
+      \strng{authornamehash}{ea717d23df1b85c1a7e29e55896ced49}
+      \strng{authorfullhash}{47ecf0c30458675e10652f97d0a5b4ad}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{BMC Health Services Research}
+      \field{title}{An Exploratory Study of Electronic Medical Record Implementation and Recordkeeping Culture: The Case of Hospitals in Indonesia}
+      \field{volume}{24}
+      \field{year}{2024}
+      \field{pages}{199}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1186/s12913-024-10694-y
+      \endverb
+    \endentry
+    \entry{IDF2024}{report}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=b3d38905a47b627674172f30d09c9aef}{%
+           family={{International Diabetes Federation}},
+           familyi={I\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {International Diabetes Federation}%
+      }
+      \list{location}{1}{%
+        {Brussels}%
+      }
+      \strng{namehash}{b3d38905a47b627674172f30d09c9aef}
+      \strng{fullhash}{b3d38905a47b627674172f30d09c9aef}
+      \strng{bibnamehash}{b3d38905a47b627674172f30d09c9aef}
+      \strng{authorbibnamehash}{b3d38905a47b627674172f30d09c9aef}
+      \strng{authornamehash}{b3d38905a47b627674172f30d09c9aef}
+      \strng{authorfullhash}{b3d38905a47b627674172f30d09c9aef}
+      \field{sortinit}{I}
+      \field{sortinithash}{8d291c51ee89b6cd86bf5379f0b151d8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{IDF Diabetes Atlas 11th Edition}
+      \field{type}{techreport}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://diabetesatlas.org/
+      \endverb
+      \verb{url}
+      \verb https://diabetesatlas.org/
+      \endverb
+    \endentry
+    \entry{Riskesdas2018}{report}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=6a2caf95566f00c5aabad4522459ec99}{%
+           family={{Kementerian Kesehatan Republik Indonesia}},
+           familyi={K\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Badan Penelitian dan Pengembangan Kesehatan, Kementerian Kesehatan RI}%
+      }
+      \list{location}{1}{%
+        {Jakarta, Indonesia}%
+      }
+      \strng{namehash}{6a2caf95566f00c5aabad4522459ec99}
+      \strng{fullhash}{6a2caf95566f00c5aabad4522459ec99}
+      \strng{bibnamehash}{6a2caf95566f00c5aabad4522459ec99}
+      \strng{authorbibnamehash}{6a2caf95566f00c5aabad4522459ec99}
+      \strng{authornamehash}{6a2caf95566f00c5aabad4522459ec99}
+      \strng{authorfullhash}{6a2caf95566f00c5aabad4522459ec99}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{Menunjukkan sebagian besar kasus diabetes di Indonesia belum terdiagnosis.}
+      \field{title}{Laporan Nasional Riset Kesehatan Dasar (Riskesdas) 2018}
+      \field{year}{2019}
+      \verb{urlraw}
+      \verb https://repository.badankebijakan.kemkes.go.id/id/eprint/3514/
+      \endverb
+      \verb{url}
+      \verb https://repository.badankebijakan.kemkes.go.id/id/eprint/3514/
+      \endverb
+    \endentry
+    \entry{KSI2020}{report}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=4c397addd3f0afaa7dddcc01fb0f6533}{%
+           family={{Knowledge Sourcing Intelligence}},
+           familyi={K\bibinitperiod}}}%
+      }
+      \strng{namehash}{4c397addd3f0afaa7dddcc01fb0f6533}
+      \strng{fullhash}{4c397addd3f0afaa7dddcc01fb0f6533}
+      \strng{bibnamehash}{4c397addd3f0afaa7dddcc01fb0f6533}
+      \strng{authorbibnamehash}{4c397addd3f0afaa7dddcc01fb0f6533}
+      \strng{authornamehash}{4c397addd3f0afaa7dddcc01fb0f6533}
+      \strng{authorfullhash}{4c397addd3f0afaa7dddcc01fb0f6533}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Indonesia Diabetes Devices (SMBG \& POCT, CGM, Insulin Pens \& Pumps) Market Outlook to 2023}
+      \field{type}{techreport}
+      \field{year}{2020}
+      \verb{urlraw}
+      \verb https://www.knowledge-sourcing.com/report/indonesia-diabetes-devices-market
+      \endverb
+      \verb{url}
+      \verb https://www.knowledge-sourcing.com/report/indonesia-diabetes-devices-market
+      \endverb
+    \endentry
+    \entry{Lewis2020}{article}{}
+      \name{author}{12}{}{%
+        {{un=0,uniquepart=base,hash=ecbe786a5668bf643d74bb24fe1c3cfe}{%
+           family={Lewis},
+           familyi={L\bibinitperiod},
+           given={Patrick},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=79978685fd7b37606022b06c0f6419a1}{%
+           family={Perez},
+           familyi={P\bibinitperiod},
+           given={Ethan},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d205faec67355b6e0ec49f82a492324c}{%
+           family={Piktus},
+           familyi={P\bibinitperiod},
+           given={Aleksandra},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e1c32989a78998fe3c03c981d0da2dc7}{%
+           family={Petroni},
+           familyi={P\bibinitperiod},
+           given={Fabio},
+           giveni={F\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b24392ebfb2c0a35979fc689c389c649}{%
+           family={Karpukhin},
+           familyi={K\bibinitperiod},
+           given={Vladimir},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=78a420900f50a8470ad085fb05231bf6}{%
+           family={Goyal},
+           familyi={G\bibinitperiod},
+           given={Naman},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4eadcf26f55e11fe4be834b52d9b7fdf}{%
+           family={Küttler},
+           familyi={K\bibinitperiod},
+           given={Heinrich},
+           giveni={H\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=c97f53fdeeb04c28de19e3324cb4bc0a}{%
+           family={Lewis},
+           familyi={L\bibinitperiod},
+           given={Mike},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=d4d56d3d370b3afd4ad2ebf985fbd3f8}{%
+           family={Yih},
+           familyi={Y\bibinitperiod},
+           given={Wen-tau},
+           giveni={W\bibinithyphendelim t\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b3ff4029884ead9928954ea33714192c}{%
+           family={Rocktäschel},
+           familyi={R\bibinitperiod},
+           given={Tim},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=6cd024b217f3f2f8126e253b8c84d24d}{%
+           family={Riedel},
+           familyi={R\bibinitperiod},
+           given={Sebastian},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ca01c762f4a52dd8a8548508f8d727c9}{%
+           family={Kiela},
+           familyi={K\bibinitperiod},
+           given={Douwe},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{f238c3bfc4b30650dd17e65c4aadfc66}
+      \strng{fullhash}{22489b764620b23a8cc8547a492f0763}
+      \strng{bibnamehash}{452afd10632c9891e6047226cb9830e3}
+      \strng{authorbibnamehash}{452afd10632c9891e6047226cb9830e3}
+      \strng{authornamehash}{f238c3bfc4b30650dd17e65c4aadfc66}
+      \strng{authorfullhash}{22489b764620b23a8cc8547a492f0763}
+      \field{sortinit}{L}
+      \field{sortinithash}{7c47d417cecb1f4bd38d1825c427a61a}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{Advances in Neural Information Processing Systems (NeurIPS)}
+      \field{title}{Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks}
+      \field{volume}{33}
+      \field{year}{2020}
+      \field{pages}{9459\bibrangedash 9474}
+      \range{pages}{16}
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2005.11401
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2005.11401
+      \endverb
+    \endentry
+    \entry{li2022time}{article}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=fbefb123f0fb2b74e98ede7afb2aa058}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Xiaoyu},
+           giveni={X\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=614fdf51ce9628d993d9e0dc779c15a2}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Yifan},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a7a2d9ecd385930602153d0f27be7468}{%
+           family={Zhao},
+           familyi={Z\bibinitperiod},
+           given={Qiang},
+           giveni={Q\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {IEEE}%
+      }
+      \strng{namehash}{39a22e6f0e738b9b0168e53fa6ad6864}
+      \strng{fullhash}{39a22e6f0e738b9b0168e53fa6ad6864}
+      \strng{bibnamehash}{39a22e6f0e738b9b0168e53fa6ad6864}
+      \strng{authorbibnamehash}{39a22e6f0e738b9b0168e53fa6ad6864}
+      \strng{authornamehash}{39a22e6f0e738b9b0168e53fa6ad6864}
+      \strng{authorfullhash}{39a22e6f0e738b9b0168e53fa6ad6864}
+      \field{sortinit}{L}
+      \field{sortinithash}{7c47d417cecb1f4bd38d1825c427a61a}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{IEEE Journal of Biomedical and Health Informatics}
+      \field{number}{8}
+      \field{title}{Time-Series Deep Learning Models for Glucose Prediction: A Comparative Study}
+      \field{volume}{26}
+      \field{year}{2022}
+      \field{pages}{4150\bibrangedash 4162}
+      \range{pages}{13}
+      \verb{doi}
+      \verb 10.1109/JBHI.2022.3181751
+      \endverb
+    \endentry
+    \entry{Rad2024}{article}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=dda420bd0bdb76dfc62d7adb4d5c1910}{%
+           family={Rad},
+           familyi={R\bibinitperiod},
+           given={F.\bibnamedelimi S.},
+           giveni={F\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=17a80c439dc5a88d98c4ec282996df89}{%
+           family={Hendawi},
+           familyi={H\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4a41a8c896da0124ca40ccc8b084022b}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={X.},
+           giveni={X\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ef065b28c31984323fd6d3483d29aafd}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{5d6679cd89176f0085f91607c736b593}
+      \strng{fullhash}{f68df175440bb1a29fde09e2828f2c0e}
+      \strng{bibnamehash}{f68df175440bb1a29fde09e2828f2c0e}
+      \strng{authorbibnamehash}{f68df175440bb1a29fde09e2828f2c0e}
+      \strng{authornamehash}{5d6679cd89176f0085f91607c736b593}
+      \strng{authorfullhash}{f68df175440bb1a29fde09e2828f2c0e}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{Journal of Personalized Medicine}
+      \field{number}{4}
+      \field{title}{Personalized Diabetes Management with Digital Twins: A Patient-Centric Knowledge Graph Approach}
+      \field{volume}{14}
+      \field{year}{2024}
+      \field{pages}{359}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3390/jpm14040359
+      \endverb
+    \endentry
+    \entry{Ramadaniati2024}{article}{}
+      \name{author}{5}{}{%
+        {{un=0,uniquepart=base,hash=ee432a00f309bbd4c71f4b1de2d8a8cf}{%
+           family={Ramadaniati},
+           familyi={R\bibinitperiod},
+           given={H.\bibnamedelimi U.},
+           giveni={H\bibinitperiod\bibinitdelim U\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=19251e8469012818fdccf15866ff404f}{%
+           family={Anggriani},
+           familyi={A\bibinitperiod},
+           given={Y.},
+           giveni={Y\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e77cf27303d25c79c1d47ce6640d52d1}{%
+           family={Lepeska},
+           familyi={L\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=dfbe3afe54f4eed27fe6d147c2e5f4b3}{%
+           family={Beran},
+           familyi={B\bibinitperiod},
+           given={D.},
+           giveni={D\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ed5a802389e04f4d8cc3c1bb692be732}{%
+           family={Ewen},
+           familyi={E\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b6cc1968d9465477bc2269f79e5396a7}
+      \strng{fullhash}{1a53408b465f97f23bec8d56f83ad3af}
+      \strng{bibnamehash}{1a53408b465f97f23bec8d56f83ad3af}
+      \strng{authorbibnamehash}{1a53408b465f97f23bec8d56f83ad3af}
+      \strng{authornamehash}{b6cc1968d9465477bc2269f79e5396a7}
+      \strng{authorfullhash}{1a53408b465f97f23bec8d56f83ad3af}
+      \field{sortinit}{R}
+      \field{sortinithash}{5e1c39a9d46ffb6bebd8f801023a9486}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{PLOS ONE}
+      \field{number}{10}
+      \field{title}{Availability, Price and Affordability of Insulin, Delivery Devices and Self-Monitoring Blood Glucose Devices in Indonesia}
+      \field{volume}{19}
+      \field{year}{2024}
+      \field{pages}{e0309350}
+      \range{pages}{-1}
+      \verb{doi}
+      \verb 10.1371/journal.pone.0309350
+      \endverb
+    \endentry
+    \entry{Woldaregay2019}{article}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=cf127f9943e557233cc0fd19afde2466}{%
+           family={Woldaregay},
+           familyi={W\bibinitperiod},
+           given={A.\bibnamedelimi Z.},
+           giveni={A\bibinitperiod\bibinitdelim Z\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=1fc7547e839df77059eb36771c6ee7ab}{%
+           family={Årsand},
+           familyi={Å\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=52d6bee348ba1a0e4f1d10940820900f}{%
+           family={Walderhaug},
+           familyi={W\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{92ac7b58e090132fe2a06cc7b199dbea}
+      \strng{fullhash}{92ac7b58e090132fe2a06cc7b199dbea}
+      \strng{bibnamehash}{92ac7b58e090132fe2a06cc7b199dbea}
+      \strng{authorbibnamehash}{92ac7b58e090132fe2a06cc7b199dbea}
+      \strng{authornamehash}{92ac7b58e090132fe2a06cc7b199dbea}
+      \strng{authorfullhash}{92ac7b58e090132fe2a06cc7b199dbea}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{Artificial Intelligence in Medicine}
+      \field{title}{Data-Driven Modeling and Prediction of Blood Glucose Dynamics: Machine Learning Applications in Type 1 Diabetes}
+      \field{volume}{98}
+      \field{year}{2019}
+      \field{pages}{109\bibrangedash 134}
+      \range{pages}{26}
+      \verb{doi}
+      \verb 10.1016/j.artmed.2019.07.004
+      \endverb
+    \endentry
+    \entry{WHO2023}{report}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=531217507bec092b6ec36c0f78f46736}{%
+           family={{World Health Organization}},
+           familyi={W\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {World Health Organization}%
+      }
+      \list{location}{1}{%
+        {Geneva}%
+      }
+      \strng{namehash}{531217507bec092b6ec36c0f78f46736}
+      \strng{fullhash}{531217507bec092b6ec36c0f78f46736}
+      \strng{bibnamehash}{531217507bec092b6ec36c0f78f46736}
+      \strng{authorbibnamehash}{531217507bec092b6ec36c0f78f46736}
+      \strng{authornamehash}{531217507bec092b6ec36c0f78f46736}
+      \strng{authorfullhash}{531217507bec092b6ec36c0f78f46736}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Global Report on Diabetes}
+      \field{type}{techreport}
+      \field{year}{2023}
+      \verb{urlraw}
+      \verb https://www.who.int/health-topics/diabetes
+      \endverb
+      \verb{url}
+      \verb https://www.who.int/health-topics/diabetes
+      \endverb
+    \endentry
+    \entry{Zhang2024}{article}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=30ff3ef4a89e0c6777f480da5386b053}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={X.},
+           giveni={X\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{18a9126e15eb8f1067e8707fc1260020}
+      \strng{fullhash}{18a9126e15eb8f1067e8707fc1260020}
+      \strng{bibnamehash}{18a9126e15eb8f1067e8707fc1260020}
+      \strng{authorbibnamehash}{18a9126e15eb8f1067e8707fc1260020}
+      \strng{authornamehash}{18a9126e15eb8f1067e8707fc1260020}
+      \strng{authorfullhash}{18a9126e15eb8f1067e8707fc1260020}
+      \field{sortinit}{Z}
+      \field{sortinithash}{96892c0b0a36bb8557c40c49813d48b3}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{author}
+      \field{journaltitle}{Frontiers in Digital Health}
+      \field{title}{A Framework Towards Digital Twins for Type 2 Diabetes}
+      \field{volume}{6}
+      \field{year}{2024}
+      \field{pages}{1336050}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3389/fdgth.2024.1336050
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

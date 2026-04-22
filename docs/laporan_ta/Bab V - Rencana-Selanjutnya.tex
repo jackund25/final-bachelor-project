@@ -1,0 +1,119 @@
+% ================================================================
+% BAB V - RENCANA IMPLEMENTASI
+% ================================================================
+\chapter{Rencana Selanjutnya}
+
+\section{Rencana Implementasi}
+Rencana implementasi mencakup tahapan teknis yang diperlukan untuk membangun prototipe sistem prediksi glukosa berbasis \textit{Digital Twin} dan \textit{Retrieval-Augmented Generation} (RAG). Mengingat batasan sumber daya komputasi, strategi implementasi akan difokuskan pada efisiensi model.
+
+\subsection{Persiapan Lingkungan dan Perangkat Pengembangan}
+Pengembangan sistem dilakukan menggunakan perangkat keras laptop ASUS VivoBook (M3400QA) dengan spesifikasi sebagai berikut:
+\begin{itemize}
+    \item \textbf{Prosesor}: AMD Ryzen™ 5 5600H (6 Cores, 12 Threads, up to 4.2 GHz)
+    \item \textbf{Grafis}: AMD Radeon™ Graphics (Integrated)
+    \item \textbf{Memori (RAM)}: 16 GB DDR4
+    \item \textbf{Penyimpanan}: 512 GB SSD NVMe
+    \item \textbf{Sistem Operasi}: Windows 11 Home Single Language 64-bit
+\end{itemize}
+
+Perangkat lunak dan alat pengembangan yang digunakan meliputi:
+\begin{itemize}
+    \item \textbf{IDE}: Visual Studio Code (VS Code) dengan ekstensi Python dan Jupyter.
+    \item \textbf{Bahasa Pemrograman}: Python 3.10+.
+    \item \textbf{Version Control}: Git dan GitHub untuk manajemen kode sumber dan kolaborasi.
+    \item \textbf{Environment Manager}: Anaconda atau Python \textit{venv} untuk isolasi dependensi.
+\end{itemize}
+
+Mengingat perangkat tidak memiliki akselerator grafis diskrit (GPU NVIDIA CUDA), strategi komputasi akan disesuaikan:
+\begin{enumerate}
+    \item \textbf{Pelatihan LSTM}: Dilakukan menggunakan komputasi CPU (Ryzen 5) yang sangat memadai untuk dataset numerik berukuran sedang.
+    \item \textbf{Inferensi RAG}: Menggunakan model bahasa yang telah dikompresi (\textit{Quantized Model} format GGUF 4-bit) agar dapat berjalan efisien di RAM sistem, atau memanfaatkan layanan \textit{Cloud API} (seperti Groq/HuggingFace) untuk menghindari beban berlebih pada perangkat lokal.
+\end{enumerate}
+
+\subsection{Persiapan Data}
+Tahap ini mencakup:
+\begin{itemize}
+    \item Penyiapan repositori data di GitHub.
+    \item Penentuan skema data untuk \textit{Logbook} Harian (variabel: glukosa, karbohidrat, insulin, aktivitas, stres).
+    \item Pembersihan (\textit{cleaning}) dataset publik (OhioT1DM) untuk keperluan \textit{pre-training} model.
+    \item Implementasi teknik \textit{sliding window} untuk mengubah data runtun waktu menjadi format \textit{supervised learning}.
+\end{itemize}
+
+\subsection{Pengembangan Model Prediksi}
+Tahap pemodelan mencakup:
+\begin{enumerate}
+    \item Pembuatan model \textit{baseline} (Random Forest) untuk tolok ukur performa.
+    \item Pengembangan model \textit{Deep Learning} arsitektur LSTM dengan mekanisme \textit{Attention}.
+    \item \textit{Hyperparameter tuning} untuk mengoptimalkan \textit{learning rate} dan jumlah \textit{layer}.
+    \item Evaluasi model menggunakan data uji untuk memastikan target RMSE $\leq$ 25 mg/dL tercapai.
+\end{enumerate}
+
+\subsection{Pembangunan Digital Twin}
+Digital Twin dibangun sebagai modul perangkat lunak yang mereplikasi logika metabolisme pasien. Kegiatan meliputi:
+\begin{itemize}
+    \item Perancangan struktur data \textit{JSON} untuk menyimpan \textit{state} digital pasien.
+    \item Implementasi logika pembaruan \textit{state} otomatis berdasarkan output prediksi LSTM.
+    \item Pengembangan algoritma simulasi untuk fitur \textit{What-If Analysis} (misal: kalkulasi dampak jika variabel stres diturunkan 20\%).
+\end{itemize}
+
+\subsection{Integrasi Retrieval-Augmented Generation (RAG)}
+Tahapan ini meliputi:
+\begin{itemize}
+    \item Penyusunan basis pengetahuan (\textit{Knowledge Base}) dari panduan klinis diabetes terpercaya.
+    \item Implementasi \textit{vector database} lokal (menggunakan FAISS atau ChromaDB) untuk penyimpanan dokumen.
+    \item Pengembangan fungsi \textit{Retriever} untuk pencarian semantik.
+    \item Integrasi dengan LLM (Mistral-7B versi GGUF atau API) untuk menghasilkan narasi penjelasan.
+\end{itemize}
+
+\subsection{Pengembangan Antarmuka dan Visualisasi}
+Antarmuka pengguna (\textit{User Interface}) sederhana berbasis web (menggunakan Streamlit atau Flask) akan dikembangkan untuk menampilkan:
+\begin{itemize}
+    \item Formulir input log harian.
+    \item Grafik tren glukosa aktual vs prediksi.
+    \item Panel simulasi interaktif.
+    \item Kotak penjelasan rekomendasi dari RAG.
+\end{itemize}
+
+\subsection{Dokumentasi dan Penyusunan Laporan}
+Seluruh kode program akan didokumentasikan di GitHub, dan hasil eksperimen akan disusun menjadi laporan Tugas Akhir.
+
+\section{Desain Pengujian dan Evaluasi}
+Pengujian sistem dilakukan melalui beberapa tahap:
+
+\subsection{Verifikasi Sistem}
+Verifikasi memastikan komponen berjalan sesuai desain:
+\begin{itemize}
+    \item \textbf{Unit Testing}: Menguji fungsi preprocessing dan kalkulasi metrik.
+    \item \textbf{Integration Testing}: Memastikan data mengalir lancar dari Input Log $\rightarrow$ LSTM $\rightarrow$ RAG.
+\end{itemize}
+
+\subsection{Validasi Model Prediksi}
+Evaluasi akurasi model kuantitatif menggunakan metrik:
+\begin{itemize}
+    \item \textit{Root Mean Square Error} (RMSE).
+    \item \textit{Mean Absolute Error} (MAE).
+    \item \textit{Clarke Error Grid Analysis} (untuk validasi keamanan klinis).
+\end{itemize}
+
+\subsection{Evaluasi Integrasi Digital Twin dan RAG}
+Evaluasi kualitatif dilakukan terhadap:
+\begin{itemize}
+    \item Kecepatan respons simulasi skenario.
+    \item Relevansi dokumen medis yang diambil oleh \textit{Retriever}.
+    \item Keterbacaan dan kejelasan rekomendasi teks yang dihasilkan oleh RAG.
+\end{itemize}
+
+\section{Analisis Risiko dan Mitigasi}
+Tabel V.1 merangkum risiko teknis yang mungkin terjadi dan strategi mitigasinya.
+
+\input{table/tabelV1.tex}
+
+\section{Timeline Pengerjaan}
+Timeline disusun berdasarkan periode Januari-Mei 2026. Jadwal rinci disajikan pada Gambar V.1.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{image/gantt-chart.png}
+    \caption{Timeline Pelaksanaan Tugas Akhir (Januari-Mei 2026).}
+    \label{gambar:timeline}
+\end{figure}

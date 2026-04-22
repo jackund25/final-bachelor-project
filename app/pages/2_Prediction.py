@@ -1,12 +1,17 @@
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 import json
 import pickle
-from pathlib import Path
-
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import streamlit as st
+import yaml
 
 from src.data.loader import DiabetesDataLoader
+from src.rag import RAGPipeline
 
 
 st.set_page_config(page_title="Prediction", page_icon="📈", layout="wide")
@@ -21,6 +26,20 @@ def load_metrics(metrics_path: str):
 		return None
 	with open(path, "r", encoding="utf-8") as f:
 		return json.load(f)
+
+
+@st.cache_data
+def load_data_policy(config_path: str = "config.yaml"):
+	path = Path(config_path)
+	if not path.exists():
+		return {"primary_source": "ohio_t1dm", "fallback_source": "latest_generated"}
+	with open(path, "r", encoding="utf-8") as f:
+		cfg = yaml.safe_load(f) or {}
+	data_cfg = cfg.get("data", {})
+	return {
+		"primary_source": data_cfg.get("primary_source", "ohio_t1dm"),
+		"fallback_source": data_cfg.get("fallback_source", "latest_generated"),
+	}
 
 
 @st.cache_resource
@@ -55,6 +74,13 @@ def load_inference_artifacts(bundle_path: str, model_path: str):
 	return None
 
 
+@st.cache_resource
+def load_rag_pipeline(knowledge_base_dir: str = "data/knowledge_base"):
+	pipeline = RAGPipeline(kb_dir=knowledge_base_dir, llm_provider="template")
+	pipeline.build()
+	return pipeline
+
+
 metrics = load_metrics("models/rf_baseline_metrics.json")
 artifacts = load_inference_artifacts("models/rf_inference_bundle.pkl", "models/rf_baseline.pkl")
 
@@ -81,11 +107,20 @@ st.subheader("Run Prediction")
 
 loader = DiabetesDataLoader("data/raw")
 manual_logbook_path = Path("data/raw/manual_logbook.csv")
+data_policy = load_data_policy("config.yaml")
 
 try:
-	df = loader.load_latest_dataset().sort_values(["patient_id", "timestamp"])
-except FileNotFoundError:
-	st.error("Dataset tidak ditemukan di data/raw")
+	df, resolved_source = loader.load_preferred_dataset(
+		data_policy["primary_source"],
+		data_policy["fallback_source"],
+	)
+	df = df.sort_values(["patient_id", "timestamp"])
+	st.info(
+		f"Auto data source aktif: primary='{data_policy['primary_source']}', "
+		f"fallback='{data_policy['fallback_source']}', digunakan='{resolved_source}'."
+	)
+except FileNotFoundError as exc:
+	st.error(f"Dataset tidak ditemukan: {exc}")
 	st.stop()
 
 patient_ids = sorted(df["patient_id"].unique().tolist())
@@ -95,7 +130,7 @@ if not patient_ids:
 
 source_mode = st.radio(
     "Data Source",
-    ["Generated dataset", "Manual logbook"],
+	["Auto (OhioT1DM -> Generated)", "Generated dataset", "Manual logbook"],
     horizontal=True,
 )
 
@@ -103,6 +138,9 @@ if source_mode == "Manual logbook" and manual_logbook_path.exists():
     source_df = loader.load_csv("manual_logbook.csv").sort_values(["patient_id", "timestamp"])
     patient_ids = sorted(source_df["patient_id"].unique().tolist()) or patient_ids
     st.info("Prediction akan memprioritaskan data dari manual logbook.")
+elif source_mode == "Generated dataset":
+	source_df = loader.load_latest_dataset().sort_values(["patient_id", "timestamp"])
+	st.info("Prediction menggunakan generated dataset.")
 else:
     source_df = df
     if source_mode == "Manual logbook":
@@ -128,6 +166,17 @@ def build_prediction_window(source_data: pd.DataFrame, fallback_data: pd.DataFra
 		return combined.reset_index(drop=True)
 
 	return combined.tail(seq_len).reset_index(drop=True)
+
+
+def build_patient_state(row: pd.Series) -> dict:
+	"""Build a compact patient state for the RAG explanation layer."""
+	return {
+		"current_glucose": float(row.get("glucose", 100.0)),
+		"insulin_on_board": float(row.get("insulin", 0.0)),
+		"carbs_on_board": float(row.get("carbs", 0.0)),
+		"activity_level": int(float(row.get("activity", 0))),
+		"stress_level": int(float(row.get("stress", 5))),
+	}
 
 
 patient_df = build_prediction_window(source_df, df, selected_patient, artifacts["sequence_length"])
@@ -181,8 +230,26 @@ if st.button("Predict Next Glucose", type="primary"):
 	else:
 		st.info("Risk level: IN RANGE")
 
-	history = window_df["glucose"].tolist() + [pred]
-	chart_df = pd.DataFrame({"step": np.arange(len(history)), "glucose": history})
-	st.line_chart(chart_df.set_index("step"))
+	# Chart data from native pandas (Narwhals wrapper stripped at loader level)
+	history_values = window_df["glucose"].tolist() + [float(pred)]
+	fig, ax = plt.subplots(figsize=(8, 3))
+	ax.plot(range(1, len(history_values) + 1), history_values, marker="o", linewidth=2)
+	ax.set_title("Glucose Trajectory")
+	ax.set_xlabel("Step")
+	ax.set_ylabel("mg/dL")
+	ax.grid(alpha=0.25)
+	st.pyplot(fig, clear_figure=True)
 
-st.caption("Jika memilih Manual logbook, prediction akan memprioritaskan input pasien terbaru dari data/manual_logbook.csv.")
+	st.markdown("### Clinical Explanation")
+	rag_pipeline = load_rag_pipeline("data/knowledge_base")
+	patient_state = build_patient_state(window_df.iloc[-1])
+	rag_result = rag_pipeline.answer(patient_state=patient_state, prediction=pred)
+
+	st.info(rag_result["explanation"])
+	with st.expander("Retrieved medical context"):
+		for doc in rag_result["retrieved_docs"]:
+			st.markdown(f"**Rank {doc['rank']}** - source: `{doc['source']}` - similarity: {doc['similarity']:.2f}")
+			st.write(doc["text"])
+			st.markdown("---")
+
+st.caption("Jika memilih Manual logbook, prediction akan memprioritaskan input pasien terbaru dari data/raw/manual_logbook.csv.")

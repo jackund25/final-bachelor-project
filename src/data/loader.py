@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import pandas as pd
 
@@ -27,7 +27,9 @@ class DiabetesDataLoader:
 
     def load_csv(self, filename: str) -> pd.DataFrame:
         """Load a single CSV file from the data directory."""
-        filepath = self.data_dir / filename
+        filepath = Path(filename)
+        if not filepath.is_absolute():
+            filepath = self.data_dir / filename
         if not filepath.exists():
             raise FileNotFoundError(f"Dataset not found: {filepath}")
 
@@ -52,6 +54,33 @@ class DiabetesDataLoader:
 
         df = pd.read_csv(csv_files[0], parse_dates=["timestamp"])
         return self._standardize_columns(df)
+
+    def load_preferred_dataset(
+        self,
+        primary_source: str = "ohio_t1dm",
+        fallback_source: str = "latest_generated",
+    ) -> Tuple[pd.DataFrame, str]:
+        """Load dataset using primary source and automatic fallback source."""
+        errors = []
+
+        for source in [primary_source, fallback_source]:
+            try:
+                df = self._load_by_source(source)
+                return df, source
+            except FileNotFoundError as exc:
+                errors.append(f"{source}: {exc}")
+
+        raise FileNotFoundError("No available dataset found. " + " | ".join(errors))
+
+    def _load_by_source(self, source: str) -> pd.DataFrame:
+        """Resolve known source names to concrete dataset files."""
+        if source == "ohio_t1dm":
+            return self.load_csv("ohio_t1dm_merged.csv")
+        if source == "latest_generated":
+            return self.load_latest_dataset()
+        if source == "manual_logbook":
+            return self.load_csv("manual_logbook.csv")
+        return self.load_csv(source)
 
     def list_datasets(self) -> List[DatasetInfo]:
         """Return simple metadata for all CSV files in the directory."""
@@ -102,4 +131,6 @@ class DiabetesDataLoader:
             if column in df.columns:
                 df[column] = pd.to_numeric(df[column], errors="coerce")
 
-        return df
+        # BRUTAL FIX: Reconstruct from dict to strip Narwhals wrapper completely
+        # This guarantees 100% native pandas, no Narwhals wrapping
+        return pd.DataFrame(df.to_dict('list'), index=df.index)

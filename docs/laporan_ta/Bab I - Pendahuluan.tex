@@ -1,0 +1,122 @@
+% ================================================================
+% BAB I - PENDAHULUAN
+% ================================================================
+\chapter{PENDAHULUAN}
+\section{Latar Belakang}
+
+Penyakit diabetes melitus (DM) merupakan salah satu masalah kesehatan global yang paling serius pada abad ke-21. Menurut laporan International Diabetes Federation (IDF) tahun 2024, jumlah penderita diabetes di Indonesia mencapai lebih dari 19 juta orang dan diperkirakan terus meningkat seiring dengan perubahan gaya hidup dan urbanisasi cepat di kawasan Asia Tenggara \autocite{IDF2024}. Dari seluruh kasus tersebut, sekitar 90--95\% tergolong Diabetes Melitus Tipe 2 (T2DM), yang ditandai dengan resistensi insulin dan penurunan sensitivitas sel terhadap glukosa \autocite{WHO2023}. Kondisi ini meningkatkan risiko komplikasi kronis seperti penyakit jantung, gagal ginjal, neuropati, dan kebutaan apabila tidak ditangani dengan manajemen glukosa darah yang baik.
+
+Sebagian besar sistem pengelolaan diabetes di Indonesia masih bersifat reaktif. Data dari \textcite{Riskesdas2018, KSI2020} menunjukkan bahwa sebagian besar kasus diabetes di Indonesia tidak terdiagnosis, dengan hanya sekitar 26\% penderita yang mengetahui status penyakitnya. Hal ini sejalan dengan tinjauan sistematis oleh \textcite{Alkaff2021} yang menyimpulkan bahwa sistem kesehatan di Indonesia masih berfokus pada pendekatan kuratif dibandingkan pencegahan. Penggunaan \textit{continuous glucose monitoring} (CGM) dan \textit{insulin pump} telah terbukti membantu pasien dalam memantau kadar glukosa secara \textit{real-time} dan menyesuaikan dosis insulin secara lebih presisi \autocite{Battelino2019}. Selain itu, pendekatan berbasis \textit{machine learning} mulai digunakan untuk memprediksi fluktuasi glukosa darah berdasarkan data historis pasien \textcite{Woldaregay2019}. Teknologi \textit{digital twin}, yang merupakan replika virtual dari kondisi fisiologis pasien, mulai diterapkan dalam manajemen diabetes untuk mensimulasikan respons metabolik pasien terhadap berbagai skenario pengobatan \autocite{Bruynseels2018}.
+
+Selain faktor asupan nutrisi dan aktivitas fisik, faktor psikologis seperti stres juga memegang peranan krusial dalam fluktuasi glukosa darah harian. Kompleksitas hubungan antara variabel fisiologis dan psikologis ini sering menjadi tantangan dalam pemodelan akurasi tinggi \autocite{Woldaregay2019}. Secara biologis, stres psikologis dapat memicu respons neuroendokrin yang meningkatkan kadar kortisol, yang kemudian berdampak langsung pada peningkatan resistensi insulin dan kenaikan kadar glukosa darah \autocite{Hackett2017}. Oleh karena itu, sistem prediksi yang komprehensif idealnya mengintegrasikan variabel gaya hidup dan kondisi mental untuk menghasilkan rekomendasi yang lebih akurat dan personal. Penelitian terkini oleh \textcite{Rad2024} mengusulkan \textit{framework digital twin} komprehensif berbasis \textit{Personal Health Knowledge Graph} (PHKG) yang mampu mengintegrasikan data dari \textit{Electronic Health Records} (EHR), \textit{wearable devices}, dan \textit{mobile health applications} dengan standar HL7 FHIR. \textit{Framework} ini telah terbukti efektif dalam prediksi glukosa dengan \textit{Root Mean Square Error} (RMSE) 19,83 mg/dL dan mampu memberikan rekomendasi insulin personal serta saran diet yang disesuaikan. Penelitian serupa oleh \textcite{Zhang2024} mengintegrasikan \textit{machine learning} dengan data \textit{multiomic} untuk memprediksi progresi diabetes tipe 2, menunjukkan potensi \textit{digital twin} dalam \textit{personalized medicine}. \textcite{Cappon2024} dalam \textit{systematic review} mereka menemukan bahwa meskipun pendekatan \textit{digital twin} menjanjikan, sebagian besar implementasinya masih mengandalkan infrastruktur teknologi yang kompleks dan perangkat medis yang mahal.
+
+Meskipun \textit{framework-framework} tersebut menunjukkan hasil yang menjanjikan, implementasinya menghadapi hambatan signifikan di konteks Indonesia. Pertama, dari sisi infrastruktur digital kesehatan, meskipun pemerintah Indonesia mewajibkan adopsi rekam medis elektronik (EMR) pada akhir 2023, transisi ini masih menghadapi berbagai tantangan teknologi, budaya, dan infrastruktur \textcite{Harahap2024}. Studi yang melibatkan 9 provinsi di Indonesia menunjukkan variasi signifikan dalam kesiapan teknologi informasi dan komunikasi (TIK) antarfasilitas kesehatan, dengan perlunya peningkatan sumber daya manusia (SDM), infrastruktur, perangkat keras, dan optimalisasi sistem informasi untuk mencapai kematangan TIK \autocite{Aisyah2024}. Sebagian besar fasilitas kesehatan belum menyediakan akses terintegrasi ke rekam kesehatan pasien dengan pertukaran informasi yang masih bersifat satu arah, dari fasilitas kesehatan ke pasien \autocite{Harahap2023}.
+
+Kedua, dari sisi keterjangkauan perangkat monitoring, \textit{framework} \textcite{Rad2024} mengasumsikan ketersediaan \textit{Continuous Glucose Monitoring} (CGM) untuk data \textit{real-time}. Namun, studi \textcite{Ramadaniati2024} menunjukkan bahwa CGM memerlukan biaya setara satu bulan gaji untuk membeli \textit{reader} dan dua bulan gaji untuk pasokan sensor bulanan, dengan upah minimum harian di Indonesia sekitar US\$3,50. Hal ini menyebabkan CGM tidak terjangkau bagi mayoritas pasien diabetes di Indonesia, terutama mengingat bahwa untuk membeli pasokan pengobatan selama 30 hari (\textit{insulin pen}, jarum pen, dan monitoring mandiri berdasarkan 5 kali tes per hari), pasien perlu menghabiskan hampir seluruh gaji bulanan mereka.
+
+Ketiga, kompleksitas teknis \textit{framework} \textcite{Rad2024} yang memerlukan pengembangan \textit{ontology} berbasis HL7 FHIR, implementasi GLAV (\textit{Global-Local as View}) \textit{framework} untuk integrasi data, dan penggunaan \textit{Conditional Random Fields} untuk \textit{mapping} data, membutuhkan \textit{expertise} spesialis yang belum banyak tersedia di Indonesia. Penelitian menunjukkan bahwa di negara berkembang, adopsi EMR berbeda karena beberapa faktor termasuk infrastruktur sistem kesehatan, tingkat pendidikan dan pelatihan tenaga kesehatan, pendanaan, dan penerimaan budaya terhadap EMR, sehingga di banyak negara berkembang, penggunaan EMR belum sepenuhnya diterapkan \autocite{Abodunrin2020}.
+
+Dari uraian tersebut, tampak bahwa pengelolaan diabetes di Indonesia masih menghadapi hambatan dalam pemanfaatan teknologi prediktif yang efisien dan terjangkau. Kondisi ini menunjukkan adanya kesenjangan antara potensi teknologi \textit{digital twin} yang telah terbukti efektif di negara maju dengan kemampuan implementasinya di Indonesia. Diperlukan studi lebih lanjut untuk memahami bagaimana konsep \textit{digital twin} dapat disesuaikan dengan keterbatasan infrastruktur, biaya, serta sumber daya lokal sehingga mampu memberikan manfaat nyata dalam konteks sistem kesehatan nasional.
+
+% ---------------------------------------------------------------
+\section{Rumusan Masalah}
+
+Berdasarkan latar belakang tersebut, permasalahan utama dalam tugas akhir ini adalah kesenjangan antara kebutuhan manajemen diabetes yang komprehensif (mencakup aspek fisik dan psikologis) dengan keterbatasan infrastruktur kesehatan di Indonesia yang menghambat penerapan teknologi \textit{digital twin} konvensional. Pasien dan tenaga medis memerlukan alat bantu yang tidak hanya memprediksi angka, tetapi juga mampu mensimulasikan dampak keputusan harian dan memberikan rekomendasi yang kontekstual.
+
+Berdasarkan permasalahan tersebut, rumusan masalah dalam tugas akhir ini adalah:
+
+\begin{enumerate}
+    \item Bagaimana memformulasikan arsitektur sistem \textit{digital twin} yang disederhanakan agar dapat beroperasi menggunakan data pemantauan mandiri (\textit{self-monitoring}) yang mencakup variabel fisik (makanan, aktivitas) dan psikologis (stres), tanpa ketergantungan pada sensor medis kompleks?
+    \item Bagaimana mengembangkan model cerdas yang tidak hanya memprediksi kadar glukosa darah, tetapi juga mampu mensimulasikan dampak perubahan pola makan, aktivitas fisik, dan tingkat stres terhadap kondisi pasien (\textit{what-if analysis})?
+    \item Bagaimana mekanisme pemberian rekomendasi keputusan dan penjelasan klinis yang relevan untuk membantu pasien menentukan aksi mitigasi yang tepat berdasarkan hasil prediksi sistem?
+    \item Bagaimana validasi performa sistem dalam merepresentasikan kondisi fisiologis pasien dan akurasi rekomendasi yang dihasilkan dibandingkan dengan standar referensi yang ada?
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\section{Tujuan}
+
+Tujuan umum penelitian ini adalah mengeksplorasi dan mengembangkan pendekatan \textit{digital twin} berbasis data simulatif dan pemantauan mandiri untuk prediksi serta simulasi kadar glukosa darah, yang dirancang khusus untuk mendukung pengambilan keputusan klinis di lingkungan dengan sumber daya terbatas.
+
+Secara khusus, tujuan penelitian ini meliputi:
+
+\begin{enumerate}
+    \item Merumuskan kebutuhan dan desain konseptual sistem \textit{digital twin} yang disederhanakan yang mengakomodasi input data harian manual (\textit{logbook}) untuk variabel asupan karbohidrat, dosis insulin, aktivitas fisik, dan tingkat stres.
+    \item Mengembangkan modul prediktif berbasis pembelajaran mesin (seperti LSTM atau \textit{Random Forest}) yang mampu menjalankan simulasi skenario perubahan gaya hidup untuk memprediksi respon glukosa tubuh.
+    \item Mengimplementasikan modul \textit{Retrieval-Augmented Generation} (RAG) yang menghubungkan hasil prediksi/simulasi dengan basis pengetahuan medis untuk menghasilkan penjelasan klinis dan rekomendasi aksi yang personal.
+    \item Melakukan validasi terhadap akurasi prediksi sistem menggunakan metrik evaluasi standar (RMSE, MAE, \textit{Clarke Error Grid}) serta mengevaluasi relevansi rekomendasi keputusan yang dihasilkan.
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\section{Batasan Masalah}
+
+Penelitian ini dibatasi oleh hal-hal berikut:
+
+\begin{enumerate}
+    \item Sistem tidak melibatkan perangkat keras, sensor IoT, atau integrasi dengan sistem EHR yang ada.
+    \item Fokus penelitian adalah pada pengembangan dan pengujian sistem \textit{digital twin} berbasis perangkat lunak dengan pendekatan pembelajaran mesin langsung, tanpa implementasi \textit{Personal Health Knowledge Graph}.
+    \item Model mencakup prediksi kadar glukosa berdasarkan variabel pendukung utama yaitu asupan karbohidrat, dosis insulin, aktivitas fisik, dan tingkat stres subjektif (diperoleh melalui \textit{self-monitoring}), tanpa melibatkan faktor genetik atau data \textit{multiomic} yang kompleks.
+    \item Evaluasi dilakukan terhadap performa sistem dalam skenario simulatif sebagai \textit{proof-of-concept}, bukan pada uji klinis langsung dengan pasien nyata.
+    \item Sistem yang dikembangkan berfokus pada satu \textit{use case} utama yaitu prediksi glukosa darah, tidak mencakup optimasi insulin atau rekomendasi \textit{meal planning}.
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\section{Metodologi}
+
+Tahapan metodologi dirancang untuk memastikan proses penelitian berjalan secara sistematis, mulai dari pengumpulan informasi awal hingga validasi hasil prediksi. Metodologi penelitian ini terdiri dari lima tahap utama:
+
+\subsection{Studi Literatur}
+
+Melakukan kajian pustaka terhadap konsep \textit{digital twin}, pengelolaan penyakit diabetes, serta penelitian terdahulu terkait model simulatif dan prediktif. Sumber literatur berasal dari jurnal ilmiah bereputasi seperti IEEE Xplore, ScienceDirect, \textit{Nature Digital Medicine}, dan \textit{Journal of Personalized Medicine}. Pencarian literatur dilakukan dengan kata kunci ``\textit{digital twin diabetes}'', ``\textit{glucose prediction machine learning}'', ``\textit{diabetes simulation model}'', ``\textit{simplified digital twin framework}'', dan kombinasi kata kunci terkait.
+
+Literatur yang dikumpulkan kemudian dikelompokkan berdasarkan tema: (a) konsep dan arsitektur \textit{digital twin} dalam kesehatan, dengan fokus pada \textit{framework state-of-the-art} seperti \textcite{Rad2024} dan \textcite{Zhang2024}; (b) metode prediksi glukosa darah menggunakan \textit{machine learning} dan \textit{deep learning}; (c) dataset diabetes yang tersedia secara publik; (d) metrik evaluasi sistem prediktif kesehatan; dan (e) tantangan implementasi teknologi kesehatan digital di negara berkembang.
+
+\subsection{Analisis Kebutuhan dan Perancangan Sistem}
+
+Menentukan kebutuhan fungsional sistem \textit{digital twin} yang disederhanakan, dengan fokus pada:
+
+\begin{itemize}
+    \item \textbf{Pengelolaan data simulatif}: Kemampuan untuk membaca, memproses, dan menyimpan data dari dataset publik dalam format yang konsisten.
+    \item \textbf{Modul \textit{preprocessing}}: Pembersihan data, normalisasi, dan \textit{feature engineering} untuk persiapan \textit{training} model.
+    \item \textbf{Modul prediksi}: Implementasi model pembelajaran mesin untuk prediksi glukosa darah.
+    \item \textbf{Modul evaluasi}: Perhitungan metrik akurasi dan visualisasi hasil prediksi.
+\end{itemize}
+
+Mendesain arsitektur sistem yang terdiri dari tiga komponen utama yang disederhanakan:
+
+\begin{enumerate}
+    \item \textbf{\textit{Data Management Module}}: Modul untuk \textit{loading} dan \textit{preprocessing} data dari dataset publik (OhioT1DM atau UVA/Padova), tanpa perlu integrasi dengan sistem EHR atau sensor \textit{real-time}.
+    \item \textbf{\textit{Simplified Patient Digital Model}}: Representasi pasien berbasis \textit{feature vector} yang berisi variabel-variabel penting (\textit{glucose history, carbohydrate intake, insulin dosage, physical activity}, dan \textit{stress level}) tanpa menggunakan \textit{knowledge graph}.
+    \item \textbf{\textit{Prediction Engine}}: Model pembelajaran mesin (LSTM atau \textit{Random Forest}) yang dilatih untuk memprediksi kadar glukosa darah berdasarkan data historis, dengan fokus pada efisiensi komputasi dan kemudahan \textit{deployment}.
+\end{enumerate}
+
+\subsection{Implementasi Sistem}
+
+Mengembangkan sistem berbasis Python dengan menggunakan \textit{framework} dan \textit{library} berikut:
+
+\begin{itemize}
+    \item \textbf{\textit{Data processing}}: Pandas, NumPy untuk manipulasi data.
+    \item \textbf{\textit{Machine learning}}: Scikit-learn untuk model tradisional (\textit{Random Forest}, SVM).
+    \item \textbf{\textit{Deep learning}}: TensorFlow atau PyTorch untuk model LSTM/GRU.
+    \item \textbf{Visualisasi}: Matplotlib, Seaborn untuk visualisasi hasil prediksi.
+    \item \textbf{Evaluasi}: Implementasi metrik RMSE, MAE, dan \textit{Clarke Error Grid Analysis}.
+\end{itemize}
+
+Tahapan pengembangan model meliputi:
+
+\begin{enumerate}
+    \item Eksplorasi dan analisis dataset untuk memahami distribusi dan karakteristik data.
+    \item \textit{Feature engineering} untuk mengekstrak fitur-fitur yang relevan.
+    \item Pembagian data menjadi \textit{training, validation}, dan \textit{testing set}.
+    \item Pelatihan model dengan \textit{hyperparameter tuning}.
+    \item Evaluasi performa model pada \textit{test set}.
+\end{enumerate}
+
+\subsection{Validasi dan Evaluasi}
+
+Melakukan pengujian model dengan metrik evaluasi berikut:
+
+\begin{itemize}
+    \item \textbf{\textit{Root Mean Square Error} (RMSE)}: Mengukur rata-rata deviasi prediksi dari nilai aktual.
+    \item \textbf{\textit{Mean Absolute Error} (MAE)}: Mengukur rata-rata absolut \textit{error}.
+    \item \textbf{\textit{Clarke Error Grid Analysis} (EG)}: Mengukur \textit{clinical accuracy} dengan mengkategorikan \textit{error} berdasarkan \textit{risk}.
+\end{itemize}

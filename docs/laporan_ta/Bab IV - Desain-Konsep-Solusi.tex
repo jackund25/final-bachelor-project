@@ -1,0 +1,184 @@
+\chapter{Desain Konsep Solusi}
+\label{chap:desain-konsep-solusi}
+
+\section{Sistem Saat Ini (Before)}
+Model sistem saat ini telah ditampilkan pada Gambar~\ref{gambar:model-sistem-eksisting} pada Bab~\ref{chap:analisis-masalah}. Sistem tersebut menggambarkan alur pengelolaan diabetes yang masih bersifat reaktif: data diperoleh melalui pemeriksaan manual atau berkala, kemudian tenaga medis mengevaluasi kondisi pasien berdasarkan informasi yang terbatas. Beberapa keterbatasan sistem saat ini antara lain:
+\begin{itemize}
+    \item aliran data satu arah dan tidak \textit{real-time};
+    \item pemantauan berbasis \textit{fingerstick} yang bersifat episodik;
+    \item tidak adanya mekanisme prediksi kadar glukosa;
+    \item tidak adanya representasi digital pasien atau \textit{digital twin};
+    \item tidak adanya penjelasan berbasis pengetahuan atau analitik cerdas.
+\end{itemize}
+
+Keterbatasan tersebut memberikan dasar perlunya perancangan solusi yang lebih adaptif, prediktif, dan mampu menyediakan konteks klinis yang dapat diinterpretasikan.
+
+\section{Model Konseptual Solusi (To-Be)}
+
+Berdasarkan analisis kebutuhan, dirancang model konseptual sistem usulan yang mengintegrasikan kemampuan prediksi, simulasi, dan penjelasan cerdas. Gambar~\ref{gambar:model-konseptual-after} memperlihatkan arsitektur sistem yang terbagi menjadi lima lapisan (\textit{layer}) utama untuk menjamin modularitas dan skalabilitas.
+
+\begin{figure}[H]
+    \centering
+    \captionsetup{justification=centering}
+    \includegraphics[width=0.9\textwidth]{image/Model_Konseptual_Sistem.jpg}
+    \caption{Model konseptual sistem usulan berbasis \textit{Digital Twin} dan \textit{Retrieval-Augmented Generation}.}
+    \label{gambar:model-konseptual-after}
+\end{figure}
+
+Rincian komponen pada setiap lapisan adalah sebagai berikut:
+
+\begin{enumerate}
+    \item \textbf{\textit{Presentation Layer}}: Lapisan antarmuka yang berinteraksi langsung dengan pengguna.
+    \begin{itemize}
+        \item \textbf{Dashboard}: Pusat informasi utama yang menampilkan ringkasan status kesehatan pasien.
+        \item \textbf{Grafik Prediksi}: Visualisasi tren glukosa darah historis dan hasil prediksi masa depan.
+        \item \textbf{Simulasi Skenario}: Antarmuka interaktif untuk fitur \textit{what-if analysis}, memungkinkan pengguna mengubah variabel input (misal: porsi makan) untuk melihat dampaknya.
+        \item \textbf{RAG Explanation}: Modul yang menampilkan teks penjelasan klinis dan rekomendasi aksi yang dihasilkan oleh AI.
+    \end{itemize}
+
+    \item \textbf{\textit{Application Layer}}: Lapisan logika bisnis yang memproses data dan menjalankan algoritma cerdas.
+    \begin{itemize}
+        \item \textbf{Preprocessing}: Membersihkan data log harian dan menangani nilai yang hilang.
+        \item \textbf{Predictive Model}: Menjalankan algoritma LSTM untuk menghasilkan prediksi numerik.
+        \item \textbf{Digital Twin}: Komponen perangkat lunak yang menyimpan \textit{state} digital pasien untuk keperluan simulasi.
+        \item \textbf{Simulation Engine}: Mesin yang mengkalkulasi dampak perubahan variabel input terhadap model \textit{Digital Twin}.
+        \item \textbf{RAG Retriever}: Bertugas mencari dokumen medis relevan berdasarkan konteks pasien.
+        \item \textbf{RAG Generator}: Menggunakan LLM untuk menyusun narasi jawaban berdasarkan dokumen yang ditemukan.
+    \end{itemize}
+
+    \item \textbf{\textit{Infrastructure Layer}}: Lapisan pendukung komputasi.
+    \begin{itemize}
+        \item \textbf{Python Runtime}: Lingkungan eksekusi utama untuk skrip backend.
+        \item \textbf{Compute Engine}: Sumber daya komputasi (CPU/GPU) untuk pelatihan dan inferensi model.
+        \item \textbf{Model Runner}: Layanan yang mengelola siklus hidup model ML saat dijalankan (\textit{deployment}).
+    \end{itemize}
+
+    \item \textbf{\textit{Data Layer}}: Lapisan manajemen penyimpanan data.
+    \begin{itemize}
+        \item \textbf{Dataset}: Data mentah dari logbook pasien dan dataset publik untuk pelatihan.
+        \item \textbf{Preprocessed Data}: Data bersih yang siap digunakan oleh model.
+        \item \textbf{Knowledge Base}: Basis pengetahuan eksternal berisi literatur medis dan panduan klinis.
+        \item \textbf{Embeddings}: Representasi vektor dari data teks untuk pencarian semantik.
+        \item \textbf{Vector Indeks}: Struktur data (seperti FAISS) untuk mempercepat pencarian dokumen di RAG.
+    \end{itemize}
+
+    \item \textbf{\textit{Security Layer}}: Lapisan keamanan untuk melindungi privasi data medis.
+    \begin{itemize}
+        \item \textbf{Anonymization}: Mekanisme penghapusan identitas pasien (\textit{PII}) sebelum data diproses oleh model eksternal.
+        \item \textbf{Access Control}: Pengaturan hak akses berbasis peran (\textit{Role-Based Access Control}) untuk pasien dan dokter.
+        \item \textbf{Versioning}: Manajemen versi untuk model ML dan data guna memastikan keterlacakan (\textit{traceability}).
+    \end{itemize}
+\end{enumerate}
+
+\section{Perbandingan Sistem Before dan After}
+Tabel~\ref{table:before-after} merangkum perbedaan utama antara sistem saat ini (\textit{before}) dan sistem usulan (\textit{after}).
+
+\input{table/tabelIV1.tex}
+
+Perbedaan mendasar terletak pada paradigma sistem: dari reaktif menjadi prediktif-adaptif. Sistem usulan tidak hanya mencatat dan menampilkan data historis, tetapi juga mampu memprediksi kondisi masa depan dan memberikan penjelasan kontekstual berbasis pengetahuan medis.
+
+\section{Diagram Use Case}
+Diagram \textit{use case} digunakan untuk menggambarkan keterlibatan aktor dan fungsi utama sistem. Sistem usulan memiliki dua aktor utama: \textbf{Pasien} dan \textbf{Dokter/Tenaga Medis}, dengan enam \textit{use case} inti yang mencakup seluruh fungsionalitas sistem.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{image/UseCase_Diagram.jpg}
+    \caption{Diagram \textit{use case} sistem usulan.}
+    \label{gambar:use-case}
+\end{figure}
+
+Gambar~\ref{gambar:use-case} memperlihatkan interaksi antara aktor dengan sistem. Deskripsi masing-masing \textit{use case} adalah sebagai berikut:
+
+\subsection{Use Case Aktor Pasien}
+\begin{enumerate}
+    \item \textbf{UC1 - Provide Patient Information}: Pasien melakukan pencatatan mandiri (\textit{self-monitoring}) ke dalam logbook digital sistem. Data yang dimasukkan mencakup kadar glukosa darah saat ini, estimasi karbohidrat, dosis insulin, durasi aktivitas fisik, dan \textbf{tingkat stres subjektif}. \textit{Use case} ini memenuhi kebutuhan FR-01.
+    
+    \item \textbf{UC2 - Generate Personal Prediction}: Sistem menghasilkan prediksi kadar glukosa darah jangka pendek secara otomatis setelah pasien memperbarui data log harian mereka. \textit{Use case} ini memenuhi FR-02 (preprocessing) dan FR-03 (prediksi menggunakan \textit{machine learning}).
+    
+    \item \textbf{UC3 - Simulate Personal Scenario}: Pasien melakukan simulasi "\textit{what-if}" untuk melihat dampak perubahan gaya hidup. Contoh skenario: "Bagaimana prediksi gula darah saya jika saya mengurangi porsi makan atau menurunkan tingkat stres?". \textit{Use case} ini memenuhi FR-04.
+\end{enumerate}
+
+\subsection{Use Case Aktor Dokter/Tenaga Medis}
+\begin{enumerate}
+    \item \textbf{UC4 - Review Patient Data}: Tenaga medis dapat mengakses dasbor untuk meninjau grafik tren historis glukosa pasien, pola makan, dan fluktuasi tingkat stres untuk evaluasi kondisi yang lebih komprehensif. \textit{Use case} ini mendukung FR-06.
+    
+    \item \textbf{UC5 - Generate Clinical Prediction + Explanation (RAG)}: Sistem menyajikan prediksi klinis yang disertai dengan teks penjelasan kausalitas (misal: "Lonjakan diprediksi akibat kombinasi stres tinggi dan kurang aktivitas") menggunakan mekanisme RAG. \textit{Use case} ini memenuhi FR-05.
+    
+    \item \textbf{UC6 - Simulate Clinical Scenario}: Tenaga medis dapat menjalankan simulasi skenario terapi yang lebih kompleks (misalnya penyesuaian dosis insulin) untuk merencanakan intervensi medis yang paling optimal dan aman bagi pasien.
+\end{enumerate}
+
+\section{Alur Proses Sistem (BPMN)}
+Untuk menggambarkan alur kerja sistem secara prosedural dari sisi pengguna dan sistem, digunakan notasi \textit{Business Process Model and Notation} (BPMN). Diagram ini memetakan urutan aktivitas mulai dari input data mandiri hingga dihasilkannya rekomendasi keputusan yang tervalidasi.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{image/BPMN_System.png}
+    \caption{Diagram BPMN sistem usulan yang mencakup proses input data, prediksi, deteksi risiko, dan validasi medis.}
+    \label{gambar:bpmn-system}
+\end{figure}
+
+Gambar~\ref{gambar:bpmn-system} menunjukkan alur proses yang terbagi menjadi tiga lajur (\textit{swimlanes}) dengan rincian sebagai berikut:
+
+\begin{enumerate}
+    \item \textbf{Lane Pasien}:
+    Proses dimulai oleh pasien dengan aktivitas \textbf{"Input Log Harian"} yang mencakup variabel gula darah, makanan, dan tingkat stres. Di akhir proses, pasien akan menerima luaran berupa \textbf{"Lihat Dashboard \& Rekomendasi"} yang menampilkan status kesehatan terkini.
+
+    \item \textbf{Lane Sistem Cerdas}:
+    Lane ini menangani pemrosesan data otomatis:
+    \begin{itemize}
+        \item \textbf{Preprocessing \& Validasi Data}: Menyiapkan data mentah dari logbook.
+        \item \textbf{Hasilkan Prediksi (LSTM)}: Menjalankan model untuk memprediksi kadar glukosa.
+        \item \textbf{Gateway Risiko?}: Mengevaluasi hasil prediksi.
+        \begin{itemize}
+            \item Jalur \textbf{"Tidak (Aman)"}: Jika prediksi normal, sistem langsung mengarahkan alur ke dashboard pasien tanpa intervensi lanjutan.
+            \item Jalur \textbf{"Ya (Bahaya)"}: Jika terdeteksi risiko (hipo/hiperglikemia), sistem mengaktifkan \textbf{"Jalankan Modul RAG"} dan \textbf{"Buat Saran Mitigasi"} sebelum meneruskannya ke dokter.
+        \end{itemize}
+        \item \textbf{Perbarui UI}: Aktivitas akhir sistem untuk memutakhirkan tampilan aplikasi setelah mendapatkan validasi dari dokter.
+    \end{itemize}
+
+    \item \textbf{Lane Dokter}:
+    Dokter dapat memulai aktivitas memasukkan rekam data medis pasien. Lalu dokter juga berperan dalam pengawasan kritis pada aktivitas \textbf{"Tinjau Data \& Validasi Saran"}. Dalam alur ini, saran mitigasi yang dihasilkan oleh AI tidak langsung dikirim ke pasien, melainkan diverifikasi terlebih dahulu oleh tenaga medis untuk memastikan keamanan dan akurasi rekomendasi sebelum sistem memperbarui antarmuka pengguna (\textit{User Interface}).
+\end{enumerate}
+
+\section{Arsitektur Model Machine Learning}
+Inti dari kemampuan prediktif sistem terletak pada \textit{Predictive Modeling Layer}. Sistem ini menggunakan arsitektur \textit{Deep Learning} berbasis \textit{Long Short-Term Memory} (LSTM) yang diperkuat dengan mekanisme \textit{Attention}. Pilihan ini didasarkan pada kemampuan LSTM dalam menangani data deret waktu jangka panjang dan keunggulan \textit{Attention} dalam membobot variabel yang paling berpengaruh (misalnya: lonjakan stres tiba-tiba) terhadap prediksi akhir.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{image/ML_Pipeline.png}
+    \caption{Pipeline arsitektur model LSTM dengan mekanisme \textit{Attention} untuk prediksi glukosa.}
+    \label{gambar:ml-pipeline}
+\end{figure}
+
+Gambar~\ref{gambar:ml-pipeline} mendetailkan alur pemrosesan data pada modul prediksi:
+\begin{enumerate}
+    \item \textbf{Input Layer (Sliding Window)}: Data logbook harian diubah menjadi sekuens waktu (\textit{time-steps}) dengan metode \textit{sliding window}. Input vektor $X_t$ terdiri dari fitur: $X_t = [\text{Glukosa}, \text{Karbohidrat}, \text{Insulin}, \text{Aktivitas}, \text{Stres}]$.
+    \item \textbf{LSTM Layers}: Terdiri dari beberapa unit LSTM bertumpuk (\textit{stacked LSTM}) yang bertugas mempelajari dependensi temporal dari riwayat data pasien.
+    \item \textbf{Attention Layer}: Mekanisme ini memberikan bobot kepentingan ($\alpha$) yang berbeda pada setiap langkah waktu, memungkinkan model untuk "fokus" pada kejadian masa lalu yang paling relevan (misalnya: makan besar 2 jam lalu) saat memprediksi $G_{t+1}$.
+    \item \textbf{Output Layer}: Sebuah \textit{Dense Layer} yang menghasilkan nilai skalar tunggal yaitu prediksi kadar glukosa darah di masa depan (misal: 30 atau 60 menit ke depan).
+\end{enumerate}
+
+\section{Arsitektur Retrieval-Augmented Generation (RAG)}
+Untuk memberikan fitur penjelasan (\textit{explainability}) dan rekomendasi keputusan, sistem menerapkan kerangka kerja RAG. Modul ini menghubungkan hasil prediksi numerik dari LSTM dengan basis pengetahuan medis untuk menghasilkan narasi yang dapat dimengerti manusia.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{image/RAG_Pipeline.png}
+    \caption{Pipeline arsitektur RAG yang menghubungkan hasil prediksi dengan basis pengetahuan medis.}
+    \label{gambar:rag-pipeline}
+\end{figure}
+
+Gambar~\ref{gambar:rag-pipeline} memperlihatkan mekanisme kerja RAG dalam sistem:
+\begin{enumerate}
+    \item \textbf{Query Construction}: Sistem menggabungkan data kondisi pasien saat ini (Input), hasil prediksi LSTM (Output), dan profil pasien menjadi satu \textit{query prompt}.
+    \item \textbf{Retriever (Vector Search)}: \textit{Query} tersebut dikonversi menjadi vektor (\textit{embedding}) untuk mencari dokumen yang paling relevan dalam basis pengetahuan medis (berisi panduan klinis PERKENI/ADA dan literatur diabetes). Pencarian dilakukan menggunakan algoritma kesamaan vektor (\textit{cosine similarity}).
+    \item \textbf{Generator (LLM)}: Dokumen medis yang ditemukan digabungkan dengan hasil prediksi sebagai konteks (\textit{context window}) bagi \textit{Large Language Model} (LLM).
+    \item \textbf{Response}: LLM menghasilkan teks penjelasan kausalitas (misal: "Gula darah diprediksi naik karena asupan karbohidrat tinggi dan tingkat stres level 8") serta rekomendasi aksi mitigasi yang spesifik.
+\end{enumerate}
+
+\section{Pemetaan Use Case terhadap FR dan NFR}
+Bagian ini memberikan keterkaitan antara \textit{use case} yang telah dirancang dan \textit{functional requirements} (FR) serta \textit{non-functional requirements} (NFR).
+
+\input{table/tabelIV2.tex}
+
+Tabel~\ref{tabel:pemetaan-uc-requirements} menunjukkan bahwa seluruh kebutuhan fungsional dan nonfungsional telah dipetakan ke dalam use case yang dirancang.

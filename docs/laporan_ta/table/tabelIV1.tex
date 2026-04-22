@@ -1,0 +1,36 @@
+\begin{table}[H]
+    \centering
+    \caption{Perbandingan Karakteristik Sistem Saat Ini dan Sistem Usulan}
+    \label{table:before-after}
+    \footnotesize
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{|p{3cm}|p{5cm}|p{5cm}|}
+        \hline
+        \textbf{Aspek Pembanding} & \textbf{Sistem Saat Ini (\textit{As-Is})} & \textbf{Sistem Usulan (\textit{To-Be})} \\ \hline
+        
+        \textbf{Paradigma} & 
+        \textbf{Reaktif}: Tindakan diambil setelah terjadi masalah atau saat jadwal kontrol. & 
+        \textbf{Proaktif \& Preventif}: Sistem memprediksi risiko di masa depan dan memberikan peringatan dini. \\ \hline
+        
+        \textbf{Sumber Data} & 
+        Pencatatan manual di kertas/buku log yang rentan hilang dan sulit dianalisis (\textit{dark data}). & 
+        Input digital terpusat melalui \textit{Logbook} Harian yang terstruktur dan tersimpan di database. \\ \hline
+        
+        \textbf{Variabel Pantauan} & 
+        Terbatas pada kadar glukosa dan obat-obatan. Faktor gaya hidup sering terlewat. & 
+        Komprehensif mencakup glukosa, nutrisi, aktivitas fisik, dan \textbf{tingkat stres} harian. \\ \hline
+        
+        \textbf{Metode Evaluasi} & 
+        Evaluasi manual oleh dokter berdasarkan data sesaat (\textit{snapshot}) saat kunjungan. & 
+        Analisis otomatis berbasis \textit{Machine Learning} (LSTM) yang mempelajari pola tren jangka panjang. \\ \hline
+        
+        \textbf{Simulasi Keputusan} & 
+        Tidak tersedia. Pasien hanya menebak-nebak dampak dari tindakannya. & 
+        Tersedia fitur \textbf{\textit{What-If Analysis}} untuk mensimulasikan dampak perubahan perilaku (misal: diet/stres). \\ \hline
+        
+        \textbf{Bentuk Luaran} & 
+        Diagnosis lisan atau catatan rekam medis statis. & 
+        Visualisasi grafik tren interaktif dan teks \textbf{rekomendasi aksi} berbasis RAG yang personal. \\ \hline
+    \end{tabular}
+    }
+\end{table}

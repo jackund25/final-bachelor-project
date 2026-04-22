@@ -1,8 +1,14 @@
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 
 from src.data.loader import DiabetesDataLoader
 from src.digital_twin import PatientDigitalTwin, WhatIfSimulator
+from src.rag import RAGPipeline
 
 
 st.set_page_config(page_title="What-If Simulator", page_icon="🧪", layout="wide")
@@ -14,6 +20,13 @@ st.caption("Simulasikan dampak intervensi sebelum diterapkan pada pasien")
 def load_dataset():
 	loader = DiabetesDataLoader("data/raw")
 	return loader.load_latest_dataset().sort_values(["patient_id", "timestamp"])
+
+
+@st.cache_resource
+def load_rag_pipeline(knowledge_base_dir: str = "data/knowledge_base"):
+	pipeline = RAGPipeline(kb_dir=knowledge_base_dir, llm_provider="template")
+	pipeline.build()
+	return pipeline
 
 
 def create_twin_from_latest_row(patient_df: pd.DataFrame) -> PatientDigitalTwin:
@@ -28,6 +41,16 @@ def create_twin_from_latest_row(patient_df: pd.DataFrame) -> PatientDigitalTwin:
 	}
 
 	return PatientDigitalTwin(patient_id=str(latest["patient_id"]), initial_state=initial_state)
+
+
+def build_patient_state(twin: PatientDigitalTwin) -> dict:
+	return {
+		"current_glucose": float(twin.state["current_glucose"]),
+		"insulin_on_board": float(twin.state["insulin_on_board"]),
+		"carbs_on_board": float(twin.state["carbs_on_board"]),
+		"activity_level": int(twin.state["activity_level"]),
+		"stress_level": int(twin.state["stress_level"]),
+	}
 
 
 try:
@@ -93,13 +116,34 @@ with left:
 		else:
 			st.success(f"Risk: {result['risk_level']}")
 
-		chart_df = pd.DataFrame(
-			{
-				"point": ["Current", "Predicted"],
-				"glucose": [current_glucose, predicted_glucose],
-			}
+		# Simple bar chart without Narwhals conversion issues - use simple dict format
+		labels = ["Current", "Predicted"]
+		values = [float(current_glucose), float(predicted_glucose)]
+		fig, ax = plt.subplots(figsize=(6, 3))
+		ax.bar(labels, values, color=["#4F8BF9", "#F97316"])
+		ax.set_title("What-If Glucose Comparison")
+		ax.set_ylabel("mg/dL")
+		ax.grid(axis="y", alpha=0.25)
+		st.pyplot(fig, clear_figure=True)
+
+		st.markdown("### Clinical Explanation")
+		rag_pipeline = load_rag_pipeline("data/knowledge_base")
+		rag_result = rag_pipeline.answer(
+			patient_state=build_patient_state(twin),
+			prediction=predicted_glucose,
+			query=(
+				f"Simulasi what-if untuk pasien diabetes: karbohidrat +{scenario['carbs_delta']} g, "
+				f"insulin +{scenario['insulin_delta']} unit, aktivitas +{scenario['activity_delta']} menit, "
+				f"stres {scenario['stress_delta']:+d}, horizon {scenario['time_horizon']} menit."
+			),
 		)
-		st.bar_chart(chart_df.set_index("point"))
+
+		st.info(rag_result["explanation"])
+		with st.expander("Retrieved medical context"):
+			for doc in rag_result["retrieved_docs"]:
+				st.markdown(f"**Rank {doc['rank']}** - source: `{doc['source']}` - similarity: {doc['similarity']:.2f}")
+				st.write(doc["text"])
+				st.markdown("---")
 
 with right:
 	st.markdown("### Quick Simulation")

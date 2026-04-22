@@ -1,0 +1,27 @@
+\begin{table}[H]
+    \centering
+    \caption{Analisis Risiko dan Mitigasi}
+    \label{tbl:analisis-risiko}
+    \begin{tabular}{|p{3.5cm}|p{4.5cm}|p{5cm}|}
+    \hline
+    \textbf{Risiko} & \textbf{Dampak} & \textbf{Mitigasi} \\ \hline
+    
+    Keterbatasan komputasi lokal (Tanpa GPU Diskrit) & 
+    Inferensi LLM lokal berjalan lambat atau membebani memori sistem (RAM). & 
+    1. Menggunakan model terkuantisasi (4-bit GGUF) yang ringan untuk CPU.\newline
+    2. Menggunakan layanan Cloud API untuk modul Generator. \\ \hline
+    
+    Data input manual tidak konsisten (bolong-bolong) & 
+    Akurasi prediksi LSTM menurun karena \textit{missing values}. & 
+    Implementasi teknik imputasi data (interpolasi) pada tahap \textit{preprocessing}. \\ \hline
+    
+    \textit{Overfitting} pada data latih yang kecil & 
+    Model gagal memprediksi data baru dengan baik. & 
+    Penerapan teknik regularisasi (\textit{Dropout}) dan validasi silang (\textit{Cross-validation}). \\ \hline
+    
+    Halusinasi pada RAG & 
+    Sistem memberikan saran medis yang salah atau tidak relevan. & 
+    Membatasi konteks dokumen hanya pada sumber terpercaya (Panduan PERKENI/ADA) dan menurunkan parameter \textit{temperature} LLM. \\ \hline
+    
+    \end{tabular}
+\end{table}

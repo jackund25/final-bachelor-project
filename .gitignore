@@ -7,12 +7,26 @@ __pycache__/
 env/
 venv/
 ENV/
+.venv/
+ta/
+
+# Python build/test artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+dist/
+build/
+*.egg-info/
 
 # Data
 data/raw/*.csv
 data/processed/*.csv
 *.pkl
 *.h5
+*.xml
 
 # Models
 models/*.h5
@@ -38,6 +52,9 @@ Thumbs.db
 # Environment
 .env
 config_local.yaml
+
+# Streamlit
+.streamlit/secrets.toml
 
 # Large files
 *.zip
