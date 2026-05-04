@@ -26,16 +26,9 @@ digital_twin:
 
 # Model Training
 model:
-  name: "LSTM" # Options: LSTM, RandomForest, Simulation
+  name: "RandomForest" # Options: RandomForest, Simulation
   sequence_length: 12 # 1 hour with 5-min intervals
   features: ["glucose", "carbs", "insulin", "activity", "stress"]
-
-  lstm:
-    units: [64, 32]
-    dropout: 0.2
-    learning_rate: 0.001
-    batch_size: 32
-    epochs: 50
 
   random_forest:
     n_estimators: 200

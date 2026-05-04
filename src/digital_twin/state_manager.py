@@ -7,6 +7,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+import os
 from typing import Any, Dict, Optional
 
 
@@ -32,6 +33,37 @@ def _normalize_state(state: Dict[str, Any]) -> Dict[str, Any]:
 	if not normalized.get("timestamp"):
 		normalized["timestamp"] = _now_iso()
 	return normalized
+
+
+def _to_jsonable(value: Any) -> Any:
+	"""Convert runtime objects to JSON-safe primitives recursively."""
+	if value is None or isinstance(value, (str, int, float, bool)):
+		return value
+
+	if isinstance(value, datetime):
+		return value.isoformat()
+
+	if isinstance(value, dict):
+		return {key: _to_jsonable(item) for key, item in value.items()}
+
+	if isinstance(value, (list, tuple, set)):
+		return [_to_jsonable(item) for item in value]
+
+	# Covers pandas.Timestamp and similar datetime-like objects.
+	if hasattr(value, "isoformat"):
+		try:
+			return value.isoformat()
+		except Exception:
+			pass
+
+	# Covers numpy scalar objects.
+	if hasattr(value, "item"):
+		try:
+			return value.item()
+		except Exception:
+			pass
+
+	return str(value)
 
 
 @dataclass
@@ -97,21 +129,40 @@ class DigitalTwinStateManager:
 		payload = {
 			patient_id: {
 				"patient_id": record.patient_id,
-				"state": record.state,
-				"events": record.events,
+				"state": _to_jsonable(record.state),
+				"events": _to_jsonable(record.events),
 			}
 			for patient_id, record in self._records.items()
 		}
-		with open(self.storage_path, "w", encoding="utf-8") as file_handle:
+		# Write atomically: write to a temp file then replace the target
+		tmp_path = self.storage_path.with_name(self.storage_path.name + ".tmp")
+		with open(tmp_path, "w", encoding="utf-8") as file_handle:
 			json.dump(payload, file_handle, ensure_ascii=False, indent=2)
+		# Use os.replace for an atomic rename on most platforms
+		os.replace(tmp_path, self.storage_path)
 
 	def load(self) -> None:
 		"""Load persisted states from disk if present."""
 		if not self.storage_path.exists():
 			return
 
-		with open(self.storage_path, "r", encoding="utf-8") as file_handle:
-			payload = json.load(file_handle) or {}
+		try:
+			with open(self.storage_path, "r", encoding="utf-8") as file_handle:
+				payload = json.load(file_handle) or {}
+		except json.JSONDecodeError as exc:
+			# Backup the corrupted file so the user can inspect/restore it
+			backup_path = self.storage_path.with_name(self.storage_path.name + f".corrupt-{_now_iso()}")
+			try:
+				self.storage_path.replace(backup_path)
+			except Exception:
+				# fallback to copy if replace fails
+				try:
+					with open(backup_path, "w", encoding="utf-8") as out_f, open(self.storage_path, "r", encoding="utf-8", errors="ignore") as in_f:
+						out_f.write(in_f.read())
+				except Exception:
+					pass
+			print(f"Warning: corrupted state file moved to {backup_path}; starting with empty state. Error: {exc}")
+			payload = {}
 
 		self._records = {}
 		for patient_id, record in payload.items():
