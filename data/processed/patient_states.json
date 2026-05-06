@@ -9,7 +9,7 @@
       "last_insulin_time": null,
       "activity_level": 15,
       "stress_level": 8,
-      "timestamp": "2026-05-04T08:33:43.858155"
+      "timestamp": "2026-05-04T10:30:45.872230"
     },
     "events": [
       {
@@ -185,6 +185,52 @@
           "activity_level": 15,
           "stress_level": 8,
           "timestamp": "2026-05-04T08:33:43.067963"
+        }
+      },
+      {
+        "event_type": "update",
+        "payload": {
+          "current_glucose": 110.0,
+          "insulin_on_board": 3.0,
+          "carbs_on_board": 35.0,
+          "activity_level": 15,
+          "stress_level": 8,
+          "last_meal_time": "2026-04-22T09:59:00",
+          "timestamp": "2026-05-04T10:23:08.629458"
+        },
+        "timestamp": "2026-05-04T10:23:08.650442",
+        "previous_state": {
+          "current_glucose": 110.0,
+          "insulin_on_board": 3.0,
+          "carbs_on_board": 35.0,
+          "last_meal_time": "2026-04-22T09:59:00",
+          "last_insulin_time": null,
+          "activity_level": 15,
+          "stress_level": 8,
+          "timestamp": "2026-05-04T08:33:43.858155"
+        }
+      },
+      {
+        "event_type": "update",
+        "payload": {
+          "current_glucose": 110.0,
+          "insulin_on_board": 3.0,
+          "carbs_on_board": 35.0,
+          "activity_level": 15,
+          "stress_level": 8,
+          "last_meal_time": "2026-04-22T09:59:00",
+          "timestamp": "2026-05-04T10:30:45.844578"
+        },
+        "timestamp": "2026-05-04T10:30:45.872230",
+        "previous_state": {
+          "current_glucose": 110.0,
+          "insulin_on_board": 3.0,
+          "carbs_on_board": 35.0,
+          "last_meal_time": "2026-04-22T09:59:00",
+          "last_insulin_time": null,
+          "activity_level": 15,
+          "stress_level": 8,
+          "timestamp": "2026-05-04T10:23:08.650442"
         }
       }
     ]
