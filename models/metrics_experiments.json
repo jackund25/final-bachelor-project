@@ -1,0 +1,100 @@
+{
+  "data_source": "ohio_t1dm",
+  "config": {
+    "data": {
+      "num_patients": 10,
+      "days_per_patient": 7,
+      "sampling_interval_min": 5,
+      "output_dir": "data/raw",
+      "seed": 42,
+      "primary_source": "ohio_t1dm",
+      "fallback_source": "latest_generated"
+    },
+    "patient": {
+      "baseline_glucose": 100,
+      "glucose_threshold_low": 70,
+      "glucose_threshold_high": 180,
+      "insulin_sensitivity": 50,
+      "carb_ratio": 10
+    },
+    "digital_twin": {
+      "update_frequency_min": 5,
+      "history_window_hours": 24,
+      "state_file": "data/processed/patient_states.json"
+    },
+    "model": {
+      "name": "RandomForest",
+      "sequence_length": 12,
+      "features": [
+        "glucose",
+        "carbs",
+        "insulin",
+        "activity",
+        "stress"
+      ],
+      "random_forest": {
+        "n_estimators": 200,
+        "max_depth": 20,
+        "min_samples_split": 5
+      }
+    },
+    "rag": {
+      "knowledge_base_dir": "data/knowledge_base",
+      "chunk_size": 900,
+      "chunk_overlap": 120,
+      "embedding_model": "all-MiniLM-L6-v2",
+      "top_k_retrieval": 4,
+      "llm": {
+        "provider": "gemini",
+        "model": "gemini-1.5-flash",
+        "temperature": 0.2,
+        "max_tokens": 300
+      }
+    },
+    "evaluation": {
+      "test_split": 0.2,
+      "metrics": [
+        "RMSE",
+        "MAE",
+        "MAPE",
+        "ClarkeErrorGrid"
+      ],
+      "clarke_zones": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ]
+    },
+    "logging": {
+      "level": "INFO",
+      "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+      "file": "logs/system.log"
+    }
+  },
+  "results": {
+    "rf": {
+      "RMSE": 6.250781279421917,
+      "MAE": 3.0256701893791402,
+      "MAPE": 2.2260813661582475,
+      "Clarke_A": 99.5000551409771,
+      "Clarke_B": 0.2867330809101937,
+      "Clarke_C": 0.011028195419622836,
+      "Clarke_D": 0.08822556335698269,
+      "Clarke_E": 0.11395801933610263,
+      "Clarke_A+B": 99.78678822188729
+    },
+    "gb": {
+      "RMSE": 6.607580054255814,
+      "MAE": 3.475167589141981,
+      "MAPE": 2.569353457460609,
+      "Clarke_A": 99.49637907583723,
+      "Clarke_B": 0.290409146050068,
+      "Clarke_C": 0.014704260559497116,
+      "Clarke_D": 0.08087343307723413,
+      "Clarke_E": 0.11763408447597692,
+      "Clarke_A+B": 99.78678822188729
+    }
+  }
+}

@@ -2,7 +2,7 @@ from src.rag import RAGPipeline
 
 
 def test_rag_pipeline_builds_and_answers_with_template_fallback(tmp_path):
-	pipeline = RAGPipeline(kb_dir=str(tmp_path), llm_provider="groq")
+	pipeline = RAGPipeline(kb_dir=str(tmp_path), llm_provider="template")
 	result = pipeline.answer(
 		patient_state={
 			"current_glucose": 205.0,
@@ -18,6 +18,10 @@ def test_rag_pipeline_builds_and_answers_with_template_fallback(tmp_path):
 	assert result["explanation"]
 	assert result["retrieved_docs"]
 	assert result["retrieved_docs"][0]["text"]
+	assert result["advisory"]["doctor_review_required"] is True
+	assert result["advisory"]["actions"]
+	assert result["advisory"]["source_count"] >= 1
+	assert "keputusan medis final tetap pada dokter" in result["explanation"].lower()
 
 
 def test_rag_pipeline_keyword_retrieval_prioritizes_relevant_chunk(tmp_path):

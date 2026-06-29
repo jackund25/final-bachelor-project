@@ -38,15 +38,17 @@ model:
 # RAG Settings
 rag:
   knowledge_base_dir: "data/knowledge_base"
-  chunk_size: 500
-  chunk_overlap: 50
+  chunk_size: 900       # Must match _DEFAULT_CHUNK_SIZE in knowledge_base.py
+  chunk_overlap: 120    # Must match _DEFAULT_CHUNK_OVERLAP in knowledge_base.py
   embedding_model: "all-MiniLM-L6-v2"
-  top_k_retrieval: 3
+  top_k_retrieval: 4    # Aligns with pipeline.py default (top_k=4)
 
   llm:
-    provider: "groq" # Options: groq, local, template
-    model: "llama-3.1-70b-versatile"
-    temperature: 0.7
+    provider: "gemini"  # Options: gemini, ollama, template
+    model: "gemini-1.5-flash"
+    # Low temperature (0.2) for clinical safety: reduces hallucination risk in medical advisory.
+    # Values >0.5 produce varied language but risk fabricating dosage/threshold figures.
+    temperature: 0.2
     max_tokens: 300
 
 # Evaluation
