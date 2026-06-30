@@ -9,6 +9,7 @@ data:
   seed: 42
   primary_source: "ohio_t1dm"
   fallback_source: "latest_generated"
+  smbg_interval_min: 240  # 4-jam cadence ≈ 6 pembacaan/hari (surrogate SMBG)
 
 # Patient Parameters (for simulation)
 patient:
@@ -30,10 +31,22 @@ model:
   sequence_length: 12 # 1 hour with 5-min intervals
   features: ["glucose", "carbs", "insulin", "activity", "stress"]
 
+  # sequence_length=12 → look-back 1 jam pada cadence CGM 5-menit
+  # smbg_sequence_length=6 → look-back ~1 hari pada cadence SMBG 240-menit
+  smbg_sequence_length: 6
+
   random_forest:
     n_estimators: 200
     max_depth: 20
     min_samples_split: 5
+
+  lstm:
+    units_1: 64
+    units_2: 32
+    dropout: 0.2
+    learning_rate: 0.001
+    epochs: 100
+    patience: 10
 
 # RAG Settings
 rag:
