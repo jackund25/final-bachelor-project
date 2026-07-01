@@ -14,6 +14,20 @@ from src.data.contracts import assert_feature_set, validate_data_contract
 logger = logging.getLogger(__name__)
 
 
+def _decay_accumulate(values: np.ndarray, decay: float) -> np.ndarray:
+    """Akumulasi peluruhan eksponensial first-order: out[t] = values[t] + decay*out[t-1].
+
+    Dipakai untuk Insulin-on-Board (IOB) dan Carbs-on-Board (COB): kejadian masa lalu
+    masih "aktif" namun meluruh seiring waktu (model fisiologis sederhana).
+    """
+    out = np.zeros(len(values), dtype=float)
+    acc = 0.0
+    for i, v in enumerate(values):
+        acc = float(v) + decay * acc
+        out[i] = acc
+    return out
+
+
 class DataPreprocessor:
     """
     Preprocess raw data for model training
@@ -61,51 +75,109 @@ class DataPreprocessor:
         
         return df
     
-    def create_sequences(self, df: pd.DataFrame, sequence_length: int = 12
-                        ) -> Tuple[np.ndarray, np.ndarray]:
+    def engineer_features(
+        self,
+        df: pd.DataFrame,
+        insulin_tau_min: float = 240.0,
+        carbs_tau_min: float = 180.0,
+        trend_steps: int = 3,
+        source_interval_min: float = 5.0,
+    ) -> pd.DataFrame:
+        """Tambah fitur turunan berbasis fisiologi (dihitung per pasien, tanpa leakage).
+
+        - iob  : Insulin-on-Board, peluruhan ~insulin_tau_min (default 4 jam) dari bolus.
+        - cob  : Carbs-on-Board, peluruhan ~carbs_tau_min (default 3 jam) dari makanan.
+        - glucose_delta : tren glukosa (selisih `trend_steps` langkah terakhir).
+        - hour_sin/hour_cos : waktu dalam hari (menangkap pola diurnal / dawn phenomenon).
+
+        Referensi: model glukosa-insulin-karbohidrat (Bergman minimal model; UVA/Padova).
+        """
+        df = validate_data_contract(df)
+        df = df.copy().sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
+
+        insulin_decay = float(np.exp(-source_interval_min / insulin_tau_min))
+        carbs_decay = float(np.exp(-source_interval_min / carbs_tau_min))
+
+        parts = []
+        for _, g in df.groupby("patient_id", sort=False):
+            g = g.copy()
+            insulin_src = g["bolus_dose"] if "bolus_dose" in g.columns else g["insulin"]
+            g["iob"] = _decay_accumulate(insulin_src.to_numpy(dtype=float), insulin_decay)
+            g["cob"] = _decay_accumulate(g["carbs"].to_numpy(dtype=float), carbs_decay)
+            g["glucose_delta"] = g["glucose"].diff(trend_steps).fillna(0.0)
+            hour = g["timestamp"].dt.hour + g["timestamp"].dt.minute / 60.0
+            g["hour_sin"] = np.sin(2 * np.pi * hour / 24.0)
+            g["hour_cos"] = np.cos(2 * np.pi * hour / 24.0)
+            parts.append(g)
+
+        result = pd.concat(parts, ignore_index=True)
+        logger.info(
+            f"Engineered features ditambahkan: iob, cob, glucose_delta, hour_sin, hour_cos "
+            f"(insulin_tau={insulin_tau_min}min, carbs_tau={carbs_tau_min}min, trend={trend_steps} langkah)"
+        )
+        return result
+
+    def create_sequences(self, df: pd.DataFrame, sequence_length: int = 12,
+                         prediction_horizon: int = 1, return_anchor: bool = False
+                        ) -> Tuple[np.ndarray, ...]:
         """
         Create sequences for time-series prediction
-        
+
         Args:
             df: Input DataFrame with features
             sequence_length: Number of time steps to look back
-            
+            prediction_horizon: Number of steps ahead to predict (1 = next step).
+                Pada cadence CGM 5-menit: 6 = +30 menit, 12 = +60 menit.
+
         Returns:
             X: Input sequences (n_samples, sequence_length, n_features)
             y: Target values (n_samples,)
         """
-        logger.info(f"Creating sequences with length {sequence_length}...")
+        logger.info(
+            f"Creating sequences with length {sequence_length}, horizon {prediction_horizon}..."
+        )
 
         if sequence_length < 1:
             raise ValueError("sequence_length must be at least 1")
+        if prediction_horizon < 1:
+            raise ValueError("prediction_horizon must be at least 1")
 
         df = validate_data_contract(df)
         self._require_columns(df, ['patient_id', 'timestamp', *self.feature_columns])
 
-        X, y = [], []
+        X, y, anchors = [], [], []
+        span = sequence_length + prediction_horizon  # baris minimum dibutuhkan
 
         for _, patient_df in df.sort_values(['patient_id', 'timestamp']).groupby('patient_id', sort=False):
             patient_df = patient_df.reset_index(drop=True)
             data = patient_df[self.feature_columns].values
 
-            if len(data) <= sequence_length:
+            if len(data) < span:
                 continue
 
-            for i in range(len(data) - sequence_length):
+            for i in range(len(data) - span + 1):
                 X.append(data[i:i + sequence_length])
-                y.append(data[i + sequence_length, 0])  # Next glucose value
+                # target = glukosa pada (akhir window + horizon)
+                y.append(data[i + sequence_length + prediction_horizon - 1, 0])
+                # anchor = glukosa terakhir di window (untuk target delta), fitur index 0 = glucose
+                anchors.append(data[i + sequence_length - 1, 0])
 
         if not X:
             raise ValueError(
-                f"Need at least sequence_length + 1 rows per patient to create sequences; got no valid windows for sequence_length={sequence_length}"
+                f"Need at least sequence_length + prediction_horizon rows per patient; "
+                f"no valid windows for sequence_length={sequence_length}, "
+                f"prediction_horizon={prediction_horizon}"
             )
 
         X = np.array(X)
         y = np.array(y)
-        
+        anchors = np.array(anchors)
+
         logger.info(f"Created {len(X)} sequences")
         logger.info(f"X shape: {X.shape}, y shape: {y.shape}")
-        
+
+        if return_anchor:
+            return X, y, anchors
         return X, y
     
     def normalize_data(self, X_train: np.ndarray, X_test: np.ndarray = None

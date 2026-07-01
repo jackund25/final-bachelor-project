@@ -46,6 +46,10 @@ class RandomForestGlucoseModel(BaseGlucoseModel):
 		X_val: Optional[np.ndarray] = None,
 		y_val: Optional[np.ndarray] = None,
 	) -> Dict:
+		X_train, y_train = self._validate_training_data(X_train, y_train)
+		if X_val is not None and y_val is not None:
+			X_val, y_val = self._validate_training_data(X_val, y_val)
+
 		X_train_flat = self._flatten(X_train)
 		self.model.fit(X_train_flat, y_train)
 		self.is_trained = True
@@ -65,6 +69,7 @@ class RandomForestGlucoseModel(BaseGlucoseModel):
 	def predict(self, X: np.ndarray) -> np.ndarray:
 		if not self.is_trained:
 			raise RuntimeError("Model is not trained yet")
+		X = self._validate_prediction_data(X)
 		X_flat = self._flatten(X)
 		return self.model.predict(X_flat)
 
@@ -82,8 +87,16 @@ class RandomForestGlucoseModel(BaseGlucoseModel):
 		self.is_trained = True
 
 
-def train_random_forest_from_config(config_path: str = "config.yaml", data_source: str = "auto") -> Dict:
-	"""Train RF baseline using dataset and config, then save model + metrics."""
+def train_random_forest_from_config(
+	config_path: str = "config.yaml",
+	data_source: str = "auto",
+	horizon: Optional[int] = None,
+) -> Dict:
+	"""Train RF baseline pada horizon tertentu, lalu simpan model + metrik.
+
+	Jika horizon None, pakai config.model.default_horizon. Bundle untuk horizon
+	default juga disimpan sebagai `rf_inference_bundle.pkl` (dipakai aplikasi).
+	"""
 	with open(config_path, "r", encoding="utf-8") as f:
 		config = yaml.safe_load(f)
 
@@ -105,6 +118,9 @@ def train_random_forest_from_config(config_path: str = "config.yaml", data_sourc
 	df = preprocessor.handle_missing_values(df)
 
 	sequence_length = config["model"].get("sequence_length", 12)
+	default_horizon = config["model"].get("default_horizon", 1)
+	if horizon is None:
+		horizon = default_horizon
 
 	patient_ids = sorted(df["patient_id"].unique().tolist())
 	if len(patient_ids) < 2:
@@ -113,8 +129,8 @@ def train_random_forest_from_config(config_path: str = "config.yaml", data_sourc
 	test_patients = patient_ids[-2:]
 	train_df, test_df = preprocessor.split_by_patient(df, test_patients)
 
-	X_train, y_train = preprocessor.create_sequences(train_df, sequence_length=sequence_length)
-	X_test, y_test = preprocessor.create_sequences(test_df, sequence_length=sequence_length)
+	X_train, y_train = preprocessor.create_sequences(train_df, sequence_length=sequence_length, prediction_horizon=horizon)
+	X_test, y_test = preprocessor.create_sequences(test_df, sequence_length=sequence_length, prediction_horizon=horizon)
 
 	X_train_scaled, X_test_scaled = preprocessor.normalize_data(X_train, X_test)
 
@@ -124,25 +140,33 @@ def train_random_forest_from_config(config_path: str = "config.yaml", data_sourc
 
 	metrics = calculate_all_metrics(y_test, y_pred)
 
-	model_path = Path("models") / "rf_baseline.pkl"
-	model.save(str(model_path))
+	models_dir = Path("models")
+	models_dir.mkdir(parents=True, exist_ok=True)
 
-	bundle_path = Path("models") / "rf_inference_bundle.pkl"
+	model.save(str(models_dir / f"rf_baseline_h{horizon}.pkl"))
+
 	bundle = {
 		"model": model.model,
 		"scaler": preprocessor.scaler,
 		"features": config["model"]["features"],
 		"sequence_length": sequence_length,
+		"prediction_horizon": horizon,
 	}
-	with open(bundle_path, "wb") as f:
+	with open(models_dir / f"rf_inference_bundle_h{horizon}.pkl", "wb") as f:
 		pickle.dump(bundle, f)
-
-	metrics_path = Path("models") / "rf_baseline_metrics.json"
-	with open(metrics_path, "w", encoding="utf-8") as f:
+	with open(models_dir / f"rf_metrics_h{horizon}.json", "w", encoding="utf-8") as f:
 		json.dump({k: float(v) for k, v in metrics.items()}, f, indent=2)
 
+	# Horizon default → simpan juga dengan nama kanonik untuk aplikasi
+	if horizon == default_horizon:
+		model.save(str(models_dir / "rf_baseline.pkl"))
+		with open(models_dir / "rf_inference_bundle.pkl", "wb") as f:
+			pickle.dump(bundle, f)
+		with open(models_dir / "rf_baseline_metrics.json", "w", encoding="utf-8") as f:
+			json.dump({k: float(v) for k, v in metrics.items()}, f, indent=2)
+
 	print("=" * 60)
-	print("RANDOM FOREST BASELINE TRAINING")
+	print(f"RANDOM FOREST — horizon {horizon} langkah (+{horizon * 5} menit)")
 	print("=" * 60)
 	print(f"Train patients: {train_df['patient_id'].nunique()}")
 	print(f"Test patients : {test_df['patient_id'].nunique()}")
@@ -152,9 +176,6 @@ def train_random_forest_from_config(config_path: str = "config.yaml", data_sourc
 	for key, value in metrics.items():
 		print(f"{key:12s}: {value:.4f}")
 	print("-" * 60)
-	print(f"Model saved   : {model_path}")
-	print(f"Bundle saved  : {bundle_path}")
-	print(f"Metrics saved : {metrics_path}")
 
 	return metrics
 
@@ -168,9 +189,22 @@ def main() -> None:
 		choices=["auto", "latest", "ohio_t1dm"],
 		help="Data source to train on (auto: config primary/fallback, latest, or ohio_t1dm)",
 	)
+	parser.add_argument(
+		"--horizon",
+		type=int,
+		default=None,
+		help="Horizon prediksi (langkah). Default: latih semua config.model.prediction_horizons",
+	)
 	args = parser.parse_args()
 
-	train_random_forest_from_config(args.config, args.data_source)
+	if args.horizon is not None:
+		train_random_forest_from_config(args.config, args.data_source, args.horizon)
+	else:
+		with open(args.config, "r", encoding="utf-8") as f:
+			cfg = yaml.safe_load(f)
+		horizons = cfg["model"].get("prediction_horizons", [cfg["model"].get("default_horizon", 1)])
+		for h in horizons:
+			train_random_forest_from_config(args.config, args.data_source, h)
 
 
 if __name__ == "__main__":

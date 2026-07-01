@@ -8,6 +8,8 @@ from typing import List, Optional, Tuple
 
 import pandas as pd
 
+from src.data.contracts import validate_data_contract
+
 
 @dataclass
 class DatasetInfo:
@@ -109,28 +111,4 @@ class DiabetesDataLoader:
 
     def _standardize_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """Ensure the canonical columns exist for the rest of the pipeline."""
-        df = df.copy()
-
-        if "timestamp" in df.columns:
-            df["timestamp"] = pd.to_datetime(df["timestamp"])
-
-        column_defaults = {
-            "sleep": 0,
-            "work": 0,
-            "illness": 0,
-            "meal_type": "none",
-            "glucose_change": 0.0,
-        }
-
-        for column, default_value in column_defaults.items():
-            if column not in df.columns:
-                df[column] = default_value
-
-        numeric_columns = ["glucose", "carbs", "insulin", "activity", "stress", "sleep", "work", "illness", "glucose_change"]
-        for column in numeric_columns:
-            if column in df.columns:
-                df[column] = pd.to_numeric(df[column], errors="coerce")
-
-        # BRUTAL FIX: Reconstruct from dict to strip Narwhals wrapper completely
-        # This guarantees 100% native pandas, no Narwhals wrapping
-        return pd.DataFrame(df.to_dict('list'), index=df.index)
+        return validate_data_contract(df)

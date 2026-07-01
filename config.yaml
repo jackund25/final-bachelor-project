@@ -28,8 +28,26 @@ digital_twin:
 # Model Training
 model:
   name: "RandomForest" # Options: RandomForest, Simulation
-  sequence_length: 12 # 1 hour with 5-min intervals
-  features: ["glucose", "carbs", "insulin", "activity", "stress"]
+  sequence_length: 12 # look-back 1 jam (12 x 5 menit)
+  # Horizon prediksi (langkah ke depan, cadence 5-menit) — standar BGLP Challenge:
+  #   6  = +30 menit, 12 = +60 menit
+  prediction_horizons: [6, 12]
+  default_horizon: 6   # horizon untuk bundle inferensi aplikasi (30 menit)
+  # stress dikeluarkan: OhioT1DM nyaris tak punya data stres (7 event di seluruh
+  # dataset) sehingga nol-varians & tak informatif bagi model. Tetap dipertahankan
+  # sebagai variabel Digital Twin / logbook (lihat docs/journey.md).
+  features: ["glucose", "carbs", "insulin", "activity"]
+
+  # Fitur hasil rekayasa (engineered) berbasis fisiologi — dipakai bila use_engineered=true.
+  # iob/cob menangkap efek insulin/karbohidrat yang tertunda; glucose_delta = tren;
+  # hour_sin/cos = pola diurnal. glucose tetap fitur pertama (index 0 = anchor).
+  use_engineered: true
+  engineered_features: ["glucose", "glucose_delta", "iob", "cob", "activity", "hour_sin", "hour_cos"]
+  predict_delta: true   # model memprediksi Δglukosa (selisih dari nilai terakhir), lalu direkonstruksi
+  feature_engineering:
+    insulin_tau_min: 240   # waktu kerja insulin ~4 jam
+    carbs_tau_min: 180     # penyerapan karbohidrat ~3 jam
+    trend_steps: 3         # tren glukosa atas 3 langkah (15 menit)
 
   # sequence_length=12 → look-back 1 jam pada cadence CGM 5-menit
   # smbg_sequence_length=6 → look-back ~1 hari pada cadence SMBG 240-menit
@@ -58,7 +76,8 @@ rag:
 
   llm:
     provider: "gemini"  # Options: gemini, ollama, template
-    model: "gemini-1.5-flash"
+    model: "gemini-2.5-flash-lite"  # Kuota free-tier project ini: 2.0-flash=0, 2.5-flash=20/hari,
+                                    # 2.5-flash-lite=~1000/hari → flash-lite opsi free paling praktis
     # Low temperature (0.2) for clinical safety: reduces hallucination risk in medical advisory.
     # Values >0.5 produce varied language but risk fabricating dosage/threshold figures.
     temperature: 0.2

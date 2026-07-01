@@ -4,11 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
-venv/
-ENV/
-.venv/
-ta/
+ta1/
 
 # Python build/test artifacts
 .pytest_cache/

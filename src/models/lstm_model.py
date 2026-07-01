@@ -33,6 +33,8 @@ class LSTMGlucoseModel(BaseGlucoseModel):
         self.learning_rate: float = lstm_cfg.get("learning_rate", 0.001)
         self.epochs: int = lstm_cfg.get("epochs", 100)
         self.patience: int = lstm_cfg.get("patience", 10)
+        # verbose: 0=diam, 1=progress bar (live), 2=satu baris/epoch
+        self.verbose: int = lstm_cfg.get("verbose", 1)
         # keras model stored in self.model (set after build)
 
     def _build_keras_model(self, input_shape: tuple):
@@ -77,7 +79,7 @@ class LSTMGlucoseModel(BaseGlucoseModel):
                 monitor="val_loss" if X_val is not None else "loss",
                 patience=self.patience,
                 restore_best_weights=True,
-                verbose=0,
+                verbose=self.verbose,
             )
         ]
 
@@ -90,7 +92,7 @@ class LSTMGlucoseModel(BaseGlucoseModel):
             batch_size=batch_size,
             validation_data=validation_data,
             callbacks=callbacks,
-            verbose=0,
+            verbose=self.verbose,
         )
 
         self.is_trained = True
