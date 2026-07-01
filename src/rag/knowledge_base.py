@@ -1,464 +1,366 @@
-"""
-Knowledge Base Management for RAG
-Handles extraction and chunking of medical documents
-"""
+"""Knowledge base management for the diabetes RAG pipeline."""
 
-import re
+from __future__ import annotations
+
 import json
-from pathlib import Path
-from typing import List, Dict, Optional
 import logging
-
-try:
-    import PyPDF2
-except ImportError:
-    PyPDF2 = None
-    logging.warning("PyPDF2 not installed, PDF extraction will not work")
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
+_DEFAULT_CHUNK_SIZE = 900
+_DEFAULT_CHUNK_OVERLAP = 120
+
+# Sentence-transformers model: lightweight CPU-only, ~80MB, no server needed
+_HF_EMBED_MODEL = "all-MiniLM-L6-v2"
+
+
+def _build_embeddings(
+    embed_provider: str,
+    ollama_base_url: str = "http://localhost:11434",
+    embed_model: str = "nomic-embed-text",
+) -> Any:
+    """Return a LangChain-compatible embedding object for the requested provider."""
+    if embed_provider == "sentence-transformers":
+        from langchain_community.embeddings import HuggingFaceEmbeddings
+
+        return HuggingFaceEmbeddings(
+            model_name=_HF_EMBED_MODEL,
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"normalize_embeddings": True},
+        )
+    if embed_provider == "google":
+        import os
+
+        from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
+        return GoogleGenerativeAIEmbeddings(
+            model="models/embedding-001",
+            google_api_key=os.getenv("GOOGLE_API_KEY"),
+        )
+    # Default: Ollama
+    from langchain_ollama import OllamaEmbeddings
+
+    return OllamaEmbeddings(model=embed_model, base_url=ollama_base_url)
+
+
+def _sanitize_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
+    """Ubah metadata agar kompatibel ChromaDB (hanya skalar str/int/float/bool/None).
+
+    list/tuple → gabung jadi string; dict/lainnya → str(); None/skalar dipertahankan.
+    """
+    clean: Dict[str, Any] = {}
+    for key, value in metadata.items():
+        if value is None or isinstance(value, (str, int, float, bool)):
+            clean[key] = value
+        elif isinstance(value, (list, tuple)):
+            clean[key] = ", ".join(str(v) for v in value)
+        else:
+            clean[key] = str(value)
+    return clean
+
 
 class MedicalKnowledgeBase:
-    """
-    Manage medical knowledge base for RAG retrieval
-    """
-    
-    def __init__(self, kb_dir: str = "data/knowledge_base"):
-        """
-        Initialize Knowledge Base
-        
-        Args:
-            kb_dir: Directory containing medical documents
-        """
+    """Load, chunk, and persist medical knowledge for retrieval."""
+
+    def __init__(
+        self,
+        kb_dir: str = "data/knowledge_base",
+        persist_dir: str = "models/chroma_db",
+        collection_name: str = "diabetes_kb",
+        embed_provider: str = "sentence-transformers",
+        ollama_base_url: str = "http://localhost:11434",
+        embed_model: str = "nomic-embed-text",
+    ):
         self.kb_dir = Path(kb_dir)
         self.kb_dir.mkdir(parents=True, exist_ok=True)
-        
-        self.documents = []
-        self.chunks = []
-        self.metadata = {}
-        
-        logger.info(f"Knowledge Base initialized at {kb_dir}")
-    
-    def extract_pdf(self, pdf_path: Path, output_path: Optional[Path] = None) -> str:
-        """
-        Extract text from PDF
-        
-        Args:
-            pdf_path: Path to PDF file
-            output_path: Optional path to save extracted text
-            
-        Returns:
-            text: Extracted text content
-        """
-        if PyPDF2 is None:
-            raise ImportError("PyPDF2 required for PDF extraction. Install: pip install PyPDF2")
-        
-        logger.info(f"Extracting text from {pdf_path}...")
-        
-        with open(pdf_path, 'rb') as file:
-            pdf = PyPDF2.PdfReader(file)
-            
-            full_text = ""
-            for page_num, page in enumerate(pdf.pages):
-                text = page.extract_text()
-                
-                # Clean text
-                text = self._clean_text(text)
-                
-                full_text += f"\n\n--- Page {page_num + 1} ---\n\n{text}"
-        
-        # Save if output path provided
-        if output_path:
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(full_text)
-            logger.info(f"Extracted text saved to {output_path}")
-        
-        logger.info(f"Extracted {len(full_text)} characters from {pdf_path.name}")
-        
-        return full_text
-    
-    def _clean_text(self, text: str) -> str:
-        """
-        Clean extracted text
-        
-        Args:
-            text: Raw text
-            
-        Returns:
-            cleaned: Cleaned text
-        """
-        # Remove multiple spaces
-        text = re.sub(r'\s+', ' ', text)
-        
-        # Remove page numbers (standalone numbers)
-        text = re.sub(r'^\d+$', '', text, flags=re.MULTILINE)
-        
-        # Remove excessive newlines
-        text = re.sub(r'\n{3,}', '\n\n', text)
-        
-        return text.strip()
-    
-    def chunk_text(self, text: str, chunk_size: int = 500, 
-                   overlap: int = 50) -> List[Dict]:
-        """
-        Split text into overlapping chunks for better context retrieval
-        
-        Args:
-            text: Input text
-            chunk_size: Number of words per chunk
-            overlap: Number of words to overlap between chunks
-            
-        Returns:
-            chunks: List of chunk dictionaries
-        """
-        logger.info(f"Chunking text (size={chunk_size}, overlap={overlap})...")
-        
-        words = text.split()
-        chunks = []
-        
-        for i in range(0, len(words), chunk_size - overlap):
-            chunk_words = words[i:i + chunk_size]
-            chunk_text = ' '.join(chunk_words)
-            
-            chunks.append({
-                'text': chunk_text,
-                'start_index': i,
-                'end_index': i + len(chunk_words),
-                'chunk_id': len(chunks)
-            })
-        
-        logger.info(f"Created {len(chunks)} chunks")
-        
-        return chunks
-    
+
+        self.persist_dir = Path(persist_dir)
+        self.persist_dir.mkdir(parents=True, exist_ok=True)
+
+        self.collection_name = collection_name
+        self.embed_provider = embed_provider
+        self.ollama_base_url = ollama_base_url
+        self.embed_model = embed_model
+
+        self.documents: List[Dict[str, Any]] = []
+        self.chunks: List[Dict[str, Any]] = []
+
+    def load_manual_kb(self, file_name: str = "manual_kb.json") -> List[Dict[str, Any]]:
+        """Load manual knowledge entries from JSON file in kb directory."""
+        manual_path = self.kb_dir / file_name
+        if not manual_path.exists():
+            # Fallback to repository default path for convenience.
+            repo_default = Path("data/knowledge_base") / file_name
+            if repo_default.exists():
+                manual_path = repo_default
+            else:
+                logger.warning("Manual KB file not found: %s", manual_path)
+                return []
+
+        with manual_path.open("r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+
+        docs: List[Dict[str, Any]] = []
+        for idx, item in enumerate(payload):
+            text = str(item.get("text", "")).strip()
+            if not text:
+                continue
+            metadata = self._build_metadata(
+                source=item.get("source", "manual_kb"),
+                topic=item.get("topic", f"topic_{idx}"),
+                doc_id=item.get("doc_id", f"manual_doc_{idx}"),
+                index=idx,
+            )
+            docs.append(
+                {
+                    "text": text,
+                    "source": item.get("source", "manual_kb"),
+                    "topic": item.get("topic", f"topic_{idx}"),
+                    "metadata": metadata,
+                }
+            )
+
+        self.documents = docs
+        logger.info("Loaded %d manual KB entries from %s", len(docs), manual_path)
+        return docs
+
     def load_documents(self, file_pattern: str = "*.txt") -> None:
-        """
-        Load all documents from knowledge base directory
-        
-        Args:
-            file_pattern: Glob pattern for files to load
-        """
+        """Compatibility helper to load text files from knowledge base directory."""
         files = list(self.kb_dir.glob(file_pattern))
-        
-        logger.info(f"Loading {len(files)} documents...")
-        
-        for filepath in files:
-            with open(filepath, 'r', encoding='utf-8') as f:
-                text = f.read()
-            
-            self.documents.append({
-                'filename': filepath.name,
-                'text': text,
-                'source': str(filepath)
-            })
-        
-        logger.info(f"Loaded {len(self.documents)} documents")
-    
-    def process_all_documents(self, chunk_size: int = 500, 
-                             overlap: int = 50) -> None:
-        """
-        Process all loaded documents into chunks
-        
-        Args:
-            chunk_size: Chunk size in words
-            overlap: Overlap in words
-        """
-        if not self.documents:
-            logger.warning("No documents loaded. Call load_documents() first.")
-            return
-        
-        all_chunks = []
-        
-        for doc in self.documents:
-            chunks = self.chunk_text(doc['text'], chunk_size, overlap)
-            
-            # Add metadata
-            for chunk in chunks:
-                chunk['source'] = doc['filename']
-                all_chunks.append(chunk)
-        
-        self.chunks = all_chunks
-        
-        logger.info(f"Processed {len(self.documents)} documents into {len(self.chunks)} chunks")
-    
-    def save_chunks(self, output_path: Optional[Path] = None) -> None:
-        """
-        Save chunks to JSON
-        
-        Args:
-            output_path: Path to save chunks
-        """
-        if output_path is None:
-            output_path = self.kb_dir / 'chunks.json'
-        
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(self.chunks, f, ensure_ascii=False, indent=2)
-        
-        logger.info(f"Saved {len(self.chunks)} chunks to {output_path}")
-    
-    def load_chunks(self, filepath: Optional[Path] = None) -> None:
-        """
-        Load pre-processed chunks from JSON
-        
-        Args:
-            filepath: Path to chunks JSON
-        """
-        if filepath is None:
-            filepath = self.kb_dir / 'chunks.json'
-        
-        with open(filepath, 'r', encoding='utf-8') as f:
-            self.chunks = json.load(f)
-        
-        logger.info(f"Loaded {len(self.chunks)} chunks from {filepath}")
-    
-    def create_manual_kb(self) -> None:
-        """
-        Create minimal manual knowledge base (Plan C fallback)
-        """
-        logger.info("Creating manual knowledge base...")
-        
-        manual_kb = [
-            {
-                'topic': 'Hiperglikemia',
-                'text': """
-                Hiperglikemia adalah kondisi di mana kadar gula darah melebihi 180 mg/dL.
-                
-                Penyebab utama:
-                - Asupan karbohidrat berlebihan
-                - Dosis insulin tidak mencukupi
-                - Tingkat stress yang tinggi
-                - Kurangnya aktivitas fisik
-                - Infeksi atau sakit
-                
-                Gejala:
-                - Sering buang air kecil
-                - Rasa haus berlebihan
-                - Pandangan kabur
-                - Kelelahan
-                - Sakit kepala
-                
-                Penanganan:
-                1. Perbanyak minum air putih (minimal 2-3 gelas)
-                2. Lakukan aktivitas fisik ringan 15-30 menit
-                3. Hindari makanan tinggi gula
-                4. Periksa keton jika glukosa >250 mg/dL
-                5. Konsultasi dokter jika bertahan >2 jam atau >300 mg/dL
-                
-                Referensi: PERKENI 2021, ADA Standards of Care 2023
-                """
-            },
-            {
-                'topic': 'Hipoglikemia',
-                'text': """
-                Hipoglikemia adalah kondisi gula darah di bawah 70 mg/dL. Ini adalah kondisi DARURAT.
-                
-                Penyebab:
-                - Dosis insulin berlebihan
-                - Makan terlambat atau melewatkan makan
-                - Aktivitas fisik berlebihan tanpa penyesuaian insulin
-                - Konsumsi alkohol
-                
-                Gejala:
-                - Gemetar, berkeringat
-                - Jantung berdebar
-                - Pusing, kebingungan
-                - Lapar ekstrem
-                - Mudah marah
-                - Penglihatan kabur
-                
-                Aturan 15-15 (Penanganan SEGERA):
-                1. Konsumsi 15 gram karbohidrat cepat:
-                   - 3-4 tablet glukosa
-                   - 120 ml jus buah
-                   - 1 sendok makan madu
-                   - 5-6 permen keras
-                2. Tunggu 15 menit
-                3. Cek ulang gula darah
-                4. Jika masih <70 mg/dL, ulangi langkah 1-3
-                5. Setelah normal, makan camilan dengan protein
-                
-                PERINGATAN: Jika kehilangan kesadaran, SEGERA hubungi 119 atau bawa ke UGD.
-                
-                Referensi: ADA Hypoglycemia Guidelines, PERKENI 2021
-                """
-            },
-            {
-                'topic': 'Manajemen Stress',
-                'text': """
-                Stress dapat meningkatkan kadar gula darah melalui pelepasan hormon kortisol dan adrenalin.
-                
-                Dampak stress terhadap diabetes:
-                - Meningkatkan resistensi insulin
-                - Memicu pelepasan glukosa dari hati
-                - Mengganggu pola makan dan tidur
-                - Menurunkan motivasi untuk kontrol diabetes
-                
-                Teknik manajemen stress:
-                1. Pernapasan dalam (4-7-8):
-                   - Tarik napas 4 detik
-                   - Tahan 7 detik
-                   - Buang 8 detik
-                   - Ulangi 5-10 kali
-                
-                2. Meditasi mindfulness 10-15 menit
-                3. Aktivitas fisik teratur
-                4. Tidur cukup 7-8 jam
-                5. Dukungan sosial dari keluarga/support group
-                
-                Jika stress berkepanjangan, konsultasi dengan psikolog atau konselor diabetes.
-                
-                Referensi: ADA Standards of Care - Psychosocial Care
-                """
-            },
-            {
-                'topic': 'Aktivitas Fisik',
-                'text': """
-                Aktivitas fisik adalah komponen penting manajemen diabetes tipe 2.
-                
-                Manfaat:
-                - Meningkatkan sensitivitas insulin
-                - Menurunkan kadar gula darah
-                - Membantu kontrol berat badan
-                - Mengurangi risiko komplikasi kardiovaskular
-                - Meningkatkan mood dan mengurangi stress
-                
-                Rekomendasi ADA:
-                - Minimal 150 menit/minggu aktivitas aerobik intensitas sedang
-                - Latihan kekuatan 2-3x per minggu
-                - Hindari duduk >30 menit terus-menerus
-                
-                Jenis aktivitas:
-                1. Aerobik: jalan cepat, jogging, bersepeda, berenang
-                2. Kekuatan: angkat beban, resistance band, yoga
-                3. Fleksibilitas: stretching, tai chi
-                
-                PERINGATAN untuk pengguna insulin:
-                - Cek gula darah sebelum dan sesudah olahraga
-                - Jika <100 mg/dL sebelum olahraga, konsumsi camilan 15g karbohidrat
-                - Bawa sumber glukosa cepat saat berolahraga
-                - Kurangi dosis insulin jika planning olahraga intens
-                
-                Referensi: ADA Physical Activity Guidelines, PERKENI 2021
-                """
-            },
-            {
-                'topic': 'Karbohidrat dan Meal Planning',
-                'text': """
-                Manajemen asupan karbohidrat adalah kunci kontrol gula darah.
-                
-                Prinsip Carbohydrate Counting:
-                - 1 unit insulin umumnya untuk 10-15g karbohidrat (sesuaikan dengan rasio individu)
-                - Konsistensi jumlah karbohidrat antar hari membantu prediksi
-                
-                Sumber karbohidrat sehat:
-                1. Karbohidrat kompleks (diutamakan):
-                   - Nasi merah, oat, quinoa
-                   - Roti gandum utuh
-                   - Kentang, ubi
-                   - Kacang-kacangan
-                
-                2. Sayuran non-starch (bebas):
-                   - Bayam, kangkung, sawi
-                   - Brokoli, kembang kol
-                   - Tomat, mentimun
-                
-                3. Buah (porsi terkontrol):
-                   - Apel, jeruk, pir (1 buah sedang = 15g)
-                   - Pisang kecil = 15g
-                   - Hindari jus buah (kehilangan serat)
-                
-                Tips praktis:
-                - Gunakan metode piring: 1/2 sayur, 1/4 protein, 1/4 karbohidrat
-                - Baca label nutrisi untuk hitung karbohidrat
-                - Makan teratur, hindari melewatkan waktu makan
-                - Kombinasikan karbohidrat dengan protein/lemak sehat untuk memperlambat absorpsi
-                
-                Referensi: PERKENI Nutrition Therapy, ADA Nutrition Guidelines
-                """
-            },
-            {
-                'topic': 'Target Kontrol Glikemik',
-                'text': """
-                Target kontrol gula darah untuk dewasa diabetes tipe 2 (non-hamil):
-                
-                Gula Darah Puasa (GDP):
-                - Target: 80-130 mg/dL
-                - Optimal: 90-110 mg/dL
-                
-                Gula Darah 2 jam Setelah Makan (GDPP):
-                - Target: <180 mg/dL
-                - Optimal: <140 mg/dL
-                
-                HbA1c (rata-rata 3 bulan):
-                - Target umum: <7%
-                - Target ketat (jika aman): <6.5%
-                - Target longgar (lansia, komorbid): <8%
-                
-                Time in Range (jika pakai CGM):
-                - >70% waktu dalam range 70-180 mg/dL
-                - <4% waktu di bawah 70 mg/dL
-                - <25% waktu di atas 180 mg/dL
-                
-                Kapan konsultasi dokter:
-                - GDP sering >180 mg/dL
-                - Hipoglikemia >2x per minggu
-                - HbA1c tidak mencapai target setelah 3 bulan
-                - Gejala komplikasi (kebas, luka tidak sembuh, pandangan kabur)
-                
-                Referensi: ADA Standards of Care 2023, PERKENI 2021
-                """
-            },
-            {
-                'topic': 'Monitoring dan Self-Care',
-                'text': """
-                Pemantauan mandiri adalah kunci sukses manajemen diabetes.
-                
-                Frekuensi Monitoring Gula Darah:
-                1. Pengguna insulin:
-                   - Minimal 4x sehari (sebelum makan dan sebelum tidur)
-                   - Tambahan saat sakit, olahraga, atau gejala hipo/hiper
-                
-                2. Tanpa insulin:
-                   - Minimal 2x seminggu (bervariasi waktu)
-                   - Lebih sering saat penyesuaian obat
-                
-                Cara Monitoring yang Benar:
-                - Cuci tangan dengan sabun dan air (JANGAN pakai alkohol swab di jari)
-                - Tusuk sisi ujung jari (lebih sedikit saraf)
-                - Tetes darah pertama cukup, jangan diperas berlebihan
-                - Catat hasil beserta waktu, makanan, dan aktivitas
-                
-                Pencatatan (Logbook):
-                - Tanggal dan waktu
-                - Hasil gula darah
-                - Makanan dan jumlah karbohidrat
-                - Dosis dan waktu insulin/obat
-                - Aktivitas fisik
-                - Tingkat stress atau perasaan
-                - Gejala tidak biasa
-                
-                Perawatan Kaki (penting untuk cegah komplikasi):
-                - Cek kaki setiap hari
-                - Jaga kebersihan dan kelembaban
-                - Gunakan alas kaki yang nyaman
-                - Segera konsultasi jika ada luka
-                
-                Referensi: ADA Self-Management Education, PERKENI 2021
-                """
+        loaded_docs: List[Dict[str, Any]] = []
+
+        for idx, path in enumerate(files):
+            text = path.read_text(encoding="utf-8").strip()
+            if not text:
+                continue
+            metadata = self._build_metadata(
+                source=path.name,
+                topic=path.stem,
+                doc_id=f"txt_{path.stem}",
+                index=idx,
+            )
+            loaded_docs.append(
+                {
+                    "text": text,
+                    "source": path.name,
+                    "topic": path.stem,
+                    "metadata": metadata,
+                }
+            )
+
+        self.documents = loaded_docs
+        logger.info("Loaded %d text documents from %s", len(loaded_docs), self.kb_dir)
+
+    def chunk_documents(
+        self,
+        documents: Optional[List[Dict[str, Any]]] = None,
+        chunk_size: int = _DEFAULT_CHUNK_SIZE,
+        chunk_overlap: int = _DEFAULT_CHUNK_OVERLAP,
+    ) -> List[Dict[str, Any]]:
+        """Chunk documents using LangChain splitter with a safe fallback splitter."""
+        docs = documents if documents is not None else self.documents
+        if not docs:
+            logger.warning("No documents available to chunk")
+            self.chunks = []
+            return []
+
+        try:
+            from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+            splitter = RecursiveCharacterTextSplitter(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                separators=["\n## ", "\n### ", "\n\n", "\n", " ", ""],
+            )
+
+            chunk_rows: List[Dict[str, Any]] = []
+            for doc_idx, doc in enumerate(docs):
+                pieces = splitter.split_text(doc["text"])
+                for part_idx, part in enumerate(pieces):
+                    metadata = dict(doc.get("metadata", {}))
+                    metadata.update(
+                        {
+                            "chunk_index": part_idx,
+                            "chunk_id": f"{metadata.get('doc_id', f'doc_{doc_idx}')}_ch_{part_idx:03d}",
+                        }
+                    )
+                    chunk_rows.append(
+                        {
+                            "text": part,
+                            "source": doc.get("source", "manual_kb"),
+                            "topic": doc.get("topic", "general"),
+                            "metadata": metadata,
+                        }
+                    )
+
+            self.chunks = chunk_rows
+            logger.info("Chunked %d docs into %d chunks", len(docs), len(chunk_rows))
+            return chunk_rows
+
+        except Exception as exc:
+            logger.warning("LangChain splitter unavailable, fallback splitter active: %s", exc)
+            chunk_rows = self._fallback_chunk_documents(docs, chunk_size=chunk_size, overlap=chunk_overlap)
+            self.chunks = chunk_rows
+            return chunk_rows
+
+    def _fallback_chunk_documents(
+        self,
+        docs: List[Dict[str, Any]],
+        chunk_size: int,
+        overlap: int,
+    ) -> List[Dict[str, Any]]:
+        """Simple token-window chunking fallback when text splitter is unavailable."""
+        chunks: List[Dict[str, Any]] = []
+        step = max(chunk_size - overlap, 1)
+
+        for doc_idx, doc in enumerate(docs):
+            words = doc["text"].split()
+            for start in range(0, len(words), step):
+                part = " ".join(words[start : start + chunk_size]).strip()
+                if not part:
+                    continue
+                metadata = dict(doc.get("metadata", {}))
+                chunk_number = len(chunks)
+                metadata.update(
+                    {
+                        "chunk_index": chunk_number,
+                        "chunk_id": f"{metadata.get('doc_id', f'doc_{doc_idx}')}_ch_{chunk_number:03d}",
+                    }
+                )
+                chunks.append(
+                    {
+                        "text": part,
+                        "source": doc.get("source", "manual_kb"),
+                        "topic": doc.get("topic", "general"),
+                        "metadata": metadata,
+                    }
+                )
+
+        logger.info("Fallback chunker created %d chunks", len(chunks))
+        return chunks
+
+    def _build_metadata(self, source: str, topic: str, doc_id: str, index: int) -> Dict[str, Any]:
+        """Build normalized metadata fields for each document/chunk."""
+        return {
+            "doc_id": doc_id,
+            "chunk_id": f"{doc_id}_ch_000",
+            "domain": "manual",
+            "subdomain": topic.lower().replace(" ", "_"),
+            "sumber": "Manual KB",
+            "judul": topic,
+            "tahun": 2024,
+            "versi": "v1",
+            "url_sumber": "",
+            "halaman": "N/A",
+            "jenis_dm": ["dm_tipe2"],
+            "setting": ["fktp", "fkrtl"],
+            "sasaran": ["dokter_umum", "sppd"],
+                "populasi_khusus": ["umum"],
+            "tipe_konten": "panduan_klinis",
+            "bahasa": "id",
+            "level_bukti": "guideline",
+            "topik_terkait": [topic],
+            "perlu_update_sebelum": "2026-12",
+            "status": "aktif",
+            "source": source,
+            "created_at": datetime.utcnow().isoformat(),
+            "index": index,
+        }
+
+    def save_to_chroma(self, chunks: Optional[List[Dict[str, Any]]] = None, reset_collection: bool = False) -> bool:
+        """Persist chunks into ChromaDB using the configured embedding provider."""
+        chunk_rows = chunks if chunks is not None else self.chunks
+        if not chunk_rows:
+            logger.warning("No chunks available for Chroma ingestion")
+            return False
+
+        try:
+            from langchain_chroma import Chroma
+            from langchain_core.documents import Document
+        except Exception as exc:
+            logger.error("Chroma dependencies unavailable: %s", exc)
+            return False
+
+        try:
+            embeddings = _build_embeddings(
+                self.embed_provider, self.ollama_base_url, self.embed_model
+            )
+        except Exception as exc:
+            logger.error("Embedding initialisation failed (%s): %s", self.embed_provider, exc)
+            return False
+
+        vector_store = Chroma(
+            collection_name=self.collection_name,
+            embedding_function=embeddings,
+            persist_directory=str(self.persist_dir),
+        )
+
+        if reset_collection:
+            try:
+                vector_store.delete_collection()
+                vector_store = Chroma(
+                    collection_name=self.collection_name,
+                    embedding_function=embeddings,
+                    persist_directory=str(self.persist_dir),
+                )
+            except Exception as exc:
+                logger.warning("Could not reset existing collection: %s", exc)
+
+        documents: List[Document] = []
+        for row in chunk_rows:
+            raw_meta = {
+                **dict(row.get("metadata", {})),
+                "source": row.get("source", "manual_kb"),
+                "topic": row.get("topic", "general"),
             }
-        ]
-        
-        # Convert to chunks format
-        self.chunks = []
-        for idx, item in enumerate(manual_kb):
-            self.chunks.append({
-                'text': item['text'],
-                'source': 'manual_kb',
-                'topic': item['topic'],
-                'chunk_id': idx
-            })
-        
-        logger.info(f"Created manual KB with {len(self.chunks)} entries")
-        
-        # Save
-        self.save_chunks(self.kb_dir / 'manual_kb.json')
+            # ChromaDB hanya menerima metadata skalar (str/int/float/bool/None);
+            # list/dict di-flatten ke string agar tidak ditolak saat upsert.
+            documents.append(
+                Document(page_content=row["text"], metadata=_sanitize_metadata(raw_meta))
+            )
+
+        vector_store.add_documents(documents)
+        logger.info("Saved %d chunks to ChromaDB at %s", len(documents), self.persist_dir)
+        return True
+
+    def save_chunks(self, output_path: Optional[Path] = None) -> None:
+        """Save prepared chunks into JSON for traceability and tests."""
+        target = output_path or (self.kb_dir / "chunks.json")
+        with target.open("w", encoding="utf-8") as handle:
+            json.dump(self.chunks, handle, ensure_ascii=False, indent=2)
+
+    def load_chunks(self, filepath: Optional[Path] = None) -> None:
+        """Load precomputed chunks from JSON file."""
+        source_path = filepath or (self.kb_dir / "chunks.json")
+        with source_path.open("r", encoding="utf-8") as handle:
+            self.chunks = json.load(handle)
+
+    def process_all_documents(self, chunk_size: int = _DEFAULT_CHUNK_SIZE, overlap: int = _DEFAULT_CHUNK_OVERLAP) -> None:
+        """Compatibility wrapper used by existing code paths."""
+        self.chunk_documents(documents=self.documents, chunk_size=chunk_size, chunk_overlap=overlap)
+
+    def create_manual_kb(self) -> None:
+        """Compatibility helper expected by existing tests and pipeline calls."""
+        docs = self.load_manual_kb("manual_kb.json")
+        if not docs:
+            docs = [
+                {
+                    "text": "Hiperglikemia adalah kondisi glukosa darah di atas 180 mg/dL dan perlu pemantauan.",
+                    "source": "manual_kb",
+                    "topic": "Hiperglikemia",
+                    "metadata": self._build_metadata("manual_kb", "Hiperglikemia", "manual_doc_0", 0),
+                },
+                {
+                    "text": "Hipoglikemia adalah kondisi glukosa darah di bawah 70 mg/dL dan perlu tatalaksana segera.",
+                    "source": "manual_kb",
+                    "topic": "Hipoglikemia",
+                    "metadata": self._build_metadata("manual_kb", "Hipoglikemia", "manual_doc_1", 1),
+                },
+            ]
+            self.documents = docs
+
+        self.chunk_documents(documents=docs, chunk_size=350, chunk_overlap=40)
+        self.save_chunks(self.kb_dir / "manual_kb.json")

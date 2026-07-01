@@ -1,12 +1,27 @@
 """Public API for RAG components."""
 
+from .advisor_chain import DiabetesAdvisorChain
+from .conditioned_query import (
+    ConditionedQuery,
+    PredictionConditionedQueryBuilder,
+    QueryStrategy,
+    build_conditioned_query,
+)
 from .generator import RAGGenerator
 from .knowledge_base import MedicalKnowledgeBase
 from .pipeline import RAGPipeline
+from .retriever import DocumentRetriever, MMRRetriever, SimpleKeywordRetriever
 
-try:
-	from .retriever import DocumentRetriever
-except Exception:  # pragma: no cover - optional dependency fallback
-	DocumentRetriever = None
-
-__all__ = ["DocumentRetriever", "MedicalKnowledgeBase", "RAGGenerator", "RAGPipeline"]
+__all__ = [
+    "DiabetesAdvisorChain",
+    "ConditionedQuery",
+    "PredictionConditionedQueryBuilder",
+    "QueryStrategy",
+    "build_conditioned_query",
+    "DocumentRetriever",
+    "MMRRetriever",
+    "SimpleKeywordRetriever",
+    "MedicalKnowledgeBase",
+    "RAGGenerator",
+    "RAGPipeline",
+]
