@@ -135,12 +135,67 @@ def plot_comparison_bar(rf_metrics: dict, lstm_metrics: dict, out_path: Path) ->
 # Main evaluation routine
 # ---------------------------------------------------------------------------
 
-def evaluate_both_models(config_path: str = "config.yaml", smbg: bool = False) -> None:
-    from src.data.loader import DiabetesDataLoader
+def _evaluate_one_horizon(config, df_clean, seq_len, horizon, out_root, feature_list, predict_delta):
+    """Latih & evaluasi RF vs LSTM pada satu horizon. Return (rf_metrics, lstm_metrics)."""
     from src.data.preprocessor import DataPreprocessor
     from src.models.rf_model import RandomForestGlucoseModel
     from src.models.lstm_model import LSTMGlucoseModel
     from src.utils.metrics import calculate_all_metrics
+
+    minutes = horizon * 5
+    print("\n" + "=" * 60)
+    print(f"HORIZON {horizon} langkah (+{minutes} menit) | fitur={len(feature_list)} | delta={predict_delta}")
+    print("=" * 60)
+
+    prep = DataPreprocessor(config)  # scaler baru per horizon
+    prep.feature_columns = list(feature_list)
+    pids = sorted(df_clean["patient_id"].unique().tolist())
+    train_df, test_df = prep.split_by_patient(df_clean, pids[-2:])
+
+    X_train, y_train, anc_train = prep.create_sequences(train_df, seq_len, horizon, return_anchor=True)
+    X_test, y_test, anc_test = prep.create_sequences(test_df, seq_len, horizon, return_anchor=True)
+    X_train_s, X_test_s = prep.normalize_data(X_train, X_test)
+
+    # Target: absolut, atau delta (selisih dari glukosa terakhir di window) lalu direkonstruksi
+    y_train_fit = (y_train - anc_train) if predict_delta else y_train
+    y_test_fit = (y_test - anc_test) if predict_delta else y_test
+
+    out_dir = out_root / f"h{horizon}"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    print("[1/2] Random Forest...")
+    rf = RandomForestGlucoseModel(config)
+    rf.train(X_train_s, y_train_fit)
+    rf_pred = rf.predict(X_test_s)
+    if predict_delta:
+        rf_pred = rf_pred + anc_test
+    rf_m = calculate_all_metrics(y_test, rf_pred)
+    print(f"  RF   RMSE={rf_m['RMSE']:.3f}  MAE={rf_m['MAE']:.3f}  Clarke-A+B={rf_m['Clarke_A+B']:.2f}%")
+    plot_clarke_grid(y_test, rf_pred, rf_m, f"Clarke Error Grid — RF (+{minutes} mnt)",
+                     out_dir / "clarke_grid_rf.png")
+
+    print("[2/2] LSTM...")
+    lstm = LSTMGlucoseModel(config)
+    lstm.train(X_train_s, y_train_fit, X_test_s, y_test_fit)
+    lstm_pred = lstm.predict(X_test_s)
+    if predict_delta:
+        lstm_pred = lstm_pred + anc_test
+    lstm_m = calculate_all_metrics(y_test, lstm_pred)
+    print(f"  LSTM RMSE={lstm_m['RMSE']:.3f}  MAE={lstm_m['MAE']:.3f}  Clarke-A+B={lstm_m['Clarke_A+B']:.2f}%")
+    plot_clarke_grid(y_test, lstm_pred, lstm_m, f"Clarke Error Grid — LSTM (+{minutes} mnt)",
+                     out_dir / "clarke_grid_lstm.png")
+
+    plot_comparison_bar(rf_m, lstm_m, out_dir / "comparison_bar.png")
+
+    rows = [{"metric": k, "RF": rf_m[k], "LSTM": lstm_m[k]}
+            for k in ["RMSE", "MAE", "MAPE", "Clarke_A", "Clarke_B", "Clarke_C", "Clarke_D", "Clarke_E", "Clarke_A+B"]]
+    pd.DataFrame(rows).to_csv(out_dir / "comparison_metrics.csv", index=False, float_format="%.4f")
+    return rf_m, lstm_m
+
+
+def evaluate_both_models(config_path: str = "config.yaml") -> None:
+    from src.data.loader import DiabetesDataLoader
+    from src.data.preprocessor import DataPreprocessor
 
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
@@ -152,88 +207,49 @@ def evaluate_both_models(config_path: str = "config.yaml", smbg: bool = False) -
     df = df.sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
     print(f"Data source   : {used_source}")
 
-    preprocessor = DataPreprocessor(config)
-    df = preprocessor.handle_missing_values(df)
+    df_clean = DataPreprocessor(config).handle_missing_values(df)
+    seq_len = config["model"].get("sequence_length", 12)
+    horizons = config["model"].get("prediction_horizons", [config["model"].get("default_horizon", 1)])
 
-    if smbg:
-        interval = config.get("data", {}).get("smbg_interval_min", 240)
-        df = preprocessor.downsample_smbg(df, interval_minutes=interval)
-        seq_len = config["model"].get("smbg_sequence_length", 6)
-        mode_tag = "smbg"
+    # Feature engineering (opsional, dari config)
+    use_eng = config["model"].get("use_engineered", False)
+    predict_delta = config["model"].get("predict_delta", False)
+    if use_eng:
+        fe = config["model"].get("feature_engineering", {})
+        df_clean = DataPreprocessor(config).engineer_features(df_clean, **fe)
+        feature_list = config["model"]["engineered_features"]
+        print(f"Mode fitur    : ENGINEERED ({len(feature_list)} fitur) | predict_delta={predict_delta}")
     else:
-        seq_len = config["model"].get("sequence_length", 12)
-        mode_tag = "cgm"
+        feature_list = config["model"]["features"]
+        print(f"Mode fitur    : BASELINE ({len(feature_list)} fitur) | predict_delta={predict_delta}")
 
-    patient_ids = sorted(df["patient_id"].unique().tolist())
-    test_patients = patient_ids[-2:]
-    train_df, test_df = preprocessor.split_by_patient(df, test_patients)
+    out_root = Path("results") / "eval_prediksi"
+    out_root.mkdir(parents=True, exist_ok=True)
 
-    X_train, y_train = preprocessor.create_sequences(train_df, sequence_length=seq_len)
-    X_test, y_test = preprocessor.create_sequences(test_df, sequence_length=seq_len)
-    X_train_s, X_test_s = preprocessor.normalize_data(X_train, X_test)
+    summary = []
+    for h in horizons:
+        rf_m, lstm_m = _evaluate_one_horizon(config, df_clean, seq_len, h, out_root, feature_list, predict_delta)
+        for model_name, m in [("RF", rf_m), ("LSTM", lstm_m)]:
+            summary.append({
+                "horizon_steps": h, "horizon_min": h * 5, "model": model_name,
+                "RMSE": round(m["RMSE"], 3), "MAE": round(m["MAE"], 3), "MAPE": round(m["MAPE"], 3),
+                "Clarke_A": round(m["Clarke_A"], 2), "Clarke_A+B": round(m["Clarke_A+B"], 2),
+            })
 
-    out_dir = Path("results") / "eval_prediksi"
-    out_dir.mkdir(parents=True, exist_ok=True)
+    summary_df = pd.DataFrame(summary)
+    summary_path = out_root / "summary_all_horizons.csv"
+    summary_df.to_csv(summary_path, index=False)
 
-    # ---- RF ----
-    print("\n[1/2] Training Random Forest...")
-    rf = RandomForestGlucoseModel(config)
-    rf.train(X_train_s, y_train)
-    rf_pred = rf.predict(X_test_s)
-    rf_metrics = calculate_all_metrics(y_test, rf_pred)
-    print(f"  RF  RMSE={rf_metrics['RMSE']:.3f}  MAE={rf_metrics['MAE']:.3f}  Clarke-A={rf_metrics['Clarke_A']:.2f}%")
-    plot_clarke_grid(y_test, rf_pred, rf_metrics, "Clarke Error Grid — Random Forest",
-                     out_dir / f"clarke_grid_rf_{mode_tag}.png")
-
-    # ---- LSTM ----
-    print("\n[2/2] Training LSTM...")
-    lstm = LSTMGlucoseModel(config)
-    lstm.train(X_train_s, y_train, X_test_s, y_test)
-    lstm_pred = lstm.predict(X_test_s)
-    lstm_metrics = calculate_all_metrics(y_test, lstm_pred)
-    print(f"  LSTM RMSE={lstm_metrics['RMSE']:.3f}  MAE={lstm_metrics['MAE']:.3f}  Clarke-A={lstm_metrics['Clarke_A']:.2f}%")
-    plot_clarke_grid(y_test, lstm_pred, lstm_metrics, "Clarke Error Grid — LSTM",
-                     out_dir / f"clarke_grid_lstm_{mode_tag}.png")
-
-    # ---- Comparison chart ----
-    plot_comparison_bar(rf_metrics, lstm_metrics, out_dir / f"clarke_grid_comparison_{mode_tag}.png")
-
-    # ---- CSV ----
-    rows = []
-    for k in ["RMSE", "MAE", "MAPE", "Clarke_A", "Clarke_B", "Clarke_C", "Clarke_D", "Clarke_E", "Clarke_A+B"]:
-        rows.append({"metric": k, "RF": rf_metrics[k], "LSTM": lstm_metrics[k]})
-    df_cmp = pd.DataFrame(rows)
-    csv_path = out_dir / f"comparison_metrics_{mode_tag}.csv"
-    df_cmp.to_csv(csv_path, index=False, float_format="%.4f")
-    print(f"\n  Comparison CSV: {csv_path}")
-
-    # ---- JSON for each model ----
-    with open(out_dir / f"rf_metrics_{mode_tag}.json", "w") as f:
-        json.dump({k: float(v) for k, v in rf_metrics.items()}, f, indent=2)
-    with open(out_dir / f"lstm_metrics_{mode_tag}.json", "w") as f:
-        json.dump({k: float(v) for k, v in lstm_metrics.items()}, f, indent=2)
-
-    # ---- Interpretation ----
     print("\n" + "=" * 60)
-    print("INTERPRETASI")
+    print("RINGKASAN SEMUA HORIZON")
     print("=" * 60)
-    if rf_metrics["RMSE"] <= lstm_metrics["RMSE"]:
-        diff = lstm_metrics["RMSE"] - rf_metrics["RMSE"]
-        print(f"RF lebih unggul: RMSE RF={rf_metrics['RMSE']:.3f} vs LSTM={lstm_metrics['RMSE']:.3f} (diff {diff:.3f} mg/dL)")
-        print("Justifikasi empiris: RF dipilih sebagai model utama karena lebih akurat")
-        print("pada data sparse OhioT1DM yang di-surrogate-kan untuk skenario SMBG.")
-    else:
-        diff = rf_metrics["RMSE"] - lstm_metrics["RMSE"]
-        print(f"LSTM lebih unggul: RMSE LSTM={lstm_metrics['RMSE']:.3f} vs RF={rf_metrics['RMSE']:.3f} (diff {diff:.3f} mg/dL)")
-    print("=" * 60)
-
-    print(f"\nSemua hasil tersimpan di: {out_dir}/")
+    print(summary_df.to_string(index=False))
+    print(f"\nRingkasan -> {summary_path}")
+    print(f"Detail per horizon -> {out_root}/h<langkah>/")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="T4: Evaluate RF vs LSTM")
+    parser = argparse.ArgumentParser(description="T4: Evaluate RF vs LSTM across horizons")
     parser.add_argument("--config", default="config.yaml")
-    parser.add_argument("--smbg", action="store_true",
-                        help="Downsample to SMBG cadence before evaluation")
     args = parser.parse_args()
-    evaluate_both_models(args.config, args.smbg)
+    evaluate_both_models(args.config)

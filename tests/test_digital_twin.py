@@ -20,3 +20,16 @@ def test_simulate_scenario_contains_required_keys():
 	assert "predicted_glucose" in result
 	assert "risk_level" in result
 	assert "glucose_change" in result
+	assert twin.history[-1]["event_type"] == "simulation"
+
+
+def test_simulate_scenario_rejects_invalid_inputs():
+	twin = PatientDigitalTwin(patient_id="P003")
+
+	import pytest
+
+	with pytest.raises(ValueError, match="time_horizon must be greater than 0"):
+		twin.simulate_scenario({"time_horizon": 0})
+
+	with pytest.raises(ValueError, match="carbs_delta cannot be negative"):
+		twin.simulate_scenario({"carbs_delta": -1, "time_horizon": 60})

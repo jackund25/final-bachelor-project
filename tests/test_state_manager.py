@@ -37,9 +37,11 @@ def test_state_manager_records_events(tmp_path):
 
 	manager.create_state("P003")
 	manager.append_event("P003", "simulation", {"predicted_glucose": 160.0})
+	manager.log_intervention("P003", "doctor_approval", "Reviewed and approved recommendation", {"risk_level": "AMAN"})
 
 	manager.save()
 	manager.load()
 
 	assert len(manager._records["P003"].events) >= 2
-	assert manager._records["P003"].events[-1]["event_type"] == "simulation"
+	assert any(event["event_type"] == "simulation" for event in manager._records["P003"].events)
+	assert any(event["event_type"] == "intervention" for event in manager._records["P003"].events)
