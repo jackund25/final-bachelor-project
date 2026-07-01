@@ -39,6 +39,9 @@ class WhatIfSimulator:
         results = []
         
         for carbs in carb_amounts:
+            if carbs < 0:
+                raise ValueError("carb_amounts must contain non-negative values")
+
             scenario = {
                 'carbs_delta': carbs,
                 'time_horizon': 120  # 2 hours
@@ -69,6 +72,9 @@ class WhatIfSimulator:
         Returns:
             result: Simulation result
         """
+        if stress_reduction_points < 0:
+            raise ValueError("stress_reduction_points must be non-negative")
+
         scenario = {
             'stress_delta': -stress_reduction_points,
             'time_horizon': 60
@@ -86,6 +92,9 @@ class WhatIfSimulator:
         Returns:
             result: Simulation result
         """
+        if duration_minutes < 0:
+            raise ValueError("duration_minutes must be non-negative")
+
         scenario = {
             'activity_delta': duration_minutes,
             'time_horizon': 90

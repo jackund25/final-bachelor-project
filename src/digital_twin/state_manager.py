@@ -114,6 +114,31 @@ class DigitalTwinStateManager:
 		self._append_event(patient_id, "update", updates, previous_state=previous_state)
 		return deepcopy(record.state)
 
+	def log_intervention(
+		self,
+		patient_id: str,
+		intervention_type: str,
+		summary: str,
+		payload: Optional[Dict[str, Any]] = None,
+	) -> Dict[str, Any]:
+		"""Record a decision-support or intervention event for traceability."""
+		if patient_id not in self._records:
+			self.create_state(patient_id)
+
+		event_payload = {
+			"intervention_type": intervention_type,
+			"summary": summary,
+			"details": deepcopy(payload or {}),
+		}
+		return self._append_event(patient_id, "intervention", event_payload)
+
+	def get_events(self, patient_id: str) -> list[Dict[str, Any]]:
+		"""Return a copy of the event history for a patient."""
+		if patient_id not in self._records:
+			raise KeyError(f"Patient state not found: {patient_id}")
+
+		return deepcopy(self._records[patient_id].events)
+
 	def append_event(self, patient_id: str, event_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
 		"""Append an arbitrary lifecycle event for a patient."""
 		if patient_id not in self._records:
