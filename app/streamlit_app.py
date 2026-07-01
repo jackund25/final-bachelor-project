@@ -1,165 +1,215 @@
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))  # project root (src)
+sys.path.insert(0, str(Path(__file__).parent))          # app (ui)
+
 import json
+import pickle
+from datetime import datetime
 
 import pandas as pd
 import streamlit as st
 
+from src.data.loader import DiabetesDataLoader
+from src.digital_twin import DigitalTwinStateManager, PatientDigitalTwin, WhatIfSimulator
+from src.rag import RAGPipeline
+from ui import (app_header, risk_badge, glucose_zone_chart, zone_legend,
+                disclaimer_footer, classify_glucose)
 
-st.set_page_config(
-	page_title="Diabetes Digital Twin",
-	page_icon="🩺",
-	layout="wide",
-	initial_sidebar_state="expanded",
-)
-
-
-def _file_exists(path: str) -> bool:
-	return Path(path).exists()
+st.set_page_config(page_title="Konsultasi — Diabetes Digital Twin", page_icon="🩺",
+                   layout="wide", initial_sidebar_state="expanded")
 
 
-def _load_metrics(path: str):
-	metrics_path = Path(path)
-	if not metrics_path.exists():
-		return None
-	with open(metrics_path, "r", encoding="utf-8") as f:
-		return json.load(f)
+# ── Loaders (cache) ───────────────────────────────────────────
+@st.cache_data
+def load_dataset():
+    return DiabetesDataLoader("data/raw").load_preferred_dataset("ohio_t1dm", "latest_generated")[0] \
+        .sort_values(["patient_id", "timestamp"])
 
 
-def _dataset_summary(path: str):
-	csv_path = Path(path)
-	if not csv_path.exists():
-		return None
-
-	df = pd.read_csv(csv_path, nrows=5000)
-	summary = {
-		"rows_previewed": len(df),
-		"patients": int(df["patient_id"].nunique()) if "patient_id" in df.columns else 0,
-		"glucose_mean": float(df["glucose"].mean()) if "glucose" in df.columns else None,
-		"glucose_min": float(df["glucose"].min()) if "glucose" in df.columns else None,
-		"glucose_max": float(df["glucose"].max()) if "glucose" in df.columns else None,
-	}
-	return summary
+@st.cache_resource
+def load_artifacts():
+    bf = Path("models/rf_inference_bundle.pkl")
+    if not bf.exists():
+        return None
+    b = pickle.load(open(bf, "rb"))
+    return {"model": b["model"], "scaler": b.get("scaler"),
+            "features": b.get("features", ["glucose", "carbs", "insulin", "activity"]),
+            "sequence_length": int(b.get("sequence_length", 12)),
+            "horizon": int(b.get("prediction_horizon", 6))}
 
 
-st.markdown(
-	"""
-	<style>
-	.hero {
-		padding: 1.1rem 1.3rem;
-		border-radius: 16px;
-		background: linear-gradient(120deg, #0e3b43 0%, #1d6f84 45%, #f2a35e 100%);
-		color: #f8fbfd;
-		margin-bottom: 1rem;
-	}
-	.hero h1 {
-		margin: 0;
-		font-size: 2rem;
-		line-height: 1.2;
-		letter-spacing: 0.3px;
-	}
-	.hero p {
-		margin: 0.35rem 0 0 0;
-		font-size: 1.02rem;
-		opacity: 0.95;
-	}
-	.tile {
-		border: 1px solid rgba(27, 48, 58, 0.15);
-		border-radius: 14px;
-		padding: 0.9rem 1rem;
-		background: #fbfdff;
-		min-height: 115px;
-	}
-	.tile h4 {
-		margin: 0 0 0.3rem 0;
-		color: #1d3642;
-	}
-	.tile p {
-		margin: 0;
-		color: #2d4a57;
-		font-size: 0.95rem;
-	}
-	</style>
-	""",
-	unsafe_allow_html=True,
-)
+@st.cache_resource
+def load_rag():
+    import os
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+    p = RAGPipeline(kb_dir="data/knowledge_base",
+                    llm_provider=os.getenv("LLM_PROVIDER", "gemini"),
+                    embed_provider=os.getenv("EMBED_PROVIDER", "sentence-transformers"))
+    p.build()
+    return p
 
-st.markdown(
-	"""
-	<div class="hero">
-	  <h1>Diabetes Digital Twin Dashboard</h1>
-	  <p>Platform patient-centered untuk prediksi glukosa, simulasi skenario, dan dukungan keputusan harian.</p>
-	</div>
-	""",
-	unsafe_allow_html=True,
-)
 
-st.subheader("Module Navigation")
-left, mid, right = st.columns(3)
+def predict_next(window_df, art):
+    X = window_df[art["features"]].values.astype(float)
+    if art["scaler"] is not None:
+        X = art["scaler"].transform(X)
+    return float(art["model"].predict(X.reshape(1, -1))[0])
 
-with left:
-	st.markdown(
-		"""
-		<div class="tile">
-		  <h4>1. Input Logbook</h4>
-		  <p>Catat data harian pasien: glukosa, karbohidrat, insulin, aktivitas, dan stres.</p>
-		</div>
-		""",
-		unsafe_allow_html=True,
-	)
 
-with mid:
-	st.markdown(
-		"""
-		<div class="tile">
-		  <h4>2. Prediction</h4>
-		  <p>Prediksi glukosa langkah berikutnya dengan baseline model Random Forest.</p>
-		</div>
-		""",
-		unsafe_allow_html=True,
-	)
+# ── Header & sidebar ──────────────────────────────────────────
+app_header("Konsultasi Pasien Diabetes",
+           "Alat bantu keputusan klinis — prediksi glukosa & rekomendasi antisipatif", "🩺")
 
-with right:
-	st.markdown(
-		"""
-		<div class="tile">
-		  <h4>3. What-If Simulator</h4>
-		  <p>Eksplorasi dampak perubahan makan, aktivitas, atau insulin sebelum intervensi nyata.</p>
-		</div>
-		""",
-		unsafe_allow_html=True,
-	)
+art = load_artifacts()
+if art is None:
+    st.error("Model belum siap. Jalankan pelatihan dari terminal:")
+    st.code("python -m src.models.rf_model --config config.yaml --data_source ohio_t1dm")
+    disclaimer_footer(); st.stop()
 
-st.markdown("---")
-st.subheader("System Status")
+try:
+    data_df = load_dataset()
+except FileNotFoundError:
+    st.error("Data pasien belum tersedia."); disclaimer_footer(); st.stop()
 
-metrics = _load_metrics("models/rf_baseline_metrics.json")
-dataset_info = _dataset_summary("data/raw/training_data_complete.csv")
+patient_ids = sorted(data_df["patient_id"].unique().tolist())
+with st.sidebar:
+    st.markdown("### 👤 Pasien")
+    sel = st.selectbox("Pilih pasien", patient_ids,
+                       index=patient_ids.index(st.session_state.get("patient_id", patient_ids[0]))
+                       if st.session_state.get("patient_id") in patient_ids else 0)
+    st.session_state["patient_id"] = sel
+    horizon_min = art["horizon"] * 5
+    st.caption(f"Horizon prediksi: **+{horizon_min} menit**")
+    st.markdown("---")
+    st.caption("Alur: tinjau status → prediksi & risiko → rekomendasi → simulasi/keputusan.")
 
-status_cols = st.columns(4)
-status_cols[0].metric("Model File", "Ready" if _file_exists("models/rf_baseline.pkl") else "Missing")
-status_cols[1].metric("Inference Bundle", "Ready" if _file_exists("models/rf_inference_bundle.pkl") else "Missing")
-status_cols[2].metric("Metrics JSON", "Ready" if _file_exists("models/rf_baseline_metrics.json") else "Missing")
-status_cols[3].metric("Dataset CSV", "Ready" if _file_exists("data/raw/training_data_complete.csv") else "Missing")
+pat = data_df[data_df["patient_id"] == sel].sort_values("timestamp")
+seq_len = art["sequence_length"]
+if len(pat) < seq_len:
+    st.warning(f"Data pasien {sel} belum cukup ({len(pat)}/{seq_len} pembacaan)."); disclaimer_footer(); st.stop()
 
-if metrics is not None:
-	st.markdown("### Baseline Performance")
-	m1, m2, m3, m4 = st.columns(4)
-	m1.metric("RMSE", f"{metrics.get('RMSE', 0):.4f}")
-	m2.metric("MAE", f"{metrics.get('MAE', 0):.4f}")
-	m3.metric("MAPE", f"{metrics.get('MAPE', 0):.2f}%")
-	m4.metric("Clarke A+B", f"{metrics.get('Clarke_A+B', 0):.2f}%")
+window_df = pat.tail(seq_len).copy().reset_index(drop=True)
+current = float(window_df["glucose"].iloc[-1])
+try:
+    pred = predict_next(window_df, art)
+except Exception as exc:  # noqa: BLE001
+    st.error("Gagal menjalankan model — kemungkinan environment tidak cocok. "
+             "Model dilatih dengan scikit-learn 1.3.0; jalankan aplikasi di environment **diabetes-ta**:")
+    st.code("conda activate diabetes-ta\nset PYTHONPATH=.\nstreamlit run app/streamlit_app.py")
+    st.caption(f"Detail teknis: {exc}")
+    disclaimer_footer(); st.stop()
+delta = pred - current
+_, cur_label, _ = classify_glucose(current)
+_, pred_label, _ = classify_glucose(pred)
 
-if dataset_info is not None:
-	st.markdown("### Dataset Snapshot")
-	d1, d2, d3, d4 = st.columns(4)
-	d1.metric("Rows (sampled)", f"{dataset_info['rows_previewed']:,}")
-	d2.metric("Patients", dataset_info["patients"])
-	d3.metric("Mean Glucose", f"{dataset_info['glucose_mean']:.1f} mg/dL" if dataset_info["glucose_mean"] is not None else "N/A")
-	d4.metric(
-		"Range",
-		f"{dataset_info['glucose_min']:.1f} - {dataset_info['glucose_max']:.1f}"
-		if dataset_info["glucose_min"] is not None and dataset_info["glucose_max"] is not None
-		else "N/A",
-	)
+# ── SECTION 1: Status + Prediksi ──────────────────────────────
+st.subheader(f"Pasien: {sel}")
+c1, c2 = st.columns([1.15, 1])
+with c1:
+    fig = glucose_zone_chart(
+        x=list(range(1, len(window_df) + 1)), y=window_df["glucose"].tolist(),
+        predicted_value=pred, predicted_x=len(window_df) + 1,
+        title=f"Glukosa terkini → prediksi +{horizon_min} menit", height=330)
+    st.plotly_chart(fig, use_container_width=True)
+    zone_legend()
+with c2:
+    risk_badge(pred, prefix=f"Prediksi +{horizon_min} mnt")
+    st.markdown("")
+    k = st.columns(2)
+    k[0].metric("Glukosa sekarang", f"{current:.0f} mg/dL", help=cur_label)
+    k[1].metric(f"Prediksi +{horizon_min} mnt", f"{pred:.0f} mg/dL", delta=f"{delta:+.0f}")
+    trend = "↑ Meningkat" if delta > 10 else ("↓ Menurun" if delta < -10 else "→ Stabil")
+    st.metric("Tren", trend)
+    # ringkasan kondisi aktif
+    st.markdown(
+        f'<div class="card"><h4>Kondisi aktif</h4><p>'
+        f'Insulin aktif: {float(window_df["insulin"].iloc[-1]):.2f} u &nbsp;·&nbsp; '
+        f'Karbohidrat: {float(window_df["carbs"].iloc[-1]):.0f} g &nbsp;·&nbsp; '
+        f'Aktivitas: {int(float(window_df["activity"].iloc[-1]))} mnt</p></div>',
+        unsafe_allow_html=True)
 
-st.info("Gunakan menu sidebar untuk membuka halaman Input Logbook, Prediction, atau What-If Simulator.")
+# Peringatan divergen (current normal tapi prediksi bahaya) — nilai jual sistem
+if cur_label == "Dalam Target" and pred_label != "Dalam Target":
+    st.warning(f"⚠️ **Antisipasi:** kondisi saat ini normal, namun glukosa diprediksi menuju "
+               f"**{pred_label}** ({pred:.0f} mg/dL) dalam {horizon_min} menit. Pertimbangkan tindakan pencegahan.")
+
+st.divider()
+
+# ── Tabs: Rekomendasi / What-If / Keputusan ───────────────────
+tab_rec, tab_sim, tab_log = st.tabs(["🧠 Rekomendasi Klinis", "🔬 Simulasi What-If", "📝 Catat Keputusan"])
+
+with tab_rec:
+    st.caption("Rekomendasi antisipatif berbasis panduan medis (PERKENI/ADA), dikondisikan pada nilai prediksi.")
+    if st.button("Buat rekomendasi klinis", type="primary"):
+        patient_state = {
+            "current_glucose": current,
+            "insulin_on_board": float(window_df["insulin"].iloc[-1]),
+            "carbs_on_board": float(window_df["carbs"].iloc[-1]),
+            "activity_level": int(float(window_df["activity"].iloc[-1])),
+            "stress_level": int(float(window_df["stress"].iloc[-1])) if "stress" in window_df else 5,
+        }
+        with st.spinner("Menyusun rekomendasi..."):
+            try:
+                res = load_rag().answer(patient_state=patient_state, prediction=pred)
+                st.session_state["last_rec"] = res
+            except Exception as exc:  # noqa: BLE001
+                st.session_state["last_rec"] = None
+                st.warning(f"Layanan rekomendasi (LLM) tidak tersedia: {str(exc)[:90]}")
+    res = st.session_state.get("last_rec")
+    if res:
+        st.markdown(f'<div class="card">{res["explanation"]}</div>', unsafe_allow_html=True)
+        adv = res.get("advisory", {})
+        if adv.get("actions"):
+            st.markdown("**Tindakan yang disarankan:**")
+            for a in adv["actions"]:
+                st.markdown(f"- {a}")
+        with st.expander("📚 Rujukan panduan medis"):
+            for doc in res["retrieved_docs"]:
+                st.markdown(f"**#{doc['rank']}** · `{doc['source']}`")
+                st.caption(doc["text"][:350] + ("…" if len(doc["text"]) > 350 else ""))
+
+with tab_sim:
+    st.caption("Simulasikan dampak intervensi untuk konseling pasien (tanpa mengubah data).")
+    twin = PatientDigitalTwin(patient_id=sel, initial_state={
+        "current_glucose": current, "insulin_on_board": float(window_df["insulin"].iloc[-1]),
+        "carbs_on_board": float(window_df["carbs"].iloc[-1]),
+        "activity_level": int(float(window_df["activity"].iloc[-1])),
+        "stress_level": int(float(window_df["stress"].iloc[-1])) if "stress" in window_df else 5})
+    sim = WhatIfSimulator(twin)
+    sc = st.columns(4)
+    add_carbs = sc[0].slider("Karbohidrat (g)", 0, 120, 0, 5)
+    add_ins = sc[1].slider("Insulin (unit)", 0.0, 15.0, 0.0, 0.5)
+    add_act = sc[2].slider("Aktivitas (mnt)", 0, 120, 0, 5)
+    hz = sc[3].slider("Horizon (mnt)", 30, 240, 60, 15)
+    if st.button("Jalankan simulasi"):
+        r = twin.simulate_scenario({"carbs_delta": float(add_carbs), "insulin_delta": float(add_ins),
+                                    "activity_delta": int(add_act), "stress_delta": 0, "time_horizon": int(hz)})
+        sp, cg = float(r["predicted_glucose"]), float(r["glucose_change"])
+        risk_badge(sp, prefix=f"Simulasi +{hz} mnt")
+        o = st.columns(2)
+        o[0].metric("Prediksi simulasi", f"{sp:.0f} mg/dL", delta=f"{cg:+.0f}")
+        o[1].metric("vs sekarang", f"{current:.0f} → {sp:.0f} mg/dL")
+
+with tab_log:
+    st.caption("Catat keputusan/tinjauan dokter untuk audit.")
+    sm = DigitalTwinStateManager(storage_file="data/processed/patient_states.json")
+    sm.load()
+    init = {"current_glucose": current, "insulin_on_board": float(window_df["insulin"].iloc[-1]),
+            "carbs_on_board": float(window_df["carbs"].iloc[-1]),
+            "activity_level": int(float(window_df["activity"].iloc[-1])),
+            "stress_level": int(float(window_df["stress"].iloc[-1])) if "stress" in window_df else 5,
+            "timestamp": datetime.now().isoformat()}
+    (sm.create_state if sel not in sm.list_patients() else sm.update_state)(sel, init)
+    itype = st.selectbox("Jenis keputusan", ["tinjauan", "setujui rekomendasi", "sesuaikan rekomendasi", "tolak"])
+    isum = st.text_input("Catatan", value="Dokter meninjau prediksi & rekomendasi")
+    if st.button("Simpan keputusan"):
+        ev = sm.log_intervention(sel, intervention_type=itype, summary=isum,
+                                 payload={"current_glucose": current, "predicted": pred,
+                                          "risk": pred_label})
+        sm.save()
+        st.success(f"Keputusan tercatat pada {ev['timestamp']}")
+
+disclaimer_footer()

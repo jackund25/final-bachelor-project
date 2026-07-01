@@ -1,140 +1,103 @@
+import sys
 from pathlib import Path
 from datetime import datetime
 
-import matplotlib.pyplot as plt
+sys.path.insert(0, str(Path(__file__).parent.parent))  # folder app (untuk ui)
+
 import pandas as pd
 import streamlit as st
 
+from ui import app_header, glucose_zone_chart, zone_legend, disclaimer_footer
 
 st.set_page_config(page_title="Input Logbook", page_icon="📝", layout="wide")
-st.title("📝 Input Logbook")
-st.caption("Masukkan data harian pasien untuk mendukung digital twin dan prediksi glukosa.")
-
+app_header("Input Logbook", "Catat data harian pasien untuk mendukung digital twin & prediksi", "📝")
 
 LOGBOOK_PATH = Path("data/raw/manual_logbook.csv")
+COLUMNS = ["timestamp", "patient_id", "glucose", "carbs", "insulin", "activity",
+           "stress", "sleep", "work", "illness", "meal_type", "notes", "source"]
 
 
 def load_logbook() -> pd.DataFrame:
-	if not LOGBOOK_PATH.exists():
-		return pd.DataFrame(
-			columns=[
-				"timestamp",
-				"patient_id",
-				"glucose",
-				"carbs",
-				"insulin",
-				"activity",
-				"stress",
-				"sleep",
-				"work",
-				"illness",
-				"meal_type",
-				"notes",
-				"source",
-			]
-		)
-
-	df = pd.read_csv(LOGBOOK_PATH, parse_dates=["timestamp"])
-	# BRUTAL FIX: Reconstruct from dict to strip Narwhals wrapper, then sort
-	df_native = pd.DataFrame(df.to_dict('list'))
-	return df_native.sort_values("timestamp", ascending=False).reset_index(drop=True)
+    if not LOGBOOK_PATH.exists():
+        return pd.DataFrame(columns=COLUMNS)
+    df = pd.read_csv(LOGBOOK_PATH, parse_dates=["timestamp"])
+    df = pd.DataFrame(df.to_dict("list"))  # strip wrapper
+    return df.sort_values("timestamp", ascending=False).reset_index(drop=True)
 
 
 def save_entry(entry: dict) -> None:
-	LOGBOOK_PATH.parent.mkdir(parents=True, exist_ok=True)
-	df = load_logbook()
-	new_row = pd.DataFrame([entry])
-
-	if df.empty:
-		combined = new_row
-	else:
-		combined = pd.concat([new_row, df], ignore_index=True)
-
-	combined["timestamp"] = pd.to_datetime(combined["timestamp"], errors="coerce")
-	combined = combined.sort_values("timestamp", ascending=False)
-	combined["timestamp"] = combined["timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S")
-	combined.to_csv(LOGBOOK_PATH, index=False)
+    LOGBOOK_PATH.parent.mkdir(parents=True, exist_ok=True)
+    df = load_logbook()
+    combined = pd.DataFrame([entry]) if df.empty else pd.concat([pd.DataFrame([entry]), df], ignore_index=True)
+    combined["timestamp"] = pd.to_datetime(combined["timestamp"], errors="coerce")
+    combined = combined.sort_values("timestamp", ascending=False)
+    combined["timestamp"] = combined["timestamp"].dt.strftime("%Y-%m-%d %H:%M:%S")
+    combined.to_csv(LOGBOOK_PATH, index=False)
 
 
 left, right = st.columns([1.1, 0.9])
 
 with left:
-	st.subheader("Add New Entry")
-	with st.form("logbook_form", clear_on_submit=False):
-		patient_id = st.text_input("Patient ID", value="adult#001")
-		date_value = st.date_input("Date")
-		time_value = st.time_input("Time")
+    st.subheader("Tambah Catatan Baru")
+    with st.form("logbook_form", clear_on_submit=False):
+        patient_id = st.text_input("ID Pasien", value=st.session_state.get("patient_id", "adult#001"))
+        dcol, tcol = st.columns(2)
+        date_value = dcol.date_input("Tanggal")
+        time_value = tcol.time_input("Waktu")
 
-		c1, c2, c3 = st.columns(3)
-		with c1:
-			glucose = st.number_input("Glucose (mg/dL)", min_value=40.0, max_value=400.0, value=110.0, step=1.0)
-			carbs = st.number_input("Carbs (g)", min_value=0.0, max_value=200.0, value=30.0, step=1.0)
-			insulin = st.number_input("Insulin (units)", min_value=0.0, max_value=30.0, value=3.0, step=0.1)
-		with c2:
-			activity = st.number_input("Activity (minutes)", min_value=0, max_value=240, value=15, step=5)
-			stress = st.slider("Stress Level", min_value=1, max_value=10, value=5)
-			sleep = st.checkbox("Sleep", value=False)
-		with c3:
-			work = st.checkbox("Work", value=True)
-			illness = st.checkbox("Illness", value=False)
-			meal_type = st.selectbox("Meal Type", ["none", "breakfast", "lunch", "dinner", "snack"])
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            glucose = st.number_input("Glukosa (mg/dL)", 40.0, 400.0, 110.0, 1.0)
+            carbs = st.number_input("Karbohidrat (g)", 0.0, 200.0, 30.0, 1.0)
+            insulin = st.number_input("Insulin (unit)", 0.0, 30.0, 3.0, 0.1)
+        with c2:
+            activity = st.number_input("Aktivitas (menit)", 0, 240, 15, 5)
+            stress = st.slider("Tingkat Stres", 1, 10, 5)
+            sleep = st.checkbox("Tidur", value=False)
+        with c3:
+            work = st.checkbox("Kerja", value=True)
+            illness = st.checkbox("Sakit", value=False)
+            meal_type = st.selectbox("Jenis Makan", ["none", "sarapan", "makan siang", "makan malam", "camilan"])
 
-		notes = st.text_area("Notes", placeholder="Contoh: setelah makan siang, gula cenderung naik...")
+        notes = st.text_area("Catatan", placeholder="Contoh: setelah makan siang gula cenderung naik...")
+        submitted = st.form_submit_button("💾 Simpan Catatan", type="primary", use_container_width=True)
 
-		submitted = st.form_submit_button("Save Logbook Entry")
-
-	if submitted:
-		timestamp = datetime.combine(date_value, time_value)
-		entry = {
-			"timestamp": pd.to_datetime(timestamp),
-			"patient_id": patient_id.strip(),
-			"glucose": float(glucose),
-			"carbs": float(carbs),
-			"insulin": float(insulin),
-			"activity": int(activity),
-			"stress": int(stress),
-			"sleep": int(sleep),
-			"work": int(work),
-			"illness": int(illness),
-			"meal_type": meal_type,
-			"notes": notes.strip(),
-			"source": "manual",
-		}
-
-		save_entry(entry)
-		st.success(f"Entry saved for {patient_id} at {entry['timestamp']}")
+    if submitted:
+        ts = datetime.combine(date_value, time_value)
+        entry = {
+            "timestamp": pd.to_datetime(ts), "patient_id": patient_id.strip(),
+            "glucose": float(glucose), "carbs": float(carbs), "insulin": float(insulin),
+            "activity": int(activity), "stress": int(stress), "sleep": int(sleep),
+            "work": int(work), "illness": int(illness), "meal_type": meal_type,
+            "notes": notes.strip(), "source": "manual",
+        }
+        save_entry(entry)
+        st.session_state["patient_id"] = patient_id.strip()
+        st.success(f"✅ Tersimpan untuk {patient_id} pada {entry['timestamp']}")
 
 with right:
-	st.subheader("Logbook Status")
-	current_logbook = load_logbook()
+    st.subheader("Status Logbook")
+    lb = load_logbook()
+    total = len(lb)
+    s1, s2 = st.columns(2)
+    s1.metric("Total Catatan", f"{total:,}")
+    s2.metric("Pasien", f"{lb['patient_id'].nunique() if total else 0}")
 
-	total_entries = len(current_logbook)
-	total_patients = current_logbook["patient_id"].nunique() if total_entries else 0
-	latest_timestamp = current_logbook["timestamp"].max() if total_entries else None
+    if total:
+        st.caption(f"Catatan terakhir: {lb['timestamp'].max()}")
+        st.markdown("**Catatan Terbaru**")
+        st.dataframe(lb.head(8), use_container_width=True, height=200)
 
-	stat1, stat2 = st.columns(2)
-	stat1.metric("Total Entries", f"{total_entries:,}")
-	stat2.metric("Patients", f"{total_patients}")
+        st.markdown("**Snapshot Glukosa**")
+        chart_df = lb[["timestamp", "glucose"]].sort_values("timestamp").tail(100)
+        fig = glucose_zone_chart(
+            x=list(range(1, len(chart_df) + 1)), y=chart_df["glucose"].tolist(),
+            title="Glukosa Terkini (logbook)", height=300,
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        zone_legend()
+    else:
+        st.info("Belum ada data logbook. Tambahkan catatan pertama di sebelah kiri.")
 
-	if latest_timestamp is not None:
-		st.info(f"Latest entry: {latest_timestamp}")
-	else:
-		st.warning("Belum ada data logbook tersimpan.")
-
-	if total_entries:
-		st.markdown("### Recent Entries")
-		st.dataframe(current_logbook.head(10), use_container_width=True)
-
-		st.markdown("### Glucose Snapshot")
-		chart_df = current_logbook[["timestamp", "glucose"]].sort_values("timestamp").tail(100)
-		glucose_values = chart_df["glucose"].tolist()
-		fig, ax = plt.subplots(figsize=(8, 3))
-		ax.plot(range(1, len(glucose_values) + 1), glucose_values, linewidth=2)
-		ax.set_title("Recent Glucose")
-		ax.set_xlabel("Recent Point")
-		ax.set_ylabel("mg/dL")
-		ax.grid(alpha=0.25)
-		st.pyplot(fig, clear_figure=True)
-
-st.markdown("---")
-st.caption("Logbook ini disimpan ke data/raw/manual_logbook.csv sebagai sumber input manual pasien.")
+st.caption("Logbook disimpan ke `data/raw/manual_logbook.csv` sebagai sumber input manual pasien.")
+disclaimer_footer()

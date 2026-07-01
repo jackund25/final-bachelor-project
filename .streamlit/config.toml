@@ -1,0 +1,15 @@
+# Tema aplikasi — nuansa klinis/profesional untuk pengguna target (dokter/klinisi).
+# Warna primer teal-medis yang tenang; latar bersih; teks kontras tinggi agar mudah dibaca.
+[theme]
+base = "light"
+primaryColor = "#0e7c86"          # teal medis (aksi utama, highlight)
+backgroundColor = "#ffffff"        # kanvas bersih
+secondaryBackgroundColor = "#eef4f6"  # panel/sidebar/kartu
+textColor = "#14303a"              # teks gelap, kontras tinggi
+font = "sans serif"
+
+[server]
+runOnSave = true
+
+[browser]
+gatherUsageStats = false
