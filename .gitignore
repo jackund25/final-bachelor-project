@@ -4,7 +4,11 @@ __pycache__/
 *$py.class
 *.so
 .Python
+ta/
 ta1/
+.ta1/
+.venv/
+venv/
 
 # Python build/test artifacts
 .pytest_cache/
@@ -28,6 +32,15 @@ data/processed/*.csv
 models/*.h5
 models/*.pkl
 models/*.gguf
+# vector DB (generated; rebuild via scripts/reingest_kb.py)
+models/chroma_db/
+
+# Conda env lokal (bila dibuat dengan --prefix di dalam repo)
+diabetes-ta/
+env/
+
+# Output notebook (regenerate saat run)
+notebooks/outputs/
 
 # Logs
 logs/*.log

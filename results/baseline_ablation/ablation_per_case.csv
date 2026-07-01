@@ -1,0 +1,13 @@
+case,scenario,current,predicted,expected_topic,mode,targeted_condition,targets_needed,top1_topic,retrieved_topics,hit@1,hit@3,rank,mrr,precision@3
+D1,Insulin menumpuk pasca-bolus,112.0,58.0,Hipoglikemia,standard,normal,0,Target Kontrol Glikemik,Target Kontrol Glikemik | Hipoglikemia | Hiperglikemia,0,1,2,0.5,0.333
+D1,Insulin menumpuk pasca-bolus,112.0,58.0,Hipoglikemia,prediction_conditioned,hipoglikemia,1,Target Kontrol Glikemik,Target Kontrol Glikemik | Hiperglikemia | Hipoglikemia,0,1,3,0.333,0.333
+D2,Olahraga tanpa penyesuaian insulin,98.0,64.0,Hipoglikemia,standard,normal,0,Target Kontrol Glikemik,Target Kontrol Glikemik | Hipoglikemia | Hiperglikemia,0,1,2,0.5,0.333
+D2,Olahraga tanpa penyesuaian insulin,98.0,64.0,Hipoglikemia,prediction_conditioned,hipoglikemia,1,Target Kontrol Glikemik,Target Kontrol Glikemik | Hiperglikemia | Hipoglikemia,0,1,3,0.333,0.333
+D3,Tren turun cepat sebelum tidur,128.0,66.0,Hipoglikemia,standard,normal,0,Target Kontrol Glikemik,Target Kontrol Glikemik | Hipoglikemia | Hiperglikemia,0,1,2,0.5,0.333
+D3,Tren turun cepat sebelum tidur,128.0,66.0,Hipoglikemia,prediction_conditioned,hipoglikemia,1,Target Kontrol Glikemik,Target Kontrol Glikemik | Hiperglikemia | Hipoglikemia,0,1,3,0.333,0.333
+D4,Makan tinggi karbohidrat,150.0,214.0,Hiperglikemia,standard,normal,0,Target Kontrol Glikemik,Target Kontrol Glikemik | Hipoglikemia | Hiperglikemia,0,1,3,0.333,0.333
+D4,Makan tinggi karbohidrat,150.0,214.0,Hiperglikemia,prediction_conditioned,hiperglikemia,1,Hiperglikemia,Hiperglikemia | Target Kontrol Glikemik | Hipoglikemia,1,1,1,1.0,0.333
+D5,Karbohidrat + stres tinggi,162.0,205.0,Hiperglikemia,standard,normal,0,Target Kontrol Glikemik,Target Kontrol Glikemik | Hipoglikemia | Hiperglikemia,0,1,3,0.333,0.333
+D5,Karbohidrat + stres tinggi,162.0,205.0,Hiperglikemia,prediction_conditioned,hiperglikemia,1,Hiperglikemia,Hiperglikemia | Target Kontrol Glikemik | Hipoglikemia,1,1,1,1.0,0.333
+D6,Dosis insulin kurang,140.0,238.0,Hiperglikemia,standard,normal,0,Target Kontrol Glikemik,Target Kontrol Glikemik | Hipoglikemia | Hiperglikemia,0,1,3,0.333,0.333
+D6,Dosis insulin kurang,140.0,238.0,Hiperglikemia,prediction_conditioned,hiperglikemia,1,Hiperglikemia,Hiperglikemia | Target Kontrol Glikemik | Hipoglikemia,1,1,1,1.0,0.333
