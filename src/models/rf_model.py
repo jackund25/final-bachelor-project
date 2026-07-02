@@ -122,6 +122,17 @@ def train_random_forest_from_config(
 	if horizon is None:
 		horizon = default_horizon
 
+	# Fitur engineered (IOB/COB/tren/waktu) + target delta — opsional dari config.
+	use_engineered = config["model"].get("use_engineered", False)
+	predict_delta = config["model"].get("predict_delta", False)
+	fe_params = config["model"].get("feature_engineering", {})
+	if use_engineered:
+		df = preprocessor.engineer_features(df, **fe_params)
+		feature_list = config["model"]["engineered_features"]
+	else:
+		feature_list = config["model"]["features"]
+	preprocessor.feature_columns = list(feature_list)
+
 	patient_ids = sorted(df["patient_id"].unique().tolist())
 	if len(patient_ids) < 2:
 		raise ValueError("Need at least 2 patients for train/test split")
@@ -129,14 +140,19 @@ def train_random_forest_from_config(
 	test_patients = patient_ids[-2:]
 	train_df, test_df = preprocessor.split_by_patient(df, test_patients)
 
-	X_train, y_train = preprocessor.create_sequences(train_df, sequence_length=sequence_length, prediction_horizon=horizon)
-	X_test, y_test = preprocessor.create_sequences(test_df, sequence_length=sequence_length, prediction_horizon=horizon)
+	X_train, y_train, anc_train = preprocessor.create_sequences(train_df, sequence_length, horizon, return_anchor=True)
+	X_test, y_test, anc_test = preprocessor.create_sequences(test_df, sequence_length, horizon, return_anchor=True)
 
 	X_train_scaled, X_test_scaled = preprocessor.normalize_data(X_train, X_test)
 
+	# Target: absolut, atau delta (selisih dari glukosa terakhir window) lalu direkonstruksi.
+	y_train_fit = (y_train - anc_train) if predict_delta else y_train
+
 	model = RandomForestGlucoseModel(config)
-	model.train(X_train_scaled, y_train)
+	model.train(X_train_scaled, y_train_fit)
 	y_pred = model.predict(X_test_scaled)
+	if predict_delta:
+		y_pred = y_pred + anc_test
 
 	metrics = calculate_all_metrics(y_test, y_pred)
 
@@ -148,9 +164,12 @@ def train_random_forest_from_config(
 	bundle = {
 		"model": model.model,
 		"scaler": preprocessor.scaler,
-		"features": config["model"]["features"],
+		"features": feature_list,
 		"sequence_length": sequence_length,
 		"prediction_horizon": horizon,
+		"use_engineered": use_engineered,
+		"predict_delta": predict_delta,
+		"feature_engineering": fe_params,
 	}
 	with open(models_dir / f"rf_inference_bundle_h{horizon}.pkl", "wb") as f:
 		pickle.dump(bundle, f)

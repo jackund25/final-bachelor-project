@@ -37,7 +37,10 @@ def load_artifacts():
     return {"model": b["model"], "scaler": b.get("scaler"),
             "features": b.get("features", ["glucose", "carbs", "insulin", "activity"]),
             "sequence_length": int(b.get("sequence_length", 12)),
-            "horizon": int(b.get("prediction_horizon", 6))}
+            "horizon": int(b.get("prediction_horizon", 6)),
+            "use_engineered": bool(b.get("use_engineered", False)),
+            "predict_delta": bool(b.get("predict_delta", False)),
+            "feature_engineering": dict(b.get("feature_engineering", {}))}
 
 
 @st.cache_resource
@@ -52,11 +55,26 @@ def load_rag():
     return p
 
 
+def build_window(patient_df, art):
+    """Bangun window fitur; hitung fitur engineered bila bundle memakainya."""
+    seq = art["sequence_length"]
+    if art["use_engineered"]:
+        from src.data.preprocessor import DataPreprocessor
+        feat_df = DataPreprocessor({}).engineer_features(patient_df, **art["feature_engineering"])
+    else:
+        feat_df = patient_df
+    return feat_df.tail(seq).reset_index(drop=True)
+
+
 def predict_next(window_df, art):
+    """Prediksi glukosa absolut; rekonstruksi dari delta bila model dilatih delta."""
     X = window_df[art["features"]].values.astype(float)
     if art["scaler"] is not None:
         X = art["scaler"].transform(X)
-    return float(art["model"].predict(X.reshape(1, -1))[0])
+    out = float(art["model"].predict(X.reshape(1, -1))[0])
+    if art["predict_delta"]:
+        out += float(window_df["glucose"].iloc[-1])  # anchor = glukosa terakhir window
+    return out
 
 
 # ── Header & sidebar ──────────────────────────────────────────
@@ -91,7 +109,7 @@ seq_len = art["sequence_length"]
 if len(pat) < seq_len:
     st.warning(f"Data pasien {sel} belum cukup ({len(pat)}/{seq_len} pembacaan)."); disclaimer_footer(); st.stop()
 
-window_df = pat.tail(seq_len).copy().reset_index(drop=True)
+window_df = build_window(pat, art)
 current = float(window_df["glucose"].iloc[-1])
 try:
     pred = predict_next(window_df, art)
