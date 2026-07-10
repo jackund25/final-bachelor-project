@@ -1,0 +1,25 @@
+\cleardoublepage
+\chapter{PENUTUP}
+\label{chap:penutup}
+
+\section{Kesimpulan}
+Tugas akhir ini merancang, mengimplementasikan, dan mengevaluasi sistem pendukung keputusan pengelolaan diabetes berbasis \emph{Prediction-Conditioned RAG} yang \emph{deployable} pada lingkungan fasilitas kesehatan dengan sumber daya terbatas. Berdasarkan hasil pada Bab~\ref{chap:evaluasi}, dapat ditarik kesimpulan berikut.
+
+\begin{enumerate}
+    \item Sistem berhasil mengubah alur pengelolaan yang reaktif menjadi antisipatif dengan menyatukan prediksi glukosa jangka pendek, \emph{state digital twin}, dan penalaran berbasis dokumen klinis dalam satu alur yang divalidasi dokter. Seluruh kebutuhan fungsional (KF-01--KF-09) terpenuhi tanpa memerlukan GPU, CGM \emph{real-time}, maupun EHR.
+    \item Model prediksi \emph{Random Forest} yang ringan dan interpretabel mencapai keamanan klinis tinggi (94,35\% titik pada zona aman \emph{Clarke Error Grid} untuk horizon $+30$ menit) dan secara klinis setara dengan \emph{baseline} LSTM, sehingga pemilihan RF sebagai model utama terjustifikasi secara kuantitatif.
+    \item Kebaruan \emph{Prediction-Conditioned RAG} terbukti memberikan peningkatan kualitas \emph{retrieval} yang besar dan robust terhadap hiperparameter --- MRR meningkat dari 0,225 (RAG standar) menjadi 0,889 --- yang merupakan kontribusi inti tugas akhir ini. Peningkatan tersebut berlanjut hingga tingkat generasi rekomendasi.
+    \item Representasi fitur berbasis fisiologi (IOB/COB, tren, pola diurnal) membuktikan klaim ``prediksi multimodal'', dengan kontribusi gabungan insulin dan karbohidrat meningkat dari $\sim$3,4\% menjadi $\sim$22,3\% pada horizon $+30$ menit.
+    \item Desain dua mesin --- \emph{Random Forest} untuk prakiraan dan formula farmakokinetik untuk simulasi \emph{what-if} --- terbukti sebagai keputusan yang tepat secara metodologis, karena model korelasional tidak sesuai untuk penalaran kontrafaktual intervensi.
+\end{enumerate}
+
+\section{Saran}
+Beberapa arah pengembangan lanjutan direkomendasikan untuk mengatasi keterbatasan yang telah diuraikan pada Subbab~\ref{sec:pembahasan}.
+
+\begin{enumerate}
+    \item \textbf{Validasi pada data T2DM berkonteks Indonesia.} Penggunaan OhioT1DM sebagai \emph{surrogate} perlu ditindaklanjuti dengan pengumpulan dan validasi pada data \emph{logbook} pasien T2DM nyata di Indonesia agar klaim penerapan klinis dapat diperkuat.
+    \item \textbf{Peningkatan sensitivitas deteksi hipoglikemia.} Diperlukan eksplorasi lebih lanjut --- misalnya fungsi \emph{loss} yang sadar-biaya (\emph{cost-sensitive}) atau kalibrasi ambang per-pasien --- untuk menaikkan sensitivitas hipoglikemia tanpa menurunkan PPV secara berlebihan.
+    \item \textbf{Perluasan evaluasi generasi.} Evaluasi tingkat generasi perlu diperluas ke jumlah kasus yang lebih besar dan melibatkan penilaian pakar klinis untuk menilai keamanan, ketepatan, dan keberterimaan rekomendasi.
+    \item \textbf{Penyesuaian model \emph{embedding} domain.} \emph{Fine-tuning} model \emph{embedding} pada korpus diabetes berbahasa Indonesia berpotensi meningkatkan mutu \emph{retrieval} lebih jauh.
+    \item \textbf{Peningkatan fidelitas \emph{digital twin}.} Untuk konteks dengan data dan sumber daya yang lebih memadai, model \emph{digital twin} dapat ditingkatkan ke arah yang lebih fisiologis, mendekati kerangka berbasis pengetahuan yang lebih kaya \autocite{rad2024}, sejauh kendala \emph{deployment} tetap terjaga.
+\end{enumerate}

@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
 from collections import Counter
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-# Sentence-transformers model — CPU-only, ~80 MB, first call downloads automatically
-_HF_EMBED_MODEL = "all-MiniLM-L6-v2"
+# Model embedding HF (env HF_EMBED_MODEL, default all-MiniLM). WAJIB sama dengan yang dipakai
+# saat ingest (knowledge_base.py) agar embedding query & dokumen sebanding.
+_HF_EMBED_MODEL = os.getenv("HF_EMBED_MODEL", "all-MiniLM-L6-v2")
 
 
 def _build_embeddings(

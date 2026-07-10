@@ -1,0 +1,14 @@
+\begin{table}[htbp]
+\centering
+\caption{Kinerja \emph{retrieval} pada basis pengetahuan penuh (6 kasus uji, \texttt{top\_k}=5): RAG standar vs \emph{Prediction-Conditioned RAG} (PC-RAG). ``Butuh target'' menunjukkan proporsi kasus yang menuntut dokumen kondisi masa depan.}
+\label{tab:kinerja-retrieval}
+\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\textbf{Mode} & \textbf{Butuh target (\%)} & \textbf{Hit@1 (\%)} & \textbf{Hit@5 (\%)} & \textbf{MRR} & \textbf{nDCG@5} \\
+\midrule
+RAG standar & 0,0 & 0,0 & 100,0 & 0,225 & 0,160 \\
+PC-RAG & 100,0 & 83,3 & 100,0 & \textbf{0,889} & \textbf{0,384} \\
+\bottomrule
+\end{tabular}
+\end{table}

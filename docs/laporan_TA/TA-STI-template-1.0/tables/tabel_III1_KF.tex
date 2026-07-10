@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Kebutuhan fungsional sistem.}
+\label{tab:kebutuhan-fungsional}
+\small
+\begin{tabular}{@{}p{1.4cm}p{12.5cm}@{}}
+\toprule
+\textbf{Kode} & \textbf{Kebutuhan Fungsional} \\
+\midrule
+KF-01 & Sistem menerima masukan data \emph{logbook} harian terstruktur (glukosa, karbohidrat, insulin, aktivitas, stres). \\[2pt]
+KF-02 & Sistem memprediksi kadar glukosa jangka pendek ($+30$ dan $+60$ menit) dari data \emph{logbook}. \\[2pt]
+KF-03 & Sistem membangun kueri \emph{retrieval} yang dikondisikan pada nilai glukosa terprediksi (\emph{Prediction-Conditioned RAG}). \\[2pt]
+KF-04 & Sistem menghasilkan rekomendasi klinis berbahasa natural (Bahasa Indonesia) berbasis dokumen klinis terpercaya. \\[2pt]
+KF-05 & Sistem menyediakan simulasi \emph{what-if} atas efek perubahan insulin/karbohidrat berbasis model farmakologis. \\[2pt]
+KF-06 & Sistem menampilkan \emph{state digital twin}: tingkat risiko, arah tren, dan tingkat urgensi. \\[2pt]
+KF-07 & Sistem memberikan peringatan dini hipoglikemia serta peringatan divergensi (saat prediksi menyimpang signifikan dari kondisi terkini). \\[2pt]
+KF-08 & Sistem menyajikan estimasi ketidakpastian prediksi (interval). \\[2pt]
+KF-09 & Sistem mendukung alur \emph{doctor-mediated}: dokter memvalidasi rekomendasi sebelum diteruskan dan dapat mencatat keputusan. \\
+\bottomrule
+\end{tabular}
+\end{table}

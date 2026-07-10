@@ -76,8 +76,10 @@ rag:
 
   llm:
     provider: "gemini"  # Options: gemini, ollama, template
-    model: "gemini-2.5-flash-lite"  # Kuota free-tier project ini: 2.0-flash=0, 2.5-flash=20/hari,
-                                    # 2.5-flash-lite=~1000/hari → flash-lite opsi free paling praktis
+    model: "gemini-2.5-flash-lite"  # Kuota free-tier project ini (terverifikasi 2026-07): SEMUA model
+                                    # free = 20 request/HARI + 10/menit. Cukup utk aplikasi (1 panggilan/
+                                    # rekomendasi), TAPI tidak cukup utk RAGAS (~60) → butuh billing atau
+                                    # distribusi multi-model. flash-lite dipilih: non-thinking.
     # Low temperature (0.2) for clinical safety: reduces hallucination risk in medical advisory.
     # Values >0.5 produce varied language but risk fabricating dosage/threshold figures.
     temperature: 0.2

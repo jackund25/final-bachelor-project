@@ -1,8 +1,14 @@
+import torch  # noqa: F401 — dimuat lewat run_app.py sebelum Streamlit (hindari WinError 1114 c10.dll)
+
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))  # project root (src)
 sys.path.insert(0, str(Path(__file__).parent))          # app (ui)
+
+# Muat .env dari root proyek (kredensial Gemini) — robust terhadap cwd
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 import json
 import pickle
@@ -77,6 +83,21 @@ def predict_next(window_df, art):
     return out
 
 
+def predict_uncertainty(window_df, art):
+    """Std prediksi dari sebaran antar-pohon RF (skala absolut; anchor konstan per sampel).
+    Mengkomunikasikan keyakinan model ke dokter — relevan karena deteksi hipoglikemia lemah."""
+    est = getattr(art["model"], "estimators_", None)
+    if not est:
+        return None
+    import numpy as np
+    X = window_df[art["features"]].values.astype(float)
+    if art["scaler"] is not None:
+        X = art["scaler"].transform(X)
+    Xf = X.reshape(1, -1)
+    preds = np.array([t.predict(Xf)[0] for t in est])
+    return float(preds.std())
+
+
 # ── Header & sidebar ──────────────────────────────────────────
 app_header("Konsultasi Pasien Diabetes",
            "Alat bantu keputusan klinis — prediksi glukosa & rekomendasi antisipatif", "🩺")
@@ -113,6 +134,7 @@ window_df = build_window(pat, art)
 current = float(window_df["glucose"].iloc[-1])
 try:
     pred = predict_next(window_df, art)
+    pred_std = predict_uncertainty(window_df, art)
 except Exception as exc:  # noqa: BLE001
     st.error("Gagal menjalankan model — kemungkinan environment tidak cocok. "
              "Model dilatih dengan scikit-learn 1.3.0; jalankan aplikasi di environment **diabetes-ta**:")
@@ -139,6 +161,12 @@ with c2:
     k = st.columns(2)
     k[0].metric("Glukosa sekarang", f"{current:.0f} mg/dL", help=cur_label)
     k[1].metric(f"Prediksi +{horizon_min} mnt", f"{pred:.0f} mg/dL", delta=f"{delta:+.0f}")
+    if pred_std:
+        # Faktor conformal ternormalisasi (kalibrasi split-conformal → cakupan ~95.5% tervalidasi).
+        # ±1.96·std hanya menutup ~86% (falsely confident); lihat scripts/conformal_calibration.py.
+        CONFORMAL_K = 3.3
+        lo, hi = pred - CONFORMAL_K * pred_std, pred + CONFORMAL_K * pred_std
+        st.caption(f"Rentang keyakinan 95% (terkalibrasi conformal): **{lo:.0f}–{hi:.0f}** mg/dL")
     trend = "↑ Meningkat" if delta > 10 else ("↓ Menurun" if delta < -10 else "→ Stabil")
     st.metric("Tren", trend)
     # ringkasan kondisi aktif
@@ -153,6 +181,15 @@ with c2:
 if cur_label == "Dalam Target" and pred_label != "Dalam Target":
     st.warning(f"⚠️ **Antisipasi:** kondisi saat ini normal, namun glukosa diprediksi menuju "
                f"**{pred_label}** ({pred:.0f} mg/dL) dalam {horizon_min} menit. Pertimbangkan tindakan pencegahan.")
+
+# Peringatan HIPOGLIKEMIA DINI (ambang 85 mg/dL). Deteksi hipo pada ambang <70 hanya
+# menangkap ~14% kejadian; ambang peringatan 85 menaikkannya ke ~59% (spesifisitas 96%) —
+# lihat scripts/improve_hypo_detection.py. Mengisi celah "mendekati hipo tapi belum <70".
+HYPO_WARN = 85.0
+if 70.0 <= pred < HYPO_WARN:
+    st.warning(f"🔻 **Waspada hipoglikemia dini:** prediksi **{pred:.0f} mg/dL** mendekati batas "
+               f"bawah dalam {horizon_min} menit (ambang peringatan {HYPO_WARN:.0f} mg/dL). "
+               f"Pertimbangkan karbohidrat pencegahan & pantau ketat.")
 
 st.divider()
 
@@ -190,7 +227,8 @@ with tab_rec:
                 st.caption(doc["text"][:350] + ("…" if len(doc["text"]) > 350 else ""))
 
 with tab_sim:
-    st.caption("Simulasikan dampak intervensi untuk konseling pasien (tanpa mengubah data).")
+    st.caption("Simulasikan dampak intervensi untuk konseling pasien (tanpa mengubah data). "
+               "Memakai model farmakokinetik mekanistik agar arah kausal (insulin↓, karbohidrat↑) benar.")
     twin = PatientDigitalTwin(patient_id=sel, initial_state={
         "current_glucose": current, "insulin_on_board": float(window_df["insulin"].iloc[-1]),
         "carbs_on_board": float(window_df["carbs"].iloc[-1]),

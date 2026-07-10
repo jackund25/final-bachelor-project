@@ -1,0 +1,17 @@
+\begin{table}[htbp]
+\centering
+\caption{Kinerja prediksi glukosa pada data uji \emph{hold-out}, \emph{Random Forest} (RF) vs LSTM, untuk horizon $+30$ dan $+60$ menit. Clarke~A dan A+B dalam persen zona aman.}
+\label{tab:kinerja-prediksi}
+\small
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+\textbf{Horizon} & \textbf{Model} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE (\%)} & \textbf{Clarke A (\%)} & \textbf{Clarke A+B (\%)} \\
+\midrule
+$+30$ menit & RF   & 22,60 & 15,10 & 11,53 & 84,63 & 94,35 \\
+$+30$ menit & LSTM & 22,04 & 14,52 & 10,94 & 85,79 & 94,60 \\
+\midrule
+$+60$ menit & RF   & 34,24 & 24,83 & 19,38 & 67,89 & 86,94 \\
+$+60$ menit & LSTM & 33,64 & 24,28 & 18,79 & 69,20 & 87,70 \\
+\bottomrule
+\end{tabular}
+\end{table}

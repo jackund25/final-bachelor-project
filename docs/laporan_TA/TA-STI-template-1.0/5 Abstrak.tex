@@ -1,0 +1,19 @@
+\chapter*{ABSTRAK}
+\addcontentsline{toc}{chapter}{ABSTRAK}
+
+\begin{center}
+
+    \textbf{PREDICTION-CONDITIONED RAG: INTEGRASI PREDIKSI KADAR GLUKOSA DAN REKOMENDASI KLINIS BERBASIS DOKUMEN UNTUK PENGELOLAAN DIABETES} \\
+    \vspace{0.4cm}
+    oleh \\
+    \vspace{0.4cm}
+    Daffari Adiyatma\\
+    18222003\\
+\end{center}
+
+
+\begin{spacing}{1.0}
+Pengelolaan diabetes di fasilitas kesehatan tingkat pertama saat ini masih bersifat reaktif: penyesuaian terapi baru dilakukan setelah kadar glukosa menyimpang, interpretasi \emph{logbook} dilakukan manual tanpa alat bantu prediksi, dan prediksi glukosa (bila ada) terputus dari pedoman klinis. Solusi \emph{digital twin} canggih yang tersedia menuntut infrastruktur berat (CGM \emph{real-time}, EHR, GPU) yang tidak realistis pada konteks sumber daya terbatas. Tugas akhir ini merancang, mengimplementasikan, dan mengevaluasi sistem pendukung keputusan klinis yang menyatukan prediksi glukosa jangka pendek, \emph{state digital twin}, dan penalaran berbasis dokumen dalam satu alur yang divalidasi dokter. Kontribusi utamanya adalah \emph{Prediction-Conditioned RAG} (PC-RAG), yakni mekanisme \emph{Retrieval-Augmented Generation} yang mengondisikan pembentukan kueri pada nilai glukosa terprediksi sehingga pengambilan dokumen diarahkan pada kondisi yang akan datang, bukan hanya kondisi terkini. Prediksi glukosa dilakukan model \emph{Random Forest} atas fitur berbasis fisiologi (\emph{insulin-} dan \emph{carbs-on-board}, tren, pola diurnal), sementara simulasi \emph{what-if} memakai formula farmakokinetik mekanistik untuk menjaga arah kausal intervensi. Sistem diuji pada dataset OhioT1DM sebagai \emph{surrogate}. Hasil evaluasi menunjukkan model prediksi mencapai RMSE 22,60~mg/dL pada horizon $+30$ menit dengan 94,35\% titik berada pada zona aman \emph{Clarke Error Grid}, setara \emph{baseline} LSTM secara klinis namun jauh lebih interpretabel dan ringan. Kebaruan PC-RAG meningkatkan kualitas \emph{retrieval} secara signifikan dan robust terhadap hiperparameter, dengan \emph{Mean Reciprocal Rank} naik dari 0,225 (RAG standar) menjadi 0,889, dan peningkatan berlanjut hingga tingkat generasi rekomendasi. Seluruh sistem berjalan pada perangkat standar tanpa GPU, CGM \emph{real-time}, maupun EHR, membuktikan bahwa pendekatan antisipatif yang tertelusur dapat diwujudkan pada lingkungan fasilitas kesehatan dengan sumber daya terbatas.
+
+Kata kunci: \emph{Prediction-Conditioned RAG}, prediksi kadar glukosa, \emph{Random Forest}, \emph{digital twin}, sistem pendukung keputusan klinis, diabetes.
+\end{spacing}

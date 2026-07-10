@@ -1,0 +1,104 @@
+\cleardoublepage
+\chapter{STUDI LITERATUR}
+\label{chap:studi-literatur}
+
+Bab ini memaparkan landasan teori dan tinjauan penelitian terdahulu yang menjadi dasar penyelesaian persoalan tugas akhir. Pembahasan disusun dari konsep \emph{digital twin} dan \emph{positioning}-nya yang selektif (anti-\emph{overclaim}), manajemen diabetes beserta faktor-faktor yang memengaruhi kadar glukosa, metode prediksi berbasis \emph{machine learning}, paradigma \emph{Retrieval-Augmented Generation}, dan diakhiri dengan tinjauan penelitian terkait serta posisi penelitian ini.
+
+\section{Konsep Digital Twin}
+
+\subsection{Asal-Usul dan Perkembangan Definisi}
+Konsep \emph{digital twin} (DT) diperkenalkan oleh Grieves pada awal 2000-an di ranah \emph{Product Lifecycle Management} sebagai sistem yang terdiri atas tiga komponen: entitas fisik, replika virtualnya, dan pertukaran data dua arah di antara keduanya \autocite{grieves2017}. Istilah ini pertama kali diformalkan oleh insinyur NASA pada 2010 sebagai simulasi multifisika dan multiskala yang memanfaatkan model fisik terbaik serta pembaruan sensor untuk mencerminkan kondisi wahana fisiknya secara berkelanjutan. Sektor manufaktur menjadi yang paling aktif mengembangkan DT, sebelum konsep ini menyebar ke energi, transportasi, \emph{smart city}, dan kesehatan \autocite{drummond2024}.
+
+Seiring adopsinya di bidang kesehatan, \emph{National Academies of Sciences, Engineering, and Medicine} menetapkan definisi baku pada laporan 2024: DT adalah sekumpulan konstruk informasi virtual yang meniru struktur, konteks, dan perilaku suatu sistem fisik, diperbarui secara dinamis dengan data dari kembaran fisiknya, memiliki kemampuan prediktif, dan menginformasikan keputusan yang memberikan nilai \autocite{nasem2024}. Definisi ketat ini menekankan tiga syarat: personalisasi terhadap entitas spesifik, pembaruan dinamis dua arah, dan kemampuan prediktif yang menopang keputusan. Interaksi dua arah antara entitas virtual dan fisik menjadi ciri sentralnya.
+
+\subsection{Tiga Tingkat Integrasi: Model, Shadow, dan Twin}
+Dalam praktiknya, banyak sistem yang disebut ``\emph{digital twin}'' belum memenuhi seluruh syarat NASEM. Literatur manufaktur membedakan tiga tingkat integrasi berdasarkan derajat otomasi aliran data, yaitu \emph{digital model}, \emph{digital shadow}, dan \emph{digital twin} penuh \autocite{kritzinger2018}. Perbedaan ketiganya terletak pada arah dan otomasi aliran data antara entitas fisik dan virtualnya, sebagaimana diilustrasikan pada Gambar~\ref{fig:integrasi-dt} dan dirangkum pada Tabel~\ref{tab:integrasi-dt}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{images/Gambar_II1_TingkatIntegrasiDT.png}
+\caption{Tiga tingkat integrasi representasi virtual (\emph{digital model} $\rightarrow$ \emph{shadow} $\rightarrow$ \emph{twin}) dan posisi penelitian ini.}
+\label{fig:integrasi-dt}
+\end{figure}
+
+\input{tables/tabel_II1_integrasi.tex}
+
+\textbf{Catatan \emph{positioning} (penting untuk anti-\emph{overclaim}).} Sistem ini tidak diklaim ``dua arah'' dalam pengertian NASEM. Secara otomatis, aliran datanya satu arah (fisik $\rightarrow$ virtual), sebagaimana \emph{digital shadow}; ``arah kedua'' berupa rekomendasi yang divalidasi dokter merupakan \emph{loop} yang diperantarai manusia, bukan properti sinkronisasi otomatis sistem. \emph{Framing} ini konsisten dengan Batasan Masalah (Bab~\ref{chap:pendahuluan}) dan justru selaras dengan temuan literatur (lihat Subbab~\ref{sec:dt-kesehatan}).
+
+\section{Digital Twin dalam Bidang Kesehatan}
+\label{sec:dt-kesehatan}
+Pada bidang kesehatan, DT berperan sebagai representasi virtual pasien yang dapat disimulasikan atau dipantau untuk mendukung keputusan klinis \autocite{bruynseels2018,katsoulakis2024}. Tinjauan cakupan (\emph{scoping review}) oleh \textcite{drummond2024} atas 86 publikasi yang mengklaim mengembangkan \emph{patient digital twin} memberikan gambaran empiris yang penting untuk \emph{positioning} penelitian ini.
+
+\subsection{Taksonomi dan Karakteristik Empiris DT Kesehatan}
+Berdasarkan mekanisme pemodelannya, DT kesehatan dikategorikan menjadi \emph{mechanistic} (berbasis model anatomis/fisiologis), \emph{data-driven} (berbasis pembelajaran dari data), dan \emph{hybrid} \autocite{drummond2024}. Dari 80 DT unik yang ditinjau, sebaran pendekatannya adalah 50\% \emph{mechanistic}, 28\% \emph{data-driven}, 21\% \emph{hybrid}, dan 1\% tidak keduanya. Melalui klasifikasi tak-terarah (\emph{unsupervised clustering}), tinjauan tersebut menemukan tiga kelompok DT klinis: \emph{simulation digital twins} (54\%, 43/80) yang didominasi pendekatan mekanistik untuk penilaian sekali-pakai, \emph{monitoring digital twins} (28\%, 22/80) yang memanfaatkan agregasi data pasien untuk prakiraan risiko berkelanjutan, dan model berorientasi riset (19\%, 15/80). Yang relevan bagi penelitian ini: pada klaster \emph{monitoring}, 91\% (20/22) memakai pendekatan \emph{data-driven}, 59\% bersifat dinamis, dan 23\% menyediakan umpan balik \autocite{drummond2024}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{images/Gambar_II2_TaksonomiDT.png}
+\caption{Taksonomi \emph{simulation} vs \emph{monitoring digital twin} dan letak sistem ini pada kuadran \emph{monitoring, data-driven}.}
+\label{fig:taksonomi-dt}
+\end{figure}
+
+\input{tables/tabel_II2_karakteristik.tex}
+
+Data pada Tabel~\ref{tab:karakteristik-dt} menjadi landasan empiris bahwa membatasi cakupan pada DT \emph{data-driven} satu-arah bukan kelemahan metodologis, melainkan pilihan yang selaras dengan praktik dominan di literatur. Bahkan definisi ``dua-arah'' hanya muncul pada 15\% publikasi, dan hanya 11\% DT yang benar-benar mengimplementasikannya --- itu pun mayoritas melalui pemberian rekomendasi, bukan aktuasi otomatis, yang justru sebangun dengan alur \emph{doctor-mediated} penelitian ini \autocite{drummond2024}. Sebagai penguat independen, tinjauan cakupan lain terhadap 149 studi \emph{human digital twin} melaporkan hanya sekitar 12\% (18/149) yang memenuhi seluruh kriteria ketat NASEM \autocite{tudor2025}.
+
+\subsection{Digital Twin pada Domain Diabetes}
+Pada domain diabetes, penerapan DT terbagi antara pendekatan berat-infrastruktur dan pendekatan \emph{data-driven} yang lebih ringan. \textcite{cappon2024} meninjau secara sistematis DT untuk diabetes tipe~1 dan mengidentifikasi arsitektur bertahap yang umumnya bergantung pada CGM dan simulator fisiologis. \textcite{rad2024} mengusulkan DT berbasis \emph{Personal Health Knowledge Graph} (PHKG) dengan interoperabilitas HL7 FHIR, integrasi data \emph{Global-Local-as-View} (GLAV), dan \emph{Conditional Random Fields} untuk pemetaan data; sistem ini mengambil pengetahuan dari \emph{knowledge graph} melalui kueri SPARQL dan mencapai RMSE 19,83~mg/dL pada prediksi glukosa. \textcite{zhang2024} memperluas arah ini dengan integrasi data \emph{multi-omics} untuk memprediksi progresi diabetes tipe~2.
+
+Di sisi lain, telah muncul DT \emph{data-driven} untuk diabetes tipe~2 yang berorientasi pemantauan dan intervensi gaya hidup, misalnya sistem berbasis nutrisi presisi yang dilaporkan menurunkan HbA1c \autocite{shamanna2020} dan kerangka \emph{human digital twin} untuk manajemen T2DM pada lansia \autocite{thamotharan2023}. Keberadaan sistem-sistem ini menegaskan bahwa pendekatan \emph{monitoring, data-driven} untuk diabetes bukan hal yang mengada-ada, sekaligus memperkuat posisi bahwa kontribusi kebaruan penelitian ini bukan pada representasi DT-nya, melainkan pada metode pengondisian \emph{retrieval} pada prediksi (lihat Subbab~\ref{sec:pcrag}).
+
+\subsection{Positioning Data-Driven Digital Twin pada Penelitian Ini}
+Untuk menghindari klaim berlebih, penelitian ini secara sengaja mengadopsi pendekatan \emph{data-driven digital twin} yang diimplementasikan sebagai \emph{simplified patient state model} dan diklasifikasikan sebagai \emph{monitoring digital twin} menurut taksonomi \textcite{drummond2024}. Data yang diproses dikelompokkan menjadi tiga: variabel masukan dari \emph{logbook} (glukosa, karbohidrat, insulin, aktivitas, dan stres), variabel turunan berbasis fisiologi (\texttt{glucose\_delta}, \emph{Insulin-on-Board}, \emph{Carbs-on-Board}, serta komponen diurnal), dan variabel \emph{state} keluaran (glukosa terprediksi, tingkat risiko, arah tren, dan tingkat urgensi). Objek \emph{state} keluaran inilah yang menjadi kontrak data antara modul prediksi dan modul \emph{retrieval}.
+
+Keterkaitan antara entitas fisik dan virtual didefinisikan secara eksplisit. Arah fisik $\rightarrow$ virtual berupa pembaruan \emph{state} setiap kali pasien menambahkan data \emph{logbook}, bersifat asinkron mengikuti ritme SMBG, bukan aliran sensor \emph{real-time}. Arah virtual $\rightarrow$ fisik berupa penyampaian prediksi, hasil simulasi \emph{what-if}, dan rekomendasi kepada pasien melalui dokter yang memvalidasinya terlebih dahulu (\emph{doctor-mediated}). Karena umpan balik ini asinkron dan diperantarai manusia, sistem tidak mengklaim memenuhi sinkronisasi dua arah \emph{real-time} NASEM~\autocite{nasem2024} --- konsisten dengan Tabel~\ref{tab:integrasi-dt} dan didukung temuan bahwa mayoritas DT kesehatan pun tidak memenuhinya (Tabel~\ref{tab:karakteristik-dt}).
+
+\section{Manajemen Diabetes dan Pemantauan Glukosa}
+Diabetes melitus adalah penyakit metabolik kronis akibat gangguan sekresi atau kerja insulin, dengan diabetes tipe~2 (T2DM) menyumbang lebih dari 90\% kasus \autocite{who2023}. Pengelolaan kadar glukosa menjadi kunci pencegahan komplikasi kronis seperti penyakit jantung, gagal ginjal, neuropati, dan kebutaan. Pendekatan konvensional --- pemantauan berkala, pengaturan pola makan dan aktivitas, serta terapi insulin/obat oral --- kerap bersifat reaktif: penyesuaian dilakukan setelah kadar glukosa menyimpang dari rentang normal, sehingga belum optimal mencegah fluktuasi ekstrem \autocite{alkaff2021}.
+
+Untuk mengatasi keterbatasan itu, teknologi \emph{Continuous Glucose Monitoring} (CGM) dan \emph{insulin pump} memungkinkan pemantauan dan penyesuaian terapi secara \emph{real-time}, dengan konsep \emph{Time in Range} sebagai standar penilaian pengendalian glukosa modern \autocite{battelino2019}. Namun di Indonesia, keterjangkauan perangkat pemantauan masih menjadi kendala nyata: survei harga menunjukkan pengadaan glukometer setara 5--7 hari upah dan pasokan strip uji bulanan setara 4--5 hari upah bagi pekerja berpenghasilan rendah, sementara insulin analog turut membebani \autocite{ramadaniati2024}. Perangkat CGM yang berlipat lebih mahal karenanya belum terjangkau mayoritas pasien. Akibatnya, Pemantauan Gula Darah Mandiri (SMBG) berbasis \emph{logbook} tetap menjadi standar \emph{de facto}. Data SMBG yang dicatat secara terstruktur dan konsisten tetap memiliki validitas klinis memadai untuk memantau tren glikemik harian, sehingga optimalisasi data \emph{logbook} menjadi arah yang realistis untuk konteks \emph{resource-constrained}.
+
+\section{Faktor-Faktor yang Memengaruhi Kadar Glukosa}
+Kadar glukosa darah dipengaruhi interaksi kompleks berbagai faktor. Pemahaman faktor-faktor ini menjadi landasan pemilihan fitur pada model prediksi (lihat Bab~\ref{chap:analisis-masalah}), dan secara klasik dimodelkan melalui dinamika glukosa--insulin--karbohidrat sebagaimana \emph{Minimal Model} Bergman dan simulator UVA/Padova \autocite{bergman1979,dallaman2014}.
+
+\subsection{Asupan Nutrisi dan Karbohidrat}
+Asupan karbohidrat berdampak langsung dan paling signifikan terhadap kenaikan glukosa pascamakan (\emph{postprandial}); karbohidrat dihidrolisis menjadi glukosa dan diserap ke aliran darah, dan pada pasien T2DM gangguan respons insulin memperlambat pengembaliannya ke rentang normal \autocite{ada2023}. Efek karbohidrat bersifat tertunda dan tersebar, sehingga dalam penelitian ini direpresentasikan melalui \emph{Carbs-on-Board} (COB), bukan nilai mentah per-catatan.
+
+\subsection{Insulin}
+Insulin menurunkan kadar glukosa dengan durasi kerja yang meluruh selama beberapa jam. Untuk menangkap efek residualnya, penelitian ini merepresentasikan insulin sebagai \emph{Insulin-on-Board} (IOB) dengan model peluruhan eksponensial.
+
+\subsection{Aktivitas Fisik}
+Aktivitas fisik meningkatkan sensitivitas insulin dan umumnya menurunkan kadar glukosa, sehingga menjadi faktor sekunder yang relevan dalam prediksi \autocite{colberg2016}.
+
+\subsection{Faktor Psikologis dan Stres}
+Stres psikologis memicu respons neuroendokrin yang meningkatkan kortisol dan resistensi insulin, sehingga dapat menaikkan kadar glukosa \autocite{hackett2017}. Dalam penelitian ini, stres dipertahankan sebagai variabel \emph{logbook}/\emph{digital twin}, namun --- karena keterbatasan jumlah data stres pada dataset yang digunakan --- tidak dijadikan fitur prediktor, sebagaimana dijelaskan pada bab metodologi/implementasi.
+
+\section{Prediksi Kadar Glukosa Berbasis Machine Learning}
+Pendekatan \emph{data-driven} memungkinkan prediksi fluktuasi glukosa dari data historis, sehingga risiko hipoglikemia atau hiperglikemia dapat diantisipasi sebelum terjadi \autocite{woldaregay2019}. Model dilatih atas pasangan masukan (mis. kadar glukosa sebelumnya, insulin, dan karbohidrat) dan keluaran (kadar glukosa berikutnya). Dua kelas model relevan: \emph{ensemble} berbasis pohon dan jaringan saraf rekuren.
+
+\subsection{Random Forest}
+\emph{Random Forest} adalah metode \emph{ensemble} yang mengagregasi banyak pohon keputusan, masing-masing dilatih atas subset data dan fitur secara acak, lalu merata-ratakan prediksinya untuk menekan varians \autocite{breiman2001}. Metode ini dipilih sebagai model utama karena dua keunggulan yang relevan dengan konteks penelitian: interpretabilitas melalui \emph{feature importance}, sehingga kontribusi tiap variabel dapat dijelaskan kepada klinisi; dan efisiensi komputasi yang memungkinkan pelatihan serta inferensi tanpa GPU --- selaras dengan kendala infrastruktur FKTP.
+
+\subsection{Long Short-Term Memory (LSTM)}
+LSTM adalah varian \emph{recurrent neural network} yang menangkap dependensi jangka panjang pada data deret waktu melalui \emph{memory cell} dan mekanisme gerbang, mengatasi masalah \emph{vanishing gradient} pada RNN standar \autocite{hochreiter1997}. LSTM banyak dipakai untuk prediksi glukosa, termasuk varian dengan \emph{attention} pada dataset OhioT1DM \autocite{mirshekarian2019}. Namun kemampuan generalisasi model \emph{deep learning} antar-dataset masih menjadi tantangan yang terdokumentasi \autocite{ghimire2024}. Dalam penelitian ini, LSTM digunakan sebagai model pembanding terhadap \emph{Random Forest}.
+
+\subsection{Horizon dan Evaluasi Keamanan Klinis}
+Horizon prediksi mengikuti standar \emph{Blood Glucose Level Prediction} (BGLP) Challenge OhioT1DM, yaitu $+30$ dan $+60$ menit \autocite{marling2020}. Selain metrik galat konvensional (RMSE, MAE, MAPE), keamanan klinis prediksi dinilai menggunakan \emph{Clarke Error Grid Analysis}, yang memetakan pasangan nilai (aktual, prediksi) ke zona A--E menurut konsekuensi klinis kesalahan, bukan sekadar besar galatnya \autocite{clarke1987}.
+
+\section{Retrieval-Augmented Generation (RAG)}
+\emph{Retrieval-Augmented Generation} (RAG) memadukan pencarian dokumen dari basis pengetahuan eksternal dengan kemampuan generatif model bahasa besar \autocite{lewis2020}. Arsitekturnya terdiri atas \emph{retriever} yang mengambil potongan dokumen relevan melalui pencarian berbasis vektor, dan \emph{generator} yang merangkai keluaran berdasarkan konteks hasil \emph{retrieval}. Keunggulan utamanya: akses pengetahuan terkini tanpa pelatihan ulang, keluaran yang lebih faktual dan dapat ditelusuri sumbernya, serta penekanan halusinasi. Dalam implementasinya, dokumen diubah menjadi vektor menggunakan model \emph{embedding} seperti \emph{Sentence-BERT} \autocite{reimers2019} dan disimpan pada basis data vektor untuk pencarian semantik.
+
+Dibandingkan \emph{retrieval} berbasis \emph{knowledge graph} terstruktur (mis. SPARQL di atas ontologi formal seperti PHKG pada \textcite{rad2024}), RAG bekerja di atas korpus dokumen tak-terstruktur sehingga tidak menuntut pembangunan dan pemeliharaan ontologi formal yang mahal --- pembeda yang relevan untuk kelayakan di \emph{setting resource-constrained}.
+
+\subsection{Prediction-Conditioned RAG}
+\label{sec:pcrag}
+Kebaruan penelitian ini adalah metode \textbf{\emph{Prediction-Conditioned RAG}}. Perlu ditegaskan bahwa modul \emph{machine learning} tidak berada \emph{setelah} RAG, melainkan mendahului dan mengondisikannya: keluaran prediksi glukosa dipakai untuk membangun kueri \emph{retrieval}. Berbeda dengan RAG konvensional yang membangun kueri dari kondisi pasien saat ini, \emph{Prediction-Conditioned RAG} membangun kueri dari nilai glukosa yang diprediksi untuk 30--60 menit ke depan, sehingga dokumen yang diambil dan rekomendasi yang dihasilkan bersifat antisipatif. Sepanjang penelusuran literatur, pengondisian \emph{retrieval} pada keluaran prediksi glukosa belum dijumpai pada penelitian DT maupun RAG klinis terdahulu.
+
+Untuk menilai kualitas keluaran RAG telah dikembangkan kerangka evaluasi seperti RAGAS \autocite{es2023}. Dalam penelitian ini, kualitas keluaran dinilai secara pelengkap melalui pendekatan berbasis-referensi (kesesuaian jawaban terhadap panduan klinis dan cakupan tindakan), sementara \textbf{bukti utama kebaruan} diperoleh dari perbandingan \emph{baseline} \emph{retrieval} menggunakan metrik temu-balik informasi baku (Hit@k, MRR, dan nDCG), sebagaimana dipaparkan pada Bab~\ref{chap:evaluasi}.
+
+\section{Penelitian Terkait dan Posisi Penelitian}
+Tabel~\ref{tab:penelitian-terkait} merangkum penelitian terkait beserta fokus, data, dan keterbatasannya, diakhiri dengan posisi penelitian ini.
+
+\input{tables/tabel_II3_terkait.tex}
+
+Posisi penelitian ini terhadap \textcite{rad2024} bersifat melengkapi (\emph{complementary}), bukan meniru. \textcite{rad2024} mencapai akurasi tinggi melalui PHKG dengan kueri SPARQL di atas ontologi formal yang menuntut interoperabilitas HL7 FHIR dan data \emph{real-time}. Penelitian ini mengisi keterbatasan tersebut dengan mengganti \emph{retrieval} terstruktur menjadi RAG di atas korpus tak-terstruktur yang menghasilkan rekomendasi natural dan layak dijalankan pada keterbatasan infrastruktur. Keberlanjutan penelitian ini terletak pada penyelesaian keterbatasan penelitian sebelumnya, bukan pada kesamaan algoritma. Kebaruan utamanya --- pengondisian \emph{retrieval} pada nilai prediksi glukosa --- melengkapi tren \emph{data-driven, monitoring digital twin} yang telah mapan di literatur (Subbab~\ref{sec:dt-kesehatan}).

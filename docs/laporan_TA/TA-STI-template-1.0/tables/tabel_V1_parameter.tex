@@ -1,0 +1,24 @@
+\begin{table}[htbp]
+\centering
+\caption{Parameter implementasi utama sistem.}
+\label{tab:parameter-implementasi}
+\small
+\begin{tabular}{@{}p{3.5cm}p{4.2cm}p{5.3cm}@{}}
+\toprule
+\textbf{Komponen} & \textbf{Parameter} & \textbf{Nilai} \\
+\midrule
+Model prediksi & \emph{Random Forest} & \texttt{n\_estimators}=200, \texttt{max\_depth}=20, \texttt{min\_samples\_split}=5 \\[2pt]
+\emph{Look-back} & Panjang sekuens & 12 langkah CGM ($\sim$1 jam); 6 langkah SMBG \\[2pt]
+Horizon prediksi & Langkah ke depan & 6 ($+30$ menit) dan 12 ($+60$ menit) \\[2pt]
+Fitur (\emph{engineered}) & Vektor fitur & \texttt{[glucose, glucose\_delta, iob, cob, activity, hour\_sin, hour\_cos]}, target $\Delta$glukosa \\[2pt]
+Rekayasa fitur & Konstanta peluruhan & IOB $\tau=240$ menit; COB $\tau=180$ menit; tren 3 langkah \\[2pt]
+\emph{Embedding} & Model & \texttt{all-MiniLM-L6-v2} (\emph{CPU-only}) \\[2pt]
+\emph{Chunking} & Ukuran \& tumpang-tindih & \texttt{chunk\_size}=900, \texttt{overlap}=120 \\[2pt]
+\emph{Vector store} & ChromaDB & 2.585 \emph{chunk} terindeks \\[2pt]
+\emph{Retrieval} & Jumlah dokumen & \texttt{top\_k}=4 \\[2pt]
+LLM generator & Model & \texttt{gemini-2.5-flash-lite} \\[2pt]
+Parameter generatif & Konservatif (klinis) & \texttt{temperature}=0,2; \texttt{max\_tokens}=300 \\[2pt]
+Antarmuka & Kerangka & Streamlit \emph{multi-page} \\
+\bottomrule
+\end{tabular}
+\end{table}

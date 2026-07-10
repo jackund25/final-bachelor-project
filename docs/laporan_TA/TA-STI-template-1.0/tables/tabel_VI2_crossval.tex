@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Validasi silang lintas-pasien (6 \emph{fold}, horizon $+30$ menit): RMSE \emph{Random Forest} vs LSTM. Selisih rata-rata $\sim$0,44~mg/dL.}
+\label{tab:crossval}
+\small
+\begin{tabular}{@{}lp{4.2cm}rrr@{}}
+\toprule
+\textbf{Fold} & \textbf{Pasien uji} & \textbf{RF RMSE} & \textbf{LSTM RMSE} & \textbf{RF A+B (\%)} \\
+\midrule
+0 & ohio\_540, ohio\_570 & 21,30 & 20,60 & 94,34 \\
+1 & ohio\_544, ohio\_575 & 22,17 & 21,67 & 92,93 \\
+2 & ohio\_552, ohio\_584 & 25,70 & 25,31 & 93,32 \\
+3 & ohio\_559, ohio\_588 & 24,04 & 24,07 & 93,73 \\
+4 & ohio\_563, ohio\_591 & 21,81 & 21,44 & 94,78 \\
+5 & ohio\_567, ohio\_596 & 22,87 & 22,16 & 93,04 \\
+\midrule
+\textbf{Rerata\,$\pm$\,SD} & --- & \textbf{22,98\,$\pm$\,1,49} & \textbf{22,54\,$\pm$\,1,63} & 93,69 \\
+\bottomrule
+\end{tabular}
+\end{table}

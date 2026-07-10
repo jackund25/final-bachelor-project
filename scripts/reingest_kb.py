@@ -36,6 +36,33 @@ def _normalize(text: str) -> str:
     return text.strip()
 
 
+_LIGATURES = {"ﬀ": "ff", "ﬁ": "fi", "ﬂ": "fl", "ﬃ": "ffi",
+              "ﬄ": "ffl", "ﬅ": "ft", "ﬆ": "st"}
+
+
+def _clean_text(text: str) -> str:
+    """Buang noise ekstraksi PDF: ligatur, karakter kontrol, baris daftar-isi (dot leader),
+    dan boilerplate header/footer jurnal (ADA/diabetesjournals). Menaikkan kualitas chunk."""
+    for k, v in _LIGATURES.items():
+        text = text.replace(k, v)
+    # karakter kontrol non-printable (mis. \x83) → spasi
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]", " ", text)
+    kept = []
+    for ln in text.split("\n"):
+        s = ln.strip()
+        if not s:
+            kept.append("")
+            continue
+        if re.search(r"\.{4,}\s*\d+\s*$", s):                       # daftar isi: "Bab .... 12"
+            continue
+        if re.search(r"diabetesjournals\.org|Downloaded from http|article-pdf|by guest on", s, re.I):
+            continue
+        if re.search(r"Diabetes Care Volume \d+,\s*Supplement", s, re.I):  # footer ADA
+            continue
+        kept.append(s)
+    return _normalize("\n".join(kept))
+
+
 def _topic_from_name(path: Path) -> str:
     name = re.sub(r"[_\-]+", " ", path.stem)
     return re.sub(r"\s+", " ", name).strip().title() or "General"
@@ -81,7 +108,7 @@ def main() -> int:
     added, skipped = [], []
     for p in pdfs:
         try:
-            text = _normalize(_read_pdf(p))
+            text = _clean_text(_read_pdf(p))
             if len(text) < args.min_chars:
                 skipped.append((p.name, f"teks {len(text)} char — kemungkinan hasil scan/among gambar"))
                 continue

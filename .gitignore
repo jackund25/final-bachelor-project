@@ -68,3 +68,21 @@ config_local.yaml
 # Large files
 *.zip
 *.tar.gz
+
+# LaTeX build artifacts (regenerate via xelatex + biber)
+*.aux
+*.bbl
+*.blg
+*.bcf
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.lol
+*.loa
+*.equ
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+docs/laporan_TA/TA-STI-template-1.0/TA.pdf

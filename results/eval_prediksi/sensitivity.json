@@ -1,0 +1,121 @@
+{
+  "A_top_k_sweep": {
+    "3": {
+      "standard": {
+        "targets%": 0.0,
+        "hit@1%": 0.0,
+        "hit@3%": 50.0,
+        "mrr": 0.167
+      },
+      "prediction_conditioned": {
+        "targets%": 100.0,
+        "hit@1%": 83.3,
+        "hit@3%": 100.0,
+        "mrr": 0.889
+      }
+    },
+    "4": {
+      "standard": {
+        "targets%": 0.0,
+        "hit@1%": 0.0,
+        "hit@4%": 66.7,
+        "mrr": 0.194
+      },
+      "prediction_conditioned": {
+        "targets%": 100.0,
+        "hit@1%": 83.3,
+        "hit@4%": 100.0,
+        "mrr": 0.889
+      }
+    },
+    "5": {
+      "standard": {
+        "targets%": 0.0,
+        "hit@1%": 0.0,
+        "hit@5%": 100.0,
+        "mrr": 0.225
+      },
+      "prediction_conditioned": {
+        "targets%": 100.0,
+        "hit@1%": 83.3,
+        "hit@5%": 100.0,
+        "mrr": 0.889
+      }
+    },
+    "8": {
+      "standard": {
+        "targets%": 0.0,
+        "hit@1%": 0.0,
+        "hit@8%": 100.0,
+        "mrr": 0.265
+      },
+      "prediction_conditioned": {
+        "targets%": 100.0,
+        "hit@1%": 83.3,
+        "hit@8%": 100.0,
+        "mrr": 0.889
+      }
+    },
+    "10": {
+      "standard": {
+        "targets%": 0.0,
+        "hit@1%": 0.0,
+        "hit@10%": 100.0,
+        "mrr": 0.256
+      },
+      "prediction_conditioned": {
+        "targets%": 100.0,
+        "hit@1%": 83.3,
+        "hit@10%": 100.0,
+        "mrr": 0.889
+      }
+    }
+  },
+  "B_chunk_size_sweep": {
+    "500": {
+      "standard": {
+        "targets%": 0.0,
+        "hit@1%": 0.0,
+        "hit@5%": 33.3,
+        "mrr": 0.067
+      },
+      "prediction_conditioned": {
+        "targets%": 100.0,
+        "hit@1%": 50.0,
+        "hit@5%": 100.0,
+        "mrr": 0.722
+      },
+      "n_chunks": 4462
+    },
+    "900": {
+      "standard": {
+        "targets%": 0.0,
+        "hit@1%": 0.0,
+        "hit@5%": 100.0,
+        "mrr": 0.225
+      },
+      "prediction_conditioned": {
+        "targets%": 100.0,
+        "hit@1%": 83.3,
+        "hit@5%": 100.0,
+        "mrr": 0.889
+      },
+      "n_chunks": 2581
+    },
+    "1500": {
+      "standard": {
+        "targets%": 0.0,
+        "hit@1%": 50.0,
+        "hit@5%": 50.0,
+        "mrr": 0.5
+      },
+      "prediction_conditioned": {
+        "targets%": 100.0,
+        "hit@1%": 50.0,
+        "hit@5%": 83.3,
+        "mrr": 0.583
+      },
+      "n_chunks": 1633
+    }
+  }
+}

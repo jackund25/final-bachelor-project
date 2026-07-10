@@ -1,0 +1,111 @@
+{
+  "n_cases": 6,
+  "per_sample": [
+    {
+      "case": "D1",
+      "cond": "hipo",
+      "mode": "standard",
+      "sim_ref": 0.45,
+      "action_cov": 0.4,
+      "len": 909
+    },
+    {
+      "case": "D1",
+      "cond": "hipo",
+      "mode": "prediction_conditioned",
+      "sim_ref": 0.629,
+      "action_cov": 0.8,
+      "len": 2378
+    },
+    {
+      "case": "D2",
+      "cond": "hipo",
+      "mode": "standard",
+      "sim_ref": 0.526,
+      "action_cov": 0.4,
+      "len": 943
+    },
+    {
+      "case": "D2",
+      "cond": "hipo",
+      "mode": "prediction_conditioned",
+      "sim_ref": 0.635,
+      "action_cov": 0.6,
+      "len": 2298
+    },
+    {
+      "case": "D3",
+      "cond": "hipo",
+      "mode": "standard",
+      "sim_ref": 0.586,
+      "action_cov": 0.8,
+      "len": 1928
+    },
+    {
+      "case": "D3",
+      "cond": "hipo",
+      "mode": "prediction_conditioned",
+      "sim_ref": 0.64,
+      "action_cov": 0.8,
+      "len": 2497
+    },
+    {
+      "case": "D4",
+      "cond": "hiper",
+      "mode": "standard",
+      "sim_ref": 0.508,
+      "action_cov": 0.8,
+      "len": 1439
+    },
+    {
+      "case": "D4",
+      "cond": "hiper",
+      "mode": "prediction_conditioned",
+      "sim_ref": 0.511,
+      "action_cov": 0.4,
+      "len": 1909
+    },
+    {
+      "case": "D5",
+      "cond": "hiper",
+      "mode": "standard",
+      "sim_ref": 0.489,
+      "action_cov": 0.8,
+      "len": 2011
+    },
+    {
+      "case": "D5",
+      "cond": "hiper",
+      "mode": "prediction_conditioned",
+      "sim_ref": 0.486,
+      "action_cov": 1.0,
+      "len": 2116
+    },
+    {
+      "case": "D6",
+      "cond": "hiper",
+      "mode": "standard",
+      "sim_ref": 0.542,
+      "action_cov": 0.8,
+      "len": 1040
+    },
+    {
+      "case": "D6",
+      "cond": "hiper",
+      "mode": "prediction_conditioned",
+      "sim_ref": 0.525,
+      "action_cov": 0.6,
+      "len": 1883
+    }
+  ],
+  "summary": {
+    "standard": {
+      "sim_ref_mean": 0.517,
+      "action_cov_mean": 0.667
+    },
+    "prediction_conditioned": {
+      "sim_ref_mean": 0.571,
+      "action_cov_mean": 0.7
+    }
+  }
+}

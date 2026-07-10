@@ -1,0 +1,84 @@
+\cleardoublepage
+\chapter{ANALISIS MASALAH}
+\label{chap:analisis-masalah}
+
+Bab ini membahas analisis masalah pada sistem pengelolaan diabetes saat ini, analisis kebutuhan yang diperlukan untuk menyelesaikan masalah tersebut, analisis data dan metodologi yang mendasari solusi, serta analisis pemilihan solusi yang diusulkan. Secara garis besar, bab ini memaparkan hasil analisis persoalan, kebutuhan fungsional dan nonfungsional sistem, serta pendekatan yang dipilih beserta justifikasinya.
+
+\section{Analisis Kondisi Saat Ini}
+Model konseptual pengelolaan diabetes pada Fasilitas Kesehatan Tingkat Pertama (FKTP) di Indonesia saat ini dapat digambarkan sebagai interaksi antara empat komponen: (1)~pasien yang melakukan Pemantauan Gula Darah Mandiri (SMBG) dan mencatatnya pada \emph{logbook} secara periodik; (2)~dokter atau tenaga medis yang menafsirkan catatan tersebut saat kunjungan; (3)~siklus kontrol periodik yang menjadi titik temu keduanya; dan (4)~pedoman klinis (mis. PERKENI, ADA) yang dirujuk dokter secara manual untuk mengambil keputusan terapi. Alur kerjanya bersifat berurutan: pasien mencatat data $\rightarrow$ membawa catatan pada kunjungan berikutnya $\rightarrow$ dokter menafsirkan secara manual $\rightarrow$ dokter menyesuaikan terapi, sebagaimana digambarkan pada Gambar~\ref{fig:kondisi-saat-ini}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{images/Gambar_III1_KondisiSaatIni.png}
+\caption{Model konseptual pengelolaan diabetes di FKTP saat ini beserta titik-titik masalah (reaktif, interpretasi manual, prediksi terputus).}
+\label{fig:kondisi-saat-ini}
+\end{figure}
+
+Dari model konseptual tersebut teridentifikasi empat masalah utama:
+\begin{enumerate}
+    \item \textbf{Pengelolaan bersifat reaktif.} Penyesuaian terapi baru dilakukan setelah kadar glukosa menyimpang dari rentang normal, sehingga fluktuasi ekstrem yang memicu komplikasi sulit dicegah \autocite{alkaff2021}.
+    \item \textbf{Interpretasi \emph{logbook} manual membebani dan tidak antisipatif.} Dokter menafsirkan deretan angka SMBG tanpa alat bantu prediksi, sehingga sulit mengenali risiko yang akan datang (mis. hipoglikemia beberapa waktu ke depan) sebelum terjadi.
+    \item \textbf{Prediksi terputus dari rekomendasi.} Bahkan bila prediksi glukosa tersedia, umumnya disajikan sebagai angka lepas dan tidak terhubung secara eksplisit dengan panduan klinis yang relevan terhadap kondisi yang diprediksi.
+    \item \textbf{Solusi \emph{digital twin} canggih tidak \emph{feasible}.} Kerangka berbasis PHKG yang efektif \autocite{rad2024} mensyaratkan HL7 FHIR, kueri SPARQL di atas ontologi formal, dan CGM \emph{real-time} --- infrastruktur yang tidak tersedia di mayoritas FKTP.
+\end{enumerate}
+
+Keempat masalah ini menegaskan celah antara apa yang \emph{mungkin} secara teknologi dan apa yang \emph{dapat diterapkan} pada konteks \emph{resource-constrained}, yang menjadi ruang persoalan tugas akhir ini.
+
+\section{Analisis Kebutuhan}
+
+\subsection{Identifikasi Masalah Pengguna}
+Pengguna utama sistem adalah \textbf{dokter/tenaga medis di FKTP}, sedangkan pasien menerima keluaran secara \emph{doctor-mediated} (divalidasi dokter terlebih dahulu). Dari perspektif kedua pihak, kebutuhan yang belum terpenuhi adalah sebagai berikut. Bagi dokter: alat bantu yang mengubah data \emph{logbook} mentah menjadi (a)~prakiraan glukosa jangka pendek, (b)~peringatan dini terhadap risiko, dan (c)~rekomendasi yang tertelusur ke pedoman klinis --- semuanya dalam waktu konsultasi yang singkat dan tanpa perangkat mahal. Bagi pasien: umpan balik yang antisipatif namun tetap aman karena melewati validasi klinis, tanpa perlu memiliki CGM. Sistem karenanya harus \textbf{antisipatif} (mengolah kondisi yang akan datang), \textbf{\emph{deployable}} (tanpa GPU/CGM/EHR), dan \textbf{aman} (menempatkan dokter sebagai penentu akhir).
+
+\subsection{Kebutuhan Fungsional}
+Kebutuhan fungsional (KF) sistem dirangkum pada Tabel~\ref{tab:kebutuhan-fungsional}.
+
+\input{tables/tabel_III1_KF.tex}
+
+\subsection{Kebutuhan Nonfungsional}
+Kebutuhan nonfungsional (KNF) menetapkan atribut kualitas sistem, dirangkum pada Tabel~\ref{tab:kebutuhan-nonfungsional}.
+
+\input{tables/tabel_III2_KNF.tex}
+
+\section{Analisis Data dan Metodologi}
+Subbab ini menganalisis pilihan data dan metodologi yang mendasari solusi. Detail realisasinya dijabarkan pada Bab~\ref{chap:implementasi}, sedangkan di sini ditekankan \emph{justifikasi} pilihan.
+
+\subsection{Ketersediaan dan Pemilihan Dataset}
+Rekonstruksi data \emph{logbook} T2DM berkonteks Indonesia dari rekam medis nyata tidak memungkinkan dalam lingkup tugas akhir. Sebagai \emph{surrogate} untuk pembuktian konsep dipilih OhioT1DM \autocite{marling2020} --- satu-satunya dataset CGM multimodal publik yang lengkap memuat glukosa, insulin, makanan, dan gaya hidup, sekaligus menjadi \emph{benchmark} standar komunitas prediksi glukosa. Konsekuensi yang diakui eksplisit: dataset berasal dari pasien T1DM yang secara fisiologis berbeda dari T2DM, dan tidak berkonteks Indonesia --- keduanya menjadi keterbatasan dan pengembangan lanjutan.
+
+Model dilatih pada kanal CGM (interval 5 menit) karena kualitas sinyal dan volume datanya ($\pm$166 ribu baris) memadai untuk melatih model prediktif, sementara skenario \emph{deployment} SMBG memanfaatkan pembacaan \texttt{finger\_stick} nyata yang sudah tersedia pada dataset ($\pm$4,5 ribu baris), bukan hasil \emph{downsampling} artifisial. Keputusan ini penting untuk validitas: bila data SMBG nyata tersedia, mengartifisialkannya justru menambah asumsi tanpa menambah validitas.
+
+\subsection{Analisis Pemilihan Fitur}
+Fitur model dilandasi \textbf{dua} basis: fisiologi/literatur dan bukti empiris. Secara fisiologis, dinamika glukosa dimodelkan dari interaksi glukosa--insulin--karbohidrat (\emph{Minimal Model} Bergman; simulator UVA/Padova), dengan aktivitas fisik sebagai faktor sekunder \autocite{bergman1979,dallaman2014}. Fitur mentah per-catatan (insulin, karbohidrat) menyimpan efek yang tertunda dan tersebar sehingga kontribusinya kecil; karena itu dipakai representasi berbasis fisiologi: \texttt{[glucose, glucose\_delta, IOB, COB, activity, hour\_sin, hour\_cos]} dengan target $\Delta$glukosa. Perubahan ini menjadikan kontribusi insulin$+$karbohidrat naik dari $\sim$3,4\% menjadi $\sim$22,3\% pada horizon $+30$ menit, sehingga klaim ``prediksi multimodal'' terbukti empiris (bukti \emph{feature importance}: Bab~\ref{chap:evaluasi}). Variabel stres \textbf{dikeluarkan dari fitur prediktor} karena hanya terdapat 7 \emph{event} stres di seluruh 12 pasien (nol-varians), namun \textbf{dipertahankan} sebagai variabel \emph{logbook}/\emph{digital twin} yang relevan saat \emph{deployment}.
+
+\subsection{Analisis Horizon dan Skema Prediksi}
+Horizon prediksi ditetapkan $+30$ dan $+60$ menit mengikuti standar BGLP Challenge OhioT1DM. Horizon $+5$ menit ditolak karena praktis setara \emph{persistence} (glukosa nyaris tak berubah) sehingga tugas menjadi trivial dan fitur multimodal tak berkontribusi --- bertentangan dengan premis kebaruan yang menuntut prediksi yang benar-benar menatap masa depan untuk mengondisikan \emph{retrieval}. Skema prediksi memakai \textbf{prediksi langsung pada horizon tetap}, bukan \emph{rollout} multi-langkah rekursif, untuk menghindari akumulasi galat. Pembagian data dilakukan \textbf{per pasien} (bukan per baris) untuk mencegah kebocoran temporal (\emph{data leakage}), dengan normalisasi yang di-\emph{fit} hanya pada data latih.
+
+\section{Analisis Pemilihan Solusi}
+
+\subsection{Alternatif Solusi}
+Untuk tiap keputusan desain utama dipertimbangkan alternatif konkret:
+\begin{itemize}
+    \item \textbf{Model prediksi:} \emph{Random Forest} vs LSTM vs GBM/XGBoost.
+    \item \textbf{Model bahasa (LLM):} Google Gemini (API \emph{cloud}) vs Ollama \texttt{llama3.1} (lokal).
+    \item \textbf{Model \emph{embedding}:} \emph{sentence-transformers} (\texttt{all-MiniLM-L6-v2}) vs Google Embedding API vs Ollama \texttt{nomic-embed-text}.
+    \item \textbf{Kerangka antarmuka:} Streamlit vs Chainlit/Gradio/Flask.
+    \item \textbf{Pendekatan \emph{digital twin}:} \emph{simplified} berbasis formula vs model ODE fisiologis (Bergman/UVA-Padova).
+    \item \textbf{Mesin simulasi \emph{what-if}:} formula PK mekanistik vs prediksi ulang memakai model RF yang sama.
+    \item \textbf{Skema pengambilan pengetahuan:} RAG di atas korpus tak-terstruktur vs kueri SPARQL di atas \emph{knowledge graph} (pendekatan \textcite{rad2024}).
+\end{itemize}
+
+\subsection{Analisis Penentuan Solusi}
+Penentuan solusi merangkum alasan pemilihan beserta kelemahan yang diakui secara jujur, sebagaimana Tabel~\ref{tab:penentuan-solusi}. Bukti kuantitatif yang mendukung sebagian keputusan (mis. perbandingan RF vs LSTM, sensitivitas \emph{chunk}/\emph{top\_k}) dipaparkan pada Bab~\ref{chap:evaluasi}.
+
+\input{tables/tabel_III3_solusi.tex}
+
+Dua konsekuensi analisis di atas perlu ditegaskan. \textbf{Pertama, desain dua mesin bukan inkonsistensi.} Sistem menjawab dua pertanyaan berbeda dengan mesin yang tepat: \emph{``apa yang akan terjadi?''} (prakiraan) oleh \emph{Random Forest}, dan \emph{``apa yang terjadi jika saya intervensi?''} (kontrafaktual) oleh formula PK. Inti sistem --- prediksi, \emph{state digital twin}, dan kebaruan \emph{Prediction-Conditioned RAG} --- seluruhnya mengalir dari prediksi \emph{Random Forest}; \emph{what-if} adalah fitur pendukung yang wajib memakai model kausal karena model korelasional memberi arah intervensi yang keliru. \textbf{Kedua, pemisahan model prediktif untuk prakiraan dan model kausal/mekanistik untuk kontrafaktual adalah praktik standar}, sehingga pilihan ini dapat dipertanggungjawabkan secara metodologis.
+
+Selain kedua gambar pada Bab ini, diagram \emph{use case} sistem yang memetakan aktor Dokter (pengguna utama) dan Pasien (\emph{doctor-mediated}) terhadap kebutuhan fungsional KF-01--KF-09 ditunjukkan pada Gambar~\ref{fig:use-case}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{images/Gambar_III2_UseCase.png}
+\caption{Diagram \emph{use case} sistem: aktor Dokter dan Pasien beserta kebutuhan fungsional KF-01--KF-09.}
+\label{fig:use-case}
+\end{figure}

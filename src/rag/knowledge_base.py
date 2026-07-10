@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -13,8 +14,10 @@ logger = logging.getLogger(__name__)
 _DEFAULT_CHUNK_SIZE = 900
 _DEFAULT_CHUNK_OVERLAP = 120
 
-# Sentence-transformers model: lightweight CPU-only, ~80MB, no server needed
-_HF_EMBED_MODEL = "all-MiniLM-L6-v2"
+# Model embedding HF. Default all-MiniLM (Inggris, ~80MB CPU). Override via env HF_EMBED_MODEL
+# untuk model multilingual (mis. paraphrase-multilingual-MiniLM-L12-v2). WAJIB sama antara
+# ingest & query — knowledge_base & retriever membaca env yang sama agar konsisten.
+_HF_EMBED_MODEL = os.getenv("HF_EMBED_MODEL", "all-MiniLM-L6-v2")
 
 
 def _build_embeddings(

@@ -1,0 +1,68 @@
+\cleardoublepage
+\chapter{IMPLEMENTASI}
+\label{chap:implementasi}
+
+Bab ini memaparkan realisasi perancangan pada Bab~\ref{chap:perancangan} menjadi perangkat lunak yang berfungsi. Pembahasan mencakup lingkungan implementasi, pemrosesan data dan rekayasa fitur, model prediksi, mesin \emph{digital twin} dan \emph{what-if}, basis pengetahuan beserta pipeline \emph{Prediction-Conditioned RAG}, dan antarmuka pengguna. Parameter implementasi utama dirangkum pada Tabel~\ref{tab:parameter-implementasi}.
+
+\input{tables/tabel_V1_parameter.tex}
+
+\section{Lingkungan Implementasi}
+Sistem diimplementasikan dengan Python di lingkungan \texttt{conda} dan dirancang berjalan pada laptop standar tanpa GPU (KNF-01). Komponen bersifat \emph{open-source} atau \emph{free-tier}: \emph{sentence-transformers} untuk \emph{embedding}, ChromaDB sebagai \emph{vector store} lokal, Streamlit untuk antarmuka, dan Google Gemini sebagai LLM melalui \emph{API key} gratis. Pilihan ini menjaga portabilitas dan menekan biaya (KNF-08) tanpa memerlukan \emph{server} khusus.
+
+\section{Pemrosesan Data dan Rekayasa Fitur}
+Data OhioT1DM dimuat dan dibersihkan, lalu diubah menjadi representasi berbasis fisiologi. Dari kanal glukosa mentah dihitung fitur \emph{engineered}: \texttt{glucose\_delta} (tren atas 3 langkah), \texttt{iob} (\emph{insulin-on-board}) dan \texttt{cob} (\emph{carbs-on-board}) melalui peluruhan eksponensial dengan konstanta $\tau=240$ menit untuk insulin dan $\tau=180$ menit untuk karbohidrat, serta \texttt{hour\_sin}/\texttt{hour\_cos} untuk pola diurnal.
+
+Efek insulin dan karbohidrat yang tertunda dimodelkan sebagai peluruhan eksponensial. IOB dan COB pada waktu $t$ dihitung dengan Persamaan~\ref{eq:iob} dan Persamaan~\ref{eq:cob}, dengan $d_i$ dosis insulin dan $c_i$ jumlah karbohidrat yang diberikan pada waktu $t_i \le t$:
+\begin{equation}
+  \mathrm{IOB}(t) = \sum_{t_i \le t} d_i \, e^{-(t - t_i)/\tau_I}, \quad \tau_I = 240~\text{menit}
+  \eqcaption{Insulin-on-board (IOB)}
+  \label{eq:iob}
+\end{equation}
+\begin{equation}
+  \mathrm{COB}(t) = \sum_{t_i \le t} c_i \, e^{-(t - t_i)/\tau_C}, \quad \tau_C = 180~\text{menit}
+  \eqcaption{Carbs-on-board (COB)}
+  \label{eq:cob}
+\end{equation}
+Tren glukosa (\texttt{glucose\_delta}) dihitung sebagai selisih atas tiga langkah terakhir ($\sim$15 menit), sebagaimana Persamaan~\ref{eq:trend}:
+\begin{equation}
+  \mathrm{trend}_t = g_t - g_{t-3}
+  \eqcaption{Tren glukosa jangka pendek}
+  \label{eq:trend}
+\end{equation}
+
+Pemodelan menargetkan $\Delta$glukosa (selisih dari nilai terakhir) yang kemudian direkonstruksi menjadi nilai absolut. Pembagian data dilakukan per pasien untuk mencegah kebocoran temporal, dan normalisasi di-\emph{fit} hanya pada data latih. Variabel stres dikeluarkan dari fitur prediktor karena nol-varians (hanya 7 \emph{event} di seluruh dataset), namun tetap dipertahankan sebagai variabel \emph{logbook}/\emph{digital twin}.
+
+\section{Implementasi Model Prediksi}
+Model prediksi diimplementasikan sebagai \emph{Random Forest} (\texttt{n\_estimators}=200, \texttt{max\_depth}=20, \texttt{min\_samples\_split}=5) yang memprediksi $\Delta$glukosa pada horizon $+30$ dan $+60$ menit. Nilai glukosa absolut direkonstruksi dengan menambahkan prediksi $\Delta$ ke nilai terkini, sebagaimana Persamaan~\ref{eq:reconstruct}, dengan $x_t$ vektor fitur dan $h$ horizon prediksi:
+\begin{equation}
+  \hat{g}_{t+h} = g_t + f_{\mathrm{RF}}(x_t)
+  \eqcaption{Rekonstruksi prediksi glukosa dari $\Delta$}
+  \label{eq:reconstruct}
+\end{equation}
+Panjang \emph{look-back} adalah 12 langkah ($\sim$1 jam) untuk skenario CGM dan 6 langkah untuk skenario SMBG. Estimasi ketidakpastian (KF-08) diperoleh dari sebaran prediksi antar-pohon, dan interval prediksi dikalibrasi menggunakan \emph{conformal prediction} agar cakupan empirisnya mendekati tingkat nominal (rincian pada Bab~\ref{chap:evaluasi}).
+
+\section{Implementasi \emph{Digital Twin} dan Mesin \emph{What-If}}
+\emph{State digital twin} diturunkan dari kondisi terkini dan hasil prediksi menjadi ringkasan tingkat risiko, arah tren, dan urgensi (KF-06), disertai peringatan dini hipoglikemia dan peringatan divergensi ketika prediksi menyimpang signifikan dari kondisi terkini (KF-07). Mesin \emph{what-if} (KF-05) diimplementasikan terpisah menggunakan formula farmakokinetik mekanistik, bukan model \emph{Random Forest}, agar arah simulasi intervensi (mis. penambahan insulin/karbohidrat) mengikuti hubungan kausal yang benar. Efek insulin dan karbohidrat dimodelkan melalui kurva peluruhan yang konsisten dengan konstanta IOB/COB pada tahap rekayasa fitur.
+
+\section{Implementasi Basis Pengetahuan dan Pipeline \emph{Prediction-Conditioned RAG}}
+Basis pengetahuan klinis dipecah menjadi \emph{chunk} berukuran 900 karakter dengan tumpang-tindih 120 karakter, di-\emph{embed} memakai \texttt{all-MiniLM-L6-v2}, dan diindeks pada ChromaDB menghasilkan \textbf{2.585 \emph{chunk}} terindeks. Pipeline PC-RAG merealisasikan alur pada Gambar~\ref{fig:pipeline-pcrag}: nilai glukosa terprediksi diklasifikasikan menjadi kondisi klinis dan digabung dengan konteks terkini untuk membentuk kueri yang dikondisikan prediksi; \emph{retrieval} mengambil \texttt{top\_k}=4 dokumen teratas; potongan tersebut menjadi konteks bagi LLM \textbf{\texttt{gemini-2.5-flash-lite}} yang dijalankan dengan parameter generatif konservatif (\texttt{temperature}=0,2; \texttt{max\_tokens}=300) demi keamanan klinis (KNF-03). Setiap lapisan dilengkapi \emph{graceful fallback} (KNF-04): bila LLM tak tersedia, sistem menyajikan potongan dokumen dan ringkasan \emph{state} sehingga tetap memberi keluaran yang aman. Prosedur lengkap satu siklus PC-RAG dirangkum pada Algoritma~\ref{alg:pcrag}.
+
+\begin{algorithm}[htbp]
+\caption{\emph{Prediction-Conditioned RAG}}
+\label{alg:pcrag}
+\begin{algorithmic}[1]
+\Require \emph{state logbook} $s_t$, model $f_{\mathrm{RF}}$, \emph{embedder} $E$, indeks $\mathcal{K}$, LLM $G$, horizon $h$, jumlah dokumen $k$
+\Ensure rekomendasi klinis tertelusur $r$
+\State $x_t \gets \textsc{EkstrakFitur}(s_t)$ \Comment{glucose, tren, IOB, COB, aktivitas, jam}
+\State $\widehat{\Delta g} \gets f_{\mathrm{RF}}(x_t)$
+\State $\hat{g}_{t+h} \gets g_t + \widehat{\Delta g}$ \Comment{rekonstruksi nilai absolut (Pers.~\ref{eq:reconstruct})}
+\State $c \gets \textsc{Klasifikasi}(\hat{g}_{t+h})$ \Comment{hipoglikemia / normal / hiperglikemia}
+\State $q \gets \textsc{BentukKueri}(c, \hat{g}_{t+h}, s_t)$ \Comment{kueri dikondisikan prediksi}
+\State $D \gets \textsc{Retrieve}(E(q), \mathcal{K}, k)$ \Comment{top-$k$ dokumen teratas}
+\State $r \gets G(q, D)$ \Comment{generasi \emph{grounded}, \texttt{temperature}=0,2}
+\State \Return $r$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Implementasi Antarmuka Pengguna}
+Antarmuka diimplementasikan sebagai aplikasi konsultasi klinis \emph{multi-page} berbasis Streamlit untuk dokter, memanfaatkan \emph{session state} native untuk mengelola \emph{slider what-if} dan hasil prediksi. Antarmuka menampilkan panel \emph{state digital twin}, prediksi beserta interval ketidakpastian, simulasi \emph{what-if}, dan rekomendasi tertelusur ke dokumen sumber (KNF-02). Alur \emph{doctor-mediated} (KF-09) diwujudkan melalui langkah validasi eksplisit: rekomendasi ditinjau dan disetujui dokter sebelum diteruskan, menegaskan peran sistem sebagai pendukung keputusan, bukan pengganti penilaian klinis (KNF-06).

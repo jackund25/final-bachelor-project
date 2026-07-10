@@ -1,0 +1,95 @@
+{
+  "horizon_min": 30,
+  "folds": [
+    {
+      "fold": 0,
+      "test": [
+        "ohio_540",
+        "ohio_570"
+      ],
+      "n": 28536,
+      "RF_RMSE": 21.3,
+      "LSTM_RMSE": 20.6,
+      "RF_A+B": 94.34,
+      "LSTM_A+B": 95.06
+    },
+    {
+      "fold": 1,
+      "test": [
+        "ohio_544",
+        "ohio_575"
+      ],
+      "n": 27761,
+      "RF_RMSE": 22.17,
+      "LSTM_RMSE": 21.67,
+      "RF_A+B": 92.93,
+      "LSTM_A+B": 93.84
+    },
+    {
+      "fold": 2,
+      "test": [
+        "ohio_552",
+        "ohio_584"
+      ],
+      "n": 26225,
+      "RF_RMSE": 25.7,
+      "LSTM_RMSE": 25.31,
+      "RF_A+B": 93.32,
+      "LSTM_A+B": 93.83
+    },
+    {
+      "fold": 3,
+      "test": [
+        "ohio_559",
+        "ohio_588"
+      ],
+      "n": 28707,
+      "RF_RMSE": 24.04,
+      "LSTM_RMSE": 24.07,
+      "RF_A+B": 93.73,
+      "LSTM_A+B": 93.69
+    },
+    {
+      "fold": 4,
+      "test": [
+        "ohio_563",
+        "ohio_591"
+      ],
+      "n": 28267,
+      "RF_RMSE": 21.81,
+      "LSTM_RMSE": 21.44,
+      "RF_A+B": 94.78,
+      "LSTM_A+B": 95.2
+    },
+    {
+      "fold": 5,
+      "test": [
+        "ohio_567",
+        "ohio_596"
+      ],
+      "n": 26833,
+      "RF_RMSE": 22.87,
+      "LSTM_RMSE": 22.16,
+      "RF_A+B": 93.04,
+      "LSTM_A+B": 93.96
+    }
+  ],
+  "RF_RMSE_mean_std": [
+    22.98,
+    1.49
+  ],
+  "LSTM_RMSE_mean_std": [
+    22.54,
+    1.63
+  ],
+  "fold_level_paired": {
+    "wilcoxon_p": 0.0625,
+    "ttest_rel_p": 0.0109
+  },
+  "sample_level_wilcoxon": {
+    "p": 4.530159529989317e-65,
+    "n": 166329,
+    "median_abs_err_RF": 10.69,
+    "median_abs_err_LSTM": 10.37
+  }
+}

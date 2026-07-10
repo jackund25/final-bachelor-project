@@ -1,0 +1,111 @@
+\cleardoublepage
+\chapter{EVALUASI}
+\label{chap:evaluasi}
+
+Bab ini memaparkan evaluasi sistem secara menyeluruh, mencakup kinerja prediksi glukosa, validasi silang lintas-pasien beserta uji signifikansi, kalibrasi ketidakpastian, keamanan klinis (deteksi hipoglikemia), kinerja \emph{retrieval} \emph{Prediction-Conditioned RAG}, dan evaluasi tingkat generasi. Bab ditutup dengan pembahasan dan keterbatasan.
+
+\section{Metode Evaluasi}
+\label{sec:metode-evaluasi}
+Evaluasi dirancang berlapis mengikuti arsitektur solusi. \emph{Pertama}, lapisan prediksi dinilai dengan metrik regresi standar --- RMSE, MAE, MAPE --- serta \emph{Clarke Error Grid} \autocite{clarke1987} yang mengukur keamanan klinis prediksi glukosa berdasarkan proporsi titik pada zona A (akurat) dan A+B (aman secara klinis). \emph{Kedua}, generalisasi lintas-pasien diuji melalui validasi silang per-pasien beserta uji signifikansi statistik, membandingkan \emph{Random Forest} (RF) terhadap \emph{baseline} LSTM. \emph{Ketiga}, kualitas ketidakpastian dinilai melalui cakupan interval prediksi dan kalibrasi \emph{conformal} \autocite{angelopoulos2021}. \emph{Keempat}, keamanan klinis pada peristiwa hipoglikemia dinilai dengan sensitivitas, spesifisitas, dan PPV. \emph{Kelima}, kontribusi kebaruan diuji pada lapisan \emph{retrieval} dengan membandingkan RAG standar terhadap PC-RAG memakai Hit@$k$, MRR, dan nDCG, serta pada lapisan generasi memakai kesesuaian terhadap rujukan dan cakupan tindakan klinis. Seluruh evaluasi prediksi menggunakan data uji \emph{hold-out} OhioT1DM \autocite{marling2020} dengan pembagian per pasien untuk mencegah kebocoran temporal.
+
+\section{Evaluasi Kinerja Prediksi}
+\label{sec:eval-prediksi}
+Kinerja prediksi dinilai dengan tiga metrik regresi. RMSE (Persamaan~\ref{eq:rmse}) menekankan galat besar, MAE (Persamaan~\ref{eq:mae}) mengukur galat absolut rata-rata, dan MAPE (Persamaan~\ref{eq:mape}) menyatakan galat relatif, dengan $g_i$ nilai aktual, $\hat{g}_i$ nilai prediksi, dan $n$ jumlah sampel:
+\begin{equation}
+  \mathrm{RMSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(g_i - \hat{g}_i\right)^2}
+  \eqcaption{Root Mean Squared Error (RMSE)}
+  \label{eq:rmse}
+\end{equation}
+\begin{equation}
+  \mathrm{MAE} = \frac{1}{n}\sum_{i=1}^{n}\left\lvert g_i - \hat{g}_i \right\rvert
+  \eqcaption{Mean Absolute Error (MAE)}
+  \label{eq:mae}
+\end{equation}
+\begin{equation}
+  \mathrm{MAPE} = \frac{100\%}{n}\sum_{i=1}^{n}\left\lvert \frac{g_i - \hat{g}_i}{g_i} \right\rvert
+  \eqcaption{Mean Absolute Percentage Error (MAPE)}
+  \label{eq:mape}
+\end{equation}
+
+Kinerja prediksi glukosa pada data uji dirangkum pada Tabel~\ref{tab:kinerja-prediksi}. Pada horizon $+30$ menit, RF mencapai RMSE 22,60~mg/dL dengan 94,35\% titik berada pada zona aman Clarke A+B; pada horizon $+60$ menit RMSE meningkat menjadi 34,24~mg/dL dengan 86,94\% titik zona A+B, sesuai ekspektasi bahwa ketidakpastian bertambah untuk horizon lebih jauh. Model LSTM sebagai \emph{baseline} menghasilkan angka yang sangat berdekatan (RMSE 22,04 dan 33,64~mg/dL).
+
+\input{tables/tabel_VI1_prediksi.tex}
+
+Distribusi keamanan klinis prediksi RF pada \emph{Clarke Error Grid} ditunjukkan pada Gambar~\ref{fig:clarke-rf-h6} (horizon $+30$ menit) dan Gambar~\ref{fig:clarke-rf-h12} (horizon $+60$ menit), sedangkan perbandingan ringkas antar-metrik disajikan pada Gambar~\ref{fig:comparison-bar}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{images/Gambar_VI1_ClarkeRF_h6.png}
+\caption{\emph{Clarke Error Grid} prediksi \emph{Random Forest} pada horizon $+30$ menit; mayoritas titik berada pada zona A dan B (aman secara klinis).}
+\label{fig:clarke-rf-h6}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{images/Gambar_VI2_ClarkeRF_h12.png}
+\caption{\emph{Clarke Error Grid} prediksi \emph{Random Forest} pada horizon $+60$ menit.}
+\label{fig:clarke-rf-h12}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{images/Gambar_VI3_ComparisonBar_h6.png}
+\caption{Perbandingan metrik \emph{Random Forest} vs LSTM pada horizon $+30$ menit.}
+\label{fig:comparison-bar}
+\end{figure}
+
+Bukti \emph{feature importance} mengonfirmasi klaim ``prediksi multimodal'': dengan representasi berbasis fisiologi, kontribusi gabungan insulin dan karbohidrat (melalui IOB/COB) naik dari $\sim$3,4\% (fitur mentah) menjadi $\sim$22,3\% pada horizon $+30$ menit, sehingga fitur multimodal terbukti berkontribusi nyata terhadap prediksi.
+
+\section{Validasi Silang Lintas-Pasien dan Uji Signifikansi}
+\label{sec:crossval}
+Untuk menilai generalisasi ke pasien yang tak pernah dilihat model, dilakukan validasi silang per-pasien enam \emph{fold} pada horizon $+30$ menit (Tabel~\ref{tab:crossval}). RF menghasilkan RMSE rata-rata 22,98\,$\pm$\,1,49~mg/dL, sedangkan LSTM 22,54\,$\pm$\,1,63~mg/dL --- selisih sekitar 0,44~mg/dL.
+
+\input{tables/tabel_VI2_crossval.tex}
+
+Uji signifikansi menunjukkan gambaran yang bernuansa. Pada tingkat \emph{fold} (n=6), uji Wilcoxon berpasangan tidak signifikan ($p=0,0625$) meski $t$-test berpasangan signifikan ($p=0,011$). Pada tingkat sampel (n=166.329), selisih signifikan secara statistik ($p\approx4,5\times10^{-65}$) namun median galat absolutnya hanya berbeda 0,32~mg/dL (10,69 vs 10,37~mg/dL). Selisih sekecil ini \textbf{tidak bermakna secara klinis} karena jauh di bawah resolusi keputusan terapi. Dengan demikian, keunggulan tipis LSTM tidak sepadan dengan hilangnya interpretabilitas, determinisme, dan kemudahan \emph{deployment} yang ditawarkan RF --- justifikasi kuantitatif atas pemilihan RF sebagai model utama (lihat Tabel~\ref{tab:penentuan-solusi}).
+
+\section{Evaluasi Ketidakpastian dan Kalibrasi Konformal}
+\label{sec:konformal}
+Estimasi ketidakpastian RF diperoleh dari sebaran antar-pohon, dengan rata-rata simpangan baku 15,88~mg/dL. Namun interval mentahnya kurang terkalibrasi: pada tingkat nominal 95\%, cakupan empiris \emph{baseline} hanya 86,0\% (dan 80,6\% pada nominal 90\%), menandakan interval terlalu sempit. Kalibrasi \emph{conformal} \autocite{angelopoulos2021} memperbaiki hal ini dengan membentuk interval simetris di sekitar prediksi menggunakan kuantil residual kalibrasi $q_{\alpha}$, sebagaimana Persamaan~\ref{eq:conformal}:
+\begin{equation}
+  C(x) = \left[\, \hat{g}(x) - q_{\alpha},\; \hat{g}(x) + q_{\alpha} \,\right], \quad q_{\alpha} = \mathrm{Kuantil}_{1-\alpha}\big(\{\lvert g_i - \hat{g}_i \rvert\}_{i \in \mathrm{kal}}\big)
+  \eqcaption{Interval prediksi konformal}
+  \label{eq:conformal}
+\end{equation}
+Metode \emph{conformal absolute} mencapai cakupan 96,5\% pada nominal 95\% (dan 92,5\% pada nominal 90\%) dengan konsekuensi pelebaran interval yang wajar (rata-rata lebar $\sim$102,6~mg/dL pada tingkat 95\%). Dengan demikian, interval prediksi yang disajikan kepada dokter (KF-08) memiliki jaminan cakupan yang lebih dapat dipercaya.
+
+\section{Evaluasi Keamanan: Deteksi Hipoglikemia}
+\label{sec:hipo}
+Keamanan klinis dinilai khusus pada peristiwa hipoglikemia ($<$70~mg/dL; 806 peristiwa pada data uji). Pada ambang deteksi standar 70~mg/dL, sistem mencapai spesifisitas sangat tinggi (99,7\%) dan PPV 57,1\%, tetapi sensitivitas rendah (14,0\%) --- konsekuensi wajar dari model yang meminimalkan galat rata-rata cenderung ``menghaluskan'' nilai ekstrem. Yang menenangkan secara klinis, dari peristiwa hipoglikemia yang terlewat, 687 di antaranya diprediksi jatuh pada rentang mendekati-normal, bukan pada rentang hiperglikemia yang menyesatkan arah.
+
+Untuk meningkatkan sensitivitas, dieksplorasi dua strategi: penyesuaian ambang deteksi dan pembobotan sampel hipoglikemia. Menaikkan ambang deteksi ke 80--85~mg/dL menaikkan sensitivitas menjadi 41,9\%--59,4\% dengan penurunan PPV yang terkendali (38,1\%--31,0\%). Strategi ini disajikan sebagai \emph{trade-off} eksplisit yang dapat disetel dokter, bukan sebagai klaim penyelesaian; keterbatasan sensitivitas hipoglikemia diakui sebagai arah pengembangan lanjutan.
+
+\section{Evaluasi \emph{Retrieval Prediction-Conditioned RAG}}
+\label{sec:eval-retrieval}
+Kontribusi inti kebaruan diuji pada lapisan \emph{retrieval} dengan membandingkan RAG standar (kueri dari kondisi terkini) terhadap PC-RAG (kueri dikondisikan nilai terprediksi) pada enam kasus yang secara desain menuntut dokumen kondisi \emph{masa depan}. Mutu peringkat dinilai dengan MRR (Persamaan~\ref{eq:mrr}), yang merata-ratakan kebalikan peringkat dokumen relevan pertama atas himpunan kueri $Q$, dan nDCG@$k$ (Persamaan~\ref{eq:ndcg}), yang memberi bobot lebih pada dokumen relevan berperingkat atas dengan $rel_i$ relevansi dokumen ke-$i$:
+\begin{equation}
+  \mathrm{MRR} = \frac{1}{\lvert Q \rvert}\sum_{q \in Q} \frac{1}{\mathrm{rank}_q}
+  \eqcaption{Mean Reciprocal Rank (MRR)}
+  \label{eq:mrr}
+\end{equation}
+\begin{equation}
+  \mathrm{nDCG}@k = \frac{\mathrm{DCG}@k}{\mathrm{IDCG}@k}, \quad \mathrm{DCG}@k = \sum_{i=1}^{k} \frac{2^{rel_i}-1}{\log_2(i+1)}
+  \eqcaption{Normalized Discounted Cumulative Gain (nDCG@k)}
+  \label{eq:ndcg}
+\end{equation} Hasil pada basis pengetahuan penuh (Tabel~\ref{tab:kinerja-retrieval}) menunjukkan keunggulan tegas PC-RAG: MRR meningkat dari 0,225 menjadi \textbf{0,889}, Hit@1 dari 0\% menjadi 83,3\%, dan nDCG@5 dari 0,160 menjadi 0,384. RAG standar gagal menempatkan dokumen antisipatif pada peringkat atas karena kuerinya hanya mencerminkan kondisi terkini yang, pada kasus-kasus ini, masih normal.
+
+\input{tables/tabel_VI3_retrieval.tex}
+
+Keunggulan ini \textbf{robust terhadap hiperparameter}. Analisis sensitivitas menunjukkan MRR PC-RAG tetap 0,889 untuk seluruh \texttt{top\_k} yang diuji ($k=3,4,5,8,10$), sementara RAG standar hanya membaik lambat seiring $k$. Pada sensitivitas ukuran \emph{chunk}, konfigurasi 900 karakter (menghasilkan 2.585 \emph{chunk}) memberi MRR terbaik (0,889); ukuran 500 karakter (MRR 0,722) dan 1.500 karakter (MRR 0,583) lebih rendah, sehingga 900 karakter dipilih sebagai konfigurasi produksi. Contoh kualitatif memperlihatkan mekanismenya: pada kasus olahraga tanpa penyesuaian insulin (glukosa terkini 98~mg/dL, prediksi 64~mg/dL), hanya PC-RAG yang membentuk kueri hipoglikemia dan mengambil dokumen penanganan yang relevan.
+
+\section{Evaluasi Tingkat Generasi}
+\label{sec:eval-generasi}
+Pada lapisan generasi, keluaran LLM \texttt{gemini-2.5-flash-lite} dinilai atas enam kasus dengan dua ukuran: kesesuaian terhadap rujukan (\emph{sim\_ref}) dan cakupan tindakan klinis yang disebutkan (\emph{action coverage}). Sebagaimana Tabel~\ref{tab:evaluasi-generasi}, PC-RAG mengungguli RAG standar pada kedua ukuran (\emph{sim\_ref} 0,571 vs 0,517; \emph{action coverage} 0,700 vs 0,667). Peningkatan pada tingkat generasi lebih moderat dibanding pada tingkat \emph{retrieval}, konsisten dengan pemahaman bahwa mutu \emph{retrieval} adalah syarat perlu namun bukan syarat cukup bagi mutu generasi. Evaluasi ini menggantikan rencana awal berbasis RAGAS yang tidak sesuai untuk konteks tugas akhir ini --- baik karena keterbatasan kuota \emph{free-tier} maupun karena sifat \emph{LLM-as-judge} yang berpotensi bias \emph{self-referential} --- dengan ukuran generasi yang lebih objektif dan tertelusur.
+
+\input{tables/tabel_VI4_generasi.tex}
+
+\section{Pembahasan dan Keterbatasan}
+\label{sec:pembahasan}
+Secara keseluruhan, evaluasi mendukung tiga klaim utama. \emph{Pertama}, model prediksi RF yang ringan dan interpretabel mencapai keamanan klinis tinggi (94,35\% zona Clarke A+B pada $+30$ menit) dan setara LSTM secara klinis, sehingga pilihan RF terjustifikasi. \emph{Kedua}, kebaruan \emph{Prediction-Conditioned RAG} memberikan peningkatan \emph{retrieval} yang besar dan robust (MRR 0,225~$\rightarrow$~0,889), yang merupakan kontribusi inti tugas akhir. \emph{Ketiga}, sistem berfungsi utuh pada lingkungan \emph{resource-constrained} tanpa GPU, CGM \emph{real-time}, maupun EHR.
+
+Keterbatasan yang diakui secara jujur meliputi: (1)~penggunaan OhioT1DM (T1DM) sebagai \emph{surrogate} bagi konteks T2DM Indonesia; (2)~sensitivitas deteksi hipoglikemia yang masih rendah pada ambang standar; (3)~evaluasi \emph{retrieval} dan generasi pada jumlah kasus yang terbatas (enam kasus terkurasi); dan (4)~\emph{embedding} yang belum di-\emph{fine-tune} untuk domain diabetes berbahasa Indonesia. Keterbatasan-keterbatasan ini menjadi dasar saran pengembangan pada Bab~\ref{chap:penutup}.

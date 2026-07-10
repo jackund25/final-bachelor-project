@@ -1,0 +1,17 @@
+\cleardoublepage
+\chapter{KODE PROGRAM}
+
+Kode program sistem cukup panjang dan telah disimpan secara lengkap pada repositori daring, sehingga tidak disertakan seluruhnya di dalam laporan ini. Kode sumber lengkap --- meliputi pemrosesan data, model prediksi, \emph{engine digital twin}, pipeline \emph{Prediction-Conditioned RAG}, serta antarmuka --- tersedia di:
+\begin{center}
+\url{https://github.com/jackund25/final-bachelor-project}
+\end{center}
+
+Pada lampiran ini hanya disertakan dua potongan kode yang paling penting untuk dibaca cepat, yakni rekayasa fitur berbasis fisiologi dan pembentukan kueri terkondisi prediksi yang menjadi inti kebaruan. Alur menyeluruh pipeline telah diringkas sebagai pseudocode pada Algoritma~\ref{alg:pcrag}.
+
+\section{Rekayasa Fitur Berbasis Fisiologi}
+Potongan kode berikut menghitung fitur \emph{engineered} (IOB, COB, tren, dan komponen diurnal) yang merealisasikan Persamaan~\ref{eq:iob}--\ref{eq:trend}. Perhitungan dilakukan per pasien untuk mencegah kebocoran temporal.
+\lstinputlisting[language=Python, caption={Rekayasa fitur berbasis fisiologi (IOB, COB, tren, diurnal)}, label={lst:engineer-features}]{listings/engineer-features.tex}
+
+\section{Pembentukan Kueri Terkondisi Prediksi}
+Potongan kode berikut merealisasikan inti kebaruan \emph{Prediction-Conditioned RAG}: kueri \emph{retrieval} dibangun dari nilai glukosa yang \emph{diprediksi}, bukan kondisi saat ini (bandingkan Algoritma~\ref{alg:pcrag}).
+\lstinputlisting[language=Python, caption={Pembentukan kueri terkondisi prediksi (inti PC-RAG)}, label={lst:conditioned-query}]{listings/conditioned-query.tex}

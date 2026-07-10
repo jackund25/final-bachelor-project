@@ -1,0 +1,23 @@
+def engineer_features(self, df, insulin_tau_min=240.0, carbs_tau_min=180.0,
+                      trend_steps=3, source_interval_min=5.0):
+    """Fitur turunan berbasis fisiologi (per pasien, tanpa leakage).
+    iob : Insulin-on-Board, peluruhan ~insulin_tau_min  (Pers. V.1)
+    cob : Carbs-on-Board,   peluruhan ~carbs_tau_min     (Pers. V.2)
+    glucose_delta : tren glukosa (Pers. V.3); hour_sin/cos : pola diurnal.
+    """
+    df = df.sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
+    insulin_decay = float(np.exp(-source_interval_min / insulin_tau_min))
+    carbs_decay   = float(np.exp(-source_interval_min / carbs_tau_min))
+
+    parts = []
+    for _, g in df.groupby("patient_id", sort=False):
+        g = g.copy()
+        insulin_src = g["bolus_dose"] if "bolus_dose" in g.columns else g["insulin"]
+        g["iob"] = _decay_accumulate(insulin_src.to_numpy(float), insulin_decay)
+        g["cob"] = _decay_accumulate(g["carbs"].to_numpy(float), carbs_decay)
+        g["glucose_delta"] = g["glucose"].diff(trend_steps).fillna(0.0)
+        hour = g["timestamp"].dt.hour + g["timestamp"].dt.minute / 60.0
+        g["hour_sin"] = np.sin(2 * np.pi * hour / 24.0)
+        g["hour_cos"] = np.cos(2 * np.pi * hour / 24.0)
+        parts.append(g)
+    return pd.concat(parts, ignore_index=True)

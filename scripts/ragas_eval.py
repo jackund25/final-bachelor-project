@@ -50,13 +50,17 @@ REF_HYPER = ("Antisipasi hiperglikemia: perbanyak minum air putih, lakukan aktiv
 QUESTION = ("Berikan penilaian risiko dan tindakan pencegahan yang tepat untuk pasien diabetes "
             "ini dalam 60 menit ke depan.")
 
-CASES = [
+ALL_CASES = [
     {"id": "D1", "current": 112.0, "predicted": 58.0, "reference": REF_HYPO},
     {"id": "D2", "current": 98.0, "predicted": 64.0, "reference": REF_HYPO},
     {"id": "D3", "current": 128.0, "predicted": 66.0, "reference": REF_HYPO},
     {"id": "D4", "current": 150.0, "predicted": 214.0, "reference": REF_HYPER},
     {"id": "D5", "current": 162.0, "predicted": 205.0, "reference": REF_HYPER},
 ]
+# Free-tier = 20 req/HARI/model. Batasi ke subset agar judge tetap <=20/hari (satu judge konsisten).
+# Default 3 kasus divergen (1 hipo + 2 hiper) x 2 mode x [faithfulness(2)+context_recall(1)] = 18 panggilan.
+_wanted = [c.strip() for c in os.getenv("RAGAS_CASES", "D2,D4,D5").split(",") if c.strip()]
+CASES = [c for c in ALL_CASES if c["id"] in _wanted] or ALL_CASES
 
 
 def retrieval_query(case, mode: str) -> str:
@@ -81,7 +85,13 @@ def main() -> int:
     load_dotenv(".env")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    from langchain_google_genai import ChatGoogleGenerativeAI
+    # Event loop RAGAS + Windows: nest_asyncio agar loop bisa dipakai ulang.
+    import nest_asyncio
+    nest_asyncio.apply()
+
+    # Pakai endpoint OpenAI-compatible Gemini (klien httpx, BUKAN gRPC) → hindari
+    # "RuntimeError: Event loop is closed" yang bikin skor NaN di klien gRPC langchain-google-genai.
+    from langchain_openai import ChatOpenAI
     from langchain_community.embeddings import HuggingFaceEmbeddings
     from src.rag.retriever import MMRRetriever
 
@@ -91,15 +101,31 @@ def main() -> int:
     from ragas.embeddings import LangchainEmbeddingsWrapper
 
     api_key = os.getenv("GOOGLE_API_KEY")
-    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-    # Judge = model dgn kuota free (gemini-2.5-flash-lite) + max_output_tokens besar agar output
-    # JSON RAGAS tidak terpotong (model 2.5 memakai thinking-token).
-    judge_model = os.getenv("RAGAS_JUDGE_MODEL", model)
-    gen_llm = ChatGoogleGenerativeAI(model=model, google_api_key=api_key, temperature=0.2,
-                                     max_output_tokens=1024, max_retries=2)
-    judge_llm = ChatGoogleGenerativeAI(model=judge_model, google_api_key=api_key, temperature=0.0,
-                                       max_output_tokens=4096, max_retries=3)
-    print(f"Generator: {model} | Judge: {judge_model}")
+    judge_model = os.getenv("RAGAS_JUDGE_MODEL", os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite"))
+    gen_model = os.getenv("RAGAS_GEN_MODEL", "gemini-flash-latest")
+
+    # Endpoint & kredensial dapat dioverride. Default = endpoint OpenAI-compatible Gemini (httpx,
+    # bukan gRPC → aman di event loop RAGAS). Untuk judge LOKAL tanpa kuota, set:
+    #   RAGAS_JUDGE_BASE_URL=http://localhost:11434/v1  RAGAS_JUDGE_API_KEY=ollama
+    #   RAGAS_JUDGE_MODEL=llama3.1:8b  (Ollama). Sama untuk generator (RAGAS_GEN_*).
+    gemini_base = "https://generativelanguage.googleapis.com/v1beta/openai/"
+    judge_base = os.getenv("RAGAS_JUDGE_BASE_URL", gemini_base)
+    judge_key = os.getenv("RAGAS_JUDGE_API_KEY", api_key)
+    gen_base = os.getenv("RAGAS_GEN_BASE_URL", gemini_base)
+    gen_key = os.getenv("RAGAS_GEN_API_KEY", api_key)
+
+    # Rate limiter hanya perlu untuk remote free-tier (10/menit). Lokal → set RAGAS_RPS tinggi.
+    from langchain_core.rate_limiters import InMemoryRateLimiter
+    rps = float(os.getenv("RAGAS_RPS", "0.14"))
+    rate_limiter = InMemoryRateLimiter(requests_per_second=rps, check_every_n_seconds=0.25,
+                                       max_bucket_size=2)
+
+    gen_llm = ChatOpenAI(model=gen_model, api_key=gen_key, base_url=gen_base, temperature=0.2,
+                         max_tokens=1024, max_retries=5, rate_limiter=rate_limiter)
+    judge_llm = ChatOpenAI(model=judge_model, api_key=judge_key, base_url=judge_base, temperature=0.0,
+                           max_tokens=4096, max_retries=5, rate_limiter=rate_limiter)
+    print(f"Generator: {gen_model} @ {gen_base}")
+    print(f"Judge: {judge_model} @ {judge_base} | kasus: {[c['id'] for c in CASES]}")
     hf_emb = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2", model_kwargs={"device": "cpu"},
                                    encode_kwargs={"normalize_embeddings": True})
 
@@ -129,7 +155,12 @@ def main() -> int:
 
     judge = LangchainLLMWrapper(judge_llm)
     emb = LangchainEmbeddingsWrapper(hf_emb)
-    metrics = [faithfulness, answer_relevancy, context_recall, context_precision]
+    # Free-tier budget + kompatibilitas Gemini:
+    #   context_recall (1 panggilan/sampel, berbasis reference — paling objektif & terbukti ter-parse)
+    #   answer_relevancy (1 panggilan + embedding lokal).
+    #   faithfulness DIBUANG: output Gemini tak ter-parse oleh RAGAS (NaN) + boros panggilan (per-statement).
+    #   context_precision DIBUANG: ~4 panggilan/sampel (boros kuota).
+    metrics = [context_recall, answer_relevancy]
     run_cfg = RunConfig(max_workers=1, timeout=180, max_retries=5, max_wait=60)
 
     all_scores = []
@@ -154,7 +185,8 @@ def main() -> int:
         "Skor RAGAS dihasilkan Gemini (LLM) yang menilai output LLM → berpotensi bias "
         "self-referential dan bervariasi antar-run. context_recall/precision (berbasis reference) "
         "lebih objektif daripada faithfulness/answer_relevancy. Angka bersifat indikatif.\n\n"
-        f"Judge model: {model} | n_kasus: {len(CASES)} | top_k: {TOP_K}\n", encoding="utf-8")
+        f"Judge: {judge_model} | Generator: {gen_model} | n_kasus: {len(CASES)} | "
+        f"kasus: {[c['id'] for c in CASES]} | top_k: {TOP_K}\n", encoding="utf-8")
 
     print("\n=== RINGKASAN RAGAS (rata-rata per mode) ===")
     print(summary.to_string(index=False))

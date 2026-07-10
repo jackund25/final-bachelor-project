@@ -1,0 +1,18 @@
+def build_conditioned_query(patient_id, current_glucose, predicted_glucose,
+                            feature_row=None, user_question=None,
+                            strategy=QueryStrategy.COMPREHENSIVE,
+                            prediction_horizon_minutes=60):
+    """Keluaran model prediksi -> kueri retrieval terkondisi (inti PC-RAG).
+
+    Kueri dibangun dari glukosa yang DIPREDIKSI (bukan kondisi saat ini),
+    sehingga dokumen yang di-retrieve bersifat antisipatif.
+    """
+    state = PatientState.from_model_output(
+        patient_id=patient_id,
+        current_glucose=current_glucose,
+        predicted_glucose=predicted_glucose,
+        feature_row=feature_row,
+        prediction_horizon_minutes=prediction_horizon_minutes,
+    )
+    builder = PredictionConditionedQueryBuilder(strategy=strategy)
+    return builder.build(state, user_question=user_question)
