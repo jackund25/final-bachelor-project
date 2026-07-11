@@ -145,8 +145,10 @@ def train_lstm_from_config(
     Args:
         config_path: Path to config.yaml.
         data_source: 'auto' | 'ohio_t1dm' | 'latest'.
-        smbg_downsample: If True, downsample CGM data to SMBG cadence before
-            training (uses config.data.smbg_interval_min or default 240 min).
+        smbg_downsample: Legacy experiment path. If True, downsample CGM data to an
+            SMBG-like cadence (config.data.smbg_interval_min). Not used by any result
+            reported in the thesis: the SMBG scenario is evaluated on the REAL
+            finger_stick timeline (data/raw/ohio_t1dm_smbg.csv), not on downsampled CGM.
 
     Returns:
         Evaluation metrics dict.

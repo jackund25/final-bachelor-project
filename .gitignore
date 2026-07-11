@@ -86,3 +86,9 @@ config_local.yaml
 *.fls
 *.fdb_latexmk
 docs/laporan_TA/TA-STI-template-1.0/TA.pdf
+*.synctex(busy)
+
+# Dokumen berhak cipta / draft internal — tidak dipublikasikan di repo publik
+docs/OhioT1DM-dataset-paper.pdf
+docs/pape_iciss/
+data/knowledge_base/additional_docs/

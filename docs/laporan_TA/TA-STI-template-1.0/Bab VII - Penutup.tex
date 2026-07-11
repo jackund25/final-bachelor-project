@@ -8,16 +8,48 @@ Tugas akhir ini merancang, mengimplementasikan, dan mengevaluasi sistem pendukun
 \begin{enumerate}
     \item Sistem berhasil mengubah alur pengelolaan yang reaktif menjadi antisipatif dengan menyatukan prediksi glukosa jangka pendek, \emph{state digital twin}, dan penalaran berbasis dokumen klinis dalam satu alur yang divalidasi dokter. Seluruh kebutuhan fungsional (KF-01--KF-09) terpenuhi tanpa memerlukan GPU, CGM \emph{real-time}, maupun EHR.
     \item Model prediksi \emph{Random Forest} yang ringan dan interpretabel mencapai keamanan klinis tinggi (94,35\% titik pada zona aman \emph{Clarke Error Grid} untuk horizon $+30$ menit) dan secara klinis setara dengan \emph{baseline} LSTM, sehingga pemilihan RF sebagai model utama terjustifikasi secara kuantitatif.
-    \item Kebaruan \emph{Prediction-Conditioned RAG} terbukti memberikan peningkatan kualitas \emph{retrieval} yang besar dan robust terhadap hiperparameter --- MRR meningkat dari 0,225 (RAG standar) menjadi 0,889 --- yang merupakan kontribusi inti tugas akhir ini. Peningkatan tersebut berlanjut hingga tingkat generasi rekomendasi.
+    \item Evaluasi pada skenario \emph{deployment} SMBG nyata --- masukan hanya pembacaan \emph{finger\_stick} dan \emph{logbook}, tanpa CGM sebagai fitur --- menunjukkan kinerja yang lebih rendah namun masih aman secara klinis (RMSE 27,09~mg/dL dengan 92,09\% zona Clarke A+B pada $+30$ menit). Temuan penting yang dilaporkan apa adanya: pada horizon $+30$ menit model praktis setara dengan \emph{baseline persistence}, sedangkan keunggulan yang jelas baru muncul pada horizon $+60$ menit. Manfaat prediktif pada data \emph{logbook} yang jarang karenanya terletak pada horizon yang lebih panjang.
+    \item Kebaruan \emph{Prediction-Conditioned RAG} terbukti memberikan peningkatan kualitas \emph{retrieval} yang besar dan robust terhadap hiperparameter --- MRR meningkat dari 0,225 (RAG standar) menjadi 0,889 --- yang merupakan kontribusi inti tugas akhir ini. Pada tingkat generasi rekomendasi, peningkatannya lebih moderat dan terkonsentrasi pada kasus hipoglikemia --- yakni justru pada kasus yang paling bernilai secara klinis untuk diantisipasi.
     \item Representasi fitur berbasis fisiologi (IOB/COB, tren, pola diurnal) membuktikan klaim ``prediksi multimodal'', dengan kontribusi gabungan insulin dan karbohidrat meningkat dari $\sim$3,4\% menjadi $\sim$22,3\% pada horizon $+30$ menit.
     \item Desain dua mesin --- \emph{Random Forest} untuk prakiraan dan formula farmakokinetik untuk simulasi \emph{what-if} --- terbukti sebagai keputusan yang tepat secara metodologis, karena model korelasional tidak sesuai untuk penalaran kontrafaktual intervensi.
 \end{enumerate}
+
+\section{Pemenuhan Kebutuhan Sistem}
+Kesesuaian sistem terhadap kebutuhan fungsional (KF) dan nonfungsional (KNF) yang ditetapkan pada Bab~\ref{chap:analisis-masalah} dirangkum berikut, dengan bukti dari implementasi (Bab~\ref{chap:implementasi}) dan evaluasi (Bab~\ref{chap:evaluasi}).
+
+Pemenuhan kebutuhan fungsional:
+\begin{description}
+    \item[KF-01 (Tercapai):] Halaman \emph{Input Logbook} menerima data \emph{logbook} harian terstruktur (Gambar~\ref{fig:ui-logbook}).
+    \item[KF-02 (Tercapai, dengan catatan):] Prediksi glukosa $+30$ dan $+60$ menit oleh \emph{Random Forest} (RMSE 22,60~mg/dL pada $+30$ menit; Gambar~\ref{fig:ui-dashboard}). Pada skenario SMBG nyata kinerjanya menurun (RMSE 27,09~mg/dL) dan pada horizon $+30$ menit setara \emph{baseline persistence}, sehingga manfaat prediktif atas data \emph{logbook} yang jarang perlu ditingkatkan (Subbab~\ref{sec:eval-smbg}).
+    \item[KF-03 (Tercapai):] Kueri \emph{retrieval} dikondisikan pada nilai terprediksi; MRR meningkat dari 0,225 menjadi 0,889 dibanding RAG standar.
+    \item[KF-04 (Tercapai):] Rekomendasi berbahasa Indonesia berbasis dokumen klinis dan tertelusur ke sumber (Gambar~\ref{fig:ui-rekomendasi} dan~\ref{fig:ui-rujukan}).
+    \item[KF-05 (Tercapai):] Simulasi \emph{what-if} berbasis formula farmakokinetik (Gambar~\ref{fig:ui-whatif}).
+    \item[KF-06 (Tercapai):] Panel \emph{state digital twin} menampilkan tingkat risiko, arah tren, dan urgensi (Gambar~\ref{fig:ui-dashboard}).
+    \item[KF-07 (Tercapai, dengan catatan):] Peringatan dini hipoglikemia dan peringatan divergensi terimplementasi (Gambar~\ref{fig:ui-dashboard}); namun sensitivitas deteksi hipoglikemia pada ambang standar masih rendah (14\%) dan menjadi arah pengembangan.
+    \item[KF-08 (Tercapai):] Interval ketidakpastian disajikan dan dikalibrasi konformal (cakupan 96,5\% pada tingkat nominal 95\%).
+    \item[KF-09 (Tercapai):] Alur \emph{doctor-mediated} --- dokter memvalidasi dan mencatat keputusan (Gambar~\ref{fig:ui-keputusan}).
+\end{description}
+
+Pemenuhan kebutuhan nonfungsional:
+\begin{description}
+    \item[KNF-01 (Tercapai):] Sistem berjalan pada laptop standar tanpa GPU.
+    \item[KNF-02 (Tercapai):] Prediksi dapat dijelaskan (\emph{feature importance}) dan rekomendasi tertelusur ke dokumen sumber.
+    \item[KNF-03 (Tercapai):] Keluaran \emph{grounded} pada dokumen dengan parameter generatif konservatif (\texttt{temperature}=0,2).
+    \item[KNF-04 (Tercapai):] \emph{Graceful fallback} berlapis pada lapisan data, \emph{retrieval}, dan generasi.
+    \item[KNF-05 (Tercapai):] Seluruh keluaran menggunakan Bahasa Indonesia.
+    \item[KNF-06 (Tercapai):] \emph{Human-in-the-loop}; sistem berperan sebagai pendukung keputusan dan menyertakan \emph{disclaimer} klinis.
+    \item[KNF-07 (Tercapai):] Pemisahan \emph{domain logic} (\texttt{src/}) dari antarmuka (\texttt{app/}).
+    \item[KNF-08 (Tercapai):] Memanfaatkan komponen \emph{free-tier}/\emph{open-source} tanpa \emph{server} khusus.
+\end{description}
+
+Dengan demikian, seluruh kebutuhan fungsional dan nonfungsional terpenuhi secara fungsional, dengan dua catatan kinerja yang masih perlu ditingkatkan dan tercermin pada saran pengembangan: sensitivitas deteksi hipoglikemia pada ambang standar (KF-07), dan manfaat prediktif pada skenario SMBG di horizon pendek yang belum melampaui \emph{baseline persistence} (KF-02).
 
 \section{Saran}
 Beberapa arah pengembangan lanjutan direkomendasikan untuk mengatasi keterbatasan yang telah diuraikan pada Subbab~\ref{sec:pembahasan}.
 
 \begin{enumerate}
     \item \textbf{Validasi pada data T2DM berkonteks Indonesia.} Penggunaan OhioT1DM sebagai \emph{surrogate} perlu ditindaklanjuti dengan pengumpulan dan validasi pada data \emph{logbook} pasien T2DM nyata di Indonesia agar klaim penerapan klinis dapat diperkuat.
+    \item \textbf{Penguatan model untuk data \emph{logbook} yang jarang.} Hasil Subbab~\ref{sec:eval-smbg} menunjukkan bahwa pada horizon $+30$ menit prediksi atas data SMBG belum melampaui \emph{baseline persistence}. Arah perbaikan yang menjanjikan meliputi pemodelan yang secara eksplisit sadar-waktu terhadap jarak antar-pembacaan yang tidak beraturan (mis. memasukkan selang waktu sebagai fitur atau memakai model deret waktu kontinu), pemilihan horizon yang lebih sesuai dengan ritme SMBG, serta pelatihan khusus pada timeline \emph{finger\_stick} alih-alih memakai model yang dilatih pada kanal CGM.
     \item \textbf{Peningkatan sensitivitas deteksi hipoglikemia.} Diperlukan eksplorasi lebih lanjut --- misalnya fungsi \emph{loss} yang sadar-biaya (\emph{cost-sensitive}) atau kalibrasi ambang per-pasien --- untuk menaikkan sensitivitas hipoglikemia tanpa menurunkan PPV secara berlebihan.
     \item \textbf{Perluasan evaluasi generasi.} Evaluasi tingkat generasi perlu diperluas ke jumlah kasus yang lebih besar dan melibatkan penilaian pakar klinis untuk menilai keamanan, ketepatan, dan keberterimaan rekomendasi.
     \item \textbf{Penyesuaian model \emph{embedding} domain.} \emph{Fine-tuning} model \emph{embedding} pada korpus diabetes berbahasa Indonesia berpotensi meningkatkan mutu \emph{retrieval} lebih jauh.

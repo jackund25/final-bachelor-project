@@ -1,0 +1,36 @@
+{
+  "catatan": "Masukan hanya finger_stick + event logbook; CGM dipakai hanya sebagai ground truth.",
+  "n_smbg_readings": 4566,
+  "test_patients": [
+    "ohio_591",
+    "ohio_596"
+  ],
+  "smbg_gap_min": {
+    "median": 124.8,
+    "mean": 207.6
+  },
+  "horizons": {
+    "+30": {
+      "n_train": 1886,
+      "n_test": 354,
+      "RMSE": 27.09,
+      "MAE": 20.33,
+      "MAPE": 17.07,
+      "Clarke_A": 74.86,
+      "Clarke_A+B": 92.09,
+      "persistence_RMSE": 27.33,
+      "persistence_Clarke_A+B": 90.4
+    },
+    "+60": {
+      "n_train": 1870,
+      "n_test": 356,
+      "RMSE": 42.86,
+      "MAE": 34.36,
+      "MAPE": 28.56,
+      "Clarke_A": 51.97,
+      "Clarke_A+B": 80.34,
+      "persistence_RMSE": 47.87,
+      "persistence_Clarke_A+B": 73.6
+    }
+  }
+}

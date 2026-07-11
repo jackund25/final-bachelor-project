@@ -9,7 +9,13 @@ data:
   seed: 42
   primary_source: "ohio_t1dm"
   fallback_source: "latest_generated"
-  smbg_interval_min: 240  # 4-jam cadence ≈ 6 pembacaan/hari (surrogate SMBG)
+  # Skenario SMBG memakai pembacaan finger_stick NYATA dari OhioT1DM
+  # (data/raw/ohio_t1dm_smbg.csv, dihasilkan parse_ohio_fingerstick) — BUKAN hasil
+  # downsampling artifisial dari kanal CGM. Lihat Batasan Masalah #2 pada laporan.
+  smbg_csv: "data/raw/ohio_t1dm_smbg.csv"
+  # Dipakai HANYA oleh jalur eksperimen lama train_lstm_from_config(smbg_downsample=True),
+  # yang tidak dipakai pada hasil mana pun di laporan. Dipertahankan untuk reproduksi historis.
+  smbg_interval_min: 240
 
 # Patient Parameters (for simulation)
 patient:

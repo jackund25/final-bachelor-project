@@ -1,0 +1,23 @@
+\begin{table}[htbp]
+\centering
+\caption{Pustaka utama dan versinya pada lingkungan implementasi.}
+\label{tab:dependensi}
+\small
+\begin{tabular}{@{}p{3.4cm}p{3.3cm}p{5.3cm}@{}}
+\toprule
+\textbf{Peran} & \textbf{Pustaka (versi)} & \textbf{Kegunaan} \\
+\midrule
+Bahasa \& lingkungan & Python 3.11 (\texttt{conda}) & Runtime dan manajemen paket \\[2pt]
+Pengolahan data & \texttt{numpy} 1.26, \texttt{pandas} 2.0, \texttt{scipy} 1.11 & Manipulasi \emph{array}/tabel dan komputasi numerik \\[2pt]
+Model prediksi & \texttt{scikit-learn} 1.3 & \emph{Random Forest} (model utama) \\[2pt]
+Model pembanding & \texttt{tensorflow} 2.15 & LSTM (\emph{baseline}) \\[2pt]
+\emph{Embedding} & \texttt{sentence-transformers} $\ge$3.0 & Vektorisasi teks (\texttt{all-MiniLM-L6-v2}) \\[2pt]
+\emph{Vector store} & \texttt{chromadb} 1.0 & Indeks vektor lokal untuk \emph{retrieval} \\[2pt]
+Orkestrasi RAG/LLM & \texttt{langchain} 0.3, \texttt{langchain-google-genai} $\ge$2.0 & Pipeline RAG dan koneksi ke Gemini \\[2pt]
+Pemrosesan dokumen & \texttt{PyPDF2} 3.0, \texttt{python-docx} & Ekstraksi teks pedoman klinis \\[2pt]
+Antarmuka & \texttt{streamlit} 1.25 & Aplikasi konsultasi \emph{multi-page} \\[2pt]
+Visualisasi & \texttt{matplotlib} 3.7, \texttt{plotly} 5.15 & Grafik zona glukosa dan hasil evaluasi \\[2pt]
+Konfigurasi & \texttt{pyyaml}, \texttt{python-dotenv} & Konfigurasi terpusat dan \emph{API key} \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -12,93 +12,51 @@
 
 
 
-\begin{longtable}{@{} l >{\raggedright\arraybackslash}p{6.5cm} c @{}}
-\multicolumn{1}{l}{\textbf{Notasi}} & \multicolumn{1}{l}{\textbf{Deskripsi}} & \multicolumn{1}{l}{\parbox[c]{3.5cm}{\raggedright \textbf{Pemakaian pertama kali}}} \\
+\begin{longtable}{@{} l >{\raggedright\arraybackslash}p{9cm} c @{}}
+\multicolumn{1}{l}{\textbf{Notasi}} & \multicolumn{1}{l}{\textbf{Deskripsi}} & \multicolumn{1}{l}{\parbox[c]{2.5cm}{\raggedright \textbf{Pemakaian pertama kali}}} \\[0.5em]
 
+% Rekayasa fitur dan model prediksi (Persamaan V.1--V.4)
+$\tau_I$ & Konstanta waktu peluruhan \emph{insulin-on-board} (240 menit) & 36 \\
+$\tau_C$ & Konstanta waktu peluruhan \emph{carbs-on-board} (180 menit) & 36 \\
+$d_i$ & Dosis insulin yang diberikan pada waktu $t_i$ & 36 \\
+$c_i$ & Jumlah karbohidrat yang dikonsumsi pada waktu $t_i$ & 36 \\
+$t_i$ & Waktu pemberian insulin atau karbohidrat & 36 \\
+$g_t$ & Kadar glukosa aktual pada waktu $t$ & 37 \\
+$\mathrm{trend}_t$ & Tren glukosa: selisih terhadap tiga langkah sebelumnya & 37 \\
+$\widehat{\Delta g}$ & Perubahan kadar glukosa yang diprediksi model (target pelatihan) & 37 \\
+$\hat{g}_{t+h}$ & Kadar glukosa terprediksi untuk horizon $h$ & 37 \\
+$h$ & Horizon prediksi (langkah ke depan) & 37 \\
+$x_t$ & Vektor fitur (\emph{state} fisiologis) pada waktu $t$ & 37 \\
+$f_{\mathrm{RF}}$ & Fungsi prediksi model \emph{Random Forest} & 37 \\[1ex]
 
+% Notasi pipeline Prediction-Conditioned RAG (Algoritma V.1)
+$s_t$ & \emph{State} logbook pasien pada waktu $t$ & 40 \\
+$c$ & Klasifikasi kondisi klinis dari nilai terprediksi & 40 \\
+$q$ & Kueri \emph{retrieval} yang dikondisikan pada prediksi & 40 \\
+$E$ & Fungsi \emph{embedding} teks & 40 \\
+$\mathcal{K}$ & Indeks basis pengetahuan klinis (\emph{vector store}) & 40 \\
+$D$ & Himpunan dokumen hasil \emph{retrieval} & 40 \\
+$G$ & Model bahasa besar (generator) & 40 \\
+$r$ & Rekomendasi klinis tertelusur yang dihasilkan & 40 \\[1ex]
 
-% \multicolumn{2}{l}{\textbf{Huruf Yunani (Parameter Model)}} \\
+% Metrik prediksi (Persamaan VI.1--VI.3)
+$g_i,\ \hat{g}_i$ & Nilai glukosa aktual dan prediksi untuk sampel ke-$i$ & 46 \\
+$n$ & Jumlah sampel & 46 \\[1ex]
 
-$\alpha$ & Koefisien bobot untuk \textit{loss function}, tingkat signifikansi statistik & 75 \\
-$\beta$ & Koefisien bobot untuk \textit{Binary Cross-Entropy loss} & 75 \\
-$\lambda$ & Koefisien bobot untuk CTC \textit{loss}, parameter regularisasi & 75 \\
-$\theta$ & Parameter model \textit{neural network} & 75 \\
-$\sigma$ & Deviasi standar & 75 \\
-$\mu$ & Rata-rata (\textit{mean}) & 75 \\
-$\epsilon$ & \textit{Token blank}/kosong dalam CTC, konstanta kecil untuk stabilitas numerik & 75 \\
-$\Delta$ & Delta (selisih/perubahan nilai) & 75 \\
-$\pi$ & \textit{Alignment path} dalam CTC & 75 \\
-$\pi_t$ & \textit{Token} pada \textit{timestep} $t$ dalam \textit{alignment path} & 76 \\[1ex]
+% Kalibrasi ketidakpastian konformal (Persamaan VI.4)
+$\alpha$ & Tingkat signifikansi; $1-\alpha$ menyatakan tingkat kepercayaan interval & 50 \\
+$q_{\alpha}$ & Kuantil ke-$(1-\alpha)$ dari residual kalibrasi & 50 \\
+$C(x)$ & Interval prediksi konformal untuk masukan $x$ & 50 \\[1ex]
 
-% \multicolumn{2}{l}{\textbf{Operator Matematis}} \\
+% Metrik retrieval (Persamaan VI.5--VI.6)
+$k$ & Jumlah dokumen teratas yang diambil (\emph{top-}$k$) & 51 \\
+$Q$ & Himpunan kueri evaluasi & 51 \\
+$\mathrm{rank}_q$ & Peringkat dokumen relevan pertama untuk kueri $q$ & 51 \\
+$rel_i$ & Skor relevansi dokumen pada peringkat ke-$i$ & 51 \\[1ex]
 
-$\nabla$ atau $\partial$ & Operator gradien atau turunan parsial & 75 \\
-$\sum$ & Operator penjumlahan & 75 \\
-$\prod$ & Operator perkalian & 75 \\
-$\int$ & Operator integral & 75 \\
-argmax & Argumen yang memaksimalkan fungsi & 76 \\
-$\sim$ & Terdistribusi menurut & 75 \\
-$\to$ & Menuju atau konvergen ke & 75 \\[1ex]
-
-% \multicolumn{2}{l}{\textbf{Fungsi \textit{Loss} dan Kerugian}} \\
-
-$\mathcal{L}$ & Fungsi \textit{loss} (kerugian) & 75 \\
-$\mathcal{L}_{total}$ & Total \textit{loss function} & 75 \\
-$\mathcal{L}_{adversarial}$ atau $\mathcal{L}_{adv}$ & \textit{Adversarial loss} & 75 \\
-$\mathcal{L}_{reconstruction}$ & \textit{Reconstruction loss} & 75 \\
-$\mathcal{L}_{L1}$ & L1 \textit{loss} (\textit{Mean Absolute Error}) & 75 \\
-$\mathcal{L}_{L2}$ & L2 \textit{loss} (\textit{Mean Squared Error}) & 75 \\
-$\mathcal{L}_{CTC}$ & CTC (\textit{Connectionist Temporal Classification}) \textit{loss} & 75 \\
-$\mathcal{L}_{perceptual}$ & \textit{Perceptual loss} & 75 \\
-$\mathcal{L}_{pixel}$ & \textit{Pixel-wise loss} & 75 \\
-$\mathcal{L}_{BCE}$ & \textit{Binary Cross-Entropy loss} & 75 \\
-$\mathcal{L}_{GAN}$ & GAN \textit{loss} & 75 \\
-$\mathcal{L}_{cycle}$ & \textit{Cycle consistency loss} & 75 \\[1ex]
-
-% \multicolumn{2}{l}{\textbf{Variabel Model dan Komponen GAN}} \\
-
-$G$ & \textit{Generator} dalam GAN & 75 \\
-$D$ & \textit{Discriminator} dalam GAN & 75 \\
-$G(z)$ & \textit{Output} dari \textit{generator} dengan \textit{input} $z$ & 75 \\
-$D(x)$ & \textit{Output} dari \textit{discriminator} dengan \textit{input} $x$ & 75 \\
-$G_{A \to B}$ & \textit{Generator} dari domain $A$ ke $B$ & 75 \\
-$G_{B \to A}$ & \textit{Generator} dari domain $B$ ke $A$ & 75 \\
-$V(D, G)$ & Fungsi nilai (\textit{value function}) dalam GAN & 75 \\
-$x$ & Sampel data asli, \textit{input} citra & 75 \\
-$y$ & Label atau \textit{ground truth}, kondisi dalam \textit{conditional GAN} & 75 \\
-$z$ & \textit{Noise vector} atau representasi laten \\[1ex]
-
-% \multicolumn{2}{l}{\textbf{Distribusi Probabilitas}} \\
-
-$\mathbb{E}$ & Ekspektasi atau nilai harapan & 75 \\
-$p_{data}$ & Distribusi data asli & 75 \\
-$p_z$ & Distribusi \textit{prior} (\textit{noise}) & 75 \\
-$p(y|x)$ & Probabilitas bersyarat \textit{output} $y$ \textit{given input} $x$ & 75 \\
-$p_t(\pi_t|x)$ & Probabilitas \textit{token} pada \textit{timestep} $t$ \\[1ex]
-
-% \multicolumn{2}{l}{\textbf{Fungsi dan Transformasi CTC}} \\
-
-$\mathcal{B}$ & Fungsi penciutan (\textit{collapse function}) dalam CTC & 75 \\
-$\mathcal{B}^{-1}$ & Fungsi invers penciutan dalam CTC & 75 \\
-$T$ & Jumlah \textit{timestep} atau panjang \textit{sequence} \\[1ex]
-
-% \multicolumn{2}{l}{\textbf{Metrik Jarak dan Norma}} \\
-
-$|x - G(y)|_1$ & L1 \textit{distance} antara \textit{ground truth} dan \textit{generated image} & 75 \\
-$|x - G(y)|_2$ & L2 \textit{distance} antara \textit{ground truth} dan \textit{generated image} & 75 \\
-$N \times N$ & Ukuran \textit{patch} dalam PatchGAN \\[1ex]
-
-% \multicolumn{2}{l}{\textbf{Statistik dan Analisis}} \\
-
-$d$ & Cohen's $d$ (\textit{effect size}) & 75 \\
-$n$ & Jumlah sampel & 75 \\
-$p$ & \textit{p-value} (nilai probabilitas statistik) & 75 \\
-$r$ & Koefisien korelasi & 75 \\
-$R^2$ & Koefisien determinasi \\[1ex]
-
-% \multicolumn{2}{l}{\textbf{Notasi Kompleksitas Komputasi}} \\
-
-$O(n)$ & Notasi Big-O untuk kompleksitas linear & 75 \\
-$O(n^2)$ & Notasi Big-O untuk kompleksitas kuadratik & 75 \\
+% Operator
+$\sum$ & Operator penjumlahan & 36 \\
+$e$ & Bilangan Euler (basis fungsi eksponensial) & 36 \\
+$\lvert \cdot \rvert$ & Nilai absolut & 46 \\
 
 \end{longtable}

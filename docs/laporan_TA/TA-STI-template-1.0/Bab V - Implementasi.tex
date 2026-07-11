@@ -2,15 +2,27 @@
 \chapter{IMPLEMENTASI}
 \label{chap:implementasi}
 
-Bab ini memaparkan realisasi perancangan pada Bab~\ref{chap:perancangan} menjadi perangkat lunak yang berfungsi. Pembahasan mencakup lingkungan implementasi, pemrosesan data dan rekayasa fitur, model prediksi, mesin \emph{digital twin} dan \emph{what-if}, basis pengetahuan beserta pipeline \emph{Prediction-Conditioned RAG}, dan antarmuka pengguna. Parameter implementasi utama dirangkum pada Tabel~\ref{tab:parameter-implementasi}.
+Bab ini memaparkan realisasi perancangan pada Bab~\ref{chap:perancangan} menjadi perangkat lunak yang berfungsi. Pembahasan mencakup lingkungan implementasi, struktur perangkat lunak, pemrosesan data dan rekayasa fitur, model prediksi, mesin \emph{digital twin} dan \emph{what-if}, basis pengetahuan beserta pipeline \emph{Prediction-Conditioned RAG}, antarmuka pengguna, dan skrip evaluasi, ditutup dengan verifikasi fungsional. Setiap subbab dipetakan ke rancangan pada Bab~\ref{chap:perancangan} agar dapat ditelusuri. Parameter implementasi utama dirangkum pada Tabel~\ref{tab:parameter-implementasi}.
 
 \input{tables/tabel_V1_parameter.tex}
 
 \section{Lingkungan Implementasi}
-Sistem diimplementasikan dengan Python di lingkungan \texttt{conda} dan dirancang berjalan pada laptop standar tanpa GPU (KNF-01). Komponen bersifat \emph{open-source} atau \emph{free-tier}: \emph{sentence-transformers} untuk \emph{embedding}, ChromaDB sebagai \emph{vector store} lokal, Streamlit untuk antarmuka, dan Google Gemini sebagai LLM melalui \emph{API key} gratis. Pilihan ini menjaga portabilitas dan menekan biaya (KNF-08) tanpa memerlukan \emph{server} khusus.
+Sistem diimplementasikan dengan Python 3.11 di lingkungan \texttt{conda} dan dirancang berjalan pada laptop standar tanpa GPU (KNF-01). Seluruh komponen bersifat \emph{open-source} atau \emph{free-tier}: \emph{scikit-learn} untuk model prediksi, TensorFlow untuk LSTM pembanding, \emph{sentence-transformers} untuk \emph{embedding} berbasis CPU, ChromaDB sebagai \emph{vector store} lokal, LangChain untuk orkestrasi RAG, Streamlit untuk antarmuka, dan Google Gemini sebagai LLM melalui \emph{API key} gratis. \emph{API key} disimpan pada berkas \texttt{.env} (tidak di-\emph{commit}) dan dimuat melalui \texttt{python-dotenv}, sedangkan seluruh parameter sistem dipusatkan pada berkas \texttt{config.yaml}. Pilihan ini menjaga portabilitas dan menekan biaya (KNF-08) tanpa memerlukan \emph{server} khusus. Pustaka utama beserta versinya dirangkum pada Tabel~\ref{tab:dependensi}.
+
+\input{tables/tabel_V2_dependensi.tex}
+
+\section{Struktur Perangkat Lunak}
+Perangkat lunak disusun modular dengan pemisahan \emph{domain logic} dari antarmuka (KNF-07): logika inti berada pada paket \texttt{src/} dan antarmuka pada \texttt{app/}, sehingga tiap komponen dapat diuji dan dipelihara secara terpisah. Pemetaan modul terhadap tanggung jawab dan rancangan yang direalisasikannya dirangkum pada Tabel~\ref{tab:struktur-modul}. Pelatihan model, ingesti basis pengetahuan, dan evaluasi masing-masing dijalankan melalui skrip mandiri pada \texttt{scripts/}, sehingga proses eksperimen dapat direproduksi tanpa menyentuh kode antarmuka.
+
+\input{tables/tabel_V3_modul.tex}
 
 \section{Pemrosesan Data dan Rekayasa Fitur}
-Data OhioT1DM dimuat dan dibersihkan, lalu diubah menjadi representasi berbasis fisiologi. Dari kanal glukosa mentah dihitung fitur \emph{engineered}: \texttt{glucose\_delta} (tren atas 3 langkah), \texttt{iob} (\emph{insulin-on-board}) dan \texttt{cob} (\emph{carbs-on-board}) melalui peluruhan eksponensial dengan konstanta $\tau=240$ menit untuk insulin dan $\tau=180$ menit untuk karbohidrat, serta \texttt{hour\_sin}/\texttt{hour\_cos} untuk pola diurnal.
+\label{sec:data-impl}
+Akuisisi data direalisasikan pada modul \texttt{src/data/ohio\_parser.py}. Berkas XML OhioT1DM diurai menjadi kerangka fitur per pasien: kanal glukosa CGM (interval 5 menit) menjadi deret basis waktu, sedangkan \emph{event} insulin (bolus dan basal \emph{stepwise}), karbohidrat, dan aktivitas fisik diselaraskan ke deret waktu tersebut melalui fungsi penyelarasan (\texttt{\_align\_sum} untuk kuantitas dan \texttt{\_align\_presence} untuk indikator). Skenario SMBG memakai pembacaan \texttt{finger\_stick} nyata yang diurai terpisah (\texttt{parse\_ohio\_fingerstick}), bukan hasil \emph{downsampling} artifisial. Fungsi \texttt{process\_ohio\_dataset} menggabungkan seluruh pasien menjadi satu berkas terproses.
+
+Sebelum diproses lebih lanjut, setiap kerangka data divalidasi terhadap \emph{kontrak data} (\texttt{src/data/contracts.py}, fungsi \texttt{validate\_data\_contract}) yang memastikan kolom wajib (\texttt{patient\_id}, \texttt{timestamp}, \texttt{glucose}) tersedia dan bertipe benar; pelanggaran kontrak dihentikan lebih awal agar galat tidak merambat ke tahap pelatihan.
+
+Pemrosesan dan rekayasa fitur ditangani kelas \texttt{DataPreprocessor} (\texttt{src/data/preprocessor.py}). Alur metodenya: \texttt{handle\_missing\_values} membersihkan dan menginterpolasi nilai hilang; \texttt{engineer\_features} menambahkan fitur berbasis fisiologi; \texttt{create\_sequences} menyusun jendela \emph{look-back}; \texttt{split\_by\_patient} membagi data per pasien; dan \texttt{normalize\_data} melakukan normalisasi. Dari kanal glukosa mentah dihitung fitur \emph{engineered}: \texttt{glucose\_delta} (tren atas 3 langkah), \texttt{iob} (\emph{insulin-on-board}) dan \texttt{cob} (\emph{carbs-on-board}) melalui peluruhan eksponensial dengan konstanta $\tau=240$ menit untuk insulin dan $\tau=180$ menit untuk karbohidrat, serta \texttt{hour\_sin}/\texttt{hour\_cos} untuk pola diurnal.
 
 Efek insulin dan karbohidrat yang tertunda dimodelkan sebagai peluruhan eksponensial. IOB dan COB pada waktu $t$ dihitung dengan Persamaan~\ref{eq:iob} dan Persamaan~\ref{eq:cob}, dengan $d_i$ dosis insulin dan $c_i$ jumlah karbohidrat yang diberikan pada waktu $t_i \le t$:
 \begin{equation}
@@ -30,22 +42,39 @@ Tren glukosa (\texttt{glucose\_delta}) dihitung sebagai selisih atas tiga langka
   \label{eq:trend}
 \end{equation}
 
-Pemodelan menargetkan $\Delta$glukosa (selisih dari nilai terakhir) yang kemudian direkonstruksi menjadi nilai absolut. Pembagian data dilakukan per pasien untuk mencegah kebocoran temporal, dan normalisasi di-\emph{fit} hanya pada data latih. Variabel stres dikeluarkan dari fitur prediktor karena nol-varians (hanya 7 \emph{event} di seluruh dataset), namun tetap dipertahankan sebagai variabel \emph{logbook}/\emph{digital twin}.
+Metode \texttt{create\_sequences} menyusun jendela masukan sepanjang \texttt{sequence\_length} (12 langkah untuk CGM, 6 langkah untuk SMBG) dengan glukosa sebagai fitur \emph{anchor}. Ketika \texttt{predict\_delta} aktif, target yang dilatih adalah $\Delta$glukosa (selisih terhadap nilai \emph{anchor} terakhir) yang kemudian direkonstruksi menjadi nilai absolut pada saat inferensi (Persamaan~\ref{eq:reconstruct}); pilihan ini menghindari galat kumulatif dan menstabilkan skala target. Pembagian data dilakukan \emph{per pasien} melalui \texttt{split\_by\_patient} untuk mencegah kebocoran temporal, dan \texttt{normalize\_data} melakukan normalisasi yang di-\emph{fit} hanya pada data latih lalu diterapkan ke data uji, sehingga statistik uji tidak bocor ke pelatihan. Variabel stres dikeluarkan dari fitur prediktor karena nol-varians (hanya 7 \emph{event} di seluruh dataset), namun tetap dipertahankan sebagai variabel \emph{logbook}/\emph{digital twin} yang relevan saat \emph{deployment}.
 
 \section{Implementasi Model Prediksi}
-Model prediksi diimplementasikan sebagai \emph{Random Forest} (\texttt{n\_estimators}=200, \texttt{max\_depth}=20, \texttt{min\_samples\_split}=5) yang memprediksi $\Delta$glukosa pada horizon $+30$ dan $+60$ menit. Nilai glukosa absolut direkonstruksi dengan menambahkan prediksi $\Delta$ ke nilai terkini, sebagaimana Persamaan~\ref{eq:reconstruct}, dengan $x_t$ vektor fitur dan $h$ horizon prediksi:
+\label{sec:model-impl}
+Model prediksi dibangun di atas antarmuka abstrak \texttt{BaseGlucoseModel} (\texttt{src/models/base\_model.py}) yang mendefinisikan kontrak seragam \texttt{train}, \texttt{predict}, \texttt{save}, dan \texttt{load}. Dengan abstraksi ini, model utama dan model pembanding dapat dipertukarkan tanpa mengubah kode pemanggil, sehingga evaluasi keduanya adil dan konsisten.
+
+Model utama diimplementasikan sebagai \texttt{RandomForestGlucoseModel} (\texttt{src/models/rf\_model.py}) yang membungkus \texttt{RandomForestRegressor} dari \emph{scikit-learn} (\texttt{n\_estimators}=200, \texttt{max\_depth}=20, \texttt{min\_samples\_split}=5) untuk memprediksi $\Delta$glukosa pada horizon $+30$ dan $+60$ menit. Nilai glukosa absolut direkonstruksi dengan menambahkan prediksi $\Delta$ ke nilai terkini, sebagaimana Persamaan~\ref{eq:reconstruct}, dengan $x_t$ vektor fitur dan $h$ horizon prediksi:
 \begin{equation}
   \hat{g}_{t+h} = g_t + f_{\mathrm{RF}}(x_t)
   \eqcaption{Rekonstruksi prediksi glukosa dari $\Delta$}
   \label{eq:reconstruct}
 \end{equation}
-Panjang \emph{look-back} adalah 12 langkah ($\sim$1 jam) untuk skenario CGM dan 6 langkah untuk skenario SMBG. Estimasi ketidakpastian (KF-08) diperoleh dari sebaran prediksi antar-pohon, dan interval prediksi dikalibrasi menggunakan \emph{conformal prediction} agar cakupan empirisnya mendekati tingkat nominal (rincian pada Bab~\ref{chap:evaluasi}).
+Panjang \emph{look-back} adalah 12 langkah ($\sim$1 jam) untuk skenario CGM dan 6 langkah untuk skenario SMBG. Interpretabilitas (KNF-02) diperoleh langsung dari atribut \texttt{feature\_importances\_} model, yang dipakai untuk menjelaskan kontribusi tiap fitur kepada dokter (dibahas pada Bab~\ref{chap:evaluasi}). Estimasi ketidakpastian (KF-08) diperoleh dari sebaran prediksi antar-pohon --- simpangan baku keluaran seluruh \emph{estimator} dijadikan ukuran keyakinan model. Interval mentah tersebut cenderung terlalu sempit (miskalibrasi), sehingga dikalibrasi memakai \emph{conformal prediction} (skrip \texttt{scripts/conformal\_calibration.py}) agar cakupan empirisnya mendekati tingkat nominal (Persamaan~\ref{eq:conformal}; rincian hasil pada Bab~\ref{chap:evaluasi}).
+
+Model pembanding \texttt{LSTMGlucoseModel} (\texttt{src/models/lstm\_model.py}) diimplementasikan dengan Keras/TensorFlow (dua lapis LSTM 64/32 unit, \emph{dropout} 0,2, \emph{optimizer} Adam, \emph{early stopping}). Pelatihan kedua model dijalankan lewat fungsi \texttt{train\_random\_forest\_from\_config} dan \texttt{train\_lstm\_from\_config} yang membaca seluruh parameter dari \texttt{config.yaml}, sehingga konfigurasi eksperimen terpusat dan dapat direproduksi. Model terlatih dan objek normalisasi disimpan sebagai artefak (\texttt{.pkl}/\texttt{.h5}) untuk dipakai kembali oleh aplikasi maupun skrip evaluasi.
 
 \section{Implementasi \emph{Digital Twin} dan Mesin \emph{What-If}}
-\emph{State digital twin} diturunkan dari kondisi terkini dan hasil prediksi menjadi ringkasan tingkat risiko, arah tren, dan urgensi (KF-06), disertai peringatan dini hipoglikemia dan peringatan divergensi ketika prediksi menyimpang signifikan dari kondisi terkini (KF-07). Mesin \emph{what-if} (KF-05) diimplementasikan terpisah menggunakan formula farmakokinetik mekanistik, bukan model \emph{Random Forest}, agar arah simulasi intervensi (mis. penambahan insulin/karbohidrat) mengikuti hubungan kausal yang benar. Efek insulin dan karbohidrat dimodelkan melalui kurva peluruhan yang konsisten dengan konstanta IOB/COB pada tahap rekayasa fitur.
+\label{sec:dt-impl}
+Representasi \emph{digital twin} diwujudkan pada kelas \texttt{PatientDigitalTwin} (\texttt{src/digital\_twin/patient\_twin.py}) yang menyimpan \emph{state} fisiologis pasien dan menghitung besaran turunan: \texttt{calculate\_insulin\_on\_board} dan \texttt{calculate\_carbs\_on\_board} memodelkan insulin dan karbohidrat aktif melalui kurva peluruhan yang konsisten dengan konstanta IOB/COB pada tahap rekayasa fitur (Persamaan~\ref{eq:iob}--\ref{eq:cob}), sedangkan \texttt{simulate\_scenario} menerapkan sebuah skenario intervensi ke \emph{state}. Riwayat \emph{state} dikelola \texttt{DigitalTwinStateManager} (\texttt{src/digital\_twin/state\_manager.py}) melalui objek \texttt{StateRecord} yang dapat dipersistensikan (JSON) sebagai jejak audit; dari \emph{state} inilah diturunkan ringkasan tingkat risiko, arah tren, dan urgensi (KF-06), disertai peringatan dini hipoglikemia dan peringatan divergensi ketika prediksi menyimpang signifikan dari kondisi terkini (KF-07).
+
+Mesin \emph{what-if} (KF-05) diimplementasikan terpisah pada \texttt{WhatIfSimulator} (\texttt{src/digital\_twin/simulator.py}) menggunakan formula farmakokinetik mekanistik, \emph{bukan} model \emph{Random Forest}, agar arah simulasi intervensi mengikuti hubungan kausal yang benar. Kelas ini menyediakan beberapa mode simulasi konseling, antara lain \texttt{compare\_meal\_scenarios} (efek variasi karbohidrat), \texttt{simulate\_exercise} (efek aktivitas fisik), dan \texttt{find\_optimal\_insulin\_dose} (pencarian dosis untuk sasaran glukosa). Karena mekanismenya kausal, penambahan insulin memprediksi penurunan glukosa dan penambahan karbohidrat memprediksi kenaikan --- arah yang benar secara fisiologis dan tidak dapat dijamin oleh model korelasional. Keputusan memisahkan mesin ini dikonfirmasi secara empiris: pada uji coba awal, memakai \emph{Random Forest} yang sama untuk mensimulasikan penambahan insulin justru menghasilkan arah terbalik (glukosa terprediksi naik) akibat \emph{confounding} pada data latih --- insulin diberikan \emph{karena} glukosa tinggi --- sehingga formula PK mekanistik dipilih.
 
 \section{Implementasi Basis Pengetahuan dan Pipeline \emph{Prediction-Conditioned RAG}}
-Basis pengetahuan klinis dipecah menjadi \emph{chunk} berukuran 900 karakter dengan tumpang-tindih 120 karakter, di-\emph{embed} memakai \texttt{all-MiniLM-L6-v2}, dan diindeks pada ChromaDB menghasilkan \textbf{2.585 \emph{chunk}} terindeks. Pipeline PC-RAG merealisasikan alur pada Gambar~\ref{fig:pipeline-pcrag}: nilai glukosa terprediksi diklasifikasikan menjadi kondisi klinis dan digabung dengan konteks terkini untuk membentuk kueri yang dikondisikan prediksi; \emph{retrieval} mengambil \texttt{top\_k}=4 dokumen teratas; potongan tersebut menjadi konteks bagi LLM \textbf{\texttt{gemini-2.5-flash-lite}} yang dijalankan dengan parameter generatif konservatif (\texttt{temperature}=0,2; \texttt{max\_tokens}=300) demi keamanan klinis (KNF-03). Setiap lapisan dilengkapi \emph{graceful fallback} (KNF-04): bila LLM tak tersedia, sistem menyajikan potongan dokumen dan ringkasan \emph{state} sehingga tetap memberi keluaran yang aman. Prosedur lengkap satu siklus PC-RAG dirangkum pada Algoritma~\ref{alg:pcrag}.
+\label{sec:rag-impl}
+\textbf{Basis pengetahuan.} Kelas \texttt{MedicalKnowledgeBase} (\texttt{src/rag/knowledge\_base.py}) memuat dokumen pedoman klinis terpercaya (PERKENI \autocite{perkeni2021}, ADA \autocite{ada2023}, Kemenkes) beserta basis pengetahuan manual (\texttt{manual\_kb.json}), memecahnya menjadi \emph{chunk} berukuran 900 karakter dengan tumpang-tindih 120 karakter (\texttt{chunk\_documents}), meng-\emph{embed} tiap \emph{chunk} memakai \texttt{all-MiniLM-L6-v2} melalui \emph{sentence-transformers}, lalu mengindeksnya ke ChromaDB (\texttt{save\_to\_chroma}) menghasilkan \textbf{2.585 \emph{chunk}} terindeks. Ingesti dijalankan sekali melalui skrip \texttt{scripts/ingest\_kb.py}/\texttt{reingest\_kb.py} dan hasilnya dipakai ulang saat inferensi. Pemilihan \texttt{all-MiniLM-L6-v2} mempertimbangkan portabilitas (\emph{CPU-only}, $\sim$80~MB); sebuah alternatif \emph{embedding} multilingual sempat diuji tetapi menurunkan mutu \emph{retrieval} secara tajam sehingga tidak dipakai (rincian pada Bab~\ref{chap:evaluasi}).
+
+\textbf{Retriever.} \texttt{MMRRetriever} (\texttt{src/rag/retriever.py}) mengambil dokumen dari ChromaDB dengan strategi \emph{Maximal Marginal Relevance} \autocite{carbonell1998} untuk menyeimbangkan relevansi dan keragaman, sehingga konteks yang diberikan ke LLM tidak redundan. Tersedia \emph{fallback} \texttt{SimpleKeywordRetriever} berbasis kecocokan kata kunci bila \emph{vector store} tak tersedia (KNF-04). Karena kegagalan \emph{retrieval} vektor dapat terjadi secara diam-diam --- sistem mundur ke \emph{keyword} tanpa galat yang terlihat --- status kesiapan \emph{retriever} (\texttt{is\_ready}) diverifikasi eksplisit agar jalur vektor benar-benar aktif saat evaluasi.
+
+\textbf{Pembentuk kueri terkondisi.} Inti kebaruan berada pada \texttt{PredictionConditionedQueryBuilder} (\texttt{src/rag/conditioned\_query.py}). Objek \texttt{PatientState} (\texttt{src/patient\_state.py}) berperan sebagai \emph{kontrak data} antara modul prediksi dan RAG: dari nilai glukosa \emph{terprediksi} dibentuk klasifikasi kondisi (hipoglikemia/normal/hiperglikemia) dan \emph{condition phrase} yang menjadi dasar kueri \emph{retrieval} --- inilah realisasi \emph{Prediction-Conditioned RAG}.
+
+\textbf{Pipeline.} Kelas \texttt{RAGPipeline} (\texttt{src/rag/pipeline.py}) merangkai keseluruhan alur pada Gambar~\ref{fig:pipeline-pcrag}: \texttt{\_build\_query} menyusun kueri dari \emph{state} dan prediksi, \texttt{\_retrieve} mengambil \texttt{top\_k}=4 dokumen teratas, dan \texttt{answer} memanggil generator lalu merangkai \emph{advisory}. Metode pendukung \texttt{\_actions\_for\_risk} memetakan tingkat risiko ke tindakan baku dan \texttt{\_ensure\_disclaimer} menjamin setiap keluaran memuat \emph{disclaimer} klinis.
+
+\textbf{Generator.} \texttt{RAGGenerator} (\texttt{src/rag/generator.py}) memakai LLM \textbf{\texttt{gemini-2.5-flash-lite}} dengan parameter generatif konservatif (\texttt{temperature}=0,2; \texttt{max\_tokens}=300) demi keamanan klinis (KNF-03). Setiap lapisan dilengkapi \emph{graceful fallback} berlapis (KNF-04): bila LLM tak tersedia, sistem menurunkan ke jawaban berbasis \emph{template} (\texttt{\_template\_answer}) yang menyajikan potongan dokumen dan ringkasan \emph{state}, sehingga tetap memberi keluaran yang aman dan tertelusur. Prosedur lengkap satu siklus PC-RAG dirangkum pada Algoritma~\ref{alg:pcrag}.
 
 \begin{algorithm}[htbp]
 \caption{\emph{Prediction-Conditioned RAG}}
@@ -65,4 +94,77 @@ Basis pengetahuan klinis dipecah menjadi \emph{chunk} berukuran 900 karakter den
 \end{algorithm}
 
 \section{Implementasi Antarmuka Pengguna}
+\label{sec:ui-impl}
 Antarmuka diimplementasikan sebagai aplikasi konsultasi klinis \emph{multi-page} berbasis Streamlit untuk dokter, memanfaatkan \emph{session state} native untuk mengelola \emph{slider what-if} dan hasil prediksi. Antarmuka menampilkan panel \emph{state digital twin}, prediksi beserta interval ketidakpastian, simulasi \emph{what-if}, dan rekomendasi tertelusur ke dokumen sumber (KNF-02). Alur \emph{doctor-mediated} (KF-09) diwujudkan melalui langkah validasi eksplisit: rekomendasi ditinjau dan disetujui dokter sebelum diteruskan, menegaskan peran sistem sebagai pendukung keputusan, bukan pengganti penilaian klinis (KNF-06).
+
+% ============================================================================
+% CATATAN: Simpan 5 tangkapan layar ke folder images/ dengan nama persis berikut
+% SEBELUM compile (jika berkas belum ada, xelatex akan gagal "File not found"):
+%   images/Gambar_V1_UI_Logbook.png      images/Gambar_V2_UI_Dashboard.png
+%   images/Gambar_V3_UI_Rekomendasi.png  images/Gambar_V4_UI_WhatIf.png
+%   images/Gambar_V5_UI_Keputusan.png
+% ============================================================================
+Alur kerja dokter pada antarmuka mengikuti urutan: memasukkan data \emph{logbook}, meninjau prediksi dan \emph{state digital twin}, memperoleh rekomendasi tertelusur, mensimulasikan intervensi, lalu mencatat keputusan. Realisasi tiap tahap ditunjukkan pada Gambar~\ref{fig:ui-logbook}--\ref{fig:ui-keputusan}, yang mewujudkan rancangan \emph{wireframe} pada Gambar~\ref{fig:wireframe}.
+
+Halaman \emph{Input Logbook} (Gambar~\ref{fig:ui-logbook}) menerima data harian terstruktur --- glukosa, karbohidrat, insulin, aktivitas, dan stres --- yang disimpan sebagai sumber masukan manual pasien (KF-01).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/Gambar_V1_UI_Logbook.png}
+\caption{Halaman \emph{Input Logbook}: pemasukan data harian terstruktur (glukosa, karbohidrat, insulin, aktivitas, stres) sebagai sumber masukan manual (KF-01).}
+\label{fig:ui-logbook}
+\end{figure}
+
+Halaman konsultasi utama (Gambar~\ref{fig:ui-dashboard}) menampilkan grafik zona glukosa, prediksi $+30$ menit beserta \textbf{interval keyakinan 95\% terkalibrasi konformal} (KF-08), ringkasan \emph{state digital twin} (tingkat risiko, arah tren, kondisi aktif IOB/COB; KF-06), serta \textbf{peringatan antisipatif} ketika kondisi terkini normal namun prediksi menuju bahaya (KF-02, KF-07). Pada contoh gambar, glukosa terkini 157~mg/dL diprediksi naik ke 194~mg/dL (hiperglikemia) dalam 30 menit, sehingga sistem memunculkan peringatan pencegahan.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/Gambar_V2_UI_Dashboard.png}
+\caption{Halaman konsultasi: prediksi glukosa $+30$ menit dengan interval konformal 95\%, panel \emph{state digital twin}, dan peringatan antisipatif divergensi (KF-02, KF-06, KF-07, KF-08).}
+\label{fig:ui-dashboard}
+\end{figure}
+
+Tab \emph{Rekomendasi Klinis} (Gambar~\ref{fig:ui-rekomendasi}) menghasilkan rekomendasi antisipatif berbahasa Indonesia yang \emph{dikondisikan pada nilai prediksi}, terstruktur menjadi penilaian risiko, tindakan pencegahan, serta protokol pemantauan, dan disertai penanda sumber di dalam teks (mis. \texttt{[PERKENI-2021-Pedoman-DMT2-Dewasa.pdf]}) beserta \emph{disclaimer} yang menegaskan keputusan final tetap pada dokter (KF-04).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/Gambar_V3_UI_Rekomendasi.png}
+\caption{Tab \emph{Rekomendasi Klinis}: keluaran rekomendasi antisipatif berbahasa Indonesia yang dikondisikan pada nilai prediksi, lengkap dengan penanda sumber dan \emph{disclaimer} klinis (KF-04).}
+\label{fig:ui-rekomendasi}
+\end{figure}
+
+Keterlacakan rekomendasi ditegaskan melalui panel ``Rujukan panduan medis'' (Gambar~\ref{fig:ui-rujukan}) yang menampilkan potongan dokumen sumber yang benar-benar di-\emph{retrieve} beserta peringkatnya --- pada contoh, dokumen PERKENI dan basis pengetahuan klinis (KF-03). Penelusuran sumber inilah bukti operasional \emph{Prediction-Conditioned RAG}: rekomendasi tidak dihasilkan bebas, melainkan \emph{grounded} pada dokumen yang diambil berdasarkan kondisi terprediksi.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/Gambar_V4_UI_Rujukan.png}
+\caption{Panel ``Rujukan panduan medis'': dokumen sumber (PERKENI/ADA dan basis pengetahuan) yang di-\emph{retrieve} dan menjadi dasar rekomendasi, membuktikan keterlacakan \emph{Prediction-Conditioned RAG} (KF-03).}
+\label{fig:ui-rujukan}
+\end{figure}
+
+Tab \emph{Simulasi What-If} (Gambar~\ref{fig:ui-whatif}) memungkinkan dokter menguji dampak intervensi (karbohidrat, insulin, aktivitas) melalui \emph{slider}. Karena mesin ini memakai formula farmakokinetik mekanistik, arah kausalnya benar: pada contoh, menambah 6 unit insulin memprediksi penurunan tajam menuju 40~mg/dL (hipoglikemia), sesuai ekspektasi fisiologis (KF-05).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/Gambar_V5_UI_WhatIf.png}
+\caption{Tab \emph{Simulasi What-If}: efek intervensi insulin/karbohidrat/aktivitas berbasis formula farmakokinetik mekanistik (KF-05).}
+\label{fig:ui-whatif}
+\end{figure}
+
+Tab \emph{Catat Keputusan} (Gambar~\ref{fig:ui-keputusan}) mewujudkan alur \emph{doctor-mediated} (KF-09): dokter memilih jenis keputusan (setujui, sesuaikan, atau tolak rekomendasi) untuk dicatat sebagai jejak audit, menegaskan peran sistem sebagai pendukung keputusan, bukan pengganti penilaian klinis (KNF-06).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/Gambar_V6_UI_Keputusan.png}
+\caption{Tab \emph{Catat Keputusan}: pencatatan keputusan dokter (setujui/sesuaikan/tolak) sebagai jejak audit dalam alur \emph{doctor-mediated} (KF-09).}
+\label{fig:ui-keputusan}
+\end{figure}
+
+\section{Implementasi Skrip Evaluasi}
+Agar seluruh hasil pada Bab~\ref{chap:evaluasi} dapat direproduksi, tiap prosedur evaluasi diimplementasikan sebagai skrip mandiri pada direktori \texttt{scripts/} yang membaca konfigurasi dan artefak model yang sama dengan aplikasi. Skrip utama meliputi: \texttt{crossval\_rf\_vs\_lstm.py} (validasi silang lintas-pasien dan uji signifikansi), \texttt{conformal\_calibration.py} (kalibrasi interval konformal), \texttt{eval\_hypo\_uncertainty.py} dan \texttt{improve\_hypo\_detection.py} (analisis keamanan hipoglikemia), \texttt{eval\_smbg\_deployment.py} (evaluasi skenario \emph{deployment} pada timeline \emph{finger\_stick} nyata), \texttt{ablation\_rag\_fullkb.py} dan \texttt{sensitivity\_analysis.py} (perbandingan RAG standar vs PC-RAG dan sensitivitas \emph{top\_k}/ukuran \emph{chunk}), serta \texttt{eval\_generation\_novelty.py} (evaluasi tingkat generasi). Pemisahan ini memastikan angka evaluasi berasal dari prosedur yang deterministik dan terpisah dari kode antarmuka.
+
+\section{Verifikasi Fungsional}
+Sebelum digunakan untuk evaluasi performa, implementasi diverifikasi agar merealisasikan rancangan pada Bab~\ref{chap:perancangan} secara fungsional --- verifikasi ini menilai kebenaran komponen, bukan keunggulan metode. Kontrak data dijaga oleh \texttt{validate\_data\_contract} yang menghentikan proses lebih awal bila skema data menyimpang. Pengujian otomatis pada direktori \texttt{tests/} (dijalankan dengan \texttt{pytest}) memeriksa jalur inti seperti rekayasa fitur, penyusunan sekuens, dan pembentukan kueri terkondisi, sedangkan skrip \texttt{scripts/verify\_prediction\_artifacts.py} memastikan artefak model dan objek normalisasi konsisten dengan konfigurasi. Dengan verifikasi ini, hasil evaluasi pada Bab~\ref{chap:evaluasi} dapat dibaca sebagai perilaku algoritma pada sistem yang telah berjalan benar, bukan akibat kegagalan integrasi.
+
+\section{Ringkasan Implementasi}
+Implementasi telah merealisasikan seluruh komponen rancangan pada Bab~\ref{chap:perancangan}: pemrosesan data dan rekayasa fitur berbasis fisiologi, model prediksi \emph{Random Forest} yang interpretabel beserta \emph{baseline} LSTM, representasi \emph{digital twin} dengan mesin \emph{what-if} kausal, pipeline \emph{Prediction-Conditioned RAG} yang tertelusur dan ber-\emph{fallback}, serta antarmuka konsultasi \emph{doctor-mediated}. Seluruh komponen berjalan pada perangkat standar tanpa GPU, memakai komponen \emph{open-source}/\emph{free-tier}, dan dipetakan langsung ke kebutuhan fungsional (KF) dan nonfungsional (KNF) yang ditetapkan pada Bab~\ref{chap:analisis-masalah}. Hasil evaluasi menyeluruh atas implementasi ini dipaparkan pada Bab~\ref{chap:evaluasi}.
