@@ -1,7 +1,7 @@
 """Ablation KORPUS-PENUH: standard vs prediction-conditioned atas KB deployment nyata.
 
 Melengkapi T5 (`ablation_rag.py`, korpus terkontrol `manual_kb` 7 topik) dengan uji pada
-SELURUH ChromaDB (~2.673 chunk PERKENI/ADA). Retrieval memakai MMRRetriever (identik dengan
+SELURUH ChromaDB (2.585 chunk PERKENI/ADA, pasca-pembersihan). Retrieval memakai MMRRetriever (identik dengan
 sistem); topik tiap chunk diklasifikasi via kata kunci berbobot (deterministik, tanpa LLM/kuota).
 Query & kasus divergen IDENTIK dengan T5 → apple-to-apple, tetapi pada korpus penuh.
 
@@ -120,7 +120,7 @@ def main() -> None:
                                 "ndcg": f"ndcg@{TOP_K}"})
     summ.to_csv(OUT / "ablation_fullkb_summary.csv", index=False)
 
-    print(f"=== Ablation KORPUS-PENUH ({r.collection.count() if hasattr(r, 'collection') else '~2673'} chunk, top_k={TOP_K}) ===")
+    print(f"=== Ablation KORPUS-PENUH ({r.collection.count() if hasattr(r, 'collection') else '2585'} chunk, top_k={TOP_K}) ===")
     print(summ.to_string(index=False))
     print(f"\nOutput -> {OUT}/")
 

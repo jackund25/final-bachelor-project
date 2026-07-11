@@ -34,6 +34,7 @@ models/*.pkl
 models/*.gguf
 # vector DB (generated; rebuild via scripts/reingest_kb.py)
 models/chroma_db/
+models/chroma_db_multilingual/
 
 # Conda env lokal (bila dibuat dengan --prefix di dalam repo)
 diabetes-ta/

@@ -1,0 +1,25 @@
+{
+  "horizon_min": 30,
+  "catatan": "Importance dijumlahkan lintas langkah look-back, dinormalisasi ke persen. Kontribusi multimodal = insulin + karbohidrat.",
+  "fitur_mentah": {
+    "features": {
+      "glucose": 96.49,
+      "carbs": 0.76,
+      "insulin": 2.64,
+      "activity": 0.11
+    },
+    "kontribusi_insulin_karbohidrat_%": 3.4
+  },
+  "fitur_engineered": {
+    "features": {
+      "glucose": 23.11,
+      "glucose_delta": 39.46,
+      "iob": 11.86,
+      "cob": 10.47,
+      "activity": 0.44,
+      "hour_sin": 7.2,
+      "hour_cos": 7.47
+    },
+    "kontribusi_insulin_karbohidrat_%": 22.33
+  }
+}
