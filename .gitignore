@@ -92,3 +92,13 @@ docs/laporan_TA/TA-STI-template-1.0/TA.pdf
 docs/OhioT1DM-dataset-paper.pdf
 docs/pape_iciss/
 data/knowledge_base/additional_docs/
+
+# Dokumen kerja & bantu penulisan (tetap ada di lokal, tidak dipublikasikan).
+# docs/proposal_ta memuat figur dari publikasi berhak cipta dan lembar pengesahan
+# bertanda tangan, serta sudah tidak selaras dengan TA final.
+docs/proposal_ta/
+docs/METHODOLOGY.md
+docs/journey.md
+docs/doc.md
+docs/SUS_kuesioner.md
+*.bbl-SAVE-ERROR
