@@ -119,6 +119,24 @@ class PredictionConditionedQueryBuilder:
         # 2. Clinical risk classification
         parts.append(f"Status risiko prediksi: {state.risk_label}.")
 
+        # 2b. Pengondisian sadar-ketidakpastian: kondisi berisiko yang masih tercakup
+        # interval prediksi tetap dimunculkan pada kueri meski prediksi TITIK-nya normal,
+        # agar retrieval tidak buta terhadap bahaya yang mungkin terjadi (lihat Bab VI).
+        risk_terms = {
+            "hypoglycemia": "hipoglikemia (glukosa di bawah 70 mg/dL)",
+            "hyperglycemia": "hiperglikemia (glukosa di atas 180 mg/dL)",
+        }
+        extra = [
+            risk_terms[c]
+            for c in state.anticipated_conditions
+            if c in risk_terms and c != state.risk_level.replace("critical_", "")
+        ]
+        if extra and state.predicted_lower is not None and state.predicted_upper is not None:
+            parts.append(
+                f"Interval prediksi {state.predicted_lower:.0f}-{state.predicted_upper:.0f} mg/dL "
+                f"masih mencakup risiko {', '.join(extra)}; sertakan penanganannya."
+            )
+
         # 3. Contributing factors (ordered by clinical significance)
         factors = self._contributing_factors(state)
         if factors:

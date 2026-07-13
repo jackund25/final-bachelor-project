@@ -49,17 +49,42 @@ GPU, CGM *real-time*, maupun rekam medis elektronik.
 | Prediksi CGM, +60 menit (Random Forest) | RMSE 34,24 mg/dL — Clarke A+B 86,94% |
 | Prediksi CGM, +30 menit (LSTM, pembanding) | RMSE 22,04 mg/dL — Clarke A+B 94,60% |
 | Skenario SMBG (`finger_stick` nyata), +30 menit | RMSE 27,09 mg/dL — Clarke A+B 92,09% |
-| *Retrieval*: RAG standar menjadi PC-RAG | MRR 0,225 menjadi **0,889** — Hit@1 0% menjadi **83,3%** |
+| Sensitivitas hipoglikemia (ambang standar 70 mg/dL) | 14,0% (regresi) → **44,4%** (pengklasifikasi kondisi) |
 | Interval prediksi konformal (nominal 95%) | cakupan empiris 96,5% |
 
-Selisih Random Forest terhadap LSTM (sekitar 0,44 mg/dL) signifikan secara statistik namun
-tidak bermakna secara klinis, sehingga Random Forest dipilih karena interpretabel dan
-berjalan tanpa GPU.
+Sebagai konteks, RMSE 22,60 mg/dL berada pada kisaran model *deep learning* terpublikasi
+pada OhioT1DM (18,26–22,12 mg/dL), meski penelitian ini memakai pembagian **lintas-pasien**
+(pasien uji tak pernah dilihat model) yang lebih berat daripada pembagian temporal yang
+umum dipakai literatur.
+
+### Evaluasi *retrieval*: dua tahap
+
+**Demonstrasi terkontrol** (6 kasus terkurasi): MRR 0,225 → 0,889. Angka ini adalah *batas
+atas yang optimistis* — kondisi relevannya ditetapkan dari nilai yang diprediksi, sehingga
+kesalahan prediksi tidak terhukum.
+
+**Kasus nyata** (120 kasus dari 2 pasien *hold-out*; relevansi ditetapkan dari glukosa yang
+**benar-benar terjadi** pada t+30, sehingga kesalahan prediksi dihukum):
+
+| Mode kueri | MRR (natural) | MRR (kasus divergen) |
+| --- | --- | --- |
+| Acak (*sanity baseline*) | 0,375 | 0,406 |
+| RAG standar | 0,863 | 0,166 |
+| PC-RAG (regresi) | 0,887 (p = 0,11, tidak signifikan) | 0,340 |
+| **PC-RAG + pengklasifikasi kondisi** | **0,902** (p = 0,03) | 0,271 |
+| *Oracle* (prediksi sempurna) | 1,000 | **0,994** |
+
+**Temuan utama.** Mekanisme PC-RAG terbukti sahih — dengan kondisi masa depan yang benar,
+*retrieval* nyaris sempurna (0,994). Namun manfaatnya di lapangan dibatasi oleh
+**prediktornya**: pada kasus divergen, regresi hanya benar menebak kondisi masa depan 15,8%
+kali. Ini akar yang sama dengan rendahnya sensitivitas hipoglikemia. Memprediksi *kondisi*
+secara langsung (pengklasifikasi sadar-biaya) memperbaiki keduanya sekaligus.
 
 **Catatan pada skenario SMBG.** Pada horizon +30 menit, model praktis setara dengan
 *baseline persistence* (RMSE 27,09 vs 27,33 mg/dL): jarak antar-pembacaan SMBG (median
-124,8 menit) jauh lebih panjang daripada horizon prediksinya sendiri. Keunggulan yang jelas
-baru muncul pada horizon +60 menit (RMSE 42,86 vs 47,87 mg/dL).
+124,8 menit) jauh lebih panjang daripada horizon prediksinya. Penambahan fitur sadar-waktu
+diuji dan **tidak membantu** (27,20 mg/dL) — keterbatasannya bersifat informasional, bukan
+representasional. Keunggulan yang jelas baru muncul pada +60 menit (42,86 vs 47,87 mg/dL).
 
 ## Dataset
 
@@ -126,8 +151,17 @@ python scripts/conformal_calibration.py
 python scripts/eval_hypo_uncertainty.py
 python scripts/improve_hypo_detection.py
 
-# Skenario deployment SMBG pada timeline finger_stick nyata
+# Skenario deployment SMBG pada timeline finger_stick nyata (+ varian sadar-waktu)
 python scripts/eval_smbg_deployment.py
+
+# Pengklasifikasi kondisi masa depan (hipo 14% -> 44%)
+python scripts/train_condition_classifier.py
+
+# Retrieval pada kasus nyata + uji rantai kausal (oracle / noise / acak)
+python scripts/eval_retrieval_realcases.py
+
+# Bukti kontribusi fitur multimodal (3,4% -> 22,3%)
+python scripts/eval_feature_importance.py
 
 # RAG: ingest basis pengetahuan, lalu bandingkan PC-RAG terhadap RAG standar
 python scripts/reingest_kb.py
@@ -170,11 +204,16 @@ run_app.py          Entry point aplikasi
   validasi pada data logbook pasien tipe 2 di Indonesia sebelum penggunaan klinis.
 - Pada skenario SMBG, prediksi +30 menit belum melampaui *baseline persistence*; manfaat
   prediktif atas data logbook yang jarang baru nyata pada horizon yang lebih panjang.
-- Sensitivitas deteksi hipoglikemia pada ambang standar 70 mg/dL masih rendah (14%).
-  Aplikasi memakai ambang peringatan dini 85 mg/dL (sensitivitas 59%, PPV 31%).
+- Sensitivitas deteksi hipoglikemia meningkat tiga kali lipat menjadi 44,4% pada ambang
+  standar, tetapi masih belum memadai untuk penggunaan klinis mandiri (PPV turun ke 39,4%).
+- Manfaat PC-RAG terkonsentrasi pada 13,3% jendela yang divergen; pada distribusi natural
+  peningkatannya signifikan tetapi moderat (0,863 → 0,902).
 - Digital twin bersifat sederhana (berbasis formula), bukan model fisiologis multi-skala.
 - Belum ada uji klinis maupun validasi lapangan; evaluasi bersifat teknis.
-- Evaluasi *retrieval* dan generasi memakai enam kasus terkurasi.
+- Evaluasi generasi memakai enam kasus dan tanpa penilaian pakar klinis.
+- Relevansi dokumen pada evaluasi *retrieval* ditetapkan lewat klasifikasi kata kunci
+  berbobot, bukan penilaian pakar — meski risiko sirkularitas ditutup dengan memakai nilai
+  kebenaran dari kondisi yang benar-benar terjadi dan diuji terhadap *baseline* acak.
 - Model *embedding* belum di-*fine-tune* untuk korpus diabetes berbahasa Indonesia.
 
 ## Lisensi

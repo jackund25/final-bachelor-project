@@ -1,0 +1,46 @@
+{
+  "horizon_menit": 30,
+  "catatan": "Kondisi masa depan diprediksi langsung oleh pengklasifikasi tiga kelas (class_weight=balanced), dibandingkan terhadap kondisi yang diturunkan dari regresi.",
+  "n_uji": 27193,
+  "n_divergen": 3621,
+  "regresi_lalu_ambang": {
+    "akurasi_keseluruhan_%": 88.8,
+    "hipoglikemia": {
+      "n": 806,
+      "sensitivitas_%": 14.0,
+      "PPV_%": 57.1
+    },
+    "normal": {
+      "n": 18931,
+      "sensitivitas_%": 93.3,
+      "PPV_%": 90.9
+    },
+    "hiperglikemia": {
+      "n": 7456,
+      "sensitivitas_%": 85.5,
+      "PPV_%": 84.2
+    }
+  },
+  "pengklasifikasi_kondisi": {
+    "akurasi_keseluruhan_%": 87.8,
+    "hipoglikemia": {
+      "n": 806,
+      "sensitivitas_%": 44.4,
+      "PPV_%": 39.4
+    },
+    "normal": {
+      "n": 18931,
+      "sensitivitas_%": 90.9,
+      "PPV_%": 91.5
+    },
+    "hiperglikemia": {
+      "n": 7456,
+      "sensitivitas_%": 84.5,
+      "PPV_%": 84.2
+    }
+  },
+  "pada_kasus_divergen": {
+    "akurasi_kondisi_regresi_%": 35.9,
+    "akurasi_kondisi_pengklasifikasi_%": 28.3
+  }
+}

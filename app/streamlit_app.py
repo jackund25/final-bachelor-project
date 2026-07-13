@@ -35,6 +35,32 @@ def load_dataset():
 
 
 @st.cache_resource
+def load_condition_classifier():
+    """Pengklasifikasi kondisi masa depan (hipo/normal/hiper).
+
+    Regresi yang meminimalkan galat kuadrat menyusut ke tengah sehingga jarang melewati
+    ambang 70/180: sensitivitas hipoglikemia hanya 14%. Pengklasifikasi sadar-biaya
+    menaikkannya ke 44% pada ambang standar (lihat scripts/train_condition_classifier.py).
+    """
+    cf = Path("models/rf_condition_classifier_h6.pkl")
+    if not cf.exists():
+        return None
+    return pickle.load(open(cf, "rb"))
+
+
+def predict_condition(window_df, clf, art):
+    """Kondisi masa depan menurut pengklasifikasi; None bila model tak tersedia."""
+    if clf is None:
+        return None
+    X = window_df[art["features"]].values.astype(float)
+    if clf.get("scaler") is not None:
+        X = clf["scaler"].transform(X)
+    label = str(clf["model"].predict(X.reshape(1, -1))[0])
+    return {"hipoglikemia": "hypoglycemia", "normal": "normal",
+            "hiperglikemia": "hyperglycemia"}.get(label, label)
+
+
+@st.cache_resource
 def load_artifacts():
     bf = Path("models/rf_inference_bundle.pkl")
     if not bf.exists():
@@ -182,14 +208,25 @@ if cur_label == "Dalam Target" and pred_label != "Dalam Target":
     st.warning(f"⚠️ **Antisipasi:** kondisi saat ini normal, namun glukosa diprediksi menuju "
                f"**{pred_label}** ({pred:.0f} mg/dL) dalam {horizon_min} menit. Pertimbangkan tindakan pencegahan.")
 
-# Peringatan HIPOGLIKEMIA DINI (ambang 85 mg/dL). Deteksi hipo pada ambang <70 hanya
-# menangkap ~14% kejadian; ambang peringatan 85 menaikkannya ke ~59% (spesifisitas 96%) —
-# lihat scripts/improve_hypo_detection.py. Mengisi celah "mendekati hipo tapi belum <70".
-HYPO_WARN = 85.0
-if 70.0 <= pred < HYPO_WARN:
-    st.warning(f"🔻 **Waspada hipoglikemia dini:** prediksi **{pred:.0f} mg/dL** mendekati batas "
-               f"bawah dalam {horizon_min} menit (ambang peringatan {HYPO_WARN:.0f} mg/dL). "
+# Peringatan HIPOGLIKEMIA DINI.
+# Prediksi titik regresi menyusut ke tengah: pada ambang <70 ia hanya menangkap 14% kejadian
+# hipoglikemia. Dua sinyal tambahan dipakai (lihat scripts/train_condition_classifier.py dan
+# scripts/eval_retrieval_realcases.py):
+#   (a) pengklasifikasi kondisi sadar-biaya  -> sensitivitas hipoglikemia 44% pada ambang standar
+#   (b) batas bawah interval konformal       -> menandai risiko yang masih tercakup ketidakpastian
+cond_clf = load_condition_classifier()
+pred_condition = predict_condition(window_df, cond_clf, art)
+lo95 = hi95 = None
+if pred_std:
+    lo95, hi95 = pred - 3.3 * pred_std, pred + 3.3 * pred_std
+
+if pred_condition == "hypoglycemia" and pred >= 70.0:
+    st.warning(f"🔻 **Waspada hipoglikemia:** prediksi titik **{pred:.0f} mg/dL** masih di atas 70, "
+               f"namun pengklasifikasi kondisi menandai risiko **hipoglikemia** dalam {horizon_min} menit. "
                f"Pertimbangkan karbohidrat pencegahan & pantau ketat.")
+elif lo95 is not None and lo95 < 70.0 <= pred:
+    st.warning(f"🔻 **Ketidakpastian menyentuh zona hipoglikemia:** prediksi **{pred:.0f} mg/dL**, "
+               f"tetapi batas bawah interval 95% mencapai **{lo95:.0f} mg/dL**. Pantau ketat.")
 
 st.divider()
 
@@ -205,6 +242,17 @@ with tab_rec:
             "carbs_on_board": float(window_df["carbs"].iloc[-1]),
             "activity_level": int(float(window_df["activity"].iloc[-1])),
             "stress_level": int(float(window_df["stress"].iloc[-1])) if "stress" in window_df else 5,
+            # Kueri dikondisikan pada KONDISI hasil pengklasifikasi (bukan pada pengambangan
+            # nilai regresi): pada evaluasi kasus nyata, varian ini memberi MRR tertinggi
+            # (0,902 vs 0,863 RAG standar, p=0,03) sekaligus menaikkan sensitivitas
+            # hipoglikemia 14% -> 44%.
+            #
+            # Batas interval SENGAJA tidak diteruskan ke kueri. Memperluas kueri dengan semua
+            # kondisi yang tercakup interval memang menaikkan cakupan kondisi sebenarnya
+            # (94,2%), tetapi mengencerkan sinyal sehingga MRR justru turun ke 0,753 — lihat
+            # scripts/eval_retrieval_realcases.py. Interval tetap dipakai, namun sebagai
+            # PERINGATAN klinis kepada dokter (lihat blok peringatan di atas).
+            "predicted_condition": pred_condition,
         }
         with st.spinner("Menyusun rekomendasi..."):
             try:

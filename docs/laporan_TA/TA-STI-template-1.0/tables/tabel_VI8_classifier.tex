@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption{Prediksi kondisi masa depan ($t+30$ menit) pada data uji \emph{hold-out} (n=27.193): kondisi diturunkan dari pengambangan nilai regresi versus kondisi diprediksi langsung oleh pengklasifikasi tiga kelas sadar-biaya (\texttt{class\_weight=balanced}).}
+\label{tab:classifier}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+& \multicolumn{2}{c}{\textbf{Regresi + ambang}} & \multicolumn{2}{c}{\textbf{Pengklasifikasi kondisi}} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+\textbf{Kondisi} & \textbf{Sensitivitas} & \textbf{PPV} & \textbf{Sensitivitas} & \textbf{PPV} \\
+\midrule
+Hipoglikemia (n=806)     & 14,0\% & 57,1\% & \textbf{44,4\%} & 39,4\% \\
+Normal (n=18.931)        & 93,3\% & 90,9\% & 90,9\% & 91,5\% \\
+Hiperglikemia (n=7.456)  & 85,5\% & 84,2\% & 84,5\% & 84,2\% \\
+\midrule
+Akurasi keseluruhan      & \multicolumn{2}{c}{88,8\%} & \multicolumn{2}{c}{87,8\%} \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.4em}
+\footnotesize Sensitivitas hipoglikemia meningkat lebih dari tiga kali lipat pada ambang klinis standar 70~mg/dL --- tanpa menaikkan ambang peringatan --- dengan ongkos berupa penurunan PPV dan akurasi keseluruhan yang praktis tidak berubah.
+\end{table}

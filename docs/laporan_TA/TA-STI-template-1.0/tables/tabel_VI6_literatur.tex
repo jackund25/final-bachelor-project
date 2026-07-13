@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Posisi kinerja prediksi terhadap hasil terpublikasi pada dataset OhioT1DM, horizon $+30$ menit. Kolom \textbf{protokol} penting: pembagian \emph{per pasien} (pasien uji tak pernah dilihat model) merupakan uji generalisasi yang lebih berat daripada pembagian temporal, tempat pasien yang sama muncul pada data latih maupun uji.}
+\label{tab:literatur}
+\small
+\begin{tabular}{@{}llrl@{}}
+\toprule
+\textbf{Sumber} & \textbf{Model} & \textbf{RMSE (mg/dL)} & \textbf{Protokol pembagian data} \\
+\midrule
+\textcite{ghimire2024} & LSTM   & 18,26 & Temporal per pasien \\
+\textcite{ghimire2024} & SAN (\emph{self-attention}) & 18,67 & Temporal per pasien \\
+\textcite{ghimire2024} & CNN    & 20,49 & Temporal per pasien \\
+\textcite{ghimire2024} & TCN    & 20,54 & Temporal per pasien \\
+\textcite{ghimire2024} & FNN    & 22,12 & Temporal per pasien \\
+\midrule
+Penelitian ini & LSTM (pembanding) & 22,04 & \textbf{Per pasien (lintas-pasien)} \\
+Penelitian ini & \emph{Random Forest} (utama) & 22,60 & \textbf{Per pasien (lintas-pasien)} \\
+\bottomrule
+\end{tabular}
+\end{table}

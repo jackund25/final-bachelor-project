@@ -249,11 +249,20 @@ class RAGPipeline:
             except ImportError:
                 from ..patient_state import PatientState
 
+            def _opt_float(key: str):
+                v = patient_state.get(key)
+                return float(v) if v is not None else None
+
             state = PatientState.from_model_output(
                 patient_id=str(patient_state.get("patient_id", "unknown")),
                 current_glucose=float(patient_state.get("current_glucose", 100.0)),
                 predicted_glucose=float(prediction),
                 feature_row=patient_state,
+                # Kondisi dari pengklasifikasi & batas interval konformal (bila disediakan
+                # pemanggil) mengaktifkan pengondisian kueri yang sadar-ketidakpastian.
+                predicted_condition=patient_state.get("predicted_condition"),
+                predicted_lower=_opt_float("predicted_lower"),
+                predicted_upper=_opt_float("predicted_upper"),
             )
             builder = PredictionConditionedQueryBuilder(strategy=QueryStrategy.COMPREHENSIVE)
             cq = builder.build(state)

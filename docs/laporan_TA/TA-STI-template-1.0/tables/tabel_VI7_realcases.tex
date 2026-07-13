@@ -1,0 +1,32 @@
+\begin{table}[htbp]
+\centering
+\caption{Evaluasi \emph{retrieval} pada kasus nyata dari dua pasien \emph{hold-out}. Kondisi relevan ditetapkan dari kadar glukosa yang \textbf{benar-benar terjadi} pada $t+30$ menit, bukan dari nilai prediksi, sehingga kesalahan prediksi dihukum. ``Kondisi benar'' = proporsi kasus yang kuerinya menargetkan kondisi masa depan yang sesungguhnya. Nilai $p$ dari uji Wilcoxon berpasangan terhadap RAG standar.}
+\label{tab:realcases}
+\small
+\begin{tabular}{@{}lrrlr@{}}
+\toprule
+\textbf{Mode kueri} & \textbf{Kondisi benar} & \textbf{Hit@1} & \textbf{MRR [CI 95\%]} & \textbf{$p$} \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{(a) Himpunan divergen --- kondisi terkini $\neq$ kondisi masa depan (n=120)}} \\
+\midrule
+Acak (\emph{sanity baseline})   & 24,2\% & 0,242 & 0,406 [0,336--0,478] & --- \\
+RAG standar                      & 0,0\%  & 0,000 & 0,166 [0,141--0,192] & --- \\
+PC-RAG (regresi)                 & 15,8\% & 0,158 & 0,340 [0,282--0,401] & $2{,}5\times10^{-5}$ \\
+PC-RAG + interval                & 72,5\% & 0,183 & 0,385 [0,328--0,443] & $2{,}4\times10^{-11}$ \\
+PC-RAG + pengklasifikasi         & 11,7\% & 0,117 & 0,271 [0,219--0,326] & $4{,}6\times10^{-3}$ \\
+\emph{Oracle} (prediksi sempurna) & 100\%  & 0,992 & \textbf{0,994} [0,983--1,000] & $7{,}6\times10^{-22}$ \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{(b) Himpunan natural --- sampel acak seluruh jendela (n=120; 15\% divergen)}} \\
+\midrule
+Acak (\emph{sanity baseline})   & 30,8\% & 0,308 & 0,375 [0,296--0,456] & --- \\
+RAG standar                      & 85,0\% & 0,850 & 0,863 [0,803--0,920] & --- \\
+PC-RAG (regresi)                 & 85,8\% & 0,858 & 0,887 [0,834--0,934] & 0,11 (t.s.) \\
+PC-RAG + interval                & 91,7\% & 0,608 & 0,740 [0,679--0,800] & $1{,}2\times10^{-4}$ \\
+\textbf{PC-RAG + pengklasifikasi} & 88,3\% & \textbf{0,883} & \textbf{0,902} [0,849--0,948] & 0,03 \\
+\emph{Oracle} (prediksi sempurna) & 100\%  & 1,000 & 1,000 [1,000--1,000] & $1{,}1\times10^{-4}$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.4em}
+\footnotesize t.s. = tidak signifikan pada $\alpha=0{,}05$. Konfigurasi bercetak tebal adalah yang dipakai aplikasi.
+\end{table}

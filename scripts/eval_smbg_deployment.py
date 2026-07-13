@@ -42,6 +42,13 @@ from src.data.preprocessor import DataPreprocessor  # noqa: E402
 from src.utils.metrics import calculate_all_metrics  # noqa: E402
 
 FEATURES = ["glucose", "glucose_delta", "iob", "cob", "activity", "hour_sin", "hour_cos"]
+
+# Varian SADAR-WAKTU. Timeline SMBG tidak beraturan (median 124,8 menit antar-pembacaan),
+# sehingga "glucose_delta" tanpa konteks waktu bersifat ambigu: turun 20 mg/dL dalam 10 menit
+# sangat berbeda maknanya dari turun 20 mg/dL dalam 8 jam. Dua fitur ditambahkan:
+#   gap_min   : selang waktu sejak pembacaan sebelumnya
+#   slope     : laju perubahan glukosa per menit (glucose_delta / gap_min)
+FEATURES_TIME_AWARE = FEATURES + ["gap_min", "slope"]
 SEQ_LEN = 6          # look-back 6 pembacaan SMBG (Tabel V.1)
 HORIZONS_MIN = [30, 60]
 TOLERANCE_MIN = 5    # toleransi pencocokan ground truth CGM
@@ -74,6 +81,9 @@ def build_smbg_frame(cgm: pd.DataFrame, smbg: pd.DataFrame) -> pd.DataFrame:
         # tren dari pembacaan finger_stick sebelumnya (bukan dari CGM)
         f["glucose_delta"] = f["glucose"].diff().fillna(0.0)
         f["gap_min"] = f["timestamp"].diff().dt.total_seconds().div(60)
+        # laju perubahan per menit: memberi makna pada delta di timeline tak beraturan
+        f["slope"] = (f["glucose_delta"] / f["gap_min"].replace(0, np.nan)).fillna(0.0)
+        f["gap_min"] = f["gap_min"].fillna(f["gap_min"].median())
         hour = f["timestamp"].dt.hour + f["timestamp"].dt.minute / 60.0
         f["hour_sin"] = np.sin(2 * np.pi * hour / 24.0)
         f["hour_cos"] = np.cos(2 * np.pi * hour / 24.0)
@@ -92,12 +102,12 @@ def build_smbg_frame(cgm: pd.DataFrame, smbg: pd.DataFrame) -> pd.DataFrame:
     return pd.concat(rows, ignore_index=True)
 
 
-def make_windows(df: pd.DataFrame, horizon: int):
+def make_windows(df: pd.DataFrame, horizon: int, features: list[str] = FEATURES):
     """Jendela look-back SEQ_LEN pembacaan SMBG → target Δglukosa ke t+horizon."""
     X, y, anchor, pid_out = [], [], [], []
     for pid, g in df.groupby("patient_id", sort=False):
         g = g.sort_values("timestamp").reset_index(drop=True)
-        feat = g[FEATURES].to_numpy(float)
+        feat = g[features].to_numpy(float)
         tgt = g[f"y{horizon}"].to_numpy(float)
         glu = g["glucose"].to_numpy(float)
         for i in range(SEQ_LEN - 1, len(g)):
@@ -138,41 +148,46 @@ def main() -> None:
     }
 
     for h in HORIZONS_MIN:
-        X, y, anchor, pid = make_windows(df, h)
-        tr = ~np.isin(pid, test_patients)
-        te = ~tr
-        model = RandomForestRegressor(
-            n_estimators=rf_cfg["n_estimators"],
-            max_depth=rf_cfg["max_depth"],
-            min_samples_split=rf_cfg["min_samples_split"],
-            random_state=SEED,
-            n_jobs=-1,
-        )
-        model.fit(X[tr], y[tr])
+        entry = {}
+        for tag, feats in (("baseline", FEATURES), ("sadar_waktu", FEATURES_TIME_AWARE)):
+            X, y, anchor, pid = make_windows(df, h, feats)
+            tr = ~np.isin(pid, test_patients)
+            te = ~tr
+            model = RandomForestRegressor(
+                n_estimators=rf_cfg["n_estimators"],
+                max_depth=rf_cfg["max_depth"],
+                min_samples_split=rf_cfg["min_samples_split"],
+                random_state=SEED,
+                n_jobs=-1,
+            )
+            model.fit(X[tr], y[tr])
 
-        pred = anchor[te] + model.predict(X[te])   # rekonstruksi nilai absolut
-        true = anchor[te] + y[te]
-        m = calculate_all_metrics(true, pred)
+            pred = anchor[te] + model.predict(X[te])   # rekonstruksi nilai absolut
+            true = anchor[te] + y[te]
+            m = calculate_all_metrics(true, pred)
 
-        # baseline persistence: glukosa tidak berubah dari pembacaan terakhir
-        m_persist = calculate_all_metrics(true, anchor[te])
-
-        out["horizons"][f"+{h}"] = {
-            "n_train": int(tr.sum()),
-            "n_test": int(te.sum()),
-            "RMSE": round(m["RMSE"], 2),
-            "MAE": round(m["MAE"], 2),
-            "MAPE": round(m["MAPE"], 2),
-            "Clarke_A": round(m["Clarke_A"], 2),
-            "Clarke_A+B": round(m["Clarke_A"] + m["Clarke_B"], 2),
-            "persistence_RMSE": round(m_persist["RMSE"], 2),
-            "persistence_Clarke_A+B": round(
-                m_persist["Clarke_A"] + m_persist["Clarke_B"], 2
-            ),
-        }
-        print(f"+{h} mnt | n_test={te.sum():4d} | RMSE {m['RMSE']:.2f} "
-              f"| A+B {m['Clarke_A'] + m['Clarke_B']:.2f}% "
-              f"| persistence RMSE {m_persist['RMSE']:.2f}")
+            entry[tag] = {
+                "fitur": feats,
+                "n_train": int(tr.sum()),
+                "n_test": int(te.sum()),
+                "RMSE": round(m["RMSE"], 2),
+                "MAE": round(m["MAE"], 2),
+                "MAPE": round(m["MAPE"], 2),
+                "Clarke_A": round(m["Clarke_A"], 2),
+                "Clarke_A+B": round(m["Clarke_A"] + m["Clarke_B"], 2),
+            }
+            if tag == "baseline":
+                # baseline persistence: glukosa tidak berubah dari pembacaan terakhir
+                mp = calculate_all_metrics(true, anchor[te])
+                entry["persistence"] = {
+                    "RMSE": round(mp["RMSE"], 2),
+                    "Clarke_A+B": round(mp["Clarke_A"] + mp["Clarke_B"], 2),
+                }
+            print(f"+{h} mnt | {tag:12s} | RMSE {m['RMSE']:6.2f} "
+                  f"| A+B {m['Clarke_A'] + m['Clarke_B']:5.2f}%")
+        print(f"+{h} mnt | {'persistence':12s} | RMSE {entry['persistence']['RMSE']:6.2f} "
+              f"| A+B {entry['persistence']['Clarke_A+B']:5.2f}%")
+        out["horizons"][f"+{h}"] = entry
 
     dest = ROOT / "results/eval_prediksi/smbg_deployment.json"
     dest.write_text(json.dumps(out, indent=2), encoding="utf-8")

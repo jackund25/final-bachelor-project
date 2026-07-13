@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -67,10 +67,24 @@ class PatientState:
     activity_level: int = 0         # minutes today
     stress_level: int = 5           # 1-10 Likert
 
+    # ── Kondisi masa depan hasil pengklasifikasi (opsional) ────
+    # Regresi yang meminimalkan galat kuadrat menyusut ke tengah, sehingga jarang berani
+    # melewati ambang 70/180 dan gagal menandai perubahan kondisi (lihat Bab VI). Bila
+    # tersedia, kondisi dari pengklasifikasi tiga kelas dipakai sebagai pengganti ambang
+    # atas nilai regresi.
+    predicted_condition: Optional[str] = None      # "hypoglycemia" | "normal" | "hyperglycemia"
+
+    # ── Batas interval prediksi konformal (opsional) ───────────
+    # Dipakai untuk pengondisian kueri yang sadar-ketidakpastian: kondisi berisiko yang
+    # tercakup interval tetap diambilkan dokumennya meski prediksi titiknya masih normal.
+    predicted_lower: Optional[float] = None        # mg/dL
+    predicted_upper: Optional[float] = None        # mg/dL
+
     # ── Timestamp ─────────────────────────────────────────────
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
     # ── Derived (computed in __post_init__) ───────────────────
+    anticipated_conditions: List[str] = field(init=False)  # kondisi yang perlu diantisipasi
     glucose_delta: float = field(init=False)
     trend_direction: str = field(init=False)   # "rising" | "stable" | "falling"
     trend_label: str = field(init=False)       # human-readable Indonesian label
@@ -124,6 +138,27 @@ class PatientState:
         else:
             self.risk_level = "normal"
             self.risk_label = "AMAN"
+
+        # Bila pengklasifikasi kondisi tersedia, ia MENGGANTIKAN kondisi hasil pengambangan
+        # nilai regresi — kecuali regresi sudah menandai kondisi kritis, yang tetap dihormati.
+        if self.predicted_condition and not self.risk_level.startswith("critical"):
+            if self.predicted_condition == "hypoglycemia":
+                self.risk_level, self.risk_label = "hypoglycemia", "BAHAYA - Hipoglikemia"
+            elif self.predicted_condition == "hyperglycemia":
+                self.risk_level, self.risk_label = "hyperglycemia", "HATI-HATI - Hiperglikemia"
+            elif self.predicted_condition == "normal":
+                self.risk_level, self.risk_label = "normal", "AMAN"
+
+        # Kondisi yang perlu diantisipasi: kondisi terprediksi, DITAMBAH kondisi berisiko
+        # yang masih tercakup interval ketidakpastian meski prediksi titiknya normal.
+        conditions = [self.risk_level.replace("critical_", "")]
+        if self.predicted_lower is not None and self.predicted_lower < GLUCOSE_LOW:
+            conditions.append("hypoglycemia")
+        if self.predicted_upper is not None and self.predicted_upper > GLUCOSE_HIGH:
+            conditions.append("hyperglycemia")
+        # dahulukan kondisi berisiko, buang duplikat, pertahankan urutan
+        priority = {"hypoglycemia": 0, "hyperglycemia": 1, "normal": 2}
+        self.anticipated_conditions = sorted(set(conditions), key=lambda c: priority.get(c, 3))
 
         # Urgency
         if self.risk_level.startswith("critical"):
@@ -185,6 +220,9 @@ class PatientState:
         predicted_glucose: float,
         feature_row: Optional[Dict[str, Any]] = None,
         prediction_horizon_minutes: int = 60,
+        predicted_condition: Optional[str] = None,
+        predicted_lower: Optional[float] = None,
+        predicted_upper: Optional[float] = None,
     ) -> "PatientState":
         """Create from RF/LSTM model output + last feature window row.
 
@@ -195,6 +233,11 @@ class PatientState:
             feature_row: Dict with keys ``insulin``, ``carbs``, ``activity``, ``stress``
                          from the last row of the feature window.
             prediction_horizon_minutes: Model's forecast horizon (default 60 min / 1 step).
+            predicted_condition: Optional condition from the condition classifier
+                ("hypoglycemia" | "normal" | "hyperglycemia"). Overrides thresholding
+                the regression value, which under-detects condition changes.
+            predicted_lower: Optional lower bound of the conformal prediction interval.
+            predicted_upper: Optional upper bound of the conformal prediction interval.
         """
         row = feature_row or {}
         return cls(
@@ -206,6 +249,9 @@ class PatientState:
             carbs_on_board=float(row.get("carbs", row.get("carbs_on_board", 0.0))),
             activity_level=int(float(row.get("activity", row.get("activity_level", 0)))),
             stress_level=int(float(row.get("stress", row.get("stress_level", 5)))),
+            predicted_condition=predicted_condition,
+            predicted_lower=predicted_lower,
+            predicted_upper=predicted_upper,
         )
 
     @classmethod
