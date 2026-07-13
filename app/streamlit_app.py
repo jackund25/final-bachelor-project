@@ -242,10 +242,11 @@ with tab_rec:
             "carbs_on_board": float(window_df["carbs"].iloc[-1]),
             "activity_level": int(float(window_df["activity"].iloc[-1])),
             "stress_level": int(float(window_df["stress"].iloc[-1])) if "stress" in window_df else 5,
-            # Kueri dikondisikan pada KONDISI hasil pengklasifikasi (bukan pada pengambangan
-            # nilai regresi): pada evaluasi kasus nyata, varian ini memberi MRR tertinggi
-            # (0,902 vs 0,863 RAG standar, p=0,03) sekaligus menaikkan sensitivitas
-            # hipoglikemia 14% -> 44%.
+            # Kueri dikondisikan pada KONDISI hasil pengklasifikasi. Pada validasi silang
+            # lintas-fold, varian ini setara dengan pengondisian pada nilai regresi untuk mutu
+            # retrieval (0,892 vs 0,893; p=0,31) — jadi bukan itu alasannya dipakai. Alasannya:
+            # pengklasifikasi menangkap hipoglikemia jauh lebih baik (14% -> 44%), sehingga kueri
+            # untuk kasus paling berbahaya lebih sering menargetkan kondisi yang benar.
             #
             # Batas interval SENGAJA tidak diteruskan ke kueri. Memperluas kueri dengan semua
             # kondisi yang tercakup interval memang menaikkan cakupan kondisi sebenarnya

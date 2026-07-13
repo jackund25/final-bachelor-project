@@ -1,0 +1,30 @@
+\begin{table}[htbp]
+\centering
+\caption{Pengukuran kelayakan penerapan (KNF-01) pada perangkat uji: AMD Ryzen 12 \emph{core} logis, RAM 15,4~GB, Windows, \textbf{tanpa GPU sama sekali}. Median atas 30 ulangan (10 ulangan untuk rekayasa fitur, 20 untuk \emph{retrieval}).}
+\label{tab:benchmark}
+\small
+\begin{tabular}{@{}llr@{}}
+\toprule
+\textbf{Tahap} & \textbf{Keterangan} & \textbf{Waktu} \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Sekali saat aplikasi dinyalakan (di-cache, tidak dirasakan per konsultasi)}} \\
+\midrule
+Muat artefak & Model regresi, pengklasifikasi, indeks ChromaDB, model \emph{embedding} & 17,2 s \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Per siklus konsultasi}} \\
+\midrule
+Rekayasa fitur & Jendela \emph{logbook} $\rightarrow$ vektor fitur (IOB, COB, tren, diurnal) & 26,4 ms \\
+Prediksi & Regresi + pengklasifikasi kondisi + interval dari 200 pohon & 89,6 ms \\
+\emph{Retrieval} & \emph{Embedding} kueri + pencarian MMR atas 2.585 \emph{chunk} & 21,2 ms \\
+\midrule
+\textbf{Subtotal lokal} & \textbf{Seluruh komputasi yang berjalan di perangkat} & \textbf{137,2 ms} \\
+\midrule
+Generasi (LLM) & Satu panggilan Google Gemini (jaringan + inferensi \emph{cloud}) & 11,3 s \\
+\midrule
+\textbf{Total} & \textbf{Satu rekomendasi klinis utuh} & \textbf{$\approx$11,4 s} \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.4em}
+\footnotesize Jejak memori setelah seluruh artefak dimuat: 1,17~GB. Ukuran artefak: bundle regresi dan pengklasifikasi masing-masing di bawah ukuran yang membebani, indeks ChromaDB memuat 2.585 \emph{chunk}. Seluruh angka diukur pada CPU.
+\end{table}

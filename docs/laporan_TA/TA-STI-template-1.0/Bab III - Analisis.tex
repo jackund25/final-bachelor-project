@@ -25,6 +25,7 @@ Dari model konseptual tersebut teridentifikasi empat masalah utama:
 Keempat masalah ini menegaskan celah antara apa yang \emph{mungkin} secara teknologi dan apa yang \emph{dapat diterapkan} pada konteks \emph{resource-constrained}, yang menjadi ruang persoalan tugas akhir ini.
 
 \section{Analisis Kebutuhan}
+\label{sec:kebutuhan-sistem}
 
 \subsection{Identifikasi Masalah Pengguna}
 Pengguna utama sistem adalah \textbf{dokter/tenaga medis di FKTP}, sedangkan pasien menerima keluaran secara \emph{doctor-mediated} (divalidasi dokter terlebih dahulu). Dari perspektif kedua pihak, kebutuhan yang belum terpenuhi adalah sebagai berikut. Bagi dokter: alat bantu yang mengubah data \emph{logbook} mentah menjadi (a)~prakiraan glukosa jangka pendek, (b)~peringatan dini terhadap risiko, dan (c)~rekomendasi yang tertelusur ke pedoman klinis --- semuanya dalam waktu konsultasi yang singkat dan tanpa perangkat mahal. Bagi pasien: umpan balik yang antisipatif namun tetap aman karena melewati validasi klinis, tanpa perlu memiliki CGM. Sistem karenanya harus \textbf{antisipatif} (mengolah kondisi yang akan datang), \textbf{\emph{deployable}} (tanpa GPU/CGM/EHR), dan \textbf{aman} (menempatkan dokter sebagai penentu akhir).
@@ -68,7 +69,11 @@ Untuk tiap keputusan desain utama dipertimbangkan alternatif konkret:
 \end{itemize}
 
 \subsection{Analisis Penentuan Solusi}
-Penentuan solusi merangkum alasan pemilihan beserta kelemahan yang diakui secara jujur, sebagaimana Tabel~\ref{tab:penentuan-solusi}. Bukti kuantitatif yang mendukung sebagian keputusan (mis. perbandingan RF vs LSTM, sensitivitas \emph{chunk}/\emph{top\_k}) dipaparkan pada Bab~\ref{chap:evaluasi}.
+Penentuan solusi dilakukan dua langkah. \emph{Pertama}, tiap alternatif dinilai terhadap kebutuhan yang telah ditetapkan pada Subbab~\ref{sec:kebutuhan-sistem}, sebagaimana matriks pada Tabel~\ref{tab:matriks-solusi}. Matriks ini menegaskan bahwa keputusan desain diturunkan dari kebutuhan, bukan dari preferensi: tiap sel dapat ditelusuri ke kebutuhan yang bersangkutan, dan sebagian besar didukung bukti kuantitatif yang dipaparkan pada Bab~\ref{chap:evaluasi}. \emph{Kedua}, alasan pemilihan beserta kelemahan yang diakui secara jujur dirangkum pada Tabel~\ref{tab:penentuan-solusi}.
+
+\input{tables/tabel_III4_matriks.tex}
+
+Perlu dicatat bahwa matriks ini bukan sekadar dokumentasi keputusan yang sudah diambil. Dua barisnya --- pengklasifikasi kondisi dan mesin \emph{what-if} --- justru merupakan keputusan yang \emph{berubah} setelah bukti empiris diperoleh: ambang atas nilai regresi semula dipakai, lalu ditinggalkan setelah terbukti hanya menangkap 14\% kejadian hipoglikemia; dan model Random Forest semula dicoba untuk simulasi \emph{what-if}, lalu ditinggalkan setelah terbukti memberi arah intervensi yang terbalik.
 
 \input{tables/tabel_III3_solusi.tex}
 

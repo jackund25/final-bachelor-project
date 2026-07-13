@@ -1,0 +1,28 @@
+\begin{table}[htbp]
+\centering
+\caption{Validasi silang lintas-pasien untuk lapisan \emph{retrieval} (6 \emph{fold}). Pada tiap \emph{fold}, model regresi dan pengklasifikasi dilatih ulang dari nol pada 10 pasien; \emph{retrieval} dievaluasi pada 2 pasien yang tak pernah dilihat. Nilai $p$ dari uji Wilcoxon berpasangan atas keenam \emph{fold} terhadap RAG standar.}
+\label{tab:crossfold-retrieval}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Mode kueri} & \textbf{MRR (rerata\,$\pm$\,SD)} & \textbf{Unggul pada} & \textbf{$p$} \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{(a) Kasus divergen --- kondisi terkini $\neq$ kondisi masa depan}} \\
+\midrule
+RAG standar               & 0,160\,$\pm$\,0,008 & ---   & --- \\
+PC-RAG (regresi)          & \textbf{0,318\,$\pm$\,0,054} & \textbf{6/6 \emph{fold}} & \textbf{0,031} \\
+PC-RAG + pengklasifikasi  & 0,298\,$\pm$\,0,040 & 6/6 \emph{fold} & 0,031 \\
+\emph{Oracle}             & 0,983\,$\pm$\,0,015 & 6/6 \emph{fold} & 0,031 \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{(b) Distribusi natural --- sampel acak seluruh jendela}} \\
+\midrule
+RAG standar               & 0,875\,$\pm$\,0,048 & ---   & --- \\
+PC-RAG (regresi)          & 0,893\,$\pm$\,0,020 & 5/6 \emph{fold} & 0,44 (t.s.) \\
+PC-RAG + pengklasifikasi  & 0,892\,$\pm$\,0,040 & 3/6 \emph{fold} & 0,56 (t.s.) \\
+\emph{Oracle}             & 0,998\,$\pm$\,0,004 & 6/6 \emph{fold} & 0,031 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.4em}
+\footnotesize t.s. = tidak signifikan. Simpangan baku yang kecil pada RAG standar (0,008) menunjukkan kegagalannya pada kasus divergen bersifat sistematis, bukan kebetulan pada pasien tertentu. Sebaliknya, keunggulan PC-RAG konsisten pada \emph{seluruh} \emph{fold}, sehingga bukan artefak dua pasien tertentu.
+\end{table}

@@ -1,0 +1,38 @@
+\begin{table}[htbp]
+\centering
+\caption{Sintesis lintas-lapisan: kapan \emph{Prediction-Conditioned RAG} memberi nilai tambah, dan kapan tidak. Tabel ini merangkum temuan seluruh subbab evaluasi --- termasuk yang tidak menguntungkan --- agar batas manfaat metode ini terbaca jelas.}
+\label{tab:sintesis}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Lapisan / skenario} & \textbf{Nilai tambah} & \textbf{Bukti} & \textbf{Sebab} \\
+\midrule
+\emph{Retrieval}, kasus divergen & \textbf{Besar} & MRR 0,160 $\rightarrow$ 0,318 & Kondisi terkini menyesatkan; \\
+(13,3\% jendela) & \emph{dan robust} & unggul 6/6 \emph{fold} ($p=0{,}031$) & hanya prediksi yang menolong \\
+\addlinespace
+\emph{Retrieval}, distribusi natural & \textbf{Tidak ada} & MRR 0,875 $\rightarrow$ 0,893 & 86,7\% jendela tidak divergen: \\
+& & ($p=0{,}44$; t.s.) & RAG standar sudah tepat sasaran \\
+\addlinespace
+\emph{Retrieval}, pengklasifikasi & \textbf{Tidak ada} & 0,892 vs 0,893 (natural) & Kondisi yang benar pada kasus \\
+(vs regresi) & & ($p=0{,}31$; t.s.) & divergen tetap sulit ditebak \\
+\midrule
+Deteksi hipoglikemia & \textbf{Besar} & Sensitivitas 14,0\% $\rightarrow$ 44,4\% & Kondisi diprediksi langsung, \\
+(pengklasifikasi kondisi) & & pada ambang standar & bukan diambangkan dari regresi \\
+\midrule
+Generasi, kasus hipoglikemia & Moderat & \emph{sim\_ref} 0,450 $\rightarrow$ 0,629 & Antisipasi mengubah tindakan \\
+& & (kasus D1) & secara kualitatif \\
+\addlinespace
+Generasi, kasus hiperglikemia & \textbf{Tidak ada} & \emph{sim\_ref} 0,542 $\rightarrow$ 0,525 & Anjuran pedoman serupa untuk \\
+& & (kasus D6) & kondisi kini maupun mendatang \\
+\midrule
+Prediksi SMBG, $+30$ menit & \textbf{Tidak ada} & RMSE 27,09 vs \emph{persistence} & Jarak antar-pembacaan (124,8 mnt) \\
+& & 27,33~mg/dL & lebih panjang dari horizon \\
+\addlinespace
+Prediksi SMBG, $+60$ menit & Besar & RMSE 42,86 vs \emph{persistence} & Asumsi ``tidak berubah'' runtuh; \\
+& & 47,87~mg/dL & efek IOB/COB mendominasi \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.4em}
+\footnotesize t.s. = tidak signifikan. Seluruh angka \emph{retrieval} berasal dari validasi silang enam \emph{fold} lintas-pasien (Tabel~\ref{tab:crossfold-retrieval}). Batas atas metode ini terukur dan konsisten: dengan kondisi masa depan yang diketahui benar (\emph{oracle}), \emph{retrieval} mencapai MRR 0,983\,$\pm$\,0,015 pada kasus divergen. Seluruh selisih antara 0,318 dan 0,983 adalah ruang perbaikan yang dapat diraih semata-mata dengan meningkatkan akurasi prediksi kondisi --- tanpa mengubah apa pun pada komponen \emph{retrieval}.
+\end{table}

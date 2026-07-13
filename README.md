@@ -63,22 +63,36 @@ umum dipakai literatur.
 atas yang optimistis* — kondisi relevannya ditetapkan dari nilai yang diprediksi, sehingga
 kesalahan prediksi tidak terhukum.
 
-**Kasus nyata** (120 kasus dari 2 pasien *hold-out*; relevansi ditetapkan dari glukosa yang
-**benar-benar terjadi** pada t+30, sehingga kesalahan prediksi dihukum):
+**Kasus nyata, validasi silang 6 *fold* lintas-pasien** (relevansi ditetapkan dari glukosa
+yang **benar-benar terjadi** pada t+30, sehingga kesalahan prediksi dihukum):
 
-| Mode kueri | MRR (natural) | MRR (kasus divergen) |
+| Mode kueri | MRR kasus divergen | MRR distribusi natural |
 | --- | --- | --- |
-| Acak (*sanity baseline*) | 0,375 | 0,406 |
-| RAG standar | 0,863 | 0,166 |
-| PC-RAG (regresi) | 0,887 (p = 0,11, tidak signifikan) | 0,340 |
-| **PC-RAG + pengklasifikasi kondisi** | **0,902** (p = 0,03) | 0,271 |
-| *Oracle* (prediksi sempurna) | 1,000 | **0,994** |
+| RAG standar | 0,160 ± 0,008 | 0,875 ± 0,048 |
+| **PC-RAG** | **0,318 ± 0,054** (unggul 6/6 *fold*, p = 0,031) | 0,893 ± 0,020 (p = 0,44, t.s.) |
+| PC-RAG + pengklasifikasi | 0,298 ± 0,040 | 0,892 ± 0,040 (p = 0,56, t.s.) |
+| *Oracle* (prediksi sempurna) | **0,983 ± 0,015** | 0,998 ± 0,004 |
 
-**Temuan utama.** Mekanisme PC-RAG terbukti sahih — dengan kondisi masa depan yang benar,
-*retrieval* nyaris sempurna (0,994). Namun manfaatnya di lapangan dibatasi oleh
-**prediktornya**: pada kasus divergen, regresi hanya benar menebak kondisi masa depan 15,8%
-kali. Ini akar yang sama dengan rendahnya sensitivitas hipoglikemia. Memprediksi *kondisi*
-secara langsung (pengklasifikasi sadar-biaya) memperbaiki keduanya sekaligus.
+**Temuan utama.** Mekanisme PC-RAG terbukti sahih dan **robust**: pada kasus divergen ia
+unggul di **seluruh 6 fold**, dan dengan kondisi masa depan yang benar (*oracle*) *retrieval*
+nyaris sempurna (0,983). Namun manfaatnya dibatasi oleh **prediktornya** — pada kasus
+divergen, regresi hanya benar menebak kondisi masa depan 15,8% kali. Pada distribusi natural,
+tidak ada keunggulan yang dapat diandalkan (p = 0,44): hanya 13,3% jendela yang divergen.
+
+Pengklasifikasi kondisi memperbaiki **deteksi hipoglikemia** secara nyata (14,0% → 44,4%),
+tetapi **tidak** terbukti memperbaiki mutu *retrieval* lintas-*fold* (p = 0,31).
+
+### Kelayakan penerapan (diukur, bukan diklaim)
+
+Pada perangkat **tanpa GPU sama sekali**: rekayasa fitur 26 ms, prediksi 90 ms, *retrieval*
+atas 2.585 *chunk* 21 ms — **total komputasi lokal 137 ms**, memori 1,17 GB. Satu rekomendasi
+utuh butuh ~11,4 detik, dan **98%-nya adalah panggilan LLM** (jaringan + inferensi *cloud*),
+bukan komputasi di perangkat.
+
+### Keamanan keluaran LLM
+
+Dari 56 besaran klinis pada 6 rekomendasi: **100% tertelusur** ke dokumen sumber, *state*
+pasien, atau ambang klinis baku. **0 tindakan salah arah**, **100% memuat *disclaimer***.
 
 **Catatan pada skenario SMBG.** Pada horizon +30 menit, model praktis setara dengan
 *baseline persistence* (RMSE 27,09 vs 27,33 mg/dL): jarak antar-pembacaan SMBG (median

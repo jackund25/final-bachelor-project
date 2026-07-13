@@ -1,0 +1,56 @@
+{
+  "catatan": "Seluruh pengukuran pada CPU; GPU tidak dipakai (KNF-01).",
+  "perangkat": {
+    "os": "Windows 10",
+    "prosesor": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD",
+    "python": "3.11.15",
+    "gpu_dipakai": false,
+    "ram_total_gb": 15.4,
+    "jumlah_core_logis": 12,
+    "gpu_tersedia_di_mesin": false
+  },
+  "ukuran_artefak_mb": {
+    "rf_inference_bundle_h6.pkl": 310.9,
+    "rf_condition_classifier_h6.pkl": 203.0,
+    "chroma_db (2.585 chunk)": 41.3
+  },
+  "tahap": {
+    "1_muat_artefak_sekali": {
+      "model_regresi_ms": 392.0,
+      "pengklasifikasi_kondisi_ms": 200.5,
+      "retriever_dan_embedding_ms": 16634.3,
+      "total_ms": 17226.7,
+      "keterangan": "Hanya sekali saat aplikasi start (di-cache); tidak dirasakan per konsultasi."
+    },
+    "2_rekayasa_fitur": {
+      "median_ms": 26.4,
+      "p95_ms": 30.5,
+      "min_ms": 25.6,
+      "n_ulangan": 10
+    },
+    "3_prediksi": {
+      "median_ms": 89.6,
+      "p95_ms": 113.9,
+      "min_ms": 76.3,
+      "n_ulangan": 30,
+      "keterangan": "Mencakup regresi, pengklasifikasi kondisi, dan interval dari 200 pohon."
+    },
+    "4_retrieval": {
+      "median_ms": 21.2,
+      "p95_ms": 30.2,
+      "min_ms": 17.9,
+      "n_ulangan": 20,
+      "keterangan": "Embedding kueri + pencarian MMR pada 2.585 chunk."
+    },
+    "5_generasi_llm": {
+      "dijalankan": true,
+      "sekali_panggil_ms": 11283.6,
+      "keterangan": "Satu panggilan Gemini; kuota free-tier 20 request/hari."
+    }
+  },
+  "total_siklus_lokal_ms": 137.2,
+  "memori_rss_mb": {
+    "sebelum_muat": 277.3,
+    "setelah_muat_semua": 1167.0
+  }
+}

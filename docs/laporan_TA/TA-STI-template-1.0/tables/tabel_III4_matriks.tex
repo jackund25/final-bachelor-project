@@ -1,0 +1,35 @@
+\begin{table}[htbp]
+\centering
+\caption{Matriks penilaian alternatif terhadap kebutuhan sistem. Keputusan desain diturunkan dari kebutuhan yang telah ditetapkan (Tabel~\ref{tab:kebutuhan-fungsional} dan~\ref{tab:kebutuhan-nonfungsional}), bukan dari preferensi. Legenda: $++$ memenuhi penuh; $+$ memenuhi; $\circ$ memenuhi sebagian; $-$ tidak memenuhi; $\bullet$ alternatif yang dipilih.}
+\label{tab:matriks-solusi}
+\small
+\begin{tabular}{@{}llcccccl@{}}
+\toprule
+\textbf{Keputusan} & \textbf{Alternatif} & \textbf{Tanpa} & \textbf{Interpre-} & \textbf{Ketepatan} & \textbf{Deter-} & & \textbf{Bukti} \\
+ & & \textbf{GPU} & \textbf{tabel} & \textbf{fungsional} & \textbf{ministik} & & \textbf{(Bab VI)} \\
+ & & \footnotesize KNF-01 & \footnotesize KNF-02 & & & & \\
+\midrule
+Model            & \emph{Random Forest}            & $++$ & $++$ & $+$  & $++$ & $\bullet$ & RMSE 22,60 \\
+prediksi         & LSTM                            & $\circ$ & $-$ & $++$ & $\circ$ & & RMSE 22,04 \\
+                 & GBM / XGBoost                   & $++$ & $+$  & $+$  & $++$ & & --- \\
+\midrule
+Prediksi         & Ambang atas nilai regresi       & $++$ & $++$ & $-$  & $++$ & & sens. hipo 14\% \\
+kondisi          & Pengklasifikasi sadar-biaya     & $++$ & $++$ & $+$  & $++$ & $\bullet$ & sens. hipo 44\% \\
+\midrule
+Model            & Google Gemini (API)             & $++$ & --- & $++$ & $\circ$ & $\bullet$ & --- \\
+bahasa           & Ollama \texttt{llama3.1} (lokal) & $-$ & --- & $+$  & $+$ & & --- \\
+\midrule
+Model            & \texttt{all-MiniLM-L6-v2}       & $++$ & --- & $++$ & $++$ & $\bullet$ & MRR 0,889 \\
+\emph{embedding} & Multilingual MiniLM             & $+$  & --- & $-$  & $++$ & & MRR 0,319 \\
+\midrule
+Mesin            & Formula PK mekanistik           & $++$ & $++$ & $+$ & $++$ & $\bullet$ & arah kausal benar \\
+\emph{what-if}   & Model RF yang sama              & $++$ & $+$  & $-$ & $++$ & & arah terbalik \\
+\midrule
+Pengambilan      & RAG atas korpus tak-terstruktur & $++$ & $+$  & $+$ & $+$ & $\bullet$ & MRR 0,902 \\
+pengetahuan      & SPARQL atas \emph{knowledge graph} & $\circ$ & $++$ & $++$ & $++$ & & \autocite{rad2024} \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.4em}
+\footnotesize Kolom ``ketepatan fungsional'' dibaca sesuai peran komponen: akurasi prediksi bagi model prediksi, mutu \emph{retrieval} bagi \emph{embedding}, dan kebenaran arah kausal bagi mesin \emph{what-if}. Kelemahan yang diakui dari tiap pilihan dirangkum pada Tabel~\ref{tab:penentuan-solusi}. Alternatif SPARQL unggul pada interpretabilitas dan determinisme, namun ditolak karena menuntut ontologi formal dan interoperabilitas HL7 FHIR --- justru keterbatasan yang ingin dijawab penelitian ini.
+\end{table}
