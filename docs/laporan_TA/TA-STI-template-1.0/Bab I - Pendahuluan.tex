@@ -36,39 +36,32 @@ Agar ruang lingkup penelitian ini jernih dan klaimnya dapat dipertanggungjawabka
 
 \textbf{Konteks} penelitian ini adalah pengelolaan diabetes yang masih bersifat reaktif dan tersedianya kerangka \emph{digital twin} canggih yang menuntut infrastruktur berat. \textbf{Batasan desain} yang ditetapkan --- berangkat dari keterbatasan sumber daya yang dipaparkan pada latar belakang --- adalah bahwa sistem harus dapat berjalan tanpa GPU, tanpa CGM \emph{real-time}, dan tanpa rekam medis elektronik. Keduanya bukan masalah yang hendak dipecahkan; keduanya adalah kondisi awal yang membingkai pencarian solusi.
 
-\textbf{Masalah penelitian} yang diangkat bersifat metodologis dan dirumuskan sebagai berikut.
-
-\begin{quote}
-Sistem pendukung keputusan berbasis prediksi glukosa maupun \emph{Retrieval-Augmented Generation} klinis yang ada mengondisikan proses pengambilan pengetahuan pada kondisi pasien \textbf{saat ini}. Prediksi, bila ada, disajikan sebagai angka lepas yang terputus dari pengetahuan klinis yang seharusnya menindaklanjutinya. Akibatnya rekomendasi yang dihasilkan bersifat reaktif dan buta terhadap kondisi yang \textbf{akan datang} --- padahal justru pada antisipasi itulah nilai klinis terbesarnya terletak, misalnya mengenali risiko hipoglikemia sebelum benar-benar terjadi. Sepanjang penelusuran literatur, belum dijumpai penelitian yang secara eksplisit mengondisikan proses \emph{retrieval} pada nilai glukosa yang diprediksi.
-\end{quote}
-
-Dari rumusan tersebut diturunkan tiga pertanyaan penelitian:
+\textbf{Masalah penelitian} yang diangkat bersifat metodologis dan dirumuskan menjadi tiga persoalan berikut:
 
 \begin{enumerate}
-    \item \textbf{PP-1.} Bagaimana merancang mekanisme \emph{retrieval} yang kuerinya dikondisikan pada nilai glukosa hasil prediksi, sehingga dokumen yang diambil relevan terhadap kondisi yang akan datang alih-alih kondisi terkini?
-    \item \textbf{PP-2.} Sejauh mana pengondisian tersebut meningkatkan mutu \emph{retrieval} dibandingkan RAG konvensional --- dan pada kondisi seperti apa peningkatan itu terjadi maupun tidak terjadi?
-    \item \textbf{PP-3.} Apakah sistem yang dibangun benar-benar mematuhi batasan desain yang ditetapkan, yakni berjalan tanpa GPU, tanpa CGM \emph{real-time}, dan tanpa rekam medis elektronik?
+    \item Sistem pendukung keputusan berbasis prediksi glukosa maupun \emph{Retrieval-Augmented Generation} (RAG) klinis yang ada mengondisikan pengambilan pengetahuan pada kondisi pasien \textbf{saat ini}; prediksi, bila ada, disajikan sebagai angka lepas yang terputus dari pengetahuan klinis yang seharusnya menindaklanjutinya. Akibatnya rekomendasi bersifat reaktif dan buta terhadap kondisi yang \textbf{akan datang}, padahal justru pada antisipasi itulah nilai klinis terbesarnya terletak. Belum ada mekanisme yang mengondisikan proses \emph{retrieval} dokumen klinis pada nilai glukosa yang diprediksi.
+    \item Kontribusi pengondisian \emph{retrieval} pada prediksi terhadap mutu temu-balik dokumen belum pernah diukur. Belum diketahui sejauh mana pengondisian tersebut meningkatkan relevansi dibandingkan RAG konvensional, dan pada kondisi seperti apa peningkatan itu terjadi maupun tidak terjadi.
+    \item Kerangka \emph{digital twin} diabetes yang efektif menuntut infrastruktur berat (CGM \emph{real-time}, rekam medis elektronik, GPU), sehingga belum jelas apakah pendekatan antisipatif yang menyatukan prediksi dan \emph{retrieval} dapat diwujudkan dalam batasan desain tanpa GPU, tanpa CGM \emph{real-time}, dan tanpa rekam medis elektronik.
 \end{enumerate}
 
-Perhatikan bahwa PP-3 berbentuk \emph{verifikasi kepatuhan terhadap batasan}, bukan klaim penyelesaian masalah infrastruktur. Penelitian ini tidak mengklaim menutup kesenjangan infrastruktur kesehatan, tidak memakai data pasien Indonesia, dan tidak melakukan validasi lapangan --- ketiganya dinyatakan sebagai batasan pada Subbab~\ref{sec:batasan-masalah}.
+Perhatikan bahwa persoalan ketiga berbentuk \emph{verifikasi kepatuhan terhadap batasan desain}, bukan klaim penyelesaian masalah infrastruktur. Penelitian ini tidak mengklaim menutup kesenjangan infrastruktur kesehatan, tidak memakai data pasien Indonesia, dan tidak melakukan validasi lapangan --- ketiganya dinyatakan sebagai batasan pada Subbab~\ref{sec:batasan-masalah}.
 
 % --- Tujuan ---
 \section{Tujuan}
-Tujuan utama tugas akhir ini adalah \textbf{merancang, mengimplementasikan, dan mengevaluasi metode \emph{Prediction-Conditioned RAG}} --- yakni mengondisikan \emph{retrieval} dokumen klinis pada nilai glukosa hasil prediksi --- di bawah batasan desain tanpa GPU, tanpa CGM \emph{real-time}, dan tanpa rekam medis elektronik. Tujuan tersebut dijabarkan menjadi tujuan-tujuan detail berikut, yang masing-masing menjawab pertanyaan penelitian pada Subbab~\ref{sec:rumusan-masalah}:
+Tujuan tugas akhir ini adalah menjawab ketiga rumusan masalah pada Subbab~\ref{sec:rumusan-masalah}, dijabarkan menjadi tiga tujuan yang bersesuaian nomor per nomor:
 
 \begin{enumerate}
-    \item \textbf{(PP-1)} Merancang dan mengimplementasikan mekanisme pengondisian kueri \emph{retrieval} pada nilai glukosa yang diprediksi, beserta kontrak data yang menjembatani modul prediksi dan modul \emph{retrieval}.
-    \item \textbf{(PP-1)} Mengembangkan modul prediksi kadar glukosa berbasis \emph{machine learning} yang menjadi sumber pengondisian tersebut, dengan \emph{Random Forest} sebagai model utama dan \emph{Long Short-Term Memory} (LSTM) sebagai pembanding, serta representasi \emph{digital twin} sederhana berbasis \emph{patient state} dari data \emph{logbook}.
-    \item \textbf{(PP-2)} Menguji kontribusi pengondisian prediksi terhadap mutu \emph{retrieval} melalui perbandingan terkendali terhadap RAG konvensional, sekaligus memetakan pada kondisi seperti apa peningkatan itu terjadi maupun tidak terjadi.
-    \item \textbf{(PP-3)} Memverifikasi secara terukur bahwa sistem yang dibangun mematuhi batasan desain yang ditetapkan.
+    \item \textbf{Menjawab rumusan~1:} merancang dan mengimplementasikan metode \emph{Prediction-Conditioned RAG}, yakni mekanisme yang membangun kueri \emph{retrieval} dari nilai glukosa hasil prediksi, beserta dua komponen pendukung yang menjadi sumber pengondisiannya --- modul prediksi kadar glukosa (\emph{Random Forest} sebagai model utama, \emph{Long Short-Term Memory} sebagai pembanding) dan representasi \emph{digital twin} sederhana berbasis \emph{patient state} yang menjembatani modul prediksi dengan modul \emph{retrieval}.
+    \item \textbf{Menjawab rumusan~2:} mengevaluasi kontribusi pengondisian prediksi terhadap mutu \emph{retrieval} melalui perbandingan terkendali terhadap RAG konvensional pada kasus nyata --- dengan nilai kebenaran yang ditetapkan independen dari prediksi dan divalidasi silang lintas-pasien --- sekaligus memetakan pada kondisi seperti apa peningkatan itu terjadi maupun tidak.
+    \item \textbf{Menjawab rumusan~3:} memverifikasi secara terukur bahwa sistem yang dibangun mematuhi batasan desain yang ditetapkan, yakni berjalan tanpa GPU, tanpa CGM \emph{real-time}, dan tanpa rekam medis elektronik.
 \end{enumerate}
 
-Sebagai bentuk pertanggungjawaban, ditetapkan kriteria keberhasilan berikut.
+Sebagai bentuk pertanggungjawaban, ditetapkan kriteria keberhasilan berikut yang menautkan tiap tujuan dengan buktinya.
 
 \begin{enumerate}[label=(\alph*)]
-    \item \textbf{Bukti utama kebaruan (PP-2).} Metode \emph{Prediction-Conditioned RAG} menunjukkan peningkatan mutu \emph{retrieval} yang terukur dan \emph{signifikan secara statistik} dibandingkan RAG konvensional, diukur dengan metrik temu-balik informasi baku (\emph{Hit@k}, \emph{Mean Reciprocal Rank}, dan \emph{normalized Discounted Cumulative Gain}). Pengujian dilakukan pada kasus nyata dengan nilai kebenaran yang ditetapkan secara independen dari prediksi, serta divalidasi silang lintas-pasien.
-    \item \textbf{Kelayakan modul prediksi (PP-1).} Model prediksi mencapai akurasi yang memadai secara klinis, diukur dengan RMSE, MAE, dan MAPE serta \emph{Clarke Error Grid Analysis} yang menilai konsekuensi klinis kesalahan, bukan sekadar besarnya.
-    \item \textbf{Kepatuhan terhadap batasan desain (PP-3).} Sistem terbukti berjalan pada perangkat tanpa GPU, dengan waktu komputasi dan jejak memori yang diukur secara eksplisit.
+    \item \textbf{Bukti utama kebaruan (tujuan~2).} Metode \emph{Prediction-Conditioned RAG} menunjukkan peningkatan mutu \emph{retrieval} yang terukur dan \emph{signifikan secara statistik} dibandingkan RAG konvensional, diukur dengan metrik temu-balik informasi baku (\emph{Hit@k}, \emph{Mean Reciprocal Rank}, dan \emph{normalized Discounted Cumulative Gain}). Pengujian dilakukan pada kasus nyata dengan nilai kebenaran yang ditetapkan secara independen dari prediksi, serta divalidasi silang lintas-pasien.
+    \item \textbf{Kelayakan modul prediksi (tujuan~1).} Model prediksi mencapai akurasi yang memadai secara klinis, diukur dengan RMSE, MAE, dan MAPE serta \emph{Clarke Error Grid Analysis} yang menilai konsekuensi klinis kesalahan, bukan sekadar besarnya.
+    \item \textbf{Kepatuhan terhadap batasan desain (tujuan~3).} Sistem terbukti berjalan pada perangkat tanpa GPU, dengan waktu komputasi dan jejak memori yang diukur secara eksplisit.
     \item \textbf{Kualitas dan keamanan keluaran (pelengkap).} Keluaran RAG dinilai melalui pendekatan berbasis-referensi serta pemeriksaan keamanan --- keterlacakan besaran klinis ke dokumen sumber dan ketiadaan tindakan yang berlawanan arah dengan kondisi terprediksi. Aspek ini bersifat pelengkap, bukan bukti utama kebaruan.
 \end{enumerate}
 
