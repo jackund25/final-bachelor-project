@@ -41,7 +41,7 @@ Inti kebaruan tugas akhir ini adalah pipeline \emph{Prediction-Conditioned RAG} 
 Alur pipeline: (1)~\emph{state} fisiologis terkini diekstraksi dari \emph{logbook}; (2)~model \emph{Random Forest} memprediksi glukosa $+30/+60$ menit; (3)~nilai terprediksi diklasifikasikan menjadi kondisi klinis (hipoglikemia/normal/hiperglikemia) dan digabung dengan konteks terkini untuk membentuk \textbf{kueri yang dikondisikan prediksi}; (4)~kueri di-\emph{embed} dengan \texttt{all-MiniLM-L6-v2} dan dipakai untuk \emph{retrieval} dari basis pengetahuan klinis pada ChromaDB; (5)~potongan dokumen teratas diberikan sebagai konteks kepada LLM \textbf{\texttt{gemini-2.5-flash-lite}} dengan parameter generatif konservatif; (6)~LLM menghasilkan rekomendasi berbahasa Indonesia yang \emph{grounded} dan tertelusur. Setiap lapisan dilengkapi \emph{graceful fallback} agar sistem tetap memberi keluaran aman saat salah satu komponen gagal.
 
 \section{Perancangan Perangkat Lunak}
-Perangkat lunak dirancang memisahkan \emph{domain logic} dari antarmuka (KNF-07) agar mudah dipelihara. Struktur kelas utama --- meliputi pemuat data, prediktor, \emph{engine} \emph{digital twin}, \emph{retriever}, dan generator rekomendasi --- ditunjukkan pada Gambar~\ref{fig:class-diagram}.
+Perangkat lunak dirancang memisahkan \emph{domain logic} dari antarmuka (KNF-07) agar mudah dipelihara. Struktur kelas utama, meliputi pemuat data, prediktor, \emph{engine} \emph{digital twin}, \emph{retriever}, dan generator rekomendasi, ditunjukkan pada Gambar~\ref{fig:class-diagram}.
 
 \begin{figure}[htbp]
 \centering
@@ -50,7 +50,7 @@ Perangkat lunak dirancang memisahkan \emph{domain logic} dari antarmuka (KNF-07)
 \label{fig:class-diagram}
 \end{figure}
 
-Interaksi antarobjek saat menjalankan satu siklus PC-RAG --- dari permintaan dokter hingga rekomendasi tertelusur --- ditunjukkan pada diagram sekuens Gambar~\ref{fig:sequence-pcrag}.
+Interaksi antarobjek saat menjalankan satu siklus PC-RAG, dari permintaan dokter hingga rekomendasi tertelusur, ditunjukkan pada diagram sekuens Gambar~\ref{fig:sequence-pcrag}.
 
 \begin{figure}[htbp]
 \centering

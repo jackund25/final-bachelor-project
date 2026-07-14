@@ -13,7 +13,7 @@ Gemini (API) alih-alih Ollama lokal & Tidak butuh GPU, gratis via \emph{API key}
 Streamlit & Dukungan \emph{multi-page} \& \emph{session state} native, cocok untuk \emph{slider what-if}, mudah dipelihara. & Kurang alami untuk antarmuka gaya \emph{chat}; manajemen \emph{state} manual. \\[2pt]
 OhioT1DM sebagai \emph{surrogate} & Satu-satunya dataset CGM multimodal publik yang lengkap; \emph{benchmark} standar. & T1DM $\neq$ T2DM; tanpa data Indonesia. \\[2pt]
 Prediksi langsung horizon tetap ($+30/+60$) & Menghindari galat kumulatif; horizon klinis bermakna; cukup untuk mengondisikan RAG. & Horizon terbatas; tidak untuk prediksi semalaman. \\[2pt]
-\emph{Simplified} DT (formula, bukan ODE) & Sesuai lingkup; tak menuntut parameter pasien individual; cukup untuk \emph{what-if} kualitatif. & Bukan fisiologis penuh --- tidak diklaim sebagai DT \emph{high-fidelity}. \\[2pt]
+\emph{Simplified} DT (formula, bukan ODE) & Sesuai lingkup; tak menuntut parameter pasien individual; cukup untuk \emph{what-if} kualitatif. & Bukan fisiologis penuh; tidak diklaim sebagai DT \emph{high-fidelity}. \\[2pt]
 \emph{What-if} memakai formula PK, BUKAN model RF & RF bersifat korelasional; pada data latih insulin diberikan \emph{karena} glukosa tinggi, sehingga RF mempelajari arah terbalik dan memberi rekomendasi kontrafaktual yang salah arah. Formula PK mekanistik memberi arah kausal yang benar. & Formula PK menyederhanakan fisiologi; tidak ``belajar'' dari data pasien individual. \\
 \bottomrule
 \end{tabular}

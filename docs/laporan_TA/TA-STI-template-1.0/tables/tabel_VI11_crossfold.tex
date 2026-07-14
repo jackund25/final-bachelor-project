@@ -7,16 +7,16 @@
 \toprule
 \textbf{Mode kueri} & \textbf{MRR (rerata\,$\pm$\,SD)} & \textbf{Unggul pada} & \textbf{$p$} \\
 \midrule
-\multicolumn{4}{@{}l}{\textit{(a) Kasus divergen --- kondisi terkini $\neq$ kondisi masa depan}} \\
+\multicolumn{4}{@{}l}{\textit{(a) Kasus divergen: kondisi terkini $\neq$ kondisi masa depan}} \\
 \midrule
-RAG standar               & 0,160\,$\pm$\,0,008 & ---   & --- \\
+RAG standar               & 0,160\,$\pm$\,0,008 & --   & -- \\
 PC-RAG (regresi)          & \textbf{0,318\,$\pm$\,0,054} & \textbf{6/6 \emph{fold}} & \textbf{0,031} \\
 PC-RAG + pengklasifikasi  & 0,298\,$\pm$\,0,040 & 6/6 \emph{fold} & 0,031 \\
 \emph{Oracle}             & 0,983\,$\pm$\,0,015 & 6/6 \emph{fold} & 0,031 \\
 \midrule
-\multicolumn{4}{@{}l}{\textit{(b) Distribusi natural --- sampel acak seluruh jendela}} \\
+\multicolumn{4}{@{}l}{\textit{(b) Distribusi natural: sampel acak seluruh jendela}} \\
 \midrule
-RAG standar               & 0,875\,$\pm$\,0,048 & ---   & --- \\
+RAG standar               & 0,875\,$\pm$\,0,048 & --   & -- \\
 PC-RAG (regresi)          & 0,893\,$\pm$\,0,020 & 5/6 \emph{fold} & 0,44 (t.s.) \\
 PC-RAG + pengklasifikasi  & 0,892\,$\pm$\,0,040 & 3/6 \emph{fold} & 0,56 (t.s.) \\
 \emph{Oracle}             & 0,998\,$\pm$\,0,004 & 6/6 \emph{fold} & 0,031 \\
