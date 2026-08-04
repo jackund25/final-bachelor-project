@@ -20,6 +20,7 @@ import streamlit as st
 from src.data.loader import DiabetesDataLoader
 from src.digital_twin import DigitalTwinStateManager, PatientDigitalTwin, WhatIfSimulator
 from src.rag import RAGPipeline
+from src.rag.citations import build_source_list
 from ui import (app_header, risk_badge, glucose_zone_chart, zone_legend,
                 disclaimer_footer, classify_glucose)
 
@@ -264,16 +265,52 @@ with tab_rec:
                 st.warning(f"Layanan rekomendasi (LLM) tidak tersedia: {str(exc)[:90]}")
     res = st.session_state.get("last_rec")
     if res:
+        # Nomor halaman DIAMBIL DARI METADATA chunk, tidak pernah dari teks LLM.
+        sources = build_source_list(res.get("retrieved_docs", []), snippet_chars=200)
+        st.session_state["last_rec_sources"] = sources
+
+        if not sources:
+            st.error(
+                "**Tidak ditemukan rujukan panduan yang relevan** pada basis pengetahuan. "
+                "Teks di bawah TIDAK didukung kutipan panduan dan tidak boleh diperlakukan "
+                "sebagai rekomendasi bersumber."
+            )
+
         st.markdown(f'<div class="card">{res["explanation"]}</div>', unsafe_allow_html=True)
+
         adv = res.get("advisory", {})
         if adv.get("actions"):
             st.markdown("**Tindakan yang disarankan:**")
             for a in adv["actions"]:
                 st.markdown(f"- {a}")
-        with st.expander("📚 Rujukan panduan medis"):
-            for doc in res["retrieved_docs"]:
-                st.markdown(f"**#{doc['rank']}** · `{doc['source']}`")
-                st.caption(doc["text"][:350] + ("…" if len(doc["text"]) > 350 else ""))
+
+        if sources:
+            st.caption(
+                "Isi rekomendasi bersumber dari dokumen pedoman yang tercantum pada "
+                "**Sumber Rujukan** di bawah. Keputusan akhir berada pada dokter."
+            )
+            with st.expander(f"📚 Sumber Rujukan ({len(sources)} dokumen)", expanded=False):
+                st.caption(
+                    "Skor kemiripan mengukur kedekatan kueri dengan potongan dokumen. "
+                    "Karena urutan dipilih dengan MMR (yang juga menghindari pengulangan "
+                    "isi), peringkat tidak selalu urut menurun terhadap skor."
+                )
+                for s in sources:
+                    judul = s["judul_lengkap"] or s["nama_dokumen"]
+                    head = f"**#{s['rank']} · {judul}**"
+                    if s["similarity"] is not None:
+                        head += f" · kemiripan {s['similarity']:.2f}"
+                    st.markdown(head)
+                    meta_line = " · ".join(
+                        p for p in [
+                            f"{s['lembaga']} ({s['tahun']})" if s["lembaga"] else "",
+                            s["page_label"],
+                            f"`{s['nama_dokumen']}`" if s["nama_dokumen"] else "",
+                        ] if p
+                    )
+                    st.caption(meta_line)
+                    st.caption(s["snippet"])
+                    st.markdown("")
 
 with tab_sim:
     st.caption("Simulasikan dampak intervensi untuk konseling pasien (tanpa mengubah data). "
@@ -310,10 +347,28 @@ with tab_log:
     (sm.create_state if sel not in sm.list_patients() else sm.update_state)(sel, init)
     itype = st.selectbox("Jenis keputusan", ["tinjauan", "setujui rekomendasi", "sesuaikan rekomendasi", "tolak"])
     isum = st.text_input("Catatan", value="Dokter meninjau prediksi & rekomendasi")
+
+    rec = st.session_state.get("last_rec") or {}
+    rec_sources = st.session_state.get("last_rec_sources", [])
+    if rec_sources:
+        st.caption(f"Keputusan akan dicatat bersama {len(rec_sources)} sumber rujukan yang ditampilkan.")
+    elif rec:
+        st.caption("Rekomendasi terakhir tidak memiliki rujukan; hal ini ikut tercatat.")
+
     if st.button("Simpan keputusan"):
-        ev = sm.log_intervention(sel, intervention_type=itype, summary=isum,
-                                 payload={"current_glucose": current, "predicted": pred,
-                                          "risk": pred_label})
+        ev = sm.log_intervention(
+            sel, intervention_type=itype, summary=isum,
+            payload={
+                "current_glucose": current, "predicted": pred, "risk": pred_label,
+                # Rekam sumber PERSIS seperti yang dilihat dokter (termasuk page_label
+                # yang sudah diresolusi), bukan retrieved_docs mentah, agar keputusan
+                # dapat ditelusuri ke halaman dokumen di kemudian hari.
+                "rag_sources": rec_sources,
+                "rag_grounded": bool(rec_sources),
+                "rag_query": rec.get("query"),
+                "rag_provider": rec.get("llm_provider"),
+                "rag_explanation": rec.get("explanation"),
+            })
         sm.save()
         st.success(f"Keputusan tercatat pada {ev['timestamp']}")
 

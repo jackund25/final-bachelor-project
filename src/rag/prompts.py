@@ -8,26 +8,39 @@ SYSTEM_PROMPT = """Anda adalah asisten klinis berbasis panduan medis Indonesia u
 
 Aturan:
 1. Jawab berdasarkan konteks yang diberikan.
-2. Sertakan sitasi ringkas dari metadata sumber jika tersedia.
-3. Jika konteks tidak cukup, katakan informasi belum tersedia pada knowledge base saat ini.
-4. Untuk kondisi berisiko tinggi, sarankan evaluasi dokter segera.
-5. Gunakan Bahasa Indonesia yang ringkas, jelas, dan actionable.
+2. JANGAN menulis nomor halaman, nomor bab, nomor tabel, atau tautan.
+   Rujuk sumber HANYA dengan penanda [S1], [S2], ... sesuai nomor blok konteks.
+   Nomor halaman ditampilkan oleh sistem dari metadata dokumen, bukan oleh Anda.
+3. Jika blok konteks kosong, nyatakan secara eksplisit bahwa tidak ada rujukan
+   panduan yang relevan pada knowledge base, dan JANGAN mengarang rujukan.
+4. Jika konteks tidak cukup, katakan informasi belum tersedia pada knowledge base saat ini.
+5. Untuk kondisi berisiko tinggi, sarankan evaluasi dokter segera.
+6. Gunakan Bahasa Indonesia yang ringkas, jelas, dan actionable.
 """
 
 
 def format_context_with_citations(retrieved_docs: List[Dict[str, Any]]) -> str:
-    """Format retrieved chunks into a readable context block with citations."""
+    """Format retrieved chunks into a readable context block with source markers.
+
+    Nomor halaman SENGAJA TIDAK dimasukkan ke blok konteks. Aturan pada system prompt
+    saja hanyalah jaminan lunak; tidak memberikan angkanya sama sekali adalah jaminan
+    keras — model tidak dapat menyalin nomor halaman yang tak pernah dilihatnya.
+    Penomoran halaman ditangani lapisan UI dari metadata chunk (src/rag/citations.py).
+    """
     if not retrieved_docs:
         return "(Tidak ada konteks dokumen yang ditemukan)"
+
+    from .citations import document_title
 
     lines: List[str] = []
     for idx, row in enumerate(retrieved_docs, start=1):
         metadata = dict(row.get("metadata", {}))
-        sumber = metadata.get("sumber") or row.get("source", "Manual KB")
+        fallback_name = row.get("source", "Manual KB")
+        judul = document_title(metadata, fallback_name)
+        lembaga = metadata.get("lembaga") or metadata.get("sumber") or fallback_name
         tahun = metadata.get("tahun", "N/A")
-        halaman = metadata.get("halaman", "N/A")
-        citation = f"[{sumber}, {tahun}, Hal. {halaman}]"
-        lines.append(f"{idx}. {row.get('text', '').strip()} {citation}")
+        marker = f"[S{idx}] {judul} — {lembaga}, {tahun}"
+        lines.append(f"{marker}\n{row.get('text', '').strip()}")
 
     return "\n\n".join(lines)
 

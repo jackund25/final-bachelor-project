@@ -22,8 +22,19 @@ class RetrievedDocument:
     rank: int
     text: str
     source: str
-    similarity: float
+    # None bila retriever tidak mengembalikan skor (mis. fallback MMR tanpa penilaian).
+    similarity: Optional[float]
     metadata: Dict[str, Any]
+
+
+def _opt_similarity(value: Any) -> Optional[float]:
+    """Skor kemiripan boleh tidak tersedia; jangan paksa jadi 0.0 yang menyesatkan."""
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _risk_level_from_prediction(prediction: float) -> str:
@@ -184,7 +195,7 @@ class RAGPipeline:
                 rank=row.get("rank", idx + 1),
                 text=row.get("text", ""),
                 source=row.get("source", "manual_kb"),
-                similarity=float(row.get("similarity", 0.0)),
+                similarity=_opt_similarity(row.get("similarity")),
                 metadata=dict(row.get("metadata", {})),
             )
             for idx, row in enumerate(retrieved_rows)
@@ -225,6 +236,9 @@ class RAGPipeline:
             "advisory": advisory,
             "citations": advisory_payload.get("sources", []),
             "llm_provider": self.llm_provider,
+            # Apakah jawaban benar-benar ditopang dokumen. UI wajib memakai ini
+            # agar tidak menyajikan rekomendasi tanpa rujukan seolah-olah bersumber.
+            "grounded": bool(retrieved_docs),
         }
 
     # ------------------------------------------------------------------

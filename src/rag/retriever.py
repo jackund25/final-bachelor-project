@@ -112,12 +112,14 @@ class MMRRetriever:
         self.embed_model = embed_model
 
         self._vector_store = None
+        self._embeddings = None
         self._init_error: Optional[str] = None
 
         try:
             from langchain_chroma import Chroma
 
             embeddings = _build_embeddings(embed_provider, ollama_base_url, embed_model)
+            self._embeddings = embeddings
             self._vector_store = Chroma(
                 collection_name=self.collection_name,
                 embedding_function=embeddings,
@@ -140,25 +142,63 @@ class MMRRetriever:
     def is_ready(self) -> bool:
         return self._vector_store is not None
 
+    @staticmethod
+    def _doc_key(doc: Any) -> str:
+        """Kunci identitas dokumen untuk menggabungkan hasil MMR dengan skornya."""
+        meta = dict(getattr(doc, "metadata", None) or {})
+        chunk_id = meta.get("chunk_id")
+        if chunk_id:
+            return str(chunk_id)
+        return f"__text__{hash(getattr(doc, 'page_content', ''))}"
+
     def retrieve(
         self,
         query: str,
         top_k: int = 4,
         metadata_filter: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
+        """Ambil dokumen dengan MMR, sertai skor relevansi kueri-terhadap-chunk.
+
+        MMR memilih k dokumen dari kolam kandidat fetch_k yang sama dengan yang
+        dienumerasi kueri penilaian, sehingga setiap dokumen terpilih dijamin ada
+        di dalam kolam skor. Vektor kueri dihitung SEKALI dan dipakai ulang oleh
+        kedua pemanggilan, jadi tidak ada biaya embedding tambahan.
+
+        CATATAN: skor yang dikembalikan adalah relevansi kueri-terhadap-chunk,
+        BUKAN objektif MMR (yang mengurangi penalti redundansi). Karena itu urutan
+        rank tidak selalu menurun monoton terhadap skor.
+        """
         if not self._vector_store:
             raise RuntimeError(f"MMR retriever is not ready: {self._init_error}")
 
-        kwargs: Dict[str, Any] = {
-            "k": top_k,
-            "fetch_k": max(top_k * 3, 12),
-            "lambda_mult": 0.5,
-        }
+        fetch_k = max(top_k * 3, 12)
+        lambda_mult = 0.5
+
+        kwargs: Dict[str, Any] = {"k": top_k, "fetch_k": fetch_k, "lambda_mult": lambda_mult}
         if metadata_filter:
             kwargs["filter"] = metadata_filter
 
-        retriever = self._vector_store.as_retriever(search_type="mmr", search_kwargs=kwargs)
-        docs = retriever.invoke(query)
+        score_by_key: Dict[str, float] = {}
+        docs = None
+
+        if self._embeddings is not None:
+            try:
+                qvec = self._embeddings.embed_query(query)
+                pool = self._vector_store.similarity_search_by_vector_with_relevance_scores(
+                    embedding=qvec, k=fetch_k, filter=metadata_filter
+                )
+                score_by_key = {self._doc_key(d): float(s) for d, s in pool}
+                docs = self._vector_store.max_marginal_relevance_search_by_vector(
+                    embedding=qvec, k=top_k, fetch_k=fetch_k,
+                    lambda_mult=lambda_mult, filter=metadata_filter,
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Penilaian skor gagal, kembali ke MMR tanpa skor: %s", exc)
+                docs = None
+
+        if docs is None:
+            retriever = self._vector_store.as_retriever(search_type="mmr", search_kwargs=kwargs)
+            docs = retriever.invoke(query)
 
         results: List[Dict[str, Any]] = []
         for idx, doc in enumerate(docs, start=1):
@@ -168,7 +208,7 @@ class MMRRetriever:
                     "rank": idx,
                     "text": doc.page_content,
                     "source": metadata.get("source", "manual_kb"),
-                    "similarity": 0.0,
+                    "similarity": score_by_key.get(self._doc_key(doc)),
                     "metadata": metadata,
                 }
             )
