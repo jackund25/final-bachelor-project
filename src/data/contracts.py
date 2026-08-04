@@ -17,7 +17,7 @@ REQUIRED_COLUMNS = [
 ]
 
 # stress dipindah ke opsional: nyaris tak ada data di OhioT1DM (7 event), sehingga
-# bukan fitur model. Tetap dipertahankan sebagai variabel Digital Twin / logbook.
+# bukan fitur model. Tetap dipertahankan sebagai variabel kondisi klinis / logbook.
 OPTIONAL_DEFAULTS = {
     "stress": 0,
     "sleep": 0,

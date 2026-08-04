@@ -56,4 +56,4 @@ def setup_logger(
 
 
 # Default logger untuk quick use
-default_logger = setup_logger('diabetes_twin', log_file='logs/system.log')
+default_logger = setup_logger('diabetes_dss', log_file='logs/system.log')

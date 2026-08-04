@@ -255,26 +255,6 @@ class PatientState:
         )
 
     @classmethod
-    def from_digital_twin(
-        cls,
-        twin: Any,
-        predicted_glucose: float,
-        prediction_horizon_minutes: int = 60,
-    ) -> "PatientState":
-        """Create from a PatientDigitalTwin instance + model prediction."""
-        s = twin.state
-        return cls(
-            patient_id=twin.patient_id,
-            current_glucose=float(s.get("current_glucose", 100.0)),
-            predicted_glucose=predicted_glucose,
-            prediction_horizon_minutes=prediction_horizon_minutes,
-            insulin_on_board=float(s.get("insulin_on_board", 0.0)),
-            carbs_on_board=float(s.get("carbs_on_board", 0.0)),
-            activity_level=int(s.get("activity_level", 0)),
-            stress_level=int(s.get("stress_level", 5)),
-        )
-
-    @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "PatientState":
         """Deserialise from a previously exported dict."""
         return cls(

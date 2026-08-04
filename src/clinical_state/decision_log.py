@@ -1,17 +1,24 @@
-"""State management for the patient digital twin lifecycle."""
+"""Catatan kondisi klinis pasien dan keputusan dokter.
+
+Modul ini menopang alur doctor-mediated (KF-08): setiap tinjauan, persetujuan,
+penyesuaian, atau penolakan rekomendasi dicatat beserta sumber rujukan yang
+ditampilkan saat keputusan diambil, sehingga dapat ditelusuri kemudian.
+
+Yang disimpan di sini adalah kondisi klinis pasien dan jejak keputusan dokter.
+"""
 
 from __future__ import annotations
 
 import json
+import os
 from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-import os
 from typing import Any, Dict, Optional
 
 
-DEFAULT_TWIN_STATE: Dict[str, Any] = {
+DEFAULT_CLINICAL_STATE: Dict[str, Any] = {
 	"current_glucose": 100.0,
 	"insulin_on_board": 0.0,
 	"carbs_on_board": 0.0,
@@ -28,7 +35,7 @@ def _now_iso() -> str:
 
 
 def _normalize_state(state: Dict[str, Any]) -> Dict[str, Any]:
-	normalized = deepcopy(DEFAULT_TWIN_STATE)
+	normalized = deepcopy(DEFAULT_CLINICAL_STATE)
 	normalized.update(state)
 	if not normalized.get("timestamp"):
 		normalized["timestamp"] = _now_iso()
@@ -75,8 +82,8 @@ class StateRecord:
 	events: list[Dict[str, Any]] = field(default_factory=list)
 
 
-class DigitalTwinStateManager:
-	"""Manage digital twin state for one or more patients."""
+class ClinicalDecisionLog:
+	"""Kelola kondisi klinis dan jejak keputusan dokter untuk satu atau banyak pasien."""
 
 	def __init__(self, storage_file: str = "data/processed/patient_states.json"):
 		self.storage_path = Path(storage_file)
@@ -84,7 +91,7 @@ class DigitalTwinStateManager:
 		self._records: Dict[str, StateRecord] = {}
 
 	def create_state(self, patient_id: str, initial_state: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-		"""Create a new twin state or return the existing one."""
+		"""Create a new clinical state or return the existing one."""
 		if patient_id in self._records:
 			return deepcopy(self._records[patient_id].state)
 
@@ -107,7 +114,7 @@ class DigitalTwinStateManager:
 		record = self._records[patient_id]
 		previous_state = deepcopy(record.state)
 		for key, value in updates.items():
-			if key in DEFAULT_TWIN_STATE:
+			if key in DEFAULT_CLINICAL_STATE:
 				record.state[key] = value
 
 		record.state["timestamp"] = _now_iso()

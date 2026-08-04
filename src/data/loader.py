@@ -1,4 +1,4 @@
-"""Data loading utilities for the diabetes digital twin project."""
+"""Data loading utilities for the diabetes decision-support project."""
 
 from __future__ import annotations
 

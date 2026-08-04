@@ -17,14 +17,14 @@ from datetime import datetime
 import pandas as pd
 import streamlit as st
 
+from src.clinical_state import ClinicalDecisionLog
 from src.data.loader import DiabetesDataLoader
-from src.digital_twin import DigitalTwinStateManager, PatientDigitalTwin, WhatIfSimulator
 from src.rag import RAGPipeline
 from src.rag.citations import build_source_list
 from ui import (app_header, risk_badge, glucose_zone_chart, zone_legend,
                 disclaimer_footer, classify_glucose)
 
-st.set_page_config(page_title="Konsultasi — Diabetes Digital Twin", page_icon="🩺",
+st.set_page_config(page_title="Konsultasi — Pendukung Keputusan Diabetes", page_icon="🩺",
                    layout="wide", initial_sidebar_state="expanded")
 
 
@@ -231,8 +231,8 @@ elif lo95 is not None and lo95 < 70.0 <= pred:
 
 st.divider()
 
-# ── Tabs: Rekomendasi / What-If / Keputusan ───────────────────
-tab_rec, tab_sim, tab_log = st.tabs(["🧠 Rekomendasi Klinis", "🔬 Simulasi What-If", "📝 Catat Keputusan"])
+# ── Tabs: Rekomendasi / Keputusan ─────────────────────────────
+tab_rec, tab_log = st.tabs(["🧠 Rekomendasi Klinis", "📝 Catat Keputusan"])
 
 with tab_rec:
     st.caption("Rekomendasi antisipatif berbasis panduan medis (PERKENI/ADA), dikondisikan pada nilai prediksi.")
@@ -312,32 +312,9 @@ with tab_rec:
                     st.caption(s["snippet"])
                     st.markdown("")
 
-with tab_sim:
-    st.caption("Simulasikan dampak intervensi untuk konseling pasien (tanpa mengubah data). "
-               "Memakai model farmakokinetik mekanistik agar arah kausal (insulin↓, karbohidrat↑) benar.")
-    twin = PatientDigitalTwin(patient_id=sel, initial_state={
-        "current_glucose": current, "insulin_on_board": float(window_df["insulin"].iloc[-1]),
-        "carbs_on_board": float(window_df["carbs"].iloc[-1]),
-        "activity_level": int(float(window_df["activity"].iloc[-1])),
-        "stress_level": int(float(window_df["stress"].iloc[-1])) if "stress" in window_df else 5})
-    sim = WhatIfSimulator(twin)
-    sc = st.columns(4)
-    add_carbs = sc[0].slider("Karbohidrat (g)", 0, 120, 0, 5)
-    add_ins = sc[1].slider("Insulin (unit)", 0.0, 15.0, 0.0, 0.5)
-    add_act = sc[2].slider("Aktivitas (mnt)", 0, 120, 0, 5)
-    hz = sc[3].slider("Horizon (mnt)", 30, 240, 60, 15)
-    if st.button("Jalankan simulasi"):
-        r = twin.simulate_scenario({"carbs_delta": float(add_carbs), "insulin_delta": float(add_ins),
-                                    "activity_delta": int(add_act), "stress_delta": 0, "time_horizon": int(hz)})
-        sp, cg = float(r["predicted_glucose"]), float(r["glucose_change"])
-        risk_badge(sp, prefix=f"Simulasi +{hz} mnt")
-        o = st.columns(2)
-        o[0].metric("Prediksi simulasi", f"{sp:.0f} mg/dL", delta=f"{cg:+.0f}")
-        o[1].metric("vs sekarang", f"{current:.0f} → {sp:.0f} mg/dL")
-
 with tab_log:
     st.caption("Catat keputusan/tinjauan dokter untuk audit.")
-    sm = DigitalTwinStateManager(storage_file="data/processed/patient_states.json")
+    sm = ClinicalDecisionLog(storage_file="data/processed/patient_states.json")
     sm.load()
     init = {"current_glucose": current, "insulin_on_board": float(window_df["insulin"].iloc[-1]),
             "carbs_on_board": float(window_df["carbs"].iloc[-1]),

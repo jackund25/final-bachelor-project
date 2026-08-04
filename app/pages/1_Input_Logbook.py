@@ -10,7 +10,7 @@ import streamlit as st
 from ui import app_header, glucose_zone_chart, zone_legend, disclaimer_footer
 
 st.set_page_config(page_title="Input Logbook", page_icon="📝", layout="wide")
-app_header("Input Logbook", "Catat data harian pasien untuk mendukung digital twin & prediksi", "📝")
+app_header("Input Logbook", "Catat data harian pasien untuk mendukung prediksi glukosa", "📝")
 
 LOGBOOK_PATH = Path("data/raw/manual_logbook.csv")
 COLUMNS = ["timestamp", "patient_id", "glucose", "carbs", "insulin", "activity",

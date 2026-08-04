@@ -199,8 +199,8 @@ pytest tests/ -q
 app/                Aplikasi Streamlit (konsultasi klinis) dan komponen antarmuka
 src/data/           Parser OhioT1DM, praproses, rekayasa fitur, kontrak data
 src/models/         Random Forest (utama) dan LSTM (pembanding)
-src/rag/            Pipeline RAG, kueri terkondisi prediksi, retriever, basis pengetahuan
-src/digital_twin/   Patient twin, simulator what-if, state manager
+src/rag/            Pipeline RAG, kueri terkondisi prediksi, retriever, basis pengetahuan, sitasi
+src/clinical_state/ Catatan kondisi klinis dan jejak keputusan dokter (doctor-mediated)
 src/utils/          Metrik evaluasi dan logging
 scripts/            Skrip evaluasi yang mereproduksi seluruh angka laporan
 tests/              Uji unit dan integrasi
