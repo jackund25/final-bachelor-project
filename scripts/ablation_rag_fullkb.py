@@ -48,8 +48,10 @@ CONDITION_PHRASE = {
 }
 
 
-def classify_glucose(g: float) -> str:
-    return "hipoglikemia" if g < 70 else "hiperglikemia" if g > 180 else "normal"
+# Ambang dari SATU sumber kebenaran (src/constants.py).
+from src.constants import classify_glucose_3class
+
+classify_glucose = classify_glucose_3class
 
 
 def build_query(case, mode: str) -> str:

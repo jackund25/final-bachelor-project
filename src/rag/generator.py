@@ -83,16 +83,20 @@ class RAGGenerator:
         )
 
     def _template_answer(self, patient_state: Dict[str, Any], prediction: float) -> str:
+        from src.constants import (
+            CLASS_HYPER, CLASS_HYPO, classify_glucose_3class, classify_glucose_5zone,
+            risk_label_id,
+        )
+
         glucose = float(patient_state.get("current_glucose", 100.0))
         stress = int(patient_state.get("stress_level", 5))
-        if prediction < 70:
-            risk = "BAHAYA - Hipoglikemia"
+        risk = risk_label_id(classify_glucose_5zone(prediction))
+        kondisi = classify_glucose_3class(prediction)
+        if kondisi == CLASS_HYPO:
             advice = "Segera lakukan aturan 15-15 dan evaluasi klinis."
-        elif prediction > 180:
-            risk = "HATI-HATI - Hiperglikemia"
+        elif kondisi == CLASS_HYPER:
             advice = "Pantau ulang glukosa dalam 1 jam dan tinjau asupan serta aktivitas."
         else:
-            risk = "AMAN"
             advice = "Lanjutkan monitoring rutin dan pertahankan pola sehat."
 
         stress_note = (

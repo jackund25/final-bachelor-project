@@ -51,8 +51,8 @@ KW = {
 }
 
 
-def cls_g(g):
-    return "hipoglikemia" if g < 70 else "hiperglikemia" if g > 180 else "normal"
+# Ambang dari SATU sumber kebenaran (src/constants.py).
+from src.constants import classify_glucose_3class as cls_g  # noqa: E402
 
 
 def build_query(case, mode):

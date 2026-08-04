@@ -32,12 +32,10 @@ OUT_DIR = Path("results/ragas")
 TOP_K = 4
 
 
-def classify(g: float) -> str:
-    if g < 70:
-        return "hipoglikemia"
-    if g > 180:
-        return "hiperglikemia"
-    return "normal"
+# Ambang dari SATU sumber kebenaran (src/constants.py).
+from src.constants import classify_glucose_3class
+
+classify = classify_glucose_3class
 
 
 # Kasus divergen (subset T5) + pertanyaan klinis + reference (panduan antisipatif benar)

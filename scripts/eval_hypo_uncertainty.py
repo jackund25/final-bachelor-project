@@ -20,6 +20,7 @@ import numpy as np
 import yaml
 
 from src.data.loader import DiabetesDataLoader
+from src.constants import GLUCOSE_HIGH, GLUCOSE_LOW
 from src.data.preprocessor import DataPreprocessor
 
 HYPO = 70.0
@@ -61,7 +62,7 @@ def main() -> None:
     lo, hi = y_pred - 1.96 * std, y_pred + 1.96 * std
     coverage = float(np.mean((y_test >= lo) & (y_test <= hi)) * 100)
 
-    # deteksi hipoglikemia (biner <70)
+    # deteksi hipoglikemia (biner < GLUCOSE_LOW)
     true_hypo, pred_hypo = y_test < HYPO, y_pred < HYPO
     tp = int(np.sum(true_hypo & pred_hypo)); fn = int(np.sum(true_hypo & ~pred_hypo))
     fp = int(np.sum(~true_hypo & pred_hypo)); tn = int(np.sum(~true_hypo & ~pred_hypo))
@@ -73,7 +74,7 @@ def main() -> None:
     # RMSE khusus kejadian hipo + Clarke D pada hipo (true<70 tapi pred 70-180 = gagal deteksi)
     m = true_hypo
     hypo_rmse = float(np.sqrt(np.mean((y_test[m] - y_pred[m]) ** 2))) if m.any() else float("nan")
-    hypo_missed_to_normal = int(np.sum(m & (y_pred >= 70) & (y_pred <= 180)))
+    hypo_missed_to_normal = int(np.sum(m & (y_pred >= GLUCOSE_LOW) & (y_pred <= GLUCOSE_HIGH)))
 
     res = {
         "horizon_min": horizon * 5, "n_test": int(n), "n_hypo_events": int(true_hypo.sum()),

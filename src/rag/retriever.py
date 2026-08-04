@@ -226,14 +226,15 @@ class MMRRetriever:
         return self.retrieve(query=enhanced_query, top_k=top_k, metadata_filter=metadata_filter)
 
     def _enhance_query(self, query: str, patient_state: Dict[str, Any]) -> str:
+        from src.constants import CLASS_NORMAL, classify_glucose_3class
+
         tags: List[str] = []
         glucose = float(patient_state.get("current_glucose", 0.0))
         stress = int(patient_state.get("stress_level", 0))
 
-        if glucose < 70:
-            tags.append("hipoglikemia")
-        elif glucose > 180:
-            tags.append("hiperglikemia")
+        kondisi = classify_glucose_3class(glucose)
+        if kondisi != CLASS_NORMAL:
+            tags.append(kondisi)
 
         if stress >= 7:
             tags.append("stress tinggi")

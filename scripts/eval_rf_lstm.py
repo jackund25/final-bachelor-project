@@ -60,17 +60,20 @@ def plot_clarke_grid(
     ax.fill_between([70, 400], [58.33, 320], [84, 480], alpha=0.06, color="green")
 
     # Colour-code by zone
+    # Ambang Clarke dari src/constants.py (CLARKE_*, sengaja terpisah dari ambang
+    # kebijakan risiko agar metrik terbitan ini tidak ikut berubah).
+    from src.constants import CLARKE_HIGH, CLARKE_LOW
+
     zone_colors = []
-    from src.utils.metrics import clarke_error_grid
     zones_per_point = []
     for tv, pv in zip(y_true, y_pred):
-        if (tv < 70 and pv < 70) or abs(tv - pv) <= 0.2 * tv:
+        if (tv < CLARKE_LOW and pv < CLARKE_LOW) or abs(tv - pv) <= 0.2 * tv:
             zones_per_point.append("A")
-        elif 70 <= tv <= 180 and 70 <= pv <= 180:
+        elif CLARKE_LOW <= tv <= CLARKE_HIGH and CLARKE_LOW <= pv <= CLARKE_HIGH:
             zones_per_point.append("B")
-        elif (tv < 70 and pv > 180) or (tv > 180 and pv < 70):
+        elif (tv < CLARKE_LOW and pv > CLARKE_HIGH) or (tv > CLARKE_HIGH and pv < CLARKE_LOW):
             zones_per_point.append("C")
-        elif (tv < 70 and 70 <= pv <= 180) or (tv > 180 and 70 <= pv <= 180):
+        elif (tv < CLARKE_LOW and CLARKE_LOW <= pv <= CLARKE_HIGH) or (tv > CLARKE_HIGH and CLARKE_LOW <= pv <= CLARKE_HIGH):
             zones_per_point.append("D")
         else:
             zones_per_point.append("E")

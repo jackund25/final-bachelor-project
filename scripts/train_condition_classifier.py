@@ -37,15 +37,16 @@ from sklearn.metrics import confusion_matrix
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from src.constants import CONDITION_CLASSES, classify_glucose_3class  # noqa: E402
 from src.data.preprocessor import DataPreprocessor  # noqa: E402
 
 HORIZON = 6          # +30 menit
 SEED = 42
-CLASSES = ["hipoglikemia", "normal", "hiperglikemia"]
-
-
-def classify_glucose(g: float) -> str:
-    return "hipoglikemia" if g < 70 else "hiperglikemia" if g > 180 else "normal"
+# Ambang dan daftar kelas dari SATU sumber kebenaran (src/constants.py).
+# Tetap 3 kelas: memecah hipoglikemia di ambang 54 tidak mengubah tindakan klinis,
+# sementara data latih hanya punya 998 sampel hipoglikemia berat (0,72%).
+CLASSES = CONDITION_CLASSES
+classify_glucose = classify_glucose_3class
 
 
 def build(cfg: dict):

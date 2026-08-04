@@ -18,6 +18,7 @@ import pandas as pd
 import streamlit as st
 
 from src.clinical_state import ClinicalDecisionLog
+from src.constants import GLUCOSE_LOW, RISK_HYPO, risk_from_condition_class
 from src.data.loader import DiabetesDataLoader
 from src.rag import RAGPipeline
 from src.rag.citations import build_source_list
@@ -57,8 +58,7 @@ def predict_condition(window_df, clf, art):
     if clf.get("scaler") is not None:
         X = clf["scaler"].transform(X)
     label = str(clf["model"].predict(X.reshape(1, -1))[0])
-    return {"hipoglikemia": "hypoglycemia", "normal": "normal",
-            "hiperglikemia": "hyperglycemia"}.get(label, label)
+    return risk_from_condition_class(label)
 
 
 @st.cache_resource
@@ -221,11 +221,11 @@ lo95 = hi95 = None
 if pred_std:
     lo95, hi95 = pred - 3.3 * pred_std, pred + 3.3 * pred_std
 
-if pred_condition == "hypoglycemia" and pred >= 70.0:
-    st.warning(f"🔻 **Waspada hipoglikemia:** prediksi titik **{pred:.0f} mg/dL** masih di atas 70, "
+if pred_condition == RISK_HYPO and pred >= GLUCOSE_LOW:
+    st.warning(f"🔻 **Waspada hipoglikemia:** prediksi titik **{pred:.0f} mg/dL** masih di atas {GLUCOSE_LOW:.0f}, "
                f"namun pengklasifikasi kondisi menandai risiko **hipoglikemia** dalam {horizon_min} menit. "
                f"Pertimbangkan karbohidrat pencegahan & pantau ketat.")
-elif lo95 is not None and lo95 < 70.0 <= pred:
+elif lo95 is not None and lo95 < GLUCOSE_LOW <= pred:
     st.warning(f"🔻 **Ketidakpastian menyentuh zona hipoglikemia:** prediksi **{pred:.0f} mg/dL**, "
                f"tetapi batas bawah interval 95% mencapai **{lo95:.0f} mg/dL**. Pantau ketat.")
 

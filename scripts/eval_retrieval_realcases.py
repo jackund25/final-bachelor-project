@@ -50,6 +50,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from src.data.preprocessor import DataPreprocessor  # noqa: E402
+from src.constants import CLASS_HYPER, CLASS_HYPO, GLUCOSE_HIGH, GLUCOSE_LOW
 from src.rag.retriever import MMRRetriever  # noqa: E402
 from ablation_rag_fullkb import (  # noqa: E402  — dipakai ulang agar identik dengan evaluasi awal
     CONDITION_PHRASE, classify_chunk, classify_glucose, ndcg_at_k,
@@ -81,10 +82,10 @@ def build_interval_query(pred: float, lo: float, hi: float) -> str:
     walau prediksi titiknya masih "normal".
     """
     conds = {classify_glucose(pred)}
-    if lo < 70:
-        conds.add("hipoglikemia")
-    if hi > 180:
-        conds.add("hiperglikemia")
+    if lo < GLUCOSE_LOW:
+        conds.add(CLASS_HYPO)
+    if hi > GLUCOSE_HIGH:
+        conds.add(CLASS_HYPER)
     # dahulukan kondisi berisiko agar frasa risiko berada di awal kueri
     order = ["hipoglikemia", "hiperglikemia", "normal"]
     phrases = " ".join(CONDITION_PHRASE[c] for c in order if c in conds)
@@ -229,9 +230,9 @@ def evaluate(cases: pd.DataFrame, r: MMRRetriever, label: str) -> tuple[pd.DataF
                 q = build_interval_query(g, float(c["lo95"]), float(c["hi95"]))
                 # kondisi "tercakup" bila interval memuat kondisi sebenarnya
                 cov = {classify_glucose(g)}
-                if c["lo95"] < 70:
+                if c["lo95"] < GLUCOSE_LOW:
                     cov.add("hipoglikemia")
-                if c["hi95"] > 180:
+                if c["hi95"] > GLUCOSE_HIGH:
                     cov.add("hiperglikemia")
                 covered = int(expected in cov)
             elif mode == "pc_rag_classifier":
@@ -247,9 +248,9 @@ def evaluate(cases: pd.DataFrame, r: MMRRetriever, label: str) -> tuple[pd.DataF
                 cond = str(c["cond_classifier"])
                 g, is_pred = float(c["predicted"]), True
                 cov = {cond}
-                if c["lo95"] < 70:
+                if c["lo95"] < GLUCOSE_LOW:
                     cov.add("hipoglikemia")
-                if c["hi95"] > 180:
+                if c["hi95"] > GLUCOSE_HIGH:
                     cov.add("hiperglikemia")
                 order = ["hipoglikemia", "hiperglikemia", "normal"]
                 phrases = " ".join(CONDITION_PHRASE[x] for x in order if x in cov)

@@ -151,15 +151,19 @@ class DiabetesAdvisorChain:
         prediction: float,
         retrieved_docs: List[Dict[str, Any]],
     ) -> str:
+        from src.constants import (
+            CLASS_HYPER, CLASS_HYPO, classify_glucose_3class, classify_glucose_5zone,
+            risk_label_id,
+        )
+
         glucose = float(patient_state.get("current_glucose", 100.0))
-        if prediction < 70:
-            risk = "BAHAYA - Hipoglikemia"
+        risk = risk_label_id(classify_glucose_5zone(prediction))
+        kondisi = classify_glucose_3class(prediction)
+        if kondisi == CLASS_HYPO:
             action = "Lakukan aturan 15-15 dan evaluasi medis segera."
-        elif prediction > 180:
-            risk = "HATI-HATI - Hiperglikemia"
+        elif kondisi == CLASS_HYPER:
             action = "Perkuat hidrasi, evaluasi asupan, dan pantau ulang glukosa dalam 1 jam."
         else:
-            risk = "AMAN"
             action = "Pertahankan pola makan dan monitoring rutin."
 
         source_count = len(retrieved_docs)

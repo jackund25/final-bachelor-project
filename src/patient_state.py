@@ -13,18 +13,23 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-
-# ──────────────────────────────────────────────────────────────
-# Constants
-# ──────────────────────────────────────────────────────────────
-
-GLUCOSE_LOW = 70.0    # mg/dL — hypoglycemia threshold (ADA)
-GLUCOSE_HIGH = 180.0  # mg/dL — hyperglycemia threshold (ADA postprandial)
-GLUCOSE_CRITICAL_LOW = 54.0
-GLUCOSE_CRITICAL_HIGH = 250.0
-
-TREND_STABLE_THRESHOLD_MGDL = 10.0  # delta < 10 mg/dL → stable
-TREND_RAPID_THRESHOLD_MGDL = 30.0   # delta > 30 mg/dL → rapid change
+# Ambang klinis berasal dari SATU sumber kebenaran (src/constants.py).
+# Jangan menulis ulang angkanya di berkas ini.
+from src.constants import (
+    GLUCOSE_HIGH,
+    GLUCOSE_LOW,
+    GLUCOSE_MAX_PHYSIOLOGICAL,
+    GLUCOSE_MIN_PHYSIOLOGICAL,
+    RISK_HYPER,
+    RISK_HYPO,
+    RISK_NORMAL,
+    TREND_RAPID_THRESHOLD_MGDL,
+    TREND_STABLE_THRESHOLD_MGDL,
+    base_condition,
+    classify_glucose_5zone,
+    is_critical,
+    risk_label_id,
+)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -95,8 +100,12 @@ class PatientState:
 
     def __post_init__(self) -> None:
         # Clamp inputs to physiological range
-        self.current_glucose = float(np.clip(self.current_glucose, 20, 600))
-        self.predicted_glucose = float(np.clip(self.predicted_glucose, 20, 600))
+        self.current_glucose = float(
+            np.clip(self.current_glucose, GLUCOSE_MIN_PHYSIOLOGICAL, GLUCOSE_MAX_PHYSIOLOGICAL)
+        )
+        self.predicted_glucose = float(
+            np.clip(self.predicted_glucose, GLUCOSE_MIN_PHYSIOLOGICAL, GLUCOSE_MAX_PHYSIOLOGICAL)
+        )
         self.insulin_on_board = max(0.0, float(self.insulin_on_board))
         self.carbs_on_board = max(0.0, float(self.carbs_on_board))
         self.activity_level = max(0, int(self.activity_level))
@@ -123,47 +132,31 @@ class PatientState:
 
         # Risk based on PREDICTED glucose (not current) — this is the novelty:
         # interventions are chosen based on WHERE the patient is GOING, not where they are now
-        if self.predicted_glucose < GLUCOSE_CRITICAL_LOW:
-            self.risk_level = "critical_hypoglycemia"
-            self.risk_label = "BAHAYA - Hipoglikemia Berat"
-        elif self.predicted_glucose < GLUCOSE_LOW:
-            self.risk_level = "hypoglycemia"
-            self.risk_label = "BAHAYA - Hipoglikemia"
-        elif self.predicted_glucose > GLUCOSE_CRITICAL_HIGH:
-            self.risk_level = "critical_hyperglycemia"
-            self.risk_label = "BAHAYA - Hiperglikemia Berat"
-        elif self.predicted_glucose > GLUCOSE_HIGH:
-            self.risk_level = "hyperglycemia"
-            self.risk_label = "HATI-HATI - Hiperglikemia"
-        else:
-            self.risk_level = "normal"
-            self.risk_label = "AMAN"
+        self.risk_level = classify_glucose_5zone(self.predicted_glucose)
+        self.risk_label = risk_label_id(self.risk_level)
 
         # Bila pengklasifikasi kondisi tersedia, ia MENGGANTIKAN kondisi hasil pengambangan
         # nilai regresi — kecuali regresi sudah menandai kondisi kritis, yang tetap dihormati.
-        if self.predicted_condition and not self.risk_level.startswith("critical"):
-            if self.predicted_condition == "hypoglycemia":
-                self.risk_level, self.risk_label = "hypoglycemia", "BAHAYA - Hipoglikemia"
-            elif self.predicted_condition == "hyperglycemia":
-                self.risk_level, self.risk_label = "hyperglycemia", "HATI-HATI - Hiperglikemia"
-            elif self.predicted_condition == "normal":
-                self.risk_level, self.risk_label = "normal", "AMAN"
+        if self.predicted_condition and not is_critical(self.risk_level):
+            if self.predicted_condition in (RISK_HYPO, RISK_HYPER, RISK_NORMAL):
+                self.risk_level = self.predicted_condition
+                self.risk_label = risk_label_id(self.risk_level)
 
         # Kondisi yang perlu diantisipasi: kondisi terprediksi, DITAMBAH kondisi berisiko
         # yang masih tercakup interval ketidakpastian meski prediksi titiknya normal.
-        conditions = [self.risk_level.replace("critical_", "")]
+        conditions = [base_condition(self.risk_level)]
         if self.predicted_lower is not None and self.predicted_lower < GLUCOSE_LOW:
-            conditions.append("hypoglycemia")
+            conditions.append(RISK_HYPO)
         if self.predicted_upper is not None and self.predicted_upper > GLUCOSE_HIGH:
-            conditions.append("hyperglycemia")
+            conditions.append(RISK_HYPER)
         # dahulukan kondisi berisiko, buang duplikat, pertahankan urutan
-        priority = {"hypoglycemia": 0, "hyperglycemia": 1, "normal": 2}
+        priority = {RISK_HYPO: 0, RISK_HYPER: 1, RISK_NORMAL: 2}
         self.anticipated_conditions = sorted(set(conditions), key=lambda c: priority.get(c, 3))
 
         # Urgency
-        if self.risk_level.startswith("critical"):
+        if is_critical(self.risk_level):
             self.urgency = "critical"
-        elif self.risk_level in ("hypoglycemia", "hyperglycemia") or self.trend_rate == "rapid":
+        elif self.risk_level in (RISK_HYPO, RISK_HYPER) or self.trend_rate == "rapid":
             self.urgency = "high"
         elif self.stress_level >= 8 or (self.trend_rate == "moderate" and self.risk_level != "normal"):
             self.urgency = "medium"

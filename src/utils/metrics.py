@@ -34,28 +34,37 @@ def clarke_error_grid(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float
     
     Returns:
         Dict dengan percentage di tiap zone
+
+    CATATAN AMBANG: memakai CLARKE_LOW/CLARKE_HIGH, BUKAN GLUCOSE_LOW/GLUCOSE_HIGH.
+    Angkanya kebetulan sama (70/180), tetapi batas zona Clarke adalah bagian dari
+    metrik terbitan yang baku. Bila kebijakan ambang klinis proyek ini berubah,
+    metrik ini TIDAK boleh ikut berubah — kalau ikut, ia berhenti menjadi Clarke
+    Error Grid dan seluruh perbandingan dengan literatur menjadi batal.
     """
+    from src.constants import CLARKE_HIGH, CLARKE_LOW
+
     zones = {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0}
-    
+
     for true_val, pred_val in zip(y_true, y_pred):
         # Zone A (clinically accurate)
-        if (true_val < 70 and pred_val < 70) or \
+        if (true_val < CLARKE_LOW and pred_val < CLARKE_LOW) or \
            (abs(true_val - pred_val) <= 0.2 * true_val):
             zones['A'] += 1
-            
+
         # Zone B (benign errors)
-        elif (true_val >= 70 and true_val <= 180 and pred_val >= 70 and pred_val <= 180):
+        elif (CLARKE_LOW <= true_val <= CLARKE_HIGH and CLARKE_LOW <= pred_val <= CLARKE_HIGH):
             zones['B'] += 1
-            
+
         # Zone C (overcorrection)
-        elif (true_val < 70 and pred_val > 180) or (true_val > 180 and pred_val < 70):
+        elif (true_val < CLARKE_LOW and pred_val > CLARKE_HIGH) or \
+             (true_val > CLARKE_HIGH and pred_val < CLARKE_LOW):
             zones['C'] += 1
-            
+
         # Zone D (failure to detect)
-        elif (true_val < 70 and pred_val >= 70 and pred_val <= 180) or \
-             (true_val > 180 and pred_val >= 70 and pred_val <= 180):
+        elif (true_val < CLARKE_LOW and CLARKE_LOW <= pred_val <= CLARKE_HIGH) or \
+             (true_val > CLARKE_HIGH and CLARKE_LOW <= pred_val <= CLARKE_HIGH):
             zones['D'] += 1
-            
+
         # Zone E (erroneous treatment)
         else:
             zones['E'] += 1

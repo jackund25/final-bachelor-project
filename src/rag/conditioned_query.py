@@ -44,6 +44,17 @@ try:
 except ImportError:
     from ..patient_state import PatientState  # relative fallback inside package
 
+# Ambang klinis dari SATU sumber kebenaran (src/constants.py).
+from src.constants import (
+    GLUCOSE_HIGH,
+    GLUCOSE_LOW,
+    RISK_CRITICAL_HYPER,
+    RISK_CRITICAL_HYPO,
+    RISK_HYPER,
+    RISK_HYPO,
+    base_condition,
+)
+
 
 # ──────────────────────────────────────────────────────────────
 # Query strategy
@@ -123,13 +134,13 @@ class PredictionConditionedQueryBuilder:
         # interval prediksi tetap dimunculkan pada kueri meski prediksi TITIK-nya normal,
         # agar retrieval tidak buta terhadap bahaya yang mungkin terjadi (lihat Bab VI).
         risk_terms = {
-            "hypoglycemia": "hipoglikemia (glukosa di bawah 70 mg/dL)",
-            "hyperglycemia": "hiperglikemia (glukosa di atas 180 mg/dL)",
+            RISK_HYPO: f"hipoglikemia (glukosa di bawah {GLUCOSE_LOW:.0f} mg/dL)",
+            RISK_HYPER: f"hiperglikemia (glukosa di atas {GLUCOSE_HIGH:.0f} mg/dL)",
         }
         extra = [
             risk_terms[c]
             for c in state.anticipated_conditions
-            if c in risk_terms and c != state.risk_level.replace("critical_", "")
+            if c in risk_terms and c != base_condition(state.risk_level)
         ]
         if extra and state.predicted_lower is not None and state.predicted_upper is not None:
             parts.append(
@@ -232,9 +243,9 @@ class PredictionConditionedQueryBuilder:
     def _metadata_tags(self, state: PatientState) -> Dict[str, Any]:
         """Build ChromaDB metadata filter hints based on patient risk."""
         tags: Dict[str, Any] = {"jenis_dm": "dm_tipe2"}
-        if state.risk_level in ("hypoglycemia", "critical_hypoglycemia"):
+        if state.risk_level in (RISK_HYPO, RISK_CRITICAL_HYPO):
             tags["topik"] = "hipoglikemia"
-        elif state.risk_level in ("hyperglycemia", "critical_hyperglycemia"):
+        elif state.risk_level in (RISK_HYPER, RISK_CRITICAL_HYPER):
             tags["topik"] = "hiperglikemia"
         return tags
 

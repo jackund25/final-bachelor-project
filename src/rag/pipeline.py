@@ -38,11 +38,10 @@ def _opt_similarity(value: Any) -> Optional[float]:
 
 
 def _risk_level_from_prediction(prediction: float) -> str:
-    if prediction < 70:
-        return "BAHAYA - Hipoglikemia"
-    if prediction > 180:
-        return "HATI-HATI - Hiperglikemia"
-    return "AMAN"
+    """Label risiko Bahasa Indonesia dari nilai prediksi (ambang: src/constants.py)."""
+    from src.constants import classify_glucose_5zone, risk_label_id
+
+    return risk_label_id(classify_glucose_5zone(prediction))
 
 
 class RAGPipeline:

@@ -10,10 +10,19 @@ from typing import Optional, Sequence
 
 import streamlit as st
 
-# ── Ambang & warna klinis (ADA) ───────────────────────────────
-GLUCOSE_LOW = 70
-GLUCOSE_HIGH = 180
+# Ambang klinis berasal dari SATU sumber kebenaran (src/constants.py).
+# Hanya warna yang menjadi urusan lapisan UI.
+from src.constants import (
+    GLUCOSE_HIGH,
+    GLUCOSE_LOW,
+    RISK_CRITICAL_HYPER,
+    RISK_CRITICAL_HYPO,
+    RISK_HYPER,
+    RISK_HYPO,
+    classify_glucose_5zone,
+)
 
+# ── Warna klinis ──────────────────────────────────────────────
 PRIMARY = "#0e7c86"      # teal medis
 COL_HYPO = "#d64545"     # merah — hipoglikemia
 COL_TARGET = "#2e9e5b"   # hijau — target
@@ -22,10 +31,16 @@ COL_INK = "#14303a"      # teks gelap
 
 
 def classify_glucose(value: float) -> tuple[str, str, str]:
-    """Return (kode_zona, label_klinis, warna) dari nilai glukosa."""
-    if value < GLUCOSE_LOW:
+    """Return (kode_zona, label_klinis, warna) dari nilai glukosa.
+
+    Memakai klasifikasi 5 zona dari src/constants.py lalu meratakannya menjadi tiga
+    zona warna: kondisi kritis memakai warna yang sama dengan kondisi biasa karena
+    tingkat urgensinya sudah disampaikan lewat badge risiko dan blok peringatan.
+    """
+    zona = classify_glucose_5zone(value)
+    if zona in (RISK_HYPO, RISK_CRITICAL_HYPO):
         return "hipo", "Hipoglikemia", COL_HYPO
-    if value > GLUCOSE_HIGH:
+    if zona in (RISK_HYPER, RISK_CRITICAL_HYPER):
         return "hiper", "Hiperglikemia", COL_HYPER
     return "target", "Dalam Target", COL_TARGET
 
@@ -149,8 +164,8 @@ def zone_legend() -> None:
     """Legenda kecil makna warna zona."""
     st.markdown(
         f'<div style="font-size:.82rem;color:#33525e">'
-        f'<span style="color:{COL_HYPO}">●</span> Hipoglikemia &lt;70 &nbsp; '
-        f'<span style="color:{COL_TARGET}">●</span> Target 70–180 &nbsp; '
-        f'<span style="color:{COL_HYPER}">●</span> Hiperglikemia &gt;180</div>',
+        f'<span style="color:{COL_HYPO}">●</span> Hipoglikemia &lt;{GLUCOSE_LOW:.0f} &nbsp; '
+        f'<span style="color:{COL_TARGET}">●</span> Target {GLUCOSE_LOW:.0f}–{GLUCOSE_HIGH:.0f} &nbsp; '
+        f'<span style="color:{COL_HYPER}">●</span> Hiperglikemia &gt;{GLUCOSE_HIGH:.0f}</div>',
         unsafe_allow_html=True,
     )

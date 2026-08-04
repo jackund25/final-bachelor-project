@@ -37,13 +37,10 @@ KB_PATH = Path("data/knowledge_base/manual_kb.json")
 OUT_DIR = Path("results/baseline_ablation")
 
 
-def classify(glucose: float) -> str:
-    """Klasifikasi kondisi klinis dari nilai glukosa (ADA)."""
-    if glucose < 70:
-        return "hipoglikemia"
-    if glucose > 180:
-        return "hiperglikemia"
-    return "normal"
+from src.constants import classify_glucose_3class
+
+# Ambang dari SATU sumber kebenaran (src/constants.py).
+classify = classify_glucose_3class
 
 
 # Pemetaan kondisi → topik dokumen ground-truth di KB
