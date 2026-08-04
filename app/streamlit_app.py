@@ -78,12 +78,11 @@ def load_artifacts():
 
 @st.cache_resource
 def load_rag():
+    """Seluruh parameter RAG dibaca dari config.yaml lewat src/config.py (Tugas 4)."""
     import os
     os.environ.setdefault("HF_HUB_OFFLINE", "1")
     os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
-    p = RAGPipeline(kb_dir="data/knowledge_base",
-                    llm_provider=os.getenv("LLM_PROVIDER", "gemini"),
-                    embed_provider=os.getenv("EMBED_PROVIDER", "sentence-transformers"))
+    p = RAGPipeline()
     p.build()
     return p
 

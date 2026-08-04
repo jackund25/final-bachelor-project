@@ -23,14 +23,26 @@ class DiabetesAdvisorChain:
 
     def __init__(
         self,
-        model_name: str = "gemini-1.5-flash",
-        provider: str = "gemini",
-        ollama_base_url: str = "http://localhost:11434",
+        model_name: Optional[str] = None,
+        provider: Optional[str] = None,
+        ollama_base_url: Optional[str] = None,
         gemini_api_key: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        config: Optional[Any] = None,
     ):
-        self.model_name = model_name
+        from src.config import load_rag_config
+
+        cfg = config or load_rag_config()
+        provider = provider or cfg.llm_provider
+        self.model_name = model_name or (
+            cfg.llm_model if provider == "gemini" else cfg.ollama_llm_model
+        )
         self.provider = provider
-        self.ollama_base_url = ollama_base_url
+        self.ollama_base_url = ollama_base_url or cfg.ollama_base_url
+        self.temperature = temperature if temperature is not None else cfg.temperature
+        self.max_tokens = max_tokens if max_tokens is not None else cfg.max_tokens
+        model_name = self.model_name
         self._chain = None
         self._init_error: Optional[str] = None
 
@@ -62,15 +74,17 @@ class DiabetesAdvisorChain:
                 llm = ChatGoogleGenerativeAI(
                     model=model_name,
                     google_api_key=api_key,
-                    temperature=0.1,
+                    temperature=self.temperature,
+                    max_output_tokens=self.max_tokens,
                 )
             else:
                 from langchain_ollama import ChatOllama
 
                 llm = ChatOllama(
                     model=model_name,
-                    base_url=ollama_base_url,
-                    temperature=0.1,
+                    base_url=self.ollama_base_url,
+                    temperature=self.temperature,
+                    num_predict=self.max_tokens,
                 )
 
             self._chain = prompt | llm | StrOutputParser()

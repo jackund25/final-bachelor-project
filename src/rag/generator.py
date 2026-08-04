@@ -17,29 +17,35 @@ class RAGGenerator:
     - ``"template"`` — rule-based fallback, no LLM required
     """
 
-    def __init__(self, provider: str = "gemini", model_config: Optional[Dict[str, Any]] = None):
-        self.provider = provider
+    def __init__(
+        self,
+        provider: Optional[str] = None,
+        model_config: Optional[Dict[str, Any]] = None,
+        config: Optional[Any] = None,
+    ):
+        from src.config import load_rag_config
+
+        cfg = config or load_rag_config()
+        self.provider = provider or cfg.llm_provider
         self.config = model_config or {}
 
-        if provider == "template":
+        if self.provider == "template":
             self.chain = None
             return
 
-        if provider == "gemini":
-            model_name = self.config.get("model", os.getenv("GEMINI_MODEL", "gemini-1.5-flash"))
-            api_key = self.config.get("api_key") or os.getenv("GOOGLE_API_KEY")
+        if self.provider == "gemini":
             self.chain = DiabetesAdvisorChain(
-                model_name=model_name,
+                model_name=self.config.get("model"),
                 provider="gemini",
-                gemini_api_key=api_key,
+                gemini_api_key=self.config.get("api_key") or os.getenv("GOOGLE_API_KEY"),
+                config=cfg,
             )
         else:
-            model_name = self.config.get("model", "llama3.1:8b")
-            base_url = self.config.get("base_url", "http://localhost:11434")
             self.chain = DiabetesAdvisorChain(
-                model_name=model_name,
+                model_name=self.config.get("model"),
                 provider="ollama",
-                ollama_base_url=base_url,
+                ollama_base_url=self.config.get("base_url"),
+                config=cfg,
             )
 
     def generate_explanation(
@@ -47,12 +53,13 @@ class RAGGenerator:
         context_docs: List[str],
         patient_state: Dict[str, Any],
         prediction: float,
-        temperature: float = 0.1,
-        max_tokens: int = 300,
     ) -> str:
-        del temperature
-        del max_tokens
+        """Penjelasan klinis singkat dari daftar teks konteks.
 
+        temperature dan max_tokens dulu menjadi parameter di sini lalu langsung
+        dibuang dengan `del`. Keduanya kini dibaca dari config.yaml oleh
+        DiabetesAdvisorChain, sehingga parameternya dihapus agar tidak menyesatkan.
+        """
         docs = [{"text": item, "source": "manual_kb", "metadata": {}} for item in context_docs]
         payload = self.generate_advisory(
             query="Berikan penjelasan klinis singkat berdasarkan kondisi pasien.",

@@ -11,36 +11,39 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_CHUNK_SIZE = 900
-_DEFAULT_CHUNK_OVERLAP = 120
-
-# Model embedding HF. Default all-MiniLM (Inggris, ~80MB CPU). Override via env HF_EMBED_MODEL
-# untuk model multilingual (mis. paraphrase-multilingual-MiniLM-L12-v2). WAJIB sama antara
-# ingest & query — knowledge_base & retriever membaca env yang sama agar konsisten.
-_HF_EMBED_MODEL = os.getenv("HF_EMBED_MODEL", "all-MiniLM-L6-v2")
-
 
 def _build_embeddings(
     embed_provider: str,
-    ollama_base_url: str = "http://localhost:11434",
-    embed_model: str = "nomic-embed-text",
+    ollama_base_url: Optional[str] = None,
+    embed_model: Optional[str] = None,
+    hf_model: Optional[str] = None,
+    google_model: Optional[str] = None,
 ) -> Any:
-    """Return a LangChain-compatible embedding object for the requested provider."""
+    """Return a LangChain-compatible embedding object for the requested provider.
+
+    Nama model embedding WAJIB sama antara ingest dan query. knowledge_base.py dan
+    retriever.py sama-sama mengambilnya dari RagConfig agar tidak mungkin menyimpang:
+    bila keduanya berbeda, retrieval merosot menjadi derau TANPA error apa pun.
+    """
+    from src.config import load_rag_config
+
+    cfg = load_rag_config()
+    ollama_base_url = ollama_base_url or cfg.ollama_base_url
+    embed_model = embed_model or cfg.ollama_embed_model
+
     if embed_provider == "sentence-transformers":
         from langchain_community.embeddings import HuggingFaceEmbeddings
 
         return HuggingFaceEmbeddings(
-            model_name=_HF_EMBED_MODEL,
+            model_name=hf_model or cfg.embedding_model,
             model_kwargs={"device": "cpu"},
             encode_kwargs={"normalize_embeddings": True},
         )
     if embed_provider == "google":
-        import os
-
         from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
         return GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001",
+            model=google_model or cfg.google_embedding_model,
             google_api_key=os.getenv("GOOGLE_API_KEY"),
         )
     # Default: Ollama
@@ -76,23 +79,29 @@ class MedicalKnowledgeBase:
 
     def __init__(
         self,
-        kb_dir: str = "data/knowledge_base",
-        persist_dir: str = "models/chroma_db",
-        collection_name: str = "diabetes_kb",
-        embed_provider: str = "sentence-transformers",
-        ollama_base_url: str = "http://localhost:11434",
-        embed_model: str = "nomic-embed-text",
+        kb_dir: Optional[str] = None,
+        persist_dir: Optional[str] = None,
+        collection_name: Optional[str] = None,
+        embed_provider: Optional[str] = None,
+        ollama_base_url: Optional[str] = None,
+        embed_model: Optional[str] = None,
+        config: Optional[Any] = None,
     ):
-        self.kb_dir = Path(kb_dir)
+        from src.config import load_rag_config
+
+        cfg = config or load_rag_config()
+        self.cfg = cfg
+
+        self.kb_dir = Path(kb_dir or cfg.knowledge_base_dir)
         self.kb_dir.mkdir(parents=True, exist_ok=True)
 
-        self.persist_dir = Path(persist_dir)
+        self.persist_dir = Path(persist_dir or cfg.persist_dir)
         self.persist_dir.mkdir(parents=True, exist_ok=True)
 
-        self.collection_name = collection_name
-        self.embed_provider = embed_provider
-        self.ollama_base_url = ollama_base_url
-        self.embed_model = embed_model
+        self.collection_name = collection_name or cfg.collection_name
+        self.embed_provider = embed_provider or cfg.embedding_provider
+        self.ollama_base_url = ollama_base_url or cfg.ollama_base_url
+        self.embed_model = embed_model or cfg.ollama_embed_model
 
         self.documents: List[Dict[str, Any]] = []
         self.chunks: List[Dict[str, Any]] = []
@@ -166,10 +175,12 @@ class MedicalKnowledgeBase:
     def chunk_documents(
         self,
         documents: Optional[List[Dict[str, Any]]] = None,
-        chunk_size: int = _DEFAULT_CHUNK_SIZE,
-        chunk_overlap: int = _DEFAULT_CHUNK_OVERLAP,
+        chunk_size: Optional[int] = None,
+        chunk_overlap: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """Chunk documents using LangChain splitter with a safe fallback splitter."""
+        chunk_size = chunk_size if chunk_size is not None else self.cfg.chunk_size
+        chunk_overlap = chunk_overlap if chunk_overlap is not None else self.cfg.chunk_overlap
         docs = documents if documents is not None else self.documents
         if not docs:
             logger.warning("No documents available to chunk")
@@ -295,7 +306,9 @@ class MedicalKnowledgeBase:
 
         try:
             embeddings = _build_embeddings(
-                self.embed_provider, self.ollama_base_url, self.embed_model
+                self.embed_provider, self.ollama_base_url, self.embed_model,
+                hf_model=self.cfg.embedding_model,
+                google_model=self.cfg.google_embedding_model,
             )
         except Exception as exc:
             logger.error("Embedding initialisation failed (%s): %s", self.embed_provider, exc)
@@ -355,7 +368,7 @@ class MedicalKnowledgeBase:
         with source_path.open("r", encoding="utf-8") as handle:
             self.chunks = json.load(handle)
 
-    def process_all_documents(self, chunk_size: int = _DEFAULT_CHUNK_SIZE, overlap: int = _DEFAULT_CHUNK_OVERLAP) -> None:
+    def process_all_documents(self, chunk_size: Optional[int] = None, overlap: Optional[int] = None) -> None:
         """Compatibility wrapper used by existing code paths."""
         self.chunk_documents(documents=self.documents, chunk_size=chunk_size, chunk_overlap=overlap)
 
@@ -379,5 +392,11 @@ class MedicalKnowledgeBase:
             ]
             self.documents = docs
 
-        self.chunk_documents(documents=docs, chunk_size=350, chunk_overlap=40)
+        # manual_kb adalah prosa pendek, bukan halaman buku — potongan lebih kecil
+        # (rag.manual_kb.* di config.yaml), sengaja TIDAK memakai rag.chunk_size.
+        self.chunk_documents(
+            documents=docs,
+            chunk_size=self.cfg.manual_chunk_size,
+            chunk_overlap=self.cfg.manual_chunk_overlap,
+        )
         self.save_chunks(self.kb_dir / "manual_kb.json")

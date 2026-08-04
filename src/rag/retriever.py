@@ -3,45 +3,16 @@
 from __future__ import annotations
 
 import logging
-import os
 import re
 from collections import Counter
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-# Model embedding HF (env HF_EMBED_MODEL, default all-MiniLM). WAJIB sama dengan yang dipakai
-# saat ingest (knowledge_base.py) agar embedding query & dokumen sebanding.
-_HF_EMBED_MODEL = os.getenv("HF_EMBED_MODEL", "all-MiniLM-L6-v2")
-
-
-def _build_embeddings(
-    embed_provider: str,
-    ollama_base_url: str = "http://localhost:11434",
-    embed_model: str = "nomic-embed-text",
-) -> Any:
-    """Return a LangChain-compatible embedding object for the requested provider."""
-    if embed_provider == "sentence-transformers":
-        from langchain_community.embeddings import HuggingFaceEmbeddings
-
-        return HuggingFaceEmbeddings(
-            model_name=_HF_EMBED_MODEL,
-            model_kwargs={"device": "cpu"},
-            encode_kwargs={"normalize_embeddings": True},
-        )
-    if embed_provider == "google":
-        import os
-
-        from langchain_google_genai import GoogleGenerativeAIEmbeddings
-
-        return GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001",
-            google_api_key=os.getenv("GOOGLE_API_KEY"),
-        )
-    # Default: Ollama
-    from langchain_ollama import OllamaEmbeddings
-
-    return OllamaEmbeddings(model=embed_model, base_url=ollama_base_url)
+# Pembangun embedding dipakai bersama knowledge_base.py — memakai SATU implementasi
+# menjamin model embedding kueri dan dokumen tidak mungkin menyimpang. Bila keduanya
+# berbeda, retrieval merosot menjadi derau tanpa error apa pun.
+from .knowledge_base import _build_embeddings  # noqa: E402
 
 
 def _tokenize(text: str) -> List[str]:
@@ -57,9 +28,12 @@ class SimpleKeywordRetriever:
     def retrieve(
         self,
         query: str,
-        top_k: int = 4,
+        top_k: Optional[int] = None,
         metadata_filter: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
+        if top_k is None:
+            from src.config import load_rag_config
+            top_k = load_rag_config().top_k
         query_tokens = Counter(_tokenize(query))
         results: List[Dict[str, Any]] = []
 
@@ -99,17 +73,29 @@ class MMRRetriever:
 
     def __init__(
         self,
-        persist_dir: str = "models/chroma_db",
-        collection_name: str = "diabetes_kb",
-        embed_provider: str = "sentence-transformers",
-        ollama_base_url: str = "http://localhost:11434",
-        embed_model: str = "nomic-embed-text",
+        persist_dir: Optional[str] = None,
+        collection_name: Optional[str] = None,
+        embed_provider: Optional[str] = None,
+        ollama_base_url: Optional[str] = None,
+        embed_model: Optional[str] = None,
+        top_k: Optional[int] = None,
+        fetch_k: Optional[int] = None,
+        lambda_mult: Optional[float] = None,
+        config: Optional[Any] = None,
     ):
-        self.persist_dir = persist_dir
-        self.collection_name = collection_name
-        self.embed_provider = embed_provider
-        self.ollama_base_url = ollama_base_url
-        self.embed_model = embed_model
+        from src.config import load_rag_config
+
+        cfg = config or load_rag_config()
+        self.cfg = cfg
+
+        self.persist_dir = persist_dir or cfg.persist_dir
+        self.collection_name = collection_name or cfg.collection_name
+        self.embed_provider = embed_provider or cfg.embedding_provider
+        self.ollama_base_url = ollama_base_url or cfg.ollama_base_url
+        self.embed_model = embed_model or cfg.ollama_embed_model
+        self.top_k = top_k if top_k is not None else cfg.top_k
+        self.fetch_k = fetch_k if fetch_k is not None else cfg.fetch_k
+        self.lambda_mult = lambda_mult if lambda_mult is not None else cfg.lambda_mult
 
         self._vector_store = None
         self._embeddings = None
@@ -118,7 +104,10 @@ class MMRRetriever:
         try:
             from langchain_chroma import Chroma
 
-            embeddings = _build_embeddings(embed_provider, ollama_base_url, embed_model)
+            embeddings = _build_embeddings(
+                self.embed_provider, self.ollama_base_url, self.embed_model,
+                hf_model=cfg.embedding_model, google_model=cfg.google_embedding_model,
+            )
             self._embeddings = embeddings
             self._vector_store = Chroma(
                 collection_name=self.collection_name,
@@ -154,7 +143,7 @@ class MMRRetriever:
     def retrieve(
         self,
         query: str,
-        top_k: int = 4,
+        top_k: Optional[int] = None,
         metadata_filter: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
         """Ambil dokumen dengan MMR, sertai skor relevansi kueri-terhadap-chunk.
@@ -171,8 +160,9 @@ class MMRRetriever:
         if not self._vector_store:
             raise RuntimeError(f"MMR retriever is not ready: {self._init_error}")
 
-        fetch_k = max(top_k * 3, 12)
-        lambda_mult = 0.5
+        top_k = top_k if top_k is not None else self.top_k
+        fetch_k = self.fetch_k
+        lambda_mult = self.lambda_mult
 
         kwargs: Dict[str, Any] = {"k": top_k, "fetch_k": fetch_k, "lambda_mult": lambda_mult}
         if metadata_filter:
@@ -219,7 +209,7 @@ class MMRRetriever:
         self,
         query: str,
         patient_state: Dict[str, Any],
-        top_k: int = 4,
+        top_k: Optional[int] = None,
         metadata_filter: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
         enhanced_query = self._enhance_query(query, patient_state)

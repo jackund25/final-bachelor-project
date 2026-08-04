@@ -59,23 +59,49 @@ model:
     patience: 10
 
 # RAG Settings
+# Seluruh nilai di blok ini BENAR-BENAR DIBACA kode lewat src/config.py (Tugas 4).
+# Presedensi: argumen konstruktor > variabel environment > config.yaml > default kode.
 rag:
   knowledge_base_dir: "data/knowledge_base"
-  chunk_size: 900       # Must match _DEFAULT_CHUNK_SIZE in knowledge_base.py
-  chunk_overlap: 120    # Must match _DEFAULT_CHUNK_OVERLAP in knowledge_base.py
-  embedding_model: "all-MiniLM-L6-v2"
-  top_k_retrieval: 4    # Aligns with pipeline.py default (top_k=4)
+  persist_dir: "models/chroma_db"
+  collection_name: "diabetes_kb"
+
+  # Chunking dokumen pedoman (per halaman PDF)
+  chunk_size: 900
+  chunk_overlap: 120
+  # Entri manual_kb adalah prosa pendek, bukan halaman buku — sengaja lebih kecil.
+  manual_kb:
+    chunk_size: 350
+    chunk_overlap: 40
+
+  # Embedding
+  embedding_provider: "sentence-transformers"  # sentence-transformers | google | ollama
+  embedding_model: "all-MiniLM-L6-v2"          # 384 dimensi, CPU
+  google_embedding_model: "models/embedding-001"
+
+  # Retrieval (MMR)
+  top_k_retrieval: 4    # jumlah dokumen yang dikembalikan
+  fetch_k: 12           # ukuran kolam kandidat sebelum diversifikasi MMR
+  lambda_mult: 0.5      # 1,0 = relevansi murni; 0,0 = keragaman maksimum
+
+  ollama:
+    base_url: "http://localhost:11434"
+    embed_model: "nomic-embed-text"
 
   llm:
     provider: "gemini"  # Options: gemini, ollama, template
-    model: "gemini-2.5-flash-lite"  # Kuota free-tier project ini (terverifikasi 2026-07): SEMUA model
-                                    # free = 20 request/HARI + 10/menit. Cukup utk aplikasi (1 panggilan/
-                                    # rekomendasi), TAPI tidak cukup utk RAGAS (~60) → butuh billing atau
-                                    # distribusi multi-model. flash-lite dipilih: non-thinking.
-    # Low temperature (0.2) for clinical safety: reduces hallucination risk in medical advisory.
-    # Values >0.5 produce varied language but risk fabricating dosage/threshold figures.
+    model: "gemini-2.5-flash-lite"  # Kuota free-tier gemini-2.5-flash-lite (diverifikasi 2026-08):
+                                    # 15 request/menit, 1.000 request/HARI. Cukup untuk aplikasi
+                                    # maupun RAGAS (~110 panggilan untuk 10 kasus x 4 metrik).
+                                    # flash-lite dipilih karena non-thinking (latensi rendah).
+    ollama_model: "llama3.1:8b"
+    # Temperature rendah demi keselamatan klinis: menekan risiko halusinasi pada
+    # nasihat medis. Nilai >0,5 menghasilkan bahasa lebih bervariasi tetapi berisiko
+    # mengarang angka dosis/ambang.
     temperature: 0.2
-    max_tokens: 300
+    # Batas panjang keluaran. Sebelum Tugas 4 nilai ini tidak pernah diterapkan;
+    # 300 token terlalu ketat untuk nasihat Bahasa Indonesia beserta disclaimer.
+    max_tokens: 700
 
 # Evaluation
 evaluation:

@@ -64,45 +64,55 @@ class RAGPipeline:
 
     def __init__(
         self,
-        kb_dir: str = "data/knowledge_base",
-        chroma_persist_dir: str = "models/chroma_db",
-        collection_name: str = "diabetes_kb",
-        llm_provider: str = "gemini",
-        embed_provider: str = "sentence-transformers",
-        top_k: int = 4,
+        kb_dir: Optional[str] = None,
+        chroma_persist_dir: Optional[str] = None,
+        collection_name: Optional[str] = None,
+        llm_provider: Optional[str] = None,
+        embed_provider: Optional[str] = None,
+        top_k: Optional[int] = None,
         google_api_key: Optional[str] = None,
         gemini_model: Optional[str] = None,
         ollama_base_url: Optional[str] = None,
         ollama_llm_model: Optional[str] = None,
         ollama_embed_model: Optional[str] = None,
+        config: Optional[Any] = None,
     ):
-        self.kb_dir = kb_dir
-        self.chroma_persist_dir = chroma_persist_dir
-        self.collection_name = collection_name
-        self.llm_provider = llm_provider
-        self.embed_provider = embed_provider
-        self.top_k = top_k
+        from src.config import load_rag_config
 
-        # Resolve credentials — env vars are the canonical source; ctor params override.
+        # Resolusi konfigurasi dilakukan SEKALI di sini, lalu objek RagConfig yang sama
+        # diteruskan ke seluruh komponen. Meneruskan satu dataclass jauh lebih baik
+        # daripada meneruskan sembilan skalar: menambah tombol berikutnya hanya
+        # menyentuh src/config.py.
+        cfg = config or load_rag_config()
+        self.rag_cfg = cfg
+
+        self.kb_dir = kb_dir or cfg.knowledge_base_dir
+        self.chroma_persist_dir = chroma_persist_dir or cfg.persist_dir
+        self.collection_name = collection_name or cfg.collection_name
+        self.llm_provider = llm_provider or cfg.llm_provider
+        self.embed_provider = embed_provider or cfg.embedding_provider
+        self.top_k = top_k if top_k is not None else cfg.top_k
+
+        # Kredensial tetap dari environment (rahasia, per-mesin).
         self.google_api_key = google_api_key or os.getenv("GOOGLE_API_KEY")
-        self.gemini_model = gemini_model or os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
-
-        self.ollama_base_url = ollama_base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        self.ollama_llm_model = ollama_llm_model or os.getenv("OLLAMA_LLM_MODEL", "llama3.1:8b")
-        self.ollama_embed_model = ollama_embed_model or os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text")
+        self.gemini_model = gemini_model or cfg.llm_model
+        self.ollama_base_url = ollama_base_url or cfg.ollama_base_url
+        self.ollama_llm_model = ollama_llm_model or cfg.ollama_llm_model
+        self.ollama_embed_model = ollama_embed_model or cfg.ollama_embed_model
 
         self.kb = MedicalKnowledgeBase(
             kb_dir=self.kb_dir,
             persist_dir=self.chroma_persist_dir,
             collection_name=self.collection_name,
-            embed_provider=embed_provider,
+            embed_provider=self.embed_provider,
             ollama_base_url=self.ollama_base_url,
             embed_model=self.ollama_embed_model,
+            config=cfg,
         )
 
         self.retriever: Any = None
 
-        if llm_provider == "gemini":
+        if self.llm_provider == "gemini":
             model_config: Dict[str, Any] = {
                 "model": self.gemini_model,
                 "api_key": self.google_api_key,
@@ -114,8 +124,9 @@ class RAGPipeline:
             }
 
         self.generator = RAGGenerator(
-            provider=llm_provider,
+            provider=self.llm_provider,
             model_config=model_config,
+            config=cfg,
         )
         self._ready = False
 
@@ -150,6 +161,7 @@ class RAGPipeline:
             embed_provider=self.embed_provider,
             ollama_base_url=self.ollama_base_url,
             embed_model=self.ollama_embed_model,
+            config=self.rag_cfg,
         )
 
         if mmr_retriever.is_ready:
@@ -159,7 +171,11 @@ class RAGPipeline:
             if not self.kb.chunks:
                 docs = self.kb.load_manual_kb("manual_kb.json")
                 if docs:
-                    self.kb.chunk_documents(documents=docs, chunk_size=350, chunk_overlap=40)
+                    self.kb.chunk_documents(
+                        documents=docs,
+                        chunk_size=self.rag_cfg.manual_chunk_size,
+                        chunk_overlap=self.rag_cfg.manual_chunk_overlap,
+                    )
                 else:
                     self.kb.create_manual_kb()
             self.retriever = SimpleKeywordRetriever(self.kb.chunks)
