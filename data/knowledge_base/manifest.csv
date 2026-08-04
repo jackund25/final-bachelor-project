@@ -1,0 +1,13 @@
+kb_id,source_id,nama_berkas,lembaga,tahun,judul_lengkap,hlm_total,offset
+KB-01,IDAI-2015,KB-01_IDAI-2015_Konsensus-DMT1.pdf,IDAI UKK Endokrinologi Anak dan Remaja,2015,Konsensus Nasional Pengelolaan Diabetes Melitus Tipe-1 Edisi Ketiga (revisi 2021),129,-11
+KB-02,PERKENI-PGDM-2021,KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf,PERKENI,2021,Pedoman Pemantauan Glukosa Darah Mandiri 2021,49,-13
+KB-03,PERKENI-INSULIN-2021,KB-03_PERKENI-2021_Terapi-Insulin.pdf,PERKENI,2021,Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus 2021,70,-15
+KB-04,PERKENI-HIPER-2023,KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf,PERKENI,2023,Tatalaksana Pasien dengan Hiperglikemia di Rumah Sakit,105,-6
+KB-05,ADA-EASD-2021,KB-05_ADA-EASD-2021_Tatalaksana-DMT1-Dewasa.pdf,ADA dan EASD,2021,The Management of Type 1 Diabetes in Adults: A Consensus Report. Diabetologia 64(12):2609-2652,44,2608
+KB-06,TIR-2019,KB-06_ATTD-2019_Target-Glikemik-TIR.pdf,International Consensus (ATTD),2019,Clinical Targets for Continuous Glucose Monitoring Data Interpretation. Diabetes Care 42:1593-1603,11,1592
+KB-07,ISPAD-CH10-2022,KB-07_ISPAD-2022_Ch10-Nutrisi.pdf,ISPAD,2022,ISPAD CPCG 2022 Chapter 10: Nutritional Management,25,0
+KB-08,ISPAD-CH11-2022,KB-08_ISPAD-2022_Ch11-KAD-HHS.pdf,ISPAD,2022,ISPAD CPCG 2022 Chapter 11: Diabetic Ketoacidosis and Hyperglycemic Hyperosmolar State,22,834
+KB-09,ISPAD-CH12-2022,KB-09_ISPAD-2022_Ch12-Hipoglikemia.pdf,ISPAD,2022,ISPAD CPCG 2022 Chapter 12: Assessment and Management of Hypoglycemia,19,1321
+KB-10,ISPAD-CH13-2022,KB-10_ISPAD-2022_Ch13-Manajemen-Hari-Sakit.pdf,ISPAD,2022,ISPAD CPCG 2022 Chapter 13: Sick Day Management,14,911
+KB-11,ISPAD-CH14-2022,KB-11_ISPAD-2022_Ch14-Aktivitas-Fisik.pdf,ISPAD,2022,ISPAD CPCG 2022 Chapter 14: Exercise in Children and Adolescents with Diabetes,32,1340
+KB-12,ISPAD-CH25-2022,KB-12_ISPAD-2022_Ch25-Sumber-Daya-Terbatas.pdf,ISPAD,2022,ISPAD CPCG 2022 Chapter 25: Management in Limited Resource Settings,23,1528

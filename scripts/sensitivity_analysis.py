@@ -17,13 +17,17 @@ import shutil
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from reingest_kb import _read_pdf, _clean_text, _topic_from_name  # noqa: E402
+from reingest_kb import (  # noqa: E402
+    _build_page_docs, _load_manifest, _validate_corpus,
+)
 from src.rag.retriever import MMRRetriever  # noqa: E402
 from src.rag.knowledge_base import MedicalKnowledgeBase  # noqa: E402
 
 OUT = Path("results/eval_prediksi/sensitivity.json")
 TMP = Path(os.environ.get("TMP", ".")) / "chroma_sens"
-PDF_DIR = Path("data/knowledge_base/additional_docs")
+# Korpus KB-01..KB-12 (Tugas 1). Direktori additional_docs/ yang lama sudah tidak dipakai.
+PDF_DIR = Path("data/knowledge_base/books")
+MANIFEST = Path("data/knowledge_base/manifest.csv")
 
 TEST_CASES = [
     {"id": "D1", "current": 112.0, "predicted": 58.0, "expected": "hipoglikemia"},
@@ -83,12 +87,22 @@ def eval_ablation(retriever, top_k):
 
 
 def load_docs(kb):
+    """Dokumen kurasi + satu dokumen PER HALAMAN dari korpus KB-01..KB-12.
+
+    Memakai jalur yang sama dengan reingest_kb.py agar sweep chunk_size mengukur
+    korpus yang identik dengan produksi (termasuk penyaringan front matter).
+    """
     docs = list(kb.load_manual_kb("manual_kb.json") or [])
-    for p in sorted(PDF_DIR.glob("*.pdf")):
-        txt = _clean_text(_read_pdf(p))
-        if len(txt) >= 300:
-            docs.append({"text": txt, "source": p.name, "topic": _topic_from_name(p),
-                         "metadata": {"doc_id": re.sub(r'[^a-z0-9]+', '_', p.stem.lower())}})
+    # Abort bila manifest/korpus tidak cocok — Path.glob pada direktori yang tidak
+    # ada mengembalikan [] tanpa error, sehingga tanpa penjagaan ini skrip akan
+    # menghasilkan angka sensitivitas dari korpus KOSONG tanpa peringatan apa pun.
+    manifest = _load_manifest(MANIFEST)
+    pasangan = _validate_corpus(PDF_DIR, manifest)
+    for pdf_path, entry in pasangan:
+        page_docs, _, _, _ = _build_page_docs(pdf_path, entry, min_page_chars=100)
+        docs.extend(page_docs)
+    if len(docs) <= len(kb.documents or []):
+        raise SystemExit(f"Korpus kosong di {PDF_DIR} — tidak ada yang dapat dievaluasi.")
     return docs
 
 

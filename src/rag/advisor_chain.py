@@ -115,15 +115,32 @@ class DiabetesAdvisorChain:
         }
 
     def _extract_sources(self, retrieved_docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Ringkasan sumber terstruktur.
+
+        Membaca skema metadata halaman yang baru (kb_id/lembaga/halaman_cetak) dengan
+        fallback ke kunci lama (sumber/judul/halaman) agar chunk manual_kb tetap jalan.
+        """
+        from .citations import format_page_label
+
         output: List[Dict[str, Any]] = []
         for row in retrieved_docs:
             metadata = dict(row.get("metadata", {}))
+            fallback_name = row.get("source", "Manual KB")
             output.append(
                 {
-                    "source": metadata.get("sumber") or row.get("source", "Manual KB"),
-                    "title": metadata.get("judul", row.get("source", "Manual KB")),
+                    "source": (
+                        metadata.get("lembaga")
+                        or metadata.get("sumber")
+                        or fallback_name
+                    ),
+                    "title": (
+                        metadata.get("judul_lengkap")
+                        or metadata.get("judul")
+                        or fallback_name
+                    ),
                     "year": metadata.get("tahun", "N/A"),
-                    "page": metadata.get("halaman", "N/A"),
+                    "page": format_page_label(metadata),
+                    "kb_id": metadata.get("kb_id", ""),
                 }
             )
         return output

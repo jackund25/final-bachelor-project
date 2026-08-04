@@ -50,13 +50,19 @@ def _build_embeddings(
 
 
 def _sanitize_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
-    """Ubah metadata agar kompatibel ChromaDB (hanya skalar str/int/float/bool/None).
+    """Ubah metadata agar kompatibel ChromaDB (hanya skalar str/int/float/bool).
 
-    list/tuple → gabung jadi string; dict/lainnya → str(); None/skalar dipertahankan.
+    list/tuple → gabung jadi string; dict/lainnya → str().
+    Kunci bernilai None DIBUANG: ChromaDB menolak nilai None saat upsert, jadi
+    menyimpannya hanya menunda kegagalan ke titik yang lebih sulit didiagnosis.
+    Metadata halaman memakai pasangan sentinel (halaman_cetak=0 +
+    halaman_cetak_valid=False), bukan None — lihat scripts/reingest_kb.py.
     """
     clean: Dict[str, Any] = {}
     for key, value in metadata.items():
-        if value is None or isinstance(value, (str, int, float, bool)):
+        if value is None:
+            continue
+        if isinstance(value, (str, int, float, bool)):
             clean[key] = value
         elif isinstance(value, (list, tuple)):
             clean[key] = ", ".join(str(v) for v in value)
@@ -295,10 +301,17 @@ class MedicalKnowledgeBase:
             logger.error("Embedding initialisation failed (%s): %s", self.embed_provider, exc)
             return False
 
+        # hnsw:space=cosine — default Chroma adalah l2, yang membuat skor relevansi
+        # LangChain (1 - d/sqrt(2)) bisa negatif dan memicu peringatan "di luar [0,1]".
+        # Embedding sudah dinormalisasi (normalize_embeddings=True), sehingga cosine
+        # memberi skor [0,1] yang dapat ditampilkan langsung ke dokter.
+        collection_metadata = {"hnsw:space": "cosine"}
+
         vector_store = Chroma(
             collection_name=self.collection_name,
             embedding_function=embeddings,
             persist_directory=str(self.persist_dir),
+            collection_metadata=collection_metadata,
         )
 
         if reset_collection:
@@ -308,6 +321,7 @@ class MedicalKnowledgeBase:
                     collection_name=self.collection_name,
                     embedding_function=embeddings,
                     persist_directory=str(self.persist_dir),
+                    collection_metadata=collection_metadata,
                 )
             except Exception as exc:
                 logger.warning("Could not reset existing collection: %s", exc)

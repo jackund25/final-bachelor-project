@@ -108,7 +108,9 @@ def _iter_files(input_dir: Path, recursive: bool, extensions: Sequence[str]) -> 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Import extra docs into data/knowledge_base/manual_kb.json")
-    parser.add_argument("--input-dir", default="data/knowledge_base/additional_docs", help="Folder containing new docs")
+    # Korpus PDF pedoman kini di books/ dan WAJIB terdaftar di manifest.csv —
+    # PDF yang diimpor ke sana tanpa baris manifest akan membuat reingest_kb.py abort.
+    parser.add_argument("--input-dir", default="data/knowledge_base/books", help="Folder containing new docs")
     parser.add_argument("--kb-file", default="data/knowledge_base/manual_kb.json", help="Target KB JSON file")
     parser.add_argument("--recursive", action="store_true", help="Scan input folder recursively")
     parser.add_argument("--extensions", default="txt,md,pdf,docx", help="Comma-separated extensions")
