@@ -188,7 +188,7 @@ class PredictionConditionedQueryBuilder:
             "---",
             f"  Insulin on board : {state.insulin_on_board:.2f} unit",
             f"  Carbs on board   : {state.carbs_on_board:.1f} g",
-            f"  Aktivitas hari ini: {state.activity_level} menit",
+            f"  Skor aktivitas    : {state.activity_level} (skala intensitas, bukan menit)",
             f"  Tingkat stres    : {state.stress_level}/10",
             "=============================================================",
         ]
@@ -211,7 +211,7 @@ class PredictionConditionedQueryBuilder:
         if state.activity_level < 15:
             factors.append("aktivitas fisik rendah")
         elif state.activity_level >= 60:
-            factors.append(f"aktivitas tinggi ({state.activity_level} menit)")
+            factors.append(f"aktivitas tinggi (skor {state.activity_level})")
 
         return factors
 

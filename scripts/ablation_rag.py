@@ -42,6 +42,14 @@ from src.constants import classify_glucose_3class
 # Ambang dari SATU sumber kebenaran (src/constants.py).
 classify = classify_glucose_3class
 
+# Horizon prediksi dalam MENIT, diturunkan dari config (model.default_horizon x
+# data.sampling_interval_min). Sebelumnya sebagian skrip menuliskan "60 menit" dan
+# sebagian "30 menit" secara hardcoded, atas korpus dan kasus yang sama — sehingga
+# angkanya tidak sebanding satu sama lain maupun dengan produksi.
+from src.config import cfg_get
+
+HORIZON_MIN = int(cfg_get("model.default_horizon", 6) * cfg_get("data.sampling_interval_min", 5))
+
 
 # Pemetaan kondisi → topik dokumen ground-truth di KB
 COND_TO_TOPIC = {"hipoglikemia": "Hipoglikemia", "hiperglikemia": "Hiperglikemia", "normal": "Target Kontrol Glikemik"}
@@ -91,11 +99,11 @@ def build_query(case, mode: str) -> str:
     """Template paralel; berbeda HANYA pada kondisi (current vs predicted) — mengisolasi novelty.
 
     - standard               : query fokus pada kondisi glukosa SAAT INI.
-    - prediction_conditioned : query fokus pada kondisi glukosa PREDIKSI (60 menit ke depan).
+    - prediction_conditioned : query fokus pada kondisi glukosa PREDIKSI (horizon dari config).
     """
     g = case["current"] if mode == "standard" else case["predicted"]
     cond = classify(g)
-    horizon = "" if mode == "standard" else " (prediksi 60 menit ke depan)"
+    horizon = "" if mode == "standard" else f" (prediksi {HORIZON_MIN} menit ke depan)"
     return f"Kadar glukosa darah {g:.0f} mg/dL{horizon}. {CONDITION_PHRASE[cond]}"
 
 

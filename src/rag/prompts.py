@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 SYSTEM_PROMPT = """Anda adalah asisten klinis berbasis panduan medis Indonesia untuk mendukung keputusan dokter dalam penanganan diabetes.
 
@@ -45,29 +45,50 @@ def format_context_with_citations(retrieved_docs: List[Dict[str, Any]]) -> str:
     return "\n\n".join(lines)
 
 
-def build_question_payload(query: str, patient_state: Dict[str, Any], prediction: float) -> str:
-    """Build a compact clinician question payload."""
+def build_question_payload(
+    query: str,
+    patient_state: Dict[str, Any],
+    prediction: float,
+    horizon_minutes: Optional[int] = None,
+    risk_label: Optional[str] = None,
+) -> str:
+    """Build a compact clinician question payload.
+
+    horizon_minutes WAJIB diteruskan pemanggil. Sebelumnya teks "Prediksi 1 jam"
+    di-hardcode di sini, sehingga prompt memberi tahu LLM horizon 60 menit padahal
+    bundle produksi memprediksi 30 menit — bertentangan pula dengan kueri retrieval
+    dan dengan angka yang ditampilkan UI.
+    """
     # Handle prediction dict or numeric
     if isinstance(prediction, dict):
         pred_glucose = prediction.get('glucose_pred', '?')
         pred_risk = prediction.get('risk_level', 'N/A')
     else:
         pred_glucose = f"{float(prediction):.1f}" if prediction else '?'
-        pred_risk = 'N/A'
-    
+        # Label risiko diturunkan dari ambang tunggal bila pemanggil tidak memberikannya.
+        # Sebelumnya nilai ini SELALU 'N/A' pada jalur produksi karena pipeline selalu
+        # mengirim float, sehingga LLM tidak pernah menerima status risiko sama sekali.
+        if risk_label is not None:
+            pred_risk = risk_label
+        else:
+            from src.constants import classify_glucose_5zone, risk_label_id
+            pred_risk = risk_label_id(classify_glucose_5zone(float(prediction)))
+
     # Support both key conventions
     gluc = patient_state.get('glucose', patient_state.get('current_glucose', 'N/A'))
     stress = patient_state.get('stress', patient_state.get('stress_level', 5))
     activity = patient_state.get('activity', patient_state.get('activity_level', 0))
     insulin = patient_state.get('insulin', patient_state.get('insulin_on_board', 0))
     carbs = patient_state.get('carbs', patient_state.get('carbs_on_board', 0))
-    
+
+    horizon_txt = f"{horizon_minutes} menit" if horizon_minutes else "horizon prediksi"
+
     return (
         f"Pertanyaan klinisi: {query}\n"
         f"Data pasien: glukosa={gluc} mg/dL, "
         f"stress={stress}/10, "
-        f"aktivitas={activity} menit, "
+        f"aktivitas={activity} (skor intensitas), "
         f"insulin_on_board={insulin} unit, "
         f"carbs_on_board={carbs} gram.\n"
-        f"Prediksi 1 jam: {pred_glucose} mg/dL, Risk: {pred_risk}."
+        f"Prediksi {horizon_txt}: {pred_glucose} mg/dL, Risiko: {pred_risk}."
     )

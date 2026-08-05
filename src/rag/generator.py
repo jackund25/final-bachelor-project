@@ -75,6 +75,8 @@ class RAGGenerator:
         retrieved_docs: List[Dict[str, Any]],
         patient_state: Dict[str, Any],
         prediction: float,
+        horizon_minutes: Optional[int] = None,
+        clinical_context: Optional[str] = None,
     ) -> Dict[str, Any]:
         if self.chain is None:
             return {
@@ -87,6 +89,8 @@ class RAGGenerator:
             retrieved_docs=retrieved_docs,
             patient_state=patient_state,
             prediction=prediction,
+            horizon_minutes=horizon_minutes,
+            clinical_context=clinical_context,
         )
 
     def _template_answer(self, patient_state: Dict[str, Any], prediction: float) -> str:

@@ -60,9 +60,17 @@ KW = {
 from src.constants import classify_glucose_3class as cls_g  # noqa: E402
 
 
+# Horizon prediksi dalam MENIT, diturunkan dari config (model.default_horizon x
+# data.sampling_interval_min). Sebelumnya sebagian skrip menuliskan "60 menit" dan
+# sebagian "30 menit" secara hardcoded, atas korpus dan kasus yang sama — sehingga
+# angkanya tidak sebanding satu sama lain maupun dengan produksi (30 menit).
+from src.config import cfg_get  # noqa: E402
+HORIZON_MIN = int(cfg_get("model.default_horizon", 6) * cfg_get("data.sampling_interval_min", 5))
+
+
 def build_query(case, mode):
     g = case["current"] if mode == "standard" else case["predicted"]
-    h = "" if mode == "standard" else " (prediksi 60 menit ke depan)"
+    h = "" if mode == "standard" else f" (prediksi {HORIZON_MIN} menit ke depan)"
     return f"Kadar glukosa darah {g:.0f} mg/dL{h}. {PHRASE[cls_g(g)]}"
 
 

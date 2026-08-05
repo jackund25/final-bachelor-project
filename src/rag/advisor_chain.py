@@ -104,9 +104,18 @@ class DiabetesAdvisorChain:
         retrieved_docs: List[Dict[str, Any]],
         patient_state: Dict[str, Any],
         prediction: float,
+        horizon_minutes: Optional[int] = None,
+        clinical_context: Optional[str] = None,
     ) -> Dict[str, Any]:
         context_block = format_context_with_citations(retrieved_docs)
-        question_payload = build_question_payload(query, patient_state, prediction)
+        question_payload = build_question_payload(
+            query, patient_state, prediction, horizon_minutes=horizon_minutes
+        )
+        # Blok kondisi klinis terstruktur (tren, urgensi, IOB/COB) dari
+        # PredictionConditionedQueryBuilder._llm_context(). Sebelumnya blok ini dibangun
+        # lalu dibuang — tidak pernah sampai ke LLM sama sekali.
+        if clinical_context:
+            question_payload = f"{clinical_context}\n\n{question_payload}"
 
         if self._chain is not None:
             try:

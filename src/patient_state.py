@@ -69,7 +69,9 @@ class PatientState:
     carbs_on_board: float = 0.0     # grams
 
     # ── Lifestyle factors ─────────────────────────────────────
-    activity_level: int = 0         # minutes today
+    # SKOR INTENSITAS aktivitas dari kanal `exercise` OhioT1DM (atribut `intensity`,
+    # skala ordinal), BUKAN menit. Atribut `duration` tidak diekstrak parser.
+    activity_level: int = 0
     stress_level: int = 5           # 1-10 Likert
 
     # ── Kondisi masa depan hasil pengklasifikasi (opsional) ────
@@ -153,12 +155,17 @@ class PatientState:
         priority = {RISK_HYPO: 0, RISK_HYPER: 1, RISK_NORMAL: 2}
         self.anticipated_conditions = sorted(set(conditions), key=lambda c: priority.get(c, 3))
 
-        # Urgency
+        # Urgency.
+        # Cabang "moderate DAN bukan normal" pada versi sebelumnya TIDAK PERNAH
+        # terjangkau: setiap kondisi bukan-normal sudah tertangkap cabang `high` di
+        # atasnya, sehingga satu-satunya jalan menuju `medium` adalah stres tinggi.
+        # Kini `medium` diberi arti yang benar-benar dapat dicapai: kondisi masih
+        # normal tetapi glukosa bergerak moderat menuju batas, atau stres tinggi.
         if is_critical(self.risk_level):
             self.urgency = "critical"
         elif self.risk_level in (RISK_HYPO, RISK_HYPER) or self.trend_rate == "rapid":
             self.urgency = "high"
-        elif self.stress_level >= 8 or (self.trend_rate == "moderate" and self.risk_level != "normal"):
+        elif self.trend_rate == "moderate" or self.stress_level >= 8:
             self.urgency = "medium"
         else:
             self.urgency = "low"

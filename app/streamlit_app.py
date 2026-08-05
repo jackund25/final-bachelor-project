@@ -200,7 +200,7 @@ with c2:
         f'<div class="card"><h4>Kondisi aktif</h4><p>'
         f'Insulin aktif: {float(window_df["insulin"].iloc[-1]):.2f} u &nbsp;·&nbsp; '
         f'Karbohidrat: {float(window_df["carbs"].iloc[-1]):.0f} g &nbsp;·&nbsp; '
-        f'Aktivitas: {int(float(window_df["activity"].iloc[-1]))} mnt</p></div>',
+        f'Skor aktivitas: {int(float(window_df["activity"].iloc[-1]))}</p></div>',
         unsafe_allow_html=True)
 
 # Peringatan divergen (current normal tapi prediksi bahaya) — nilai jual sistem

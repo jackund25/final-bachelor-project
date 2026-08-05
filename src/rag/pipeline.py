@@ -75,6 +75,7 @@ class RAGPipeline:
         ollama_base_url: Optional[str] = None,
         ollama_llm_model: Optional[str] = None,
         ollama_embed_model: Optional[str] = None,
+        prediction_horizon_minutes: Optional[int] = None,
         config: Optional[Any] = None,
     ):
         from src.config import load_rag_config
@@ -92,6 +93,17 @@ class RAGPipeline:
         self.llm_provider = llm_provider or cfg.llm_provider
         self.embed_provider = embed_provider or cfg.embedding_provider
         self.top_k = top_k if top_k is not None else cfg.top_k
+
+        # Horizon prediksi dalam MENIT, diturunkan dari config:
+        #   model.default_horizon (langkah) x data.sampling_interval_min (menit/langkah)
+        # Dipakai untuk menyusun kueri retrieval dan payload prompt, supaya keduanya
+        # menyatakan horizon yang sama dengan yang benar-benar diprediksi model.
+        from src.config import cfg_get
+        self.prediction_horizon_minutes = int(
+            prediction_horizon_minutes
+            if prediction_horizon_minutes is not None
+            else cfg_get("model.default_horizon", 6) * cfg_get("data.sampling_interval_min", 5)
+        )
 
         # Kredensial tetap dari environment (rahasia, per-mesin).
         self.google_api_key = google_api_key or os.getenv("GOOGLE_API_KEY")
@@ -201,6 +213,7 @@ class RAGPipeline:
             self.build()
 
         # Prediction-conditioned query: numeric prediction → natural language context
+        self._last_llm_context = None
         user_query = query or self._build_query(patient_state, prediction)
         k = top_k or self.top_k
 
@@ -228,6 +241,8 @@ class RAGPipeline:
             ],
             patient_state=patient_state,
             prediction=prediction,
+            horizon_minutes=self.prediction_horizon_minutes,
+            clinical_context=getattr(self, "_last_llm_context", None),
         )
 
         explanation = self._ensure_disclaimer(advisory_payload["answer"])
@@ -287,6 +302,10 @@ class RAGPipeline:
                 current_glucose=float(patient_state.get("current_glucose", 100.0)),
                 predicted_glucose=float(prediction),
                 feature_row=patient_state,
+                # Horizon SEBENARNYA, bukan default 60. Sebelum perbaikan ini setiap
+                # kueri produksi menanyakan "60 menit ke depan" padahal bundle
+                # memprediksi 30 menit dan UI menampilkan 30 menit.
+                prediction_horizon_minutes=self.prediction_horizon_minutes,
                 # Kondisi dari pengklasifikasi & batas interval konformal (bila disediakan
                 # pemanggil) mengaktifkan pengondisian kueri yang sadar-ketidakpastian.
                 predicted_condition=patient_state.get("predicted_condition"),
@@ -295,6 +314,9 @@ class RAGPipeline:
             )
             builder = PredictionConditionedQueryBuilder(strategy=QueryStrategy.COMPREHENSIVE)
             cq = builder.build(state)
+            # Simpan blok konteks klinis terstruktur agar answer() dapat meneruskannya
+            # ke LLM. Sebelumnya blok ini dibangun lalu hilang bersama objek cq.
+            self._last_llm_context = cq.llm_context
             return cq.primary_query
         except Exception as exc:
             logger.warning("PredictionConditionedQueryBuilder failed, using fallback: %s", exc)
