@@ -81,12 +81,9 @@ def load_kb():
     return docs, texts, topics
 
 
-# Frasa fokus per kondisi — mencerminkan klasifikasi risiko yang dipakai sistem.
-CONDITION_PHRASE = {
-    "hipoglikemia": "Hipoglikemia, gula darah rendah di bawah 70 mg/dL. Penyebab, gejala, dan penanganan segera (aturan 15-15).",
-    "hiperglikemia": "Hiperglikemia, gula darah tinggi di atas 180 mg/dL. Penyebab, gejala, dan penanganan.",
-    "normal": "Gula darah dalam rentang normal/target. Target kontrol glikemik dan pemantauan rutin diabetes.",
-}
+# Frasa fokus per kondisi — dari SATU sumber kebenaran (src/rag/ablation_query.py),
+# sama persis dengan yang dipakai ablation_rag_fullkb, crossfold, dan realcases.
+from src.rag.ablation_query import CONDITION_PHRASE, build_ablation_query  # noqa: E402,F401
 
 
 def targeted_condition(case, mode: str) -> str:
@@ -96,15 +93,17 @@ def targeted_condition(case, mode: str) -> str:
 
 
 def build_query(case, mode: str) -> str:
-    """Template paralel; berbeda HANYA pada kondisi (current vs predicted) — mengisolasi novelty.
+    """Template BENAR-BENAR identik; berbeda HANYA pada angka (current vs predicted).
 
     - standard               : query fokus pada kondisi glukosa SAAT INI.
-    - prediction_conditioned : query fokus pada kondisi glukosa PREDIKSI (horizon dari config).
+    - prediction_conditioned : query fokus pada kondisi glukosa PREDIKSI.
+
+    Sufiks "(prediksi N menit ke depan)" dihapus dari lengan conditioned: ia membuat
+    kedua kueri berbeda pada dua hal sekaligus, sehingga selisih metrik tidak bisa
+    dikaitkan murni pada sumber pengondisian.
     """
     g = case["current"] if mode == "standard" else case["predicted"]
-    cond = classify(g)
-    horizon = "" if mode == "standard" else f" (prediksi {HORIZON_MIN} menit ke depan)"
-    return f"Kadar glukosa darah {g:.0f} mg/dL{horizon}. {CONDITION_PHRASE[cond]}"
+    return build_ablation_query(g, cond=classify(g))
 
 
 def main():

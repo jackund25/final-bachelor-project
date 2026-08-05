@@ -217,7 +217,10 @@ class RAGPipeline:
         user_query = query or self._build_query(patient_state, prediction)
         k = top_k or self.top_k
 
-        retrieved_rows = self._retrieve(user_query, patient_state=patient_state, top_k=k)
+        retrieved_rows = self._retrieve(
+            user_query, patient_state=patient_state, top_k=k,
+            condition_glucose=float(prediction),
+        )
         retrieved_docs = [
             RetrievedDocument(
                 rank=row.get("rank", idx + 1),
@@ -275,9 +278,25 @@ class RAGPipeline:
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _retrieve(self, query: str, patient_state: Dict[str, Any], top_k: int) -> List[Dict[str, Any]]:
+    def _retrieve(
+        self,
+        query: str,
+        patient_state: Dict[str, Any],
+        top_k: int,
+        condition_glucose: Optional[float] = None,
+    ) -> List[Dict[str, Any]]:
+        """Ambil dokumen. ``condition_glucose`` diteruskan eksplisit.
+
+        Jalur produksi adalah prediction-conditioned, sehingga nilai yang diteruskan
+        adalah glukosa TERPREDIKSI. Sebelumnya `_enhance_query` mengambil
+        `current_glucose` secara implisit, sehingga setiap kueri produksi diam-diam
+        membawa kondisi yang sedang berlaku.
+        """
         if hasattr(self.retriever, "retrieve_with_context"):
-            return self.retriever.retrieve_with_context(query, patient_state=patient_state, top_k=top_k)
+            return self.retriever.retrieve_with_context(
+                query, patient_state=patient_state, top_k=top_k,
+                condition_glucose=condition_glucose,
+            )
         return self.retriever.retrieve(query=query, top_k=top_k)
 
     def _build_query(self, patient_state: Dict[str, Any], prediction: float) -> str:

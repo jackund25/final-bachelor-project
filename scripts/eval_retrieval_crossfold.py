@@ -32,7 +32,8 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from src.data.preprocessor import DataPreprocessor  # noqa: E402
 from src.rag.retriever import MMRRetriever  # noqa: E402
-from ablation_rag_fullkb import CONDITION_PHRASE, classify_chunk, classify_glucose, ndcg_at_k  # noqa: E402
+from ablation_rag_fullkb import CONDITION_PHRASE, classify_chunk, classify_glucose, ndcg_at_k  # noqa: E402,F401
+from src.rag.ablation_query import build_ablation_query  # noqa: E402
 
 TOP_K = 5
 HORIZON = 6
@@ -74,9 +75,15 @@ def seqs(pre, d, mc, cadence_min: float = 5.0):
 
 
 def build_query(g: float, is_pred: bool, cond: str | None = None) -> str:
-    c = cond or classify_glucose(g)
-    horizon = " (prediksi 30 menit ke depan)" if is_pred else ""
-    return f"Kadar glukosa darah {g:.0f} mg/dL{horizon}. {CONDITION_PHRASE[c]}"
+    """Semua mode ber-STRUKTUR IDENTIK; hanya angka (dan `cond`) yang berbeda.
+
+    ``is_pred`` dipertahankan agar pemanggil tetap terbaca eksplisit, tetapi sudah TIDAK
+    lagi memengaruhi teks kueri: sufiks "(prediksi 30 menit ke depan)" dulu hanya melekat
+    pada mode berbasis prediksi, sehingga perbandingannya terhadap mode current tidak
+    mengisolasi sumber pengondisian. Lihat src/rag/ablation_query.py.
+    """
+    del is_pred  # sengaja diabaikan — lihat docstring
+    return build_ablation_query(g, cond=cond)
 
 
 def score(r, query: str, expected: str) -> dict:

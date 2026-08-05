@@ -42,11 +42,8 @@ TEST_CASES = [
     {"id": "D5", "current": 162.0, "predicted": 205.0, "expected": "hiperglikemia"},
     {"id": "D6", "current": 140.0, "predicted": 238.0, "expected": "hiperglikemia"},
 ]
-PHRASE = {
-    "hipoglikemia": "Hipoglikemia, gula darah rendah di bawah 70 mg/dL. Penyebab, gejala, dan penanganan segera (aturan 15-15).",
-    "hiperglikemia": "Hiperglikemia, gula darah tinggi di atas 180 mg/dL. Penyebab, gejala, dan penanganan.",
-    "normal": "Gula darah dalam rentang normal/target. Target kontrol glikemik dan pemantauan rutin diabetes.",
-}
+# Frasa kondisi dari SATU sumber kebenaran (src/rag/ablation_query.py).
+from src.rag.ablation_query import CONDITION_PHRASE as PHRASE, build_ablation_query  # noqa: E402,F401
 KW = {
     "hipoglikemia": [("hipoglikemi", 3), ("hypoglycemi", 3), ("gula darah rendah", 2), ("15-15", 2),
                      ("glukagon", 2), ("dekstrosa", 1), ("< 70 mg", 1), ("<70 mg", 1), ("< 54", 1)],
@@ -61,17 +58,16 @@ from src.constants import classify_glucose_3class as cls_g  # noqa: E402
 
 
 # Horizon prediksi dalam MENIT, diturunkan dari config (model.default_horizon x
-# data.sampling_interval_min). Sebelumnya sebagian skrip menuliskan "60 menit" dan
-# sebagian "30 menit" secara hardcoded, atas korpus dan kasus yang sama — sehingga
-# angkanya tidak sebanding satu sama lain maupun dengan produksi (30 menit).
+# data.sampling_interval_min). Tidak lagi masuk ke teks kueri (lihat build_query),
+# tetapi tetap dicetak agar pembaca tahu horizon mana yang diuji.
 from src.config import cfg_get  # noqa: E402
 HORIZON_MIN = int(cfg_get("model.default_horizon", 6) * cfg_get("data.sampling_interval_min", 5))
 
 
 def build_query(case, mode):
+    """Kedua lengan ber-STRUKTUR IDENTIK; hanya angkanya berbeda (src/rag/ablation_query.py)."""
     g = case["current"] if mode == "standard" else case["predicted"]
-    h = "" if mode == "standard" else f" (prediksi {HORIZON_MIN} menit ke depan)"
-    return f"Kadar glukosa darah {g:.0f} mg/dL{h}. {PHRASE[cls_g(g)]}"
+    return build_ablation_query(g)
 
 
 def cls_chunk(text):

@@ -211,21 +211,52 @@ class MMRRetriever:
         patient_state: Dict[str, Any],
         top_k: Optional[int] = None,
         metadata_filter: Optional[Dict[str, Any]] = None,
+        condition_glucose: Optional[float] = None,
     ) -> List[Dict[str, Any]]:
-        enhanced_query = self._enhance_query(query, patient_state)
+        """Ambil dokumen dengan kueri yang diperkaya tag kondisi.
+
+        ``condition_glucose`` menentukan SUMBER kondisi secara eksplisit:
+        - mode prediction-conditioned -> nilai glukosa TERPREDIKSI
+        - mode standard               -> nilai glukosa SAAT INI
+
+        Bila tidak diberikan, tag kondisi TIDAK ditambahkan sama sekali. Ini
+        disengaja: menebak sumbernya (dulu selalu ``current_glucose``) membuat
+        kueri diam-diam membawa kondisi yang sedang berlaku, padahal sistem
+        mengklaim pengondisian pada kondisi terprediksi.
+        """
+        enhanced_query = self._enhance_query(
+            query, patient_state, condition_glucose=condition_glucose
+        )
         return self.retrieve(query=enhanced_query, top_k=top_k, metadata_filter=metadata_filter)
 
-    def _enhance_query(self, query: str, patient_state: Dict[str, Any]) -> str:
+    def _enhance_query(
+        self,
+        query: str,
+        patient_state: Dict[str, Any],
+        condition_glucose: Optional[float] = None,
+    ) -> str:
+        """Tambahkan tag kondisi + stres ke kueri.
+
+        STRUKTUR kueri identik untuk kedua mode ablasi; yang berbeda HANYA angka
+        yang dipakai menurunkan kondisi (lihat ``condition_glucose``). Kesimetrisan
+        ini menjaga agar ablasi mengukur pengaruh SUMBER pengondisian, bukan
+        pengaruh perbedaan bentuk kueri.
+
+        Tag "stress tinggi" tidak bergantung pada prediksi, sehingga berlaku pada
+        kedua mode.
+        """
         from src.constants import CLASS_NORMAL, classify_glucose_3class
 
         tags: List[str] = []
-        glucose = float(patient_state.get("current_glucose", 0.0))
+
+        # Sumber kondisi HARUS eksplisit. Tidak ada fallback ke current_glucose:
+        # fallback itulah yang dulu membocorkan kondisi saat ini ke setiap kueri.
+        if condition_glucose is not None:
+            kondisi = classify_glucose_3class(float(condition_glucose))
+            if kondisi != CLASS_NORMAL:
+                tags.append(kondisi)
+
         stress = int(patient_state.get("stress_level", 0))
-
-        kondisi = classify_glucose_3class(glucose)
-        if kondisi != CLASS_NORMAL:
-            tags.append(kondisi)
-
         if stress >= 7:
             tags.append("stress tinggi")
 

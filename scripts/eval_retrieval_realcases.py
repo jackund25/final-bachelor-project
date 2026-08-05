@@ -53,9 +53,10 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from src.data.preprocessor import DataPreprocessor  # noqa: E402
 from src.constants import CLASS_HYPER, CLASS_HYPO, GLUCOSE_HIGH, GLUCOSE_LOW
 from src.rag.retriever import MMRRetriever  # noqa: E402
-from ablation_rag_fullkb import (  # noqa: E402  — dipakai ulang agar identik dengan evaluasi awal
+from ablation_rag_fullkb import (  # noqa: E402,F401  — dipakai ulang agar identik dengan evaluasi awal
     CONDITION_PHRASE, classify_chunk, classify_glucose, ndcg_at_k,
 )
+from src.rag.ablation_query import build_ablation_query  # noqa: E402
 
 TOP_K = 5
 HORIZON = 6              # +30 menit
@@ -73,10 +74,14 @@ OUT = ROOT / f"results/retrieval_realcases_{CORPUS_TAG}"
 
 
 def build_query(glucose: float, is_prediction: bool) -> str:
-    """Identik dengan pembentuk kueri pada evaluasi awal (agar sebanding)."""
-    cond = classify_glucose(glucose)
-    horizon = " (prediksi 30 menit ke depan)" if is_prediction else ""
-    return f"Kadar glukosa darah {glucose:.0f} mg/dL{horizon}. {CONDITION_PHRASE[cond]}"
+    """Semua mode ber-STRUKTUR IDENTIK; hanya angkanya berbeda.
+
+    ``is_prediction`` dipertahankan agar pemanggil tetap terbaca eksplisit, tetapi sudah
+    TIDAK lagi memengaruhi teks kueri: sufiks "(prediksi 30 menit ke depan)" dulu hanya
+    melekat pada mode berbasis prediksi. Lihat src/rag/ablation_query.py.
+    """
+    del is_prediction  # sengaja diabaikan — lihat docstring
+    return build_ablation_query(glucose)
 
 
 def build_interval_query(pred: float, lo: float, hi: float) -> str:
@@ -95,8 +100,10 @@ def build_interval_query(pred: float, lo: float, hi: float) -> str:
     # dahulukan kondisi berisiko agar frasa risiko berada di awal kueri
     order = ["hipoglikemia", "hiperglikemia", "normal"]
     phrases = " ".join(CONDITION_PHRASE[c] for c in order if c in conds)
-    return (f"Kadar glukosa darah diprediksi {pred:.0f} mg/dL "
-            f"(interval 95%: {lo:.0f}-{hi:.0f} mg/dL, 30 menit ke depan). {phrases}")
+    # Mengikuti template dasar build_ablation_query; tambahan interval memang BAGIAN dari
+    # mekanisme yang diuji, sedangkan frasa horizon (yang dulu ada di sini) tidak.
+    return (f"Kadar glukosa darah {pred:.0f} mg/dL "
+            f"(interval 95%: {lo:.0f}-{hi:.0f} mg/dL). {phrases}")
 
 
 def collect_cases(cfg: dict) -> pd.DataFrame:
@@ -245,8 +252,9 @@ def evaluate(cases: pd.DataFrame, r: MMRRetriever, label: str) -> tuple[pd.DataF
                 # kueri dikondisikan pada KONDISI hasil pengklasifikasi, bukan pada nilai regresi
                 cond = str(c["cond_classifier"])
                 g, is_pred = float(c["predicted"]), True
-                q = (f"Kadar glukosa darah diprediksi {g:.0f} mg/dL "
-                     f"(30 menit ke depan). {CONDITION_PHRASE[cond]}")
+                # Template sama dengan standard/pc_rag; yang berbeda hanya SUMBER kondisi
+                # (pengklasifikasi, bukan ambang atas nilai regresi).
+                q = build_ablation_query(g, cond=cond)
                 covered = int(cond == expected)
             elif mode == "pc_rag_combined":
                 # Konfigurasi yang BENAR-BENAR dijalankan aplikasi: kondisi dari pengklasifikasi,
@@ -260,9 +268,10 @@ def evaluate(cases: pd.DataFrame, r: MMRRetriever, label: str) -> tuple[pd.DataF
                     cov.add("hiperglikemia")
                 order = ["hipoglikemia", "hiperglikemia", "normal"]
                 phrases = " ".join(CONDITION_PHRASE[x] for x in order if x in cov)
-                q = (f"Kadar glukosa darah diprediksi {g:.0f} mg/dL "
-                     f"(interval 95%: {c['lo95']:.0f}-{c['hi95']:.0f} mg/dL, 30 menit ke depan). "
-                     f"{phrases}")
+                # Mengikuti template dasar; tambahan interval memang BAGIAN dari mekanisme
+                # yang diuji, sedangkan frasa horizon (yang dulu ada di sini) tidak.
+                q = (f"Kadar glukosa darah {g:.0f} mg/dL "
+                     f"(interval 95%: {c['lo95']:.0f}-{c['hi95']:.0f} mg/dL). {phrases}")
                 covered = int(expected in cov)
             elif mode == "oracle":
                 g, is_pred = float(c["actual_future"]), True

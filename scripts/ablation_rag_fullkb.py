@@ -46,11 +46,10 @@ TEST_CASES = [
     {"id": "D5", "scenario": "Karbohidrat + stres tinggi", "current": 162.0, "predicted": 205.0, "expected": "hiperglikemia"},
     {"id": "D6", "scenario": "Dosis insulin kurang", "current": 140.0, "predicted": 238.0, "expected": "hiperglikemia"},
 ]
-CONDITION_PHRASE = {
-    "hipoglikemia": "Hipoglikemia, gula darah rendah di bawah 70 mg/dL. Penyebab, gejala, dan penanganan segera (aturan 15-15).",
-    "hiperglikemia": "Hiperglikemia, gula darah tinggi di atas 180 mg/dL. Penyebab, gejala, dan penanganan.",
-    "normal": "Gula darah dalam rentang normal/target. Target kontrol glikemik dan pemantauan rutin diabetes.",
-}
+# Frasa kondisi & pembentuk kueri dari SATU sumber kebenaran (src/rag/ablation_query.py).
+# Skrip lain (crossfold, realcases) mengimpor CONDITION_PHRASE dari sini; re-export ini
+# menjaga impor tersebut tetap berjalan.
+from src.rag.ablation_query import CONDITION_PHRASE, build_ablation_query  # noqa: E402,F401
 
 
 # Ambang dari SATU sumber kebenaran (src/constants.py).
@@ -60,18 +59,21 @@ classify_glucose = classify_glucose_3class
 
 
 # Horizon prediksi dalam MENIT, diturunkan dari config (model.default_horizon x
-# data.sampling_interval_min). Sebelumnya sebagian skrip menuliskan "60 menit" dan
-# sebagian "30 menit" secara hardcoded, atas korpus dan kasus yang sama — sehingga
-# angkanya tidak sebanding satu sama lain maupun dengan produksi (30 menit).
+# data.sampling_interval_min). Tidak lagi masuk ke teks kueri (lihat build_query),
+# tetapi tetap dilaporkan pada keluaran agar pembaca tahu horizon mana yang diuji.
 from src.config import cfg_get  # noqa: E402
 HORIZON_MIN = int(cfg_get("model.default_horizon", 6) * cfg_get("data.sampling_interval_min", 5))
 
 
 def build_query(case, mode: str) -> str:
+    """Kueri kedua lengan ber-STRUKTUR IDENTIK; hanya angkanya yang berbeda.
+
+    Sebelumnya lengan prediction-conditioned mendapat sufiks "(prediksi N menit ke
+    depan)" yang tidak dimiliki lengan standard, sehingga selisih metrik tidak murni
+    berasal dari sumber pengondisian. Lihat src/rag/ablation_query.py.
+    """
     g = case["current"] if mode == "standard" else case["predicted"]
-    cond = classify_glucose(g)
-    horizon = "" if mode == "standard" else f" (prediksi {HORIZON_MIN} menit ke depan)"
-    return f"Kadar glukosa darah {g:.0f} mg/dL{horizon}. {CONDITION_PHRASE[cond]}"
+    return build_ablation_query(g)
 
 
 # Klasifikasi topik chunk via kata kunci berbobot (nama kondisi berbobot > angka ambang).
@@ -142,7 +144,7 @@ def main() -> None:
         n_chunk = r._vector_store._collection.count()
     except Exception:  # noqa: BLE001
         n_chunk = "?"
-    print(f"=== Ablation KORPUS-PENUH ({n_chunk} chunk, top_k={TOP_K}) ===")
+    print(f"=== Ablation KORPUS-PENUH ({n_chunk} chunk, top_k={TOP_K}, horizon={HORIZON_MIN} mnt) ===")
     print(summ.to_string(index=False))
     print(f"\nOutput -> {OUT}/")
 
