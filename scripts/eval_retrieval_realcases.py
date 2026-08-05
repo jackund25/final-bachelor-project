@@ -38,6 +38,7 @@ import torch  # noqa: F401  (Windows: torch sebelum numpy/pandas — WinError 11
 import json
 import pickle
 import sys
+import os
 from pathlib import Path
 
 import numpy as np
@@ -63,7 +64,12 @@ MIN_GAP_STEPS = 6        # jarak minimum antar-kasus (30 menit) agar tidak nyari
 NOISE_SIGMAS = [10.0, 20.0, 40.0]
 CONFORMAL_K = 3.3        # faktor interval konformal ternormalisasi (identik dengan aplikasi)
 SEED = 42
-OUT = ROOT / "results/retrieval_realcases"
+# Tag korpus untuk penamaan keluaran. Korpus berpindah dari additional_docs/
+# (14 PDF PERKENI/ADA) ke books/ (KB-01..KB-12) pada Tugas 1, sehingga angka lama
+# tidak berlaku lagi. Sufiks ini membuat hasil baru berdampingan dengan hasil lama
+# tanpa menimpanya, supaya keduanya bisa dibandingkan di laporan.
+CORPUS_TAG = os.environ.get("CORPUS_TAG", "kb12")
+OUT = ROOT / f"results/retrieval_realcases_{CORPUS_TAG}"
 
 
 def build_query(glucose: float, is_prediction: bool) -> str:

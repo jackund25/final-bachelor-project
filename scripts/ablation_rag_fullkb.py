@@ -30,7 +30,12 @@ def ndcg_at_k(rels, k):
     return dcg / idcg if idcg > 0 else 0.0
 
 TOP_K = 5
-OUT = Path("results/baseline_ablation_fullkb")
+# Tag korpus untuk penamaan keluaran. Korpus berpindah dari additional_docs/
+# (14 PDF PERKENI/ADA) ke books/ (KB-01..KB-12) pada Tugas 1, sehingga angka lama
+# tidak berlaku lagi. Sufiks ini membuat hasil baru berdampingan dengan hasil lama
+# tanpa menimpanya, supaya keduanya bisa dibandingkan di laporan.
+CORPUS_TAG = os.environ.get("CORPUS_TAG", "kb12")
+OUT = Path(f"results/baseline_ablation_fullkb_{CORPUS_TAG}")
 
 # Kasus divergen IDENTIK dengan T5 (current normal/near, prediksi hipo/hiper).
 TEST_CASES = [
@@ -122,7 +127,14 @@ def main() -> None:
                                 "ndcg": f"ndcg@{TOP_K}"})
     summ.to_csv(OUT / "ablation_fullkb_summary.csv", index=False)
 
-    print(f"=== Ablation KORPUS-PENUH ({r.collection.count() if hasattr(r, 'collection') else '2585'} chunk, top_k={TOP_K}) ===")
+    # Jumlah chunk dibaca dari koleksi yang benar-benar dipakai. Sebelumnya nilai ini
+    # jatuh ke literal '2585' karena MMRRetriever tidak punya atribut .collection,
+    # sehingga header selalu mencetak jumlah korpus lama.
+    try:
+        n_chunk = r._vector_store._collection.count()
+    except Exception:  # noqa: BLE001
+        n_chunk = "?"
+    print(f"=== Ablation KORPUS-PENUH ({n_chunk} chunk, top_k={TOP_K}) ===")
     print(summ.to_string(index=False))
     print(f"\nOutput -> {OUT}/")
 

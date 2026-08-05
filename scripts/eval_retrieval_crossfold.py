@@ -17,6 +17,7 @@ from __future__ import annotations
 import torch  # noqa: F401  (Windows: torch sebelum numpy/pandas — WinError 1114)
 import json
 import sys
+import os
 from pathlib import Path
 
 import numpy as np
@@ -39,7 +40,12 @@ N_PER_SET = 60      # kasus per himpunan per fold (ditekan agar runtime wajar)
 MIN_GAP = 6
 SEED = 42
 MODES = ["standard", "pc_rag", "pc_rag_classifier", "oracle"]
-OUT = ROOT / "results/retrieval_realcases/crossfold.json"
+# Tag korpus untuk penamaan keluaran. Korpus berpindah dari additional_docs/
+# (14 PDF PERKENI/ADA) ke books/ (KB-01..KB-12) pada Tugas 1, sehingga angka lama
+# tidak berlaku lagi. Sufiks ini membuat hasil baru berdampingan dengan hasil lama
+# tanpa menimpanya, supaya keduanya bisa dibandingkan di laporan.
+CORPUS_TAG = os.environ.get("CORPUS_TAG", "kb12")
+OUT = ROOT / f"results/retrieval_realcases_{CORPUS_TAG}/crossfold.json"
 
 
 def build_frame(cfg: dict):
@@ -94,6 +100,10 @@ def pick(cases: pd.DataFrame, divergent: bool, rng) -> pd.DataFrame:
 
 
 def main() -> None:
+    # Gagal cepat: pastikan lokasi keluaran dapat ditulis SEBELUM memulai komputasi
+    # enam fold yang memakan lebih dari satu jam.
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+
     cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
     mc = cfg["model"]
     rf_cfg = mc["random_forest"]
@@ -194,6 +204,10 @@ def main() -> None:
         "ringkasan_lintas_fold": ringkas,
         "per_fold": per_fold,
     }
+    # Direktori keluaran dibuat SEBELUM menulis. Tanpa ini, seluruh komputasi 6 fold
+    # (yang memakan lebih dari satu jam) hilang di baris terakhir hanya karena
+    # direktorinya belum ada.
+    OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, indent=2), encoding="utf-8")
 
     print("\n=== Rerata +/- SD lintas 6 fold (MRR) ===")

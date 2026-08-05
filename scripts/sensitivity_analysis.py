@@ -23,7 +23,12 @@ from reingest_kb import (  # noqa: E402
 from src.rag.retriever import MMRRetriever  # noqa: E402
 from src.rag.knowledge_base import MedicalKnowledgeBase  # noqa: E402
 
-OUT = Path("results/eval_prediksi/sensitivity.json")
+# Tag korpus untuk penamaan keluaran. Korpus berpindah dari additional_docs/
+# (14 PDF PERKENI/ADA) ke books/ (KB-01..KB-12) pada Tugas 1, sehingga angka lama
+# tidak berlaku lagi. Sufiks ini membuat hasil baru berdampingan dengan hasil lama
+# tanpa menimpanya, supaya keduanya bisa dibandingkan di laporan.
+CORPUS_TAG = os.environ.get("CORPUS_TAG", "kb12")
+OUT = Path(f"results/eval_prediksi/sensitivity_{CORPUS_TAG}.json")
 TMP = Path(os.environ.get("TMP", ".")) / "chroma_sens"
 # Korpus KB-01..KB-12 (Tugas 1). Direktori additional_docs/ yang lama sudah tidak dipakai.
 PDF_DIR = Path("data/knowledge_base/books")
