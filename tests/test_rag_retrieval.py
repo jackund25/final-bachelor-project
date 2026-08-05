@@ -116,28 +116,40 @@ def test_enhance_query_tag_stres_berlaku_pada_kedua_mode():
         assert "stress tinggi" in e._enhance_query("Tindakan apa?", stres, condition_glucose=src)
 
 
+class _SpyRetriever:
+    """Retriever tiruan yang mencatat sumber kondisi yang diterimanya.
+
+    Sengaja TIDAK memakai retriever asli pipeline: mana yang terbangun (MMR atau
+    fallback kata kunci) bergantung pada ketersediaan ChromaDB, sehingga tes yang
+    bersandar padanya bisa ter-skip diam-diam justru pada run suite penuh — hijau
+    tanpa menguji apa pun.
+    """
+
+    def __init__(self):
+        self.terekam = {}
+
+    def retrieve(self, query, top_k=None, metadata_filter=None):
+        return [{"rank": 1, "text": "dokumen uji", "source": "uji",
+                 "similarity": 1.0, "metadata": {}}]
+
+    def retrieve_with_context(self, query, patient_state, top_k=None,
+                              metadata_filter=None, condition_glucose=None):
+        self.terekam["condition_glucose"] = condition_glucose
+        return self.retrieve(query, top_k, metadata_filter)
+
+
 def test_pipeline_meneruskan_prediksi_sebagai_sumber_kondisi(tmp_path):
     """Jalur produksi harus mengirim glukosa TERPREDIKSI ke retriever, bukan yang sekarang."""
     pipeline = RAGPipeline(kb_dir=str(tmp_path), llm_provider="template")
     pipeline.build()
 
-    terekam = {}
-    asli = pipeline.retriever.retrieve_with_context if hasattr(
-        pipeline.retriever, "retrieve_with_context") else None
-
-    def spy(query, patient_state, top_k=None, metadata_filter=None, condition_glucose=None):
-        terekam["condition_glucose"] = condition_glucose
-        return asli(query, patient_state, top_k, metadata_filter, condition_glucose)
-
-    if asli is None:  # retriever fallback tanpa retrieve_with_context
-        import pytest
-
-        pytest.skip("retriever aktif tidak punya retrieve_with_context")
-
-    pipeline.retriever.retrieve_with_context = spy
+    spy = _SpyRetriever()
+    pipeline.retriever = spy
     pipeline.answer(patient_state=dict(DIVERGEN), prediction=58.0, query="Tindakan apa?", top_k=2)
 
-    assert terekam["condition_glucose"] == 58.0
+    # 58.0 = prediksi; 112.0 = current_glucose pada skenario divergen ini.
+    assert spy.terekam["condition_glucose"] == 58.0
+    assert spy.terekam["condition_glucose"] != DIVERGEN["current_glucose"]
 
 
 def test_build_ablation_query_simetris_antar_mode():
