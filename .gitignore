@@ -35,6 +35,8 @@ models/*.gguf
 # vector DB (generated; rebuild via scripts/reingest_kb.py)
 models/chroma_db/
 models/chroma_db_multilingual/
+# Koleksi evaluasi RAGAS (dibangun ulang via scripts/build_eval_kb.py)
+models/chroma_db_eval/
 
 # Conda env lokal (bila dibuat dengan --prefix di dalam repo)
 diabetes-ta/

@@ -1,0 +1,113 @@
+{
+  "_meta": {
+    "deskripsi": "Basis data evaluasi RAGAS terkontrol. Ground truth dapat diverifikasi manual karena seluruh konteks berasal dari 2 halaman saja.",
+    "korpus": {
+      "kb_id": "KB-03",
+      "source_id": "PERKENI-INSULIN-2021",
+      "nama_dokumen": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+      "judul_lengkap": "Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus 2021",
+      "lembaga": "PERKENI",
+      "tahun": 2021,
+      "halaman_cetak": [18, 23],
+      "halaman_pdf": [33, 38],
+      "offset": -15,
+      "alasan_pemilihan": "Berbahasa Indonesia (sesuai bahasa keluaran sistem, sehingga metrik tidak mengukur mutu penerjemahan), memuat tata laksana konkret, dan bersama-sama mencakup inisiasi, titrasi, serta respons hipoglikemia."
+    },
+    "koleksi_chroma": {
+      "persist_dir": "models/chroma_db_eval",
+      "collection_name": "diabetes_kb_eval",
+      "catatan": "TERPISAH dari koleksi produksi (models/chroma_db / diabetes_kb). Bangun dengan: PYTHONPATH=. python scripts/build_eval_kb.py"
+    },
+    "medan": {
+      "id": "Pengenal kasus, dipakai sebagai kunci cache penilaian.",
+      "pertanyaan": "Pertanyaan klinisi (Bahasa Indonesia).",
+      "kondisi_terprediksi": "hipoglikemia | normal | hiperglikemia — kondisi yang dipakai mengondisikan kueri.",
+      "jawaban_acuan": "Jawaban benar menurut dokumen sumber. Dipakai RAGAS sebagai reference.",
+      "konteks_acuan": "Kutipan verbatim dari halaman sumber yang menopang jawaban_acuan.",
+      "halaman_sumber": "Nomor halaman CETAK tempat konteks berada."
+    },
+    "status": "2 dari 10 kasus terisi sebagai contoh; 8 sisanya kerangka kosong untuk dilengkapi."
+  },
+  "kasus": [
+    {
+      "id": "E01",
+      "pertanyaan": "Berapa dosis awal insulin basal yang dianjurkan saat memulai terapi insulin pada pasien diabetes melitus?",
+      "kondisi_terprediksi": "hiperglikemia",
+      "jawaban_acuan": "Sebagai regimen awal dapat digunakan insulin basal dengan dosis 0,2 unit/kgBB. Waktu pemberiannya disesuaikan dengan rutinitas pasien dan jenis insulin yang digunakan.",
+      "konteks_acuan": "E. STRATEGI PRAKTIS TERAPI INSULIN. Sebagai regimen awal dapat digunakan insulin basal dengan dosis 0,2 unit/kgbb, dengan waktu pemberiannya disesuaikan dengan rutinitas pasien dan jenis insulin yang digunakan.",
+      "halaman_sumber": 18
+    },
+    {
+      "id": "E02",
+      "pertanyaan": "Apa yang harus dilakukan terhadap dosis insulin basal bila pasien mengalami hipoglikemia?",
+      "kondisi_terprediksi": "hipoglikemia",
+      "jawaban_acuan": "Tentukan dan atasi dahulu penyebab hipoglikemianya, lalu turunkan dosis insulin basal sebanyak 4 unit atau sebesar 10% sampai 20%.",
+      "konteks_acuan": "INSULIN BASAL ... Hipoglikemia : Tentukan dan atasi penyebab, turunkan dosis 4 unit atau 10% -> 20%",
+      "halaman_sumber": 23
+    },
+    {
+      "id": "E03",
+      "pertanyaan": "",
+      "kondisi_terprediksi": "",
+      "jawaban_acuan": "",
+      "konteks_acuan": "",
+      "halaman_sumber": null
+    },
+    {
+      "id": "E04",
+      "pertanyaan": "",
+      "kondisi_terprediksi": "",
+      "jawaban_acuan": "",
+      "konteks_acuan": "",
+      "halaman_sumber": null
+    },
+    {
+      "id": "E05",
+      "pertanyaan": "",
+      "kondisi_terprediksi": "",
+      "jawaban_acuan": "",
+      "konteks_acuan": "",
+      "halaman_sumber": null
+    },
+    {
+      "id": "E06",
+      "pertanyaan": "",
+      "kondisi_terprediksi": "",
+      "jawaban_acuan": "",
+      "konteks_acuan": "",
+      "halaman_sumber": null
+    },
+    {
+      "id": "E07",
+      "pertanyaan": "",
+      "kondisi_terprediksi": "",
+      "jawaban_acuan": "",
+      "konteks_acuan": "",
+      "halaman_sumber": null
+    },
+    {
+      "id": "E08",
+      "pertanyaan": "",
+      "kondisi_terprediksi": "",
+      "jawaban_acuan": "",
+      "konteks_acuan": "",
+      "halaman_sumber": null
+    },
+    {
+      "id": "E09",
+      "pertanyaan": "",
+      "kondisi_terprediksi": "",
+      "jawaban_acuan": "",
+      "konteks_acuan": "",
+      "halaman_sumber": null
+    },
+    {
+      "id": "E10",
+      "pertanyaan": "",
+      "kondisi_terprediksi": "",
+      "jawaban_acuan": "",
+      "konteks_acuan": "",
+      "halaman_sumber": null
+    }
+  ]
+}

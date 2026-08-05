@@ -9,7 +9,10 @@ scipy==1.11.1
 # Machine Learning
 scikit-learn==1.3.0
 tensorflow==2.15.0
-# torch==2.0.1  # Uncomment jika mau pakai PyTorch instead
+# torch WAJIB ada (bukan opsional): sentence-transformers memuatnya, dan di Windows
+# ia harus di-import SEBELUM numpy/pyarrow untuk menghindari WinError 1114 pada c10.dll
+# (lihat run_app.py dan header skrip evaluasi).
+torch>=2.0
 
 # RAG Components
 chromadb==1.0.12
@@ -19,6 +22,10 @@ langchain-text-splitters==0.3.8
 langchain-chroma==0.2.4
 langchain-ollama==0.3.3
 langchain-google-genai>=2.0.0
+# Dipakai jalur RAGAS: Gemini diakses lewat endpoint OpenAI-compatible untuk
+# menghindari "Event loop is closed" / skor NaN pada transport gRPC.
+langchain-openai>=0.3.0
+nest-asyncio>=1.5.7
 ollama==0.5.1
 flashrank==0.2.10
 ragas==0.2.6
