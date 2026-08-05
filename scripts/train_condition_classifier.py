@@ -61,8 +61,17 @@ def build(cfg: dict):
     patients = sorted(df["patient_id"].unique())
     train_df, test_df = pre.split_by_patient(df, patients[-2:])
 
+    # Segmentasi jeda yang sama dengan model regresi (Tugas 5). Kalau hanya salah
+    # satu yang disaring, keduanya dilatih atas himpunan jendela berbeda dan
+    # perbandingan "regresi lalu ambang" vs "pengklasifikasi" tidak lagi setara.
+    max_gap_steps = mc.get("max_gap_steps")
+    cadence_min = cfg.get("data", {}).get("sampling_interval_min", 5)
+
     def seqs(d):
-        X, y, anc = pre.create_sequences(d, mc["sequence_length"], HORIZON, return_anchor=True)
+        X, y, anc = pre.create_sequences(
+            d, mc["sequence_length"], HORIZON, return_anchor=True,
+            max_gap_steps=max_gap_steps, source_interval_min=cadence_min,
+        )
         n, s, f = X.shape
         return X.reshape(n, s * f), y, anc
 

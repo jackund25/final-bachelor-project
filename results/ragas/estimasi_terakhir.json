@@ -1,0 +1,17 @@
+{
+  "n_sampel": 1,
+  "metrik": [
+    "context_recall"
+  ],
+  "top_k": 4,
+  "panggilan_pembangkitan": 1,
+  "panggilan_per_metrik": {
+    "context_recall": 1
+  },
+  "sudah_ter-cache": 0,
+  "total_estimasi": 2,
+  "proyeksi_dataset_penuh": {
+    "n": 10,
+    "total": 20
+  }
+}

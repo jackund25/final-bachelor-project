@@ -36,6 +36,16 @@ model:
   use_engineered: true
   engineered_features: ["glucose", "glucose_delta", "iob", "cob", "activity", "hour_sin", "hour_cos"]
   predict_delta: true   # model memprediksi Δglukosa (selisih dari nilai terakhir), lalu direkonstruksi
+
+  # Segmentasi jendela pada jeda sensor (Tugas 5). Jendela dibentuk per posisi baris,
+  # padahal baris OhioT1DM tidak berjarak seragam: jeda terpanjang mencapai 118 jam.
+  # Jendela yang memuat jeda antar-baris lebih dari max_gap_steps langkah DIBUANG,
+  # bukan diinterpolasi — nilai di dalam jeda memang tidak terobservasi.
+  # 6 langkah x 5 menit = 30 menit.
+  max_gap_steps: 6
+  # Batas panjang runtun NaN yang masih boleh diinterpolasi. Tidak berpengaruh pada
+  # ohio_t1dm_merged.csv (nol NaN); pengaman untuk manual_logbook.csv.
+  max_interpolate_steps: 6
   feature_engineering:
     insulin_tau_min: 240   # waktu kerja insulin ~4 jam
     carbs_tau_min: 180     # penyerapan karbohidrat ~3 jam

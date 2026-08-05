@@ -115,7 +115,10 @@ def train_random_forest_from_config(
 	print(f"Data source  : {used_source}")
 
 	preprocessor = DataPreprocessor(config)
-	df = preprocessor.handle_missing_values(df)
+	max_gap_steps = config["model"].get("max_gap_steps")
+	max_interp = config["model"].get("max_interpolate_steps")
+	cadence_min = config.get("data", {}).get("sampling_interval_min", 5)
+	df = preprocessor.handle_missing_values(df, max_interpolate_steps=max_interp)
 
 	sequence_length = config["model"].get("sequence_length", 12)
 	default_horizon = config["model"].get("default_horizon", 1)
@@ -140,8 +143,11 @@ def train_random_forest_from_config(
 	test_patients = patient_ids[-2:]
 	train_df, test_df = preprocessor.split_by_patient(df, test_patients)
 
-	X_train, y_train, anc_train = preprocessor.create_sequences(train_df, sequence_length, horizon, return_anchor=True)
-	X_test, y_test, anc_test = preprocessor.create_sequences(test_df, sequence_length, horizon, return_anchor=True)
+	seq_kwargs = {"max_gap_steps": max_gap_steps, "source_interval_min": cadence_min}
+	X_train, y_train, anc_train = preprocessor.create_sequences(
+		train_df, sequence_length, horizon, return_anchor=True, **seq_kwargs)
+	X_test, y_test, anc_test = preprocessor.create_sequences(
+		test_df, sequence_length, horizon, return_anchor=True, **seq_kwargs)
 
 	X_train_scaled, X_test_scaled = preprocessor.normalize_data(X_train, X_test)
 

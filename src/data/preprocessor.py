@@ -3,7 +3,7 @@ Data Preprocessing utilities
 """
 
 import logging
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -42,15 +42,28 @@ class DataPreprocessor:
     def _require_columns(self, df: pd.DataFrame, columns: List[str]) -> None:
         assert_feature_set(df, columns)
     
-    def handle_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
+    def handle_missing_values(self, df: pd.DataFrame,
+                              max_interpolate_steps: Optional[int] = None) -> pd.DataFrame:
         """
         Handle missing values via interpolation
-        
+
         Args:
             df: Input DataFrame
-            
+            max_interpolate_steps: Panjang maksimum runtun NaN berurutan yang masih
+                boleh diinterpolasi. None = tanpa batas (perilaku lama).
+
         Returns:
             df_clean: Cleaned DataFrame
+
+        CATATAN JUJUR TENTANG DAMPAK. Pada ohio_t1dm_merged.csv batas ini TIDAK
+        berpengaruh apa pun: berkas itu tidak memuat satu pun NaN, karena parser
+        sudah mengisi atribut yang hilang dengan 0.0 dan membuang baris glukosa
+        tidak valid. Baris yang "hilang" akibat jeda sensor memang TIDAK ADA di
+        dalam berkas, bukan hadir sebagai NaN — sehingga interpolate() tidak pernah
+        menyentuhnya. Cacat yang sesungguhnya ditangani oleh segmentasi jendela di
+        create_sequences(). Batas ini tetap dipasang sebagai pengaman untuk sumber
+        data lain (mis. data/raw/manual_logbook.csv dari halaman Input Logbook)
+        yang memang dapat memuat NaN.
         """
         logger.info("Handling missing values...")
 
@@ -59,20 +72,36 @@ class DataPreprocessor:
 
         df = df.copy()
         df = df.sort_values(['patient_id', 'timestamp']).reset_index(drop=True)
-        
+
         missing_before = df.isnull().sum().sum()
-        
+
         # Interpolate numeric columns
         numeric_cols = df.select_dtypes(include=[np.number]).columns
-        df[numeric_cols] = df[numeric_cols].interpolate(method='linear', limit_direction='both')
-        
-        # Fill remaining NaNs with forward fill
-        df = df.ffill().bfill()
-        
+        if max_interpolate_steps is not None:
+            df[numeric_cols] = df[numeric_cols].interpolate(
+                method='linear', limit=int(max_interpolate_steps), limit_direction='both'
+            )
+            # Runtun NaN yang lebih panjang dari batas TIDAK diisi paksa — barisnya
+            # dibuang, karena mengisinya berarti mengarang pengamatan.
+            sebelum_drop = len(df)
+            df = df.dropna(subset=[c for c in self.feature_columns if c in df.columns])
+            n_drop = sebelum_drop - len(df)
+            if n_drop:
+                logger.info(
+                    f"Dibuang {n_drop} baris dengan runtun NaN > {max_interpolate_steps} langkah"
+                )
+            df = df.reset_index(drop=True)
+        else:
+            df[numeric_cols] = df[numeric_cols].interpolate(
+                method='linear', limit_direction='both'
+            )
+            # Fill remaining NaNs with forward fill
+            df = df.ffill().bfill()
+
         missing_after = df.isnull().sum().sum()
-        
+
         logger.info(f"Missing values: {missing_before} → {missing_after}")
-        
+
         return df
     
     def engineer_features(
@@ -118,7 +147,9 @@ class DataPreprocessor:
         return result
 
     def create_sequences(self, df: pd.DataFrame, sequence_length: int = 12,
-                         prediction_horizon: int = 1, return_anchor: bool = False
+                         prediction_horizon: int = 1, return_anchor: bool = False,
+                         max_gap_steps: Optional[int] = None,
+                         source_interval_min: float = 5.0,
                         ) -> Tuple[np.ndarray, ...]:
         """
         Create sequences for time-series prediction
@@ -128,10 +159,22 @@ class DataPreprocessor:
             sequence_length: Number of time steps to look back
             prediction_horizon: Number of steps ahead to predict (1 = next step).
                 Pada cadence CGM 5-menit: 6 = +30 menit, 12 = +60 menit.
+            max_gap_steps: Jeda maksimum ANTAR-BARIS yang masih boleh berada di dalam
+                satu jendela, dinyatakan dalam langkah cadence. None = tanpa batas
+                (perilaku lama). Baca dari config.model.max_gap_steps.
+            source_interval_min: Cadence nominal data sumber (menit).
 
         Returns:
             X: Input sequences (n_samples, sequence_length, n_features)
             y: Target values (n_samples,)
+
+        SEGMENTASI JEDA (Tugas 5). Jendela dibentuk per POSISI BARIS, sedangkan baris
+        pada OhioT1DM tidak berjarak seragam: 0,6% interval melebihi 5 menit dan yang
+        terpanjang mencapai 118 jam. Tanpa penyaringan, 5,3% jendela melompati jeda
+        sensor dan memperlakukan lompatan berjam-jam sebagai satu langkah 5 menit —
+        model belajar dari kesinambungan yang tidak pernah ada. Jendela yang memuat
+        jeda melebihi batas DIBUANG, bukan diinterpolasi: nilai di dalam jeda memang
+        tidak terobservasi, dan mengarangnya berarti melatih model pada data fiktif.
         """
         logger.info(
             f"Creating sequences with length {sequence_length}, horizon {prediction_horizon}..."
@@ -145,8 +188,14 @@ class DataPreprocessor:
         df = validate_data_contract(df)
         self._require_columns(df, ['patient_id', 'timestamp', *self.feature_columns])
 
+        max_gap_min = (
+            float(max_gap_steps) * float(source_interval_min)
+            if max_gap_steps is not None else None
+        )
+
         X, y, anchors = [], [], []
         span = sequence_length + prediction_horizon  # baris minimum dibutuhkan
+        n_dibuang = 0
 
         for _, patient_df in df.sort_values(['patient_id', 'timestamp']).groupby('patient_id', sort=False):
             patient_df = patient_df.reset_index(drop=True)
@@ -155,7 +204,24 @@ class DataPreprocessor:
             if len(data) < span:
                 continue
 
+            # Penanda jeda terlalu panjang antara baris (k-1) dan k. Jumlah kumulatif
+            # membuat pemeriksaan "adakah jeda di dalam rentang ini" menjadi O(1),
+            # sehingga penyaringan tidak menambah biaya berarti pada 166 ribu jendela.
+            if max_gap_min is not None:
+                dt = patient_df['timestamp'].diff().dt.total_seconds().div(60.0).to_numpy()
+                bad = np.zeros(len(data), dtype=np.int32)
+                bad[1:] = (dt[1:] > max_gap_min + 1e-9).astype(np.int32)
+                bad_cum = np.cumsum(bad)
+            else:
+                bad_cum = None
+
             for i in range(len(data) - span + 1):
+                if bad_cum is not None:
+                    # Rentang yang harus mulus: seluruh baris i..i+span-1, yakni
+                    # jendela masukan DAN jalur menuju target di horizon.
+                    if bad_cum[i + span - 1] - bad_cum[i] > 0:
+                        n_dibuang += 1
+                        continue
                 X.append(data[i:i + sequence_length])
                 # target = glukosa pada (akhir window + horizon)
                 y.append(data[i + sequence_length + prediction_horizon - 1, 0])
@@ -172,6 +238,14 @@ class DataPreprocessor:
         X = np.array(X)
         y = np.array(y)
         anchors = np.array(anchors)
+
+        if max_gap_min is not None:
+            total = len(X) + n_dibuang
+            logger.info(
+                f"Segmentasi jeda: {n_dibuang} dari {total} jendela dibuang "
+                f"({100 * n_dibuang / max(total, 1):.2f}%) karena memuat jeda "
+                f"> {max_gap_min:.0f} menit ({max_gap_steps} langkah)"
+            )
 
         logger.info(f"Created {len(X)} sequences")
         logger.info(f"X shape: {X.shape}, y shape: {y.shape}")

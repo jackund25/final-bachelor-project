@@ -58,8 +58,17 @@ def build_frame(cfg: dict):
     return df, pre
 
 
-def seqs(pre, d, mc):
-    X, y, anc = pre.create_sequences(d, mc["sequence_length"], HORIZON, return_anchor=True)
+def seqs(pre, d, mc, cadence_min: float = 5.0):
+    """Bangun jendela; ikut menyaring jeda sensor bila config menetapkannya (Tugas 5).
+
+    Tanpa ini, model di dalam crossfold dilatih atas jendela yang boleh melintasi jeda
+    sensor sementara model produksi tidak — sehingga crossfold mengukur mutu retrieval
+    yang dikondisikan pada prediktor yang berbeda dari yang benar-benar dipakai sistem.
+    """
+    X, y, anc = pre.create_sequences(
+        d, mc["sequence_length"], HORIZON, return_anchor=True,
+        max_gap_steps=mc.get("max_gap_steps"), source_interval_min=cadence_min,
+    )
     n, s, f = X.shape
     return X.reshape(n, s * f), y, anc
 
