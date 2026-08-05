@@ -31,7 +31,14 @@ ALT_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
 BASE_MODEL = "all-MiniLM-L6-v2"
 ALT_PERSIST = "models/chroma_db_multilingual"
 COLLECTION = "diabetes_kb"
-OUT = ROOT / "results/baseline_ablation_fullkb/embedding_alternative.json"
+
+# Tag korpus untuk penamaan keluaran, sama seperti skrip evaluasi lain. Hipotesis
+# multilingual pernah diuji pada korpus LAMA (14 PDF PERKENI/ADA) dan gagal — MRR
+# PC-RAG 0,889 -> 0,319. Korpus baru berkomposisi bahasa berbeda (8 dari 12 dokumen
+# berbahasa Inggris), sehingga itu eksperimen yang berbeda dan hasil lama TIDAK boleh
+# dipakai untuk menyimpulkannya. Sufiks ini menjaga keduanya berdampingan.
+CORPUS_TAG = os.environ.get("CORPUS_TAG", "kb12")
+OUT = ROOT / f"results/baseline_ablation_fullkb_{CORPUS_TAG}/embedding_alternative.json"
 
 
 def ingest_with(model_name: str, persist_dir: str) -> int:
@@ -63,6 +70,20 @@ def ablate_on(persist_dir: str, model_name: str) -> dict:
     os.environ["HF_EMBED_MODEL"] = model_name
     for mod in [m for m in list(sys.modules) if m.startswith("src.rag")]:
         del sys.modules[mod]
+
+    # WAJIB: sejak Tugas 4, nama model embedding dibaca lewat load_rag_config() yang
+    # ber-lru_cache. Menghapus modul src.rag saja TIDAK cukup — cache config tetap
+    # memegang nilai lama, sehingga indeks alternatif akan dikueri memakai embedding
+    # model yang salah dan seluruh perbandingan menjadi tidak sah tanpa error apa pun.
+    from src.config import clear_cache, load_rag_config
+    clear_cache()
+    efektif = load_rag_config().embedding_model
+    if efektif != model_name:
+        raise RuntimeError(
+            f"Model embedding efektif ({efektif}) != yang diminta ({model_name}). "
+            f"Perbandingan dibatalkan karena tidak sah."
+        )
+
     from src.rag.retriever import MMRRetriever
 
     import importlib

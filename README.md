@@ -43,28 +43,45 @@ GPU, CGM *real-time*, maupun rekam medis elektronik.
 
 ## Hasil Utama
 
-| Evaluasi | Hasil |
-| --- | --- |
-| Prediksi CGM, +30 menit (Random Forest) | RMSE 22,60 mg/dL — Clarke A+B 94,35% |
-| Prediksi CGM, +60 menit (Random Forest) | RMSE 34,24 mg/dL — Clarke A+B 86,94% |
-| Prediksi CGM, +30 menit (LSTM, pembanding) | RMSE 22,04 mg/dL — Clarke A+B 94,60% |
-| Skenario SMBG (`finger_stick` nyata), +30 menit | RMSE 27,09 mg/dL — Clarke A+B 92,09% |
-| Sensitivitas hipoglikemia (ambang standar 70 mg/dL) | 14,0% (regresi) → **44,4%** (pengklasifikasi kondisi) |
-| Interval prediksi konformal (nominal 95%) | cakupan empiris 96,5% |
+> **Sedang direvisi (Agustus 2026).** Korpus pedoman berpindah dari 14 dokumen
+> PERKENI/ADA ke 12 dokumen KB-01..KB-12 (IDAI, PERKENI, ADA-EASD, ATTD, ISPAD), dan
+> jendela latih kini disegmentasi pada jeda sensor. **Angka prediksi di bawah sudah
+> diperbarui; angka *retrieval* pada bagian berikutnya BELUM dan tidak berlaku untuk
+> korpus baru.** Rincian di `docs/journey.md`.
 
-Sebagai konteks, RMSE 22,60 mg/dL berada pada kisaran model *deep learning* terpublikasi
+| Evaluasi | Hasil | Status |
+| --- | --- | --- |
+| Prediksi CGM, +30 menit (Random Forest) | **RMSE 21,12 mg/dL — Clarke A+B 94,86%** | diperbarui |
+| Prediksi CGM, +60 menit (Random Forest) | **RMSE 32,73 mg/dL — Clarke A+B 87,82%** | diperbarui |
+| Prediksi CGM, +30 menit (LSTM, pembanding) | RMSE 22,04 mg/dL — Clarke A+B 94,60% | **belum dihitung ulang** |
+| Skenario SMBG (`finger_stick` nyata), +30 menit | RMSE 27,09 mg/dL — Clarke A+B 92,09% | **belum dihitung ulang** |
+| Sensitivitas hipoglikemia (ambang standar 70 mg/dL) | **15,4% (regresi) → 45,2% (pengklasifikasi)** | diperbarui |
+| Interval prediksi konformal (nominal 95%) | cakupan empiris 96,5% | **belum dihitung ulang** |
+
+Sebagai konteks, RMSE 21,12 mg/dL berada pada kisaran model *deep learning* terpublikasi
 pada OhioT1DM (18,26–22,12 mg/dL), meski penelitian ini memakai pembagian **lintas-pasien**
 (pasien uji tak pernah dilihat model) yang lebih berat daripada pembagian temporal yang
 umum dipakai literatur.
 
+**Peringatan perbandingan.** Angka RF di atas diukur setelah jendela yang melintasi jeda
+sensor dibuang (3,95% latih / 2,75% uji pada +30 menit). Baris LSTM dan SMBG **belum**
+dihitung ulang dengan perlakuan yang sama, sehingga **tidak sebanding** dengan baris RF
+untuk saat ini. Selain itu, karena himpunan uji ikut menyusut, perbaikan RMSE tidak dapat
+dipisahkan sepenuhnya antara "model lebih baik" dan "kasus uji tidak sah hilang".
+
 ### Evaluasi *retrieval*: dua tahap
 
-**Demonstrasi terkontrol** (6 kasus terkurasi): MRR 0,225 → 0,889. Angka ini adalah *batas
-atas yang optimistis* — kondisi relevannya ditetapkan dari nilai yang diprediksi, sehingga
-kesalahan prediksi tidak terhukum.
+> **ANGKA DI BAWAH TIDAK BERLAKU UNTUK KORPUS BARU.** Seluruhnya diukur pada korpus
+> lama (14 dokumen PERKENI/ADA, 2.585 *chunk*). Perhitungan ulang pada korpus
+> KB-01..KB-12 sedang berjalan; hasil sementara menunjukkan **penurunan substansial**.
+> Jangan mengutip tabel ini bersama korpus baru.
 
-**Kasus nyata, validasi silang 6 *fold* lintas-pasien** (relevansi ditetapkan dari glukosa
-yang **benar-benar terjadi** pada t+30, sehingga kesalahan prediksi dihukum):
+**Demonstrasi terkontrol** (6 kasus terkurasi, korpus lama): MRR 0,225 → 0,889. Angka ini
+adalah *batas atas yang optimistis* — kondisi relevannya ditetapkan dari nilai yang
+diprediksi, sehingga kesalahan prediksi tidak terhukum.
+
+**Kasus nyata, validasi silang 6 *fold* lintas-pasien, korpus lama** (relevansi ditetapkan
+dari glukosa yang **benar-benar terjadi** pada t+30):
 
 | Mode kueri | MRR kasus divergen | MRR distribusi natural |
 | --- | --- | --- |
@@ -73,19 +90,24 @@ yang **benar-benar terjadi** pada t+30, sehingga kesalahan prediksi dihukum):
 | PC-RAG + pengklasifikasi | 0,298 ± 0,040 | 0,892 ± 0,040 (p = 0,56, t.s.) |
 | *Oracle* (prediksi sempurna) | **0,983 ± 0,015** | 0,998 ± 0,004 |
 
-**Temuan utama.** Mekanisme PC-RAG terbukti sahih dan **robust**: pada kasus divergen ia
-unggul di **seluruh 6 fold**, dan dengan kondisi masa depan yang benar (*oracle*) *retrieval*
-nyaris sempurna (0,983). Namun manfaatnya dibatasi oleh **prediktornya** — pada kasus
-divergen, regresi hanya benar menebak kondisi masa depan 15,8% kali. Pada distribusi natural,
-tidak ada keunggulan yang dapat diandalkan (p = 0,44): hanya 13,3% jendela yang divergen.
+**Apa yang berubah pada korpus baru.** Pengukuran ulang (`results/retrieval_realcases_kb12/`)
+menunjukkan ***oracle* ikut runtuh**: 0,983 → 0,556 pada kasus divergen dan 0,998 → 0,446
+pada distribusi natural. Karena *oracle* memakai kondisi yang benar-benar terjadi — jadi
+tidak bergantung pada mutu prediktor sama sekali — runtuhnya angka itu berarti **korpus baru
+kurang mampu menjawab kueri berbahasa Indonesia**, bukan prediktornya yang memburuk.
+Delapan dari dua belas dokumen baru berbahasa Inggris (ISPAD, ADA-EASD, ATTD).
 
-Pengklasifikasi kondisi memperbaiki **deteksi hipoglikemia** secara nyata (14,0% → 44,4%),
-tetapi **tidak** terbukti memperbaiki mutu *retrieval* lintas-*fold* (p = 0,31).
+Akibatnya keunggulan PC-RAG pada kasus divergen menyempit dari +0,158 menjadi +0,038 MRR,
+dan pada distribusi natural PC-RAG kini **kalah** dari RAG standar. Perumusan ulang klaim
+ini sedang dikerjakan; hipotesis penyebab (ketidakcocokan bahasa) belum diuji tuntas.
+
+Pengklasifikasi kondisi tetap memperbaiki **deteksi hipoglikemia** secara nyata
+(15,4% → 45,2%), tetapi **tidak** terbukti memperbaiki mutu *retrieval* lintas-*fold*.
 
 ### Kelayakan penerapan (diukur, bukan diklaim)
 
 Pada perangkat **tanpa GPU sama sekali**: rekayasa fitur 26 ms, prediksi 90 ms, *retrieval*
-atas 2.585 *chunk* 21 ms — **total komputasi lokal 137 ms**, memori 1,17 GB. Satu rekomendasi
+atas 2.061 *chunk* 21 ms — **total komputasi lokal 137 ms**, memori 1,17 GB. Satu rekomendasi
 utuh butuh ~11,4 detik, dan **98%-nya adalah panggilan LLM** (jaringan + inferensi *cloud*),
 bukan komputasi di perangkat.
 
