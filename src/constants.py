@@ -85,6 +85,15 @@ _CLASS_TO_RISK: Final[dict[str, str]] = {
     CLASS_HYPER: RISK_HYPER,
 }
 
+# Label tampilan untuk ketiga kelas. Sebelumnya string ini ditulis langsung di
+# app/ui.py DAN dibandingkan sebagai teks di app/streamlit_app.py ("Dalam Target"),
+# sehingga mengubah satu kata di UI diam-diam mematikan logika peringatan.
+_CLASS_LABELS_ID: Final[dict[str, str]] = {
+    CLASS_HYPO: "Hipoglikemia",
+    CLASS_NORMAL: "Dalam Target",
+    CLASS_HYPER: "Hiperglikemia",
+}
+
 
 # ──────────────────────────────────────────────────────────────
 # Fungsi klasifikasi
@@ -124,6 +133,11 @@ def classify_glucose_3class(glucose: float) -> str:
 def risk_label_id(risk_level: str) -> str:
     """Label Bahasa Indonesia untuk nama kondisi 5 zona."""
     return _RISK_LABELS_ID.get(risk_level, "AMAN")
+
+
+def condition_label_id(condition_class: str) -> str:
+    """Label tampilan Bahasa Indonesia untuk kelas kondisi 3 kelas."""
+    return _CLASS_LABELS_ID.get(condition_class, condition_class)
 
 
 def risk_from_condition_class(condition_class: str) -> str:

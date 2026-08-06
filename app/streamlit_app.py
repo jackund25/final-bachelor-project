@@ -17,13 +17,14 @@ from datetime import datetime
 import pandas as pd
 import streamlit as st
 
+from src.alerts import evaluate_divergence
 from src.clinical_state import ClinicalDecisionLog
 from src.constants import GLUCOSE_LOW, RISK_HYPO, risk_from_condition_class
 from src.data.loader import DiabetesDataLoader
 from src.rag import RAGPipeline
 from src.rag.citations import build_source_list
 from ui import (app_header, risk_badge, glucose_zone_chart, zone_legend,
-                disclaimer_footer, classify_glucose)
+                disclaimer_footer, classify_glucose, render_divergence_alert)
 
 st.set_page_config(page_title="Konsultasi — Pendukung Keputusan Diabetes", page_icon="🩺",
                    layout="wide", initial_sidebar_state="expanded")
@@ -203,10 +204,13 @@ with c2:
         f'Skor aktivitas: {int(float(window_df["activity"].iloc[-1]))}</p></div>',
         unsafe_allow_html=True)
 
-# Peringatan divergen (current normal tapi prediksi bahaya) — nilai jual sistem
-if cur_label == "Dalam Target" and pred_label != "Dalam Target":
-    st.warning(f"⚠️ **Antisipasi:** kondisi saat ini normal, namun glukosa diprediksi menuju "
-               f"**{pred_label}** ({pred:.0f} mg/dL) dalam {horizon_min} menit. Pertimbangkan tindakan pencegahan.")
+# Peringatan divergen — nilai jual sistem.
+# Logikanya ada di src/alerts.py, bukan di sini: keputusan klinis harus dapat diuji
+# tanpa menjalankan Streamlit. Versi lama hanya menyala bila kondisi kini "Dalam
+# Target", sehingga ayunan hipo<->hiper tidak pernah tertangkap.
+divergensi = evaluate_divergence(current, pred, horizon_min)
+if divergensi is not None:
+    render_divergence_alert(divergensi)
 
 # Peringatan HIPOGLIKEMIA DINI.
 # Prediksi titik regresi menyusut ke tengah: pada ambang <70 ia hanya menangkap 14% kejadian

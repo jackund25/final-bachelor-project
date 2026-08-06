@@ -13,6 +13,9 @@ import streamlit as st
 # Ambang klinis berasal dari SATU sumber kebenaran (src/constants.py).
 # Hanya warna yang menjadi urusan lapisan UI.
 from src.constants import (
+    CLASS_HYPER,
+    CLASS_HYPO,
+    CLASS_NORMAL,
     GLUCOSE_HIGH,
     GLUCOSE_LOW,
     RISK_CRITICAL_HYPER,
@@ -20,6 +23,7 @@ from src.constants import (
     RISK_HYPER,
     RISK_HYPO,
     classify_glucose_5zone,
+    condition_label_id,
 )
 
 # ── Warna klinis ──────────────────────────────────────────────
@@ -36,13 +40,18 @@ def classify_glucose(value: float) -> tuple[str, str, str]:
     Memakai klasifikasi 5 zona dari src/constants.py lalu meratakannya menjadi tiga
     zona warna: kondisi kritis memakai warna yang sama dengan kondisi biasa karena
     tingkat urgensinya sudah disampaikan lewat badge risiko dan blok peringatan.
+
+    Teks labelnya diambil dari `condition_label_id()`, bukan ditulis di sini. Dulu
+    string "Dalam Target" ditulis di berkas ini SEKALIGUS dibandingkan sebagai teks
+    di streamlit_app.py, sehingga mengubah satu kata di sini diam-diam mematikan
+    logika peringatan divergensi.
     """
     zona = classify_glucose_5zone(value)
     if zona in (RISK_HYPO, RISK_CRITICAL_HYPO):
-        return "hipo", "Hipoglikemia", COL_HYPO
+        return "hipo", condition_label_id(CLASS_HYPO), COL_HYPO
     if zona in (RISK_HYPER, RISK_CRITICAL_HYPER):
-        return "hiper", "Hiperglikemia", COL_HYPER
-    return "target", "Dalam Target", COL_TARGET
+        return "hiper", condition_label_id(CLASS_HYPER), COL_HYPER
+    return "target", condition_label_id(CLASS_NORMAL), COL_TARGET
 
 
 def inject_global_css() -> None:
@@ -107,6 +116,23 @@ def risk_badge(glucose: float, prefix: str = "Prediksi") -> None:
         f'{prefix}: {label} · {glucose:.0f} mg/dL</span>',
         unsafe_allow_html=True,
     )
+
+
+def render_divergence_alert(alert, horizon_note: str = "") -> None:
+    """Tampilkan DivergenceAlert. Hanya presentasi — keputusannya di src/alerts.py.
+
+    Wadah Streamlit dipilih menurut kegentingan yang sudah ditetapkan modul logika,
+    sehingga tampilan tidak pernah menilai ulang kondisi klinis sendiri.
+    """
+    from src.alerts import SEVERITY_CRITICAL, SEVERITY_INFO
+
+    ikon = {SEVERITY_CRITICAL: "🚨", SEVERITY_INFO: "✅"}.get(alert.severity, "⚠️")
+    judul = {SEVERITY_CRITICAL: "Ayunan kondisi", SEVERITY_INFO: "Membaik"}.get(
+        alert.severity, "Antisipasi")
+    wadah = {SEVERITY_CRITICAL: st.error, SEVERITY_INFO: st.info}.get(
+        alert.severity, st.warning)
+
+    wadah(f"{ikon} **{judul}{horizon_note}:** {alert.message}")
 
 
 def glucose_zone_chart(
