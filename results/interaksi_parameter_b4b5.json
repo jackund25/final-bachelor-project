@@ -1,0 +1,102 @@
+{
+  "judul": "Interaksi parameter tidak aditif: chunk_size (B4) dan lambda_mult (B5)",
+  "untuk": "Bab VI, subbab pembahasan interaksi parameter",
+  "tanggal_pengukuran": "2026-08-06",
+  "commit": "9531eceb1648b88da560ed2b4cd76331c5e61bb1",
+  "protokol": "Seluruh angka berasal dari SET PELAPORAN (n=240) yang tidak pernah dipakai menyetel, dibagi dengan benih tetap 42 per himpunan sesuai protokol Bagian C. Keempat konfigurasi diukur pada himpunan yang sama.",
+  "konfigurasi": [
+    {
+      "nama": "lama",
+      "chunk_size": 900,
+      "lambda_mult": 0.5,
+      "mrr": 0.435,
+      "hit@1(%)": 29.2,
+      "hit@3(%)": 61.7,
+      "dokumen_unik_top_k": 3.73,
+      "delta_mrr": 0.0
+    },
+    {
+      "nama": "hanya_B4",
+      "chunk_size": 500,
+      "lambda_mult": 0.5,
+      "mrr": 0.475,
+      "hit@1(%)": 34.6,
+      "hit@3(%)": 55.8,
+      "dokumen_unik_top_k": 3.15,
+      "delta_mrr": 0.04
+    },
+    {
+      "nama": "hanya_B5",
+      "chunk_size": 900,
+      "lambda_mult": 0.0,
+      "mrr": 0.492,
+      "hit@1(%)": 29.2,
+      "hit@3(%)": 66.7,
+      "dokumen_unik_top_k": 3.6,
+      "delta_mrr": 0.057,
+      "DIADOPSI": true
+    },
+    {
+      "nama": "gabungan",
+      "chunk_size": 500,
+      "lambda_mult": 0.0,
+      "mrr": 0.464,
+      "hit@1(%)": 34.6,
+      "hit@3(%)": 53.3,
+      "dokumen_unik_top_k": 3.18,
+      "delta_mrr": 0.029
+    }
+  ],
+  "poin_utama_pembahasan": {
+    "penjumlahan_naif": 0.097,
+    "gabungan_sebenarnya": 0.029,
+    "faktor_meleset": 3.34,
+    "kalimat": "Menjumlahkan perbaikan dua parameter yang diuji terpisah menghasilkan +0,097, sedangkan gabungan sebenarnya hanya +0,029 — meleset lebih dari tiga kali lipat. Uji statistik justru MENOLAK konfigurasi gabungan."
+  },
+  "uji_wilcoxon_berpasangan": {
+    "n": 240,
+    "besaran": "reciprocal rank per kueri",
+    "perbandingan": [
+      {
+        "pasangan": "B5 vs gabungan",
+        "selisih_rerata": 0.028,
+        "p": 0.088,
+        "signifikan_0.05": false
+      },
+      {
+        "pasangan": "B5 vs B4",
+        "selisih_rerata": 0.018,
+        "p": 0.0782,
+        "signifikan_0.05": false,
+        "catatan": "B4 dan B5 TIDAK dapat dibedakan secara statistik"
+      },
+      {
+        "pasangan": "B4 vs gabungan",
+        "selisih_rerata": 0.011,
+        "p": 0.0295,
+        "signifikan_0.05": true,
+        "catatan": "satu-satunya yang signifikan; menolak konfigurasi gabungan"
+      }
+    ]
+  },
+  "dasar_keputusan": {
+    "diadopsi": "hanya_B5 (chunk_size 900, lambda_mult 0.0)",
+    "rumusan_wajib": "B4 dan B5 setara secara statistik (p=0,078). Konfigurasi gabungan ditolak (p=0,029). B5 dipilih atas pertimbangan di luar MRR.",
+    "mendukung_B5": [
+      "keragaman dokumen lebih terjaga: 3,60 vs 3,15",
+      "keunggulan lebih bertahan di bawah protokol Bagian C: B4 menyusut +0,116 -> +0,040",
+      "tidak perlu indeks ulang; tidak membatalkan angka retrieval yang sudah ada"
+    ],
+    "berlawanan_arah_JANGAN_DISEMBUNYIKAN": [
+      "B4 unggul pada Hit@1: 34,6% vs 29,2%",
+      "lambda 0,0 juga menurunkan keragaman dokumen dari 3,73 ke 3,60; kecil tetapi bukan nol"
+    ]
+  },
+  "penjelasan_mekanisme": {
+    "status": "DIUSULKAN, belum terbukti",
+    "hipotesis": "chunk_size dan lambda_mult diduga bekerja pada mekanisme yang sama, yaitu urutan keluaran MMR atas kolam kandidat. chunk_size mengubah isi kolam, lambda_mult mengubah cara memilih dari kolam.",
+    "dukungan": "Satu kolom pengamatan: chunk 500 menurunkan dokumen unik 3,73 -> 3,15, dan menambahkan lambda 0,0 hanya menggeser ke 3,18, jauh lebih kecil daripada efek lambda pada chunk 900 (3,73 -> 3,60).",
+    "yang_dibutuhkan_untuk_membuktikan": "Pengukuran langsung komposisi kolam kandidat pada kedua ukuran potongan. Belum dilakukan."
+  },
+  "keterbatasan": "Relevansi ditetapkan pelabel kata kunci classify_chunk(), bukan penilaian manusia; 49,2% chunk korpus tidak pernah dapat dihitung relevan. Berlaku untuk seluruh angka retrieval proyek ini."
+}

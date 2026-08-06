@@ -36,24 +36,32 @@ git dipakai menyusun timeline pengerjaan di laporan.
 
 ---
 
-## Tahap 0. Adopsi Hasil Bagian B
+## Tahap 0. Adopsi Hasil Bagian B — SELESAI
 
-Kerjakan sebelum percobaan lain, karena seluruh percobaan berikutnya harus berjalan
-di atas konfigurasi final.
+> **HASIL AKHIR TAHAP 0 (keputusan pembimbing, 6 Agustus 2026).**
+>
+> Versi awal tahap ini meminta `chunk_size` diubah menjadi 500 DAN `lambda_mult` menjadi
+> 0,0. Pengukuran butir 4 menunjukkan **gabungan keduanya lebih buruk daripada
+> masing-masing sendirian** (MRR 0,464 vs 0,475 dan 0,492), dan uji Wilcoxon menolak
+> konfigurasi gabungan (p=0,029).
+>
+> **Keputusan: adopsi B5 saja. `chunk_size` TETAP 900, `lambda_mult` menjadi 0,0.**
+> B4 tidak diadopsi. Konfigurasi gabungan tidak diadopsi.
+>
+> **Rumusan yang wajib dipakai:** B4 dan B5 **setara secara statistik** (p=0,078);
+> konfigurasi gabungan ditolak (p=0,029); B5 dipilih atas **pertimbangan di luar MRR**
+> (keragaman dokumen 3,60 vs 3,15, dan keunggulan yang lebih bertahan di bawah protokol
+> set penyetelan/pelaporan). **Jangan tulis bahwa B5 terbukti lebih baik daripada B4.**
+>
+> Pertimbangan berlawanan arah yang tidak boleh disembunyikan: **B4 unggul pada Hit@1
+> (34,6% vs 29,2%)**, dan lambda 0,0 juga menurunkan keragaman dokumen dari 3,73 ke 3,60.
 
-1. Ubah `chunk_size` menjadi 500 di `config.yaml`, dengan tumpang tindih proporsional
-   sesuai pengujian B4. Lakukan pengindeksan ulang korpus.
-2. Ubah `lambda_mult` menjadi 0.0 sesuai pengujian B5.
-3. Jangan adopsi B1, B2, dan B3. Biarkan kodenya tetap ada tetapi tidak dipakai pada
-   jalur produksi.
-4. B4 dan B5 diuji terpisah dan belum pernah digabungkan. Setelah keduanya diadopsi,
-   jalankan ulang evaluasi penelusuran pada set PELAPORAN untuk memperoleh angka
-   gabungan yang sebenarnya. **Jangan menjumlahkan perbaikan keduanya.**
-
-   Laporkan tabel empat baris: konfigurasi lama, hanya B4, hanya B5, dan gabungan.
-   Kalau gabungannya lebih rendah daripada salah satu sendirian, laporkan apa adanya
-   dan sebutkan konfigurasi mana yang sebaiknya dipakai.
-5. Seluruh percobaan Tahap 1-5 dijalankan di atas konfigurasi hasil tahap ini.
+1. ~~Ubah `chunk_size` menjadi 500~~ **DIBATALKAN.** `chunk_size` tetap **900**.
+2. Ubah `lambda_mult` menjadi **0.0** sesuai pengujian B5. **Dikerjakan.**
+3. Jangan adopsi B1, B2, dan B3. Kodenya tetap ada tetapi tidak dipakai jalur produksi.
+4. Angka gabungan sudah diukur pada set PELAPORAN; tabel empat baris beserta uji Wilcoxon
+   tersimpan di `results/interaksi_parameter_b4b5.json` untuk subbab pembahasan Bab VI.
+5. Seluruh percobaan Tahap 1-5 dijalankan pada **`chunk_size` 900 dan `lambda_mult` 0,0**.
 
 ---
 
@@ -174,8 +182,15 @@ dari pernyataan menjadi pertanyaan mengubah MRR 0,892 -> 0,592 pada himpunan nat
 
 1. Hitung distribusi token per chunk memakai tokenizer yang benar-benar dipakai model
    embedding, bukan perkiraan.
-2. Laporkan median, rata-rata, persentil ke-5 dan ke-95, untuk 500 dan 900 karakter.
+2. Laporkan median, rata-rata, persentil ke-5 dan ke-95, untuk **900 karakter sebagai
+   konfigurasi produksi** dan **500 karakter sebagai pembanding**.
 3. Laporkan terpisah untuk dokumen Indonesia dan Inggris.
+
+> **Penyesuaian 6 Agustus.** Sebelumnya butir ini menempatkan 500 sebagai konfigurasi
+> produksi. Setelah keputusan Tahap 0, produksinya adalah **900**; 500 tetap dihitung
+> sebagai pembanding karena pembahasan Bab VI menjadi lebih menarik: **ukuran optimum
+> untuk penelusuran ternyata bukan ukuran terkecil**, dan nuansa itu tidak dibahas Gao
+> dkk. (2023) yang hanya menyebut 100, 256, dan 512 token sebagai ukuran lazim.
 
 ### T5.2 Kumpulkan angka pembanding untuk pembahasan
 

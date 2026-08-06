@@ -92,7 +92,17 @@ rag:
   # Retrieval (MMR)
   top_k_retrieval: 4    # jumlah dokumen yang dikembalikan
   fetch_k: 12           # ukuran kolam kandidat sebelum diversifikasi MMR
-  lambda_mult: 0.5      # 1,0 = relevansi murni; 0,0 = keragaman maksimum
+  # 1,0 = relevansi murni; 0,0 = keragaman maksimum.
+  # Diubah dari 0,5 ke 0,0 pada Tahap 0 (adopsi B5), berdasarkan sapuan 5 nilai yang
+  # mengikuti protokol Bagian C: set penyetelan dan set pelaporan tidak beririsan, dan
+  # angka di bawah berasal dari set pelaporan yang tidak pernah dipakai menyetel.
+  #   lambda 0,5 -> MRR 0,435   lambda 0,0 -> MRR 0,492   (n=240)
+  # Biayanya bukan nol: keragaman dokumen di top-k turun tipis dari 3,73 ke 3,60.
+  # chunk_size SENGAJA tetap 900. Menggabungkan lambda 0,0 dengan chunk_size 500 justru
+  # MENURUNKAN MRR ke 0,464 — lebih buruk daripada masing-masing sendirian, dan ditolak
+  # uji Wilcoxon terhadap chunk 500 sendirian (p=0,029). Lihat
+  # results/baseline_ablation_fullkb_kb12_sym/kombinasi_b4b5.json.
+  lambda_mult: 0.0
 
   ollama:
     base_url: "http://localhost:11434"

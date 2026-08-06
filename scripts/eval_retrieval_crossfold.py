@@ -47,6 +47,9 @@ MODES = ["standard", "pc_rag", "pc_rag_classifier", "oracle"]
 # tanpa menimpanya, supaya keduanya bisa dibandingkan di laporan.
 CORPUS_TAG = os.environ.get("CORPUS_TAG", "kb12")
 OUT = ROOT / f"results/retrieval_realcases_{CORPUS_TAG}/crossfold.json"
+# Keluaran parsial per fold, sengaja bernama BEDA dari OUT supaya hasil setengah jadi
+# tidak pernah terbaca sebagai hasil lengkap.
+PARSIAL = ROOT / f"results/retrieval_realcases_{CORPUS_TAG}/crossfold_PARSIAL.json"
 
 
 def build_frame(cfg: dict):
@@ -198,6 +201,18 @@ def main() -> None:
               f"pc {d['pc_rag']['mrr']:.3f} clf {d['pc_rag_classifier']['mrr']:.3f} "
               f"oracle {d['oracle']['mrr']:.3f} || natural MRR: std {n['standard']['mrr']:.3f} "
               f"pc {n['pc_rag']['mrr']:.3f} clf {n['pc_rag_classifier']['mrr']:.3f}")
+
+        # Simpan hasil PARSIAL setelah tiap fold. Skrip ini butuh 1,5-2 jam dan melatih 12
+        # RandomForest; dua kali ia mati di tengah (fold 5 dari 6) dan seluruh pekerjaannya
+        # hilang karena keluaran hanya ditulis di akhir. Berkas parsial ini sengaja BERBEDA
+        # nama dari keluaran final, supaya hasil setengah jadi tidak pernah terbaca sebagai
+        # hasil lengkap.
+        PARSIAL.parent.mkdir(parents=True, exist_ok=True)
+        PARSIAL.write_text(json.dumps(
+            {"PERINGATAN": f"HASIL PARSIAL — baru {len(per_fold)} dari {len(folds)} fold. "
+                           f"JANGAN dipakai sebagai hasil akhir.",
+             "n_fold_selesai": len(per_fold), "n_fold_target": len(folds),
+             "per_fold": per_fold}, indent=2), encoding="utf-8")
 
     ringkas = {}
     for label in ("divergen", "natural"):
