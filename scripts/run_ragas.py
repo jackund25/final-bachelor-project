@@ -13,7 +13,10 @@ Pengaman kuota:
   cache            sampel yang sudah dinilai tidak dinilai ulang
   konfirmasi       estimasi panggilan dicetak dan meminta persetujuan sebelum jalan
 
-Kuota gemini-2.5-flash-lite tier gratis (diverifikasi 2026-08): 15 RPM, 1.000 RPD.
+Kuota gemini-2.5-flash-lite tier gratis. Catatan Tugas 6 menyebut 15 RPM / 1.000 RPD,
+tetapi pengukuran LANGSUNG pada A4 (6 Agustus 2026) menunjukkan angka berbeda: pesan galat
+Gemini menyebut `quota_value: 10` per menit, dan kuota harian tampak habis setelah sekitar
+35 permintaan benchmark. Angka Tugas 6 karena itu diperlakukan sebagai TIDAK TERVERIFIKASI.
 Estimasi 10 kasus x 4 metrik kira-kira 110 panggilan, yaitu ~11% kuota harian —
 muat dalam satu hari dengan margin lebar.
 
@@ -122,17 +125,31 @@ def _print_estimate(est: Dict[str, Any], rpd: int = 1000) -> None:
     if est["sudah_ter-cache"]:
         print(f"  Sudah ter-cache (dilewati): -{est['sudah_ter-cache']}")
     print("-" * 66)
-    print(f"  TOTAL ESTIMASI        : ~{est['total_estimasi']} panggilan")
-    print(f"  Kuota harian free tier: {rpd} panggilan "
-          f"({est['total_estimasi'] / rpd * 100:.1f}% terpakai)")
+    total = est["total_estimasi"]
+    print(f"  TOTAL ESTIMASI        : ~{total} panggilan")
     print("=" * 66)
     penuh = est.get("proyeksi_dataset_penuh")
     if penuh and penuh["n"] != est["n_sampel"]:
-        print(f"  Proyeksi bila {penuh['n']} kasus terisi penuh: "
-              f"~{penuh['total']} panggilan ({penuh['total'] / rpd * 100:.1f}% kuota harian)")
+        print(f"  Proyeksi bila {penuh['n']} kasus terisi penuh: ~{penuh['total']} panggilan")
         print("=" * 66)
+
+    # Batas laju TERUKUR pada A4, bukan angka dari dokumentasi.
+    RPM_TERUKUR = 10
+    rps = float(os.getenv("RAGAS_RPS", "0.13"))
+    menit_min = total / RPM_TERUKUR
+    menit_setelan = total / (rps * 60) if rps > 0 else float("inf")
+    print("  KUOTA DAN WAKTU (angka TERUKUR pada A4, bukan dari dokumentasi):")
+    print(f"    batas laju terukur   : {RPM_TERUKUR} permintaan/menit")
+    print(f"    setelan RAGAS_RPS    : {rps} req/dtk (~{rps * 60:.1f}/menit)")
+    print(f"    waktu minimum        : ~{menit_min:.0f} mnt (pada batas laju)")
+    print(f"    waktu pada setelan   : ~{menit_setelan:.0f} mnt")
+    print(f"    kuota harian         : catatan Tugas 6 menyebut {rpd} RPD, tetapi A4")
+    print(f"                           menunjukkan kuota habis setelah ~35 permintaan.")
+    print(f"                           Angka {rpd} TIDAK terverifikasi — siapkan")
+    print(f"                           kemungkinan melanjutkan esok hari dari cache.")
+    print("=" * 66)
     print("Catatan: jumlah faithfulness bergantung panjang jawaban, jadi angka di")
-    print("atas adalah perkiraan BAWAH. Batas laju 15 RPM tetap berlaku.")
+    print("atas adalah perkiraan BAWAH.")
 
 
 def main() -> int:
@@ -238,8 +255,12 @@ def main() -> int:
         print("GAGAL: GOOGLE_API_KEY tidak ditemukan di environment / .env", file=sys.stderr)
         return 1
 
-    # 15 RPM kuota -> 0,2 req/detik (12/menit) memberi margin aman.
-    rate = float(os.getenv("RAGAS_RPS", "0.2"))
+    # Batas laju TERUKUR LANGSUNG pada A4 (6 Agustus 2026): pesan galat Gemini menyebut
+    # `quota_value: 10` per menit untuk gemini-2.5-flash-lite, BUKAN 15 RPM seperti catatan
+    # Tugas 6. Karena itu default diturunkan ke 0,13 req/detik (~8/menit), memberi margin
+    # di bawah 10 RPM. Menyetel terlalu tinggi menyebabkan retry backoff yang justru
+    # membuat seluruh evaluasi jauh lebih lambat (A4: satu permintaan menunggu 33 detik).
+    rate = float(os.getenv("RAGAS_RPS", "0.13"))
     limiter = InMemoryRateLimiter(requests_per_second=rate, check_every_n_seconds=0.5,
                                   max_bucket_size=1)
 
