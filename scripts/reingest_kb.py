@@ -345,6 +345,13 @@ def main() -> int:
                         help="Abort bila total teks satu PDF < ambang ini (indikasi hasil scan)")
     parser.add_argument("--min-chunk-chars", type=int, default=80,
                         help="Buang chunk lebih pendek dari ambang ini (fragmen ekor halaman)")
+    # Ditambahkan untuk B4. Tanpa ini ukuran potongan hanya dapat diubah dengan menyunting
+    # config.yaml, sehingga sapuan parameter akan meninggalkan config dalam keadaan berubah
+    # bila skripnya gagal di tengah. Default None = ikut config, jadi perilaku lama utuh.
+    parser.add_argument("--chunk-size", type=int, default=None,
+                        help="Timpa rag.chunk_size untuk satu jalannya (dipakai sapuan B4)")
+    parser.add_argument("--chunk-overlap", type=int, default=None,
+                        help="Timpa rag.chunk_overlap untuk satu jalannya (dipakai sapuan B4)")
     args = parser.parse_args()
 
     from src.rag.knowledge_base import MedicalKnowledgeBase
@@ -418,7 +425,11 @@ def main() -> int:
         shutil.rmtree(persist, ignore_errors=True)
         print(f"[4] Folder chroma lama dihapus (fresh rebuild): {persist}")
 
-    chunks = kb.chunk_documents(documents=docs)
+    chunks = kb.chunk_documents(documents=docs, chunk_size=args.chunk_size,
+                                chunk_overlap=args.chunk_overlap)
+    if args.chunk_size is not None or args.chunk_overlap is not None:
+        print(f"    (chunk_size={args.chunk_size or 'config'}, "
+              f"chunk_overlap={args.chunk_overlap or 'config'} — timpaan dari argumen)")
 
     # Fragmen ekor halaman: pemecahan per halaman menghasilkan potongan pendek
     # yang dulu tersembunyi oleh penggabungan antar halaman.

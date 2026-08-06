@@ -48,6 +48,11 @@ pyyaml==6.0.1
 python-dotenv==1.0.0
 tqdm==4.65.0
 
+# Evaluasi Bagian B — TIDAK dipakai jalur produksi.
+# rank_bm25 hanya dibutuhkan scripts/eval_hybrid_bm25.py (pengukuran B3). Belum diadopsi:
+# angka B3 terkena sirkularitas antara BM25 dan pelabel relevansi berbasis kata kunci.
+rank_bm25==0.2.2
+
 # Testing
 pytest==7.4.0
 pytest-cov==4.1.0
