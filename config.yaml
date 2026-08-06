@@ -90,7 +90,12 @@ rag:
   google_embedding_model: "models/embedding-001"
 
   # Retrieval (MMR)
-  top_k_retrieval: 4    # jumlah dokumen yang dikembalikan
+  # Dinaikkan dari 4 ke 5 pada Tahap 1 (keputusan pembimbing). Sebelumnya produksi memakai
+  # 4 sedangkan SELURUH skrip evaluasi memakai TOP_K=5 hardcoded, sehingga setiap angka
+  # Hit@5, MRR, precision@5, dan nDCG@5 yang pernah dilaporkan mengukur kedalaman yang
+  # tidak pernah dipakai aplikasi. Menaikkan produksi lebih murah daripada menghitung ulang
+  # seluruh angka retrieval, dan menampilkan lima rujukan tidak lebih buruk bagi dokter.
+  top_k_retrieval: 5    # jumlah dokumen yang dikembalikan
   fetch_k: 12           # ukuran kolam kandidat sebelum diversifikasi MMR
   # 1,0 = relevansi murni; 0,0 = keragaman maksimum.
   # Diubah dari 0,5 ke 0,0 pada Tahap 0 (adopsi B5), berdasarkan sapuan 5 nilai yang
