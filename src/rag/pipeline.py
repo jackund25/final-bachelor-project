@@ -37,6 +37,9 @@ def _opt_similarity(value: Any) -> Optional[float]:
         return None
 
 
+from src.timing import STAGE_GENERATE, STAGE_QUERY, STAGE_RETRIEVE, StageTimer  # noqa: E402
+
+
 def _risk_level_from_prediction(prediction: float) -> str:
     """Label risiko Bahasa Indonesia dari nilai prediksi (ambang: src/constants.py)."""
     from src.constants import classify_glucose_5zone, risk_label_id
@@ -201,6 +204,7 @@ class RAGPipeline:
         prediction: float,
         query: Optional[str] = None,
         top_k: Optional[int] = None,
+        timer: Optional[StageTimer] = None,
     ) -> Dict[str, Any]:
         """Generate a prediction-conditioned clinical advisory.
 
@@ -208,19 +212,30 @@ class RAGPipeline:
         into the retrieval query so that both document retrieval and the LLM
         response are conditioned on the numerical forecast — the core novelty
         of this system versus static SPARQL-query approaches.
+
+        ``timer`` mengumpulkan durasi per tahap. Pemanggil dapat meneruskan timer yang
+        sudah berisi tahap sebelum pipeline (rekayasa fitur, prediksi, kalibrasi)
+        sehingga hasilnya mencakup seluruh jalur, bukan hanya bagian RAG.
         """
         if not self._ready:
             self.build()
 
+        # Instrumentasi waktu per tahap (KNF-10). Timer selalu dibuat, walau pemanggil
+        # tidak memberikannya, supaya `timings` pada hasil tidak pernah kosong dan
+        # aplikasi tidak perlu menyalakan apa pun untuk mendapat angkanya.
+        timer = timer or StageTimer()
+
         # Prediction-conditioned query: numeric prediction → natural language context
         self._last_llm_context = None
-        user_query = query or self._build_query(patient_state, prediction)
+        with timer.measure(STAGE_QUERY):
+            user_query = query or self._build_query(patient_state, prediction)
         k = top_k or self.top_k
 
-        retrieved_rows = self._retrieve(
-            user_query, patient_state=patient_state, top_k=k,
-            condition_glucose=float(prediction),
-        )
+        with timer.measure(STAGE_RETRIEVE):
+            retrieved_rows = self._retrieve(
+                user_query, patient_state=patient_state, top_k=k,
+                condition_glucose=float(prediction),
+            )
         retrieved_docs = [
             RetrievedDocument(
                 rank=row.get("rank", idx + 1),
@@ -232,21 +247,22 @@ class RAGPipeline:
             for idx, row in enumerate(retrieved_rows)
         ]
 
-        advisory_payload = self.generator.generate_advisory(
-            query=user_query,
-            retrieved_docs=[
-                {
-                    "text": item.text,
-                    "source": item.source,
-                    "metadata": item.metadata,
-                }
-                for item in retrieved_docs
-            ],
-            patient_state=patient_state,
-            prediction=prediction,
-            horizon_minutes=self.prediction_horizon_minutes,
-            clinical_context=getattr(self, "_last_llm_context", None),
-        )
+        with timer.measure(STAGE_GENERATE):
+            advisory_payload = self.generator.generate_advisory(
+                query=user_query,
+                retrieved_docs=[
+                    {
+                        "text": item.text,
+                        "source": item.source,
+                        "metadata": item.metadata,
+                    }
+                    for item in retrieved_docs
+                ],
+                patient_state=patient_state,
+                prediction=prediction,
+                horizon_minutes=self.prediction_horizon_minutes,
+                clinical_context=getattr(self, "_last_llm_context", None),
+            )
 
         explanation = self._ensure_disclaimer(advisory_payload["answer"])
         advisory = self._build_advisory(patient_state, prediction, retrieved_docs, explanation)
@@ -272,6 +288,8 @@ class RAGPipeline:
             # Apakah jawaban benar-benar ditopang dokumen. UI wajib memakai ini
             # agar tidak menyajikan rekomendasi tanpa rujukan seolah-olah bersumber.
             "grounded": bool(retrieved_docs),
+            # Durasi per tahap (detik) + agregat _total/_lokal/_jaringan.
+            "timings": timer.as_dict(),
         }
 
     # ------------------------------------------------------------------

@@ -13,6 +13,7 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 import json
 import pickle
 from datetime import datetime
+from time import perf_counter
 
 import pandas as pd
 import streamlit as st
@@ -20,6 +21,7 @@ import streamlit as st
 from src.alerts import evaluate_divergence
 from src.clinical_state import ClinicalDecisionLog
 from src.conformal import coverage_achieved, prediction_interval
+from src.timing import STAGE_CALIBRATE, STAGE_FEATURES, STAGE_PREDICT, StageTimer
 from src.constants import GLUCOSE_LOW, RISK_HYPO, risk_from_condition_class
 from src.data.loader import DiabetesDataLoader
 from src.rag import RAGPipeline
@@ -186,14 +188,18 @@ try:
     # SENDIRI: prediksi 60 menit jauh lebih tidak pasti daripada 30 menit, sehingga
     # satu faktor untuk keduanya pasti keliru pada salah satunya.
     ramalan = []
+    t_fitur = t_prediksi = t_kalibrasi = 0.0
     for a in horizons:
-        w = build_window(pat, a)
-        p = predict_next(w, a)
+        _t = perf_counter(); w = build_window(pat, a); t_fitur += perf_counter() - _t
+        _t = perf_counter(); p = predict_next(w, a); t_prediksi += perf_counter() - _t
+        _t = perf_counter()
         s = predict_uncertainty(w, a)
+        interval = prediction_interval(p, s, a["horizon"], level=95)
+        t_kalibrasi += perf_counter() - _t
         ramalan.append({
             "art": a, "window": w, "horizon": a["horizon"],
             "menit": a["horizon"] * 5, "pred": p, "std": s,
-            "interval": prediction_interval(p, s, a["horizon"], level=95),
+            "interval": interval,
             "cakupan": coverage_achieved(a["horizon"], level=95),
         })
     utama = ramalan[0]
@@ -310,7 +316,15 @@ with tab_rec:
         }
         with st.spinner("Menyusun rekomendasi..."):
             try:
-                res = load_rag().answer(patient_state=patient_state, prediction=pred)
+                # Timer sudah berisi tahap sebelum RAG (rekayasa fitur, prediksi,
+                # kalibrasi) supaya angkanya benar-benar ujung-ke-ujung, bukan hanya
+                # bagian RAG-nya. KNF-10 menuntut waktu yang dirasakan dokter.
+                timer = StageTimer()
+                timer.record(STAGE_FEATURES, t_fitur)
+                timer.record(STAGE_PREDICT, t_prediksi)
+                timer.record(STAGE_CALIBRATE, t_kalibrasi)
+                res = load_rag().answer(patient_state=patient_state, prediction=pred,
+                                        timer=timer)
                 st.session_state["last_rec"] = res
             except Exception as exc:  # noqa: BLE001
                 st.session_state["last_rec"] = None
@@ -327,6 +341,16 @@ with tab_rec:
                 "Teks di bawah TIDAK didukung kutipan panduan dan tidak boleh diperlakukan "
                 "sebagai rekomendasi bersumber."
             )
+
+        # Waktu tanggap ujung-ke-ujung (KNF-10) — ditampilkan apa adanya kepada dokter.
+        tm = res.get("timings") or {}
+        if tm.get("_total"):
+            st.caption(f"⏱️ Waktu tanggap: **{tm['_total']:.2f} dtk** "
+                       f"(komputasi lokal {tm.get('_lokal', 0):.2f} dtk, "
+                       f"menunggu LLM {tm.get('_jaringan', 0):.2f} dtk)")
+            with st.expander("Rincian waktu per tahap"):
+                st.table({"tahap": list(k for k in tm if not k.startswith('_')),
+                          "detik": [round(tm[k], 3) for k in tm if not k.startswith('_')]})
 
         st.markdown(f'<div class="card">{res["explanation"]}</div>', unsafe_allow_html=True)
 
