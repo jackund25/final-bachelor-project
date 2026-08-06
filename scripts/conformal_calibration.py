@@ -9,13 +9,27 @@ Dua varian:
   - ternormalisasi: interval = pred +/- q*std        (adaptif: lebar mengikuti ketidakpastian)
 
 Split per-pasien (train/kalibrasi/test terpisah) → meniru deployment untuk pasien baru.
-Output: results/eval_prediksi/conformal.json
+
+Horizon dipilih lewat --horizon (dalam LANGKAH, bukan menit). Aplikasi menampilkan dua
+horizon, dan faktor konformalnya TIDAK boleh dipakai lintas horizon: prediksi 60 menit
+jauh lebih tidak pasti daripada 30 menit, sehingga memakai satu faktor untuk keduanya
+membuat salah satu interval keliru lebar atau keliru sempit.
+
+Output: results/eval_prediksi/conformal_h{N}.json
+
+Catatan penting (diperbaiki pada A3): sebelumnya skrip ini membangun jendela TANPA
+``max_gap_steps``, sementara pelatihan produksi (src/models/rf_model.py) memakainya sejak
+Tugas 5. Modelnya karena itu dilatih atas jendela yang boleh melintasi jeda sensor
+sedangkan model produksi tidak, sehingga faktor yang dihasilkan mengkalibrasi model yang
+berbeda dari yang benar-benar dipakai aplikasi.
 """
 import torch  # noqa: F401
 import os
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 
+import argparse
 import json
+import time
 from pathlib import Path
 import numpy as np
 import yaml
@@ -24,7 +38,7 @@ from sklearn.ensemble import RandomForestRegressor
 from src.data.loader import DiabetesDataLoader
 from src.data.preprocessor import DataPreprocessor
 
-OUT = Path("results/eval_prediksi/conformal.json")
+OUT_DIR = Path("results/eval_prediksi")
 EPS = 1e-6
 
 
@@ -41,11 +55,25 @@ def conformal_q(scores, alpha):
 def main():
     cfg = yaml.safe_load(open("config.yaml", encoding="utf-8"))
     m = cfg["model"]
-    seq_len = m.get("sequence_length", 12); horizon = m.get("default_horizon", 6)
+
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--horizon", type=int, default=m.get("default_horizon", 6),
+                    help="horizon dalam LANGKAH (6 = 30 menit, 12 = 60 menit)")
+    args = ap.parse_args()
+
+    seq_len = m.get("sequence_length", 12); horizon = args.horizon
     use_eng = m.get("use_engineered", False); predict_delta = m.get("predict_delta", False)
     fe = m.get("feature_engineering", {})
     feats = m["engineered_features"] if use_eng else m["features"]
     rf = m.get("random_forest", {}); seed = cfg.get("data", {}).get("seed", 42)
+
+    # Segmentasi jeda sensor WAJIB sama dengan pelatihan produksi (Tugas 5), kalau tidak
+    # faktor konformalnya mengkalibrasi model yang berbeda dari yang dipakai aplikasi.
+    max_gap_steps = m.get("max_gap_steps")
+    cadence_min = float(cfg.get("data", {}).get("sampling_interval_min", 5))
+
+    out_path = OUT_DIR / f"conformal_h{horizon}.json"
+    t0 = time.time()
 
     loader = DiabetesDataLoader(cfg["data"]["output_dir"])
     df = loader.load_csv("ohio_t1dm_merged.csv").sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
@@ -60,7 +88,10 @@ def main():
     print(f"train={len(train_p)} kalibrasi={cal_p} test={test_p}")
 
     def seqs(sub):
-        return prep.create_sequences(df[df["patient_id"].isin(sub)], seq_len, horizon, return_anchor=True)
+        return prep.create_sequences(
+            df[df["patient_id"].isin(sub)], seq_len, horizon, return_anchor=True,
+            max_gap_steps=max_gap_steps, source_interval_min=cadence_min,
+        )
 
     Xtr, ytr, atr = seqs(train_p); Xca, yca, aca = seqs(cal_p); Xte, yte, ate = seqs(test_p)
     p2 = DataPreprocessor(cfg)
@@ -87,7 +118,13 @@ def main():
     def width(lo, hi):
         return float(np.mean(hi - lo))
 
-    out = {"horizon_min": horizon * 5, "n_cal": int(len(yca)), "n_test": int(len(yte)), "levels": {}}
+    out = {
+        "horizon_steps": int(horizon),
+        "horizon_min": int(horizon * cadence_min),
+        "max_gap_steps": max_gap_steps,
+        "n_cal": int(len(yca)), "n_test": int(len(yte)),
+        "levels": {},
+    }
     for alpha, tgt in [(0.10, 90), (0.05, 95)]:
         # baseline: +/- z*std
         z = 1.645 if tgt == 90 else 1.96
@@ -104,15 +141,18 @@ def main():
             "conformal_normalized": {"coverage%": round(coverage(lo_n, hi_n), 1), "mean_width": round(width(lo_n, hi_n), 1), "q": round(q_norm, 2)},
         }
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    json.dump(out, open(OUT, "w", encoding="utf-8"), indent=2)
+    out["durasi_detik"] = round(time.time() - t0, 1)
 
-    print(f"\n=== KALIBRASI INTERVAL (+{horizon*5} mnt, n_cal={len(yca)}, n_test={len(yte)}) ===")
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    json.dump(out, open(out_path, "w", encoding="utf-8"), indent=2)
+
+    print(f"\n=== KALIBRASI INTERVAL (+{out['horizon_min']} mnt, n_cal={len(yca)}, "
+          f"n_test={len(yte)}, max_gap_steps={max_gap_steps}) ===")
     for tgt, d in out["levels"].items():
         print(f"\nTarget cakupan {tgt}%:")
         for name, s in d.items():
             print(f"  {name:22s}: cakupan {s['coverage%']:>5}%  | lebar rata2 {s['mean_width']:>5} mg/dL")
-    print(f"\nOutput -> {OUT}")
+    print(f"\nDurasi {out['durasi_detik']} dtk. Output -> {out_path}")
 
 
 if __name__ == "__main__":

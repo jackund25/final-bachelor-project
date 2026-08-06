@@ -19,6 +19,7 @@ import streamlit as st
 
 from src.alerts import evaluate_divergence
 from src.clinical_state import ClinicalDecisionLog
+from src.conformal import coverage_achieved, prediction_interval
 from src.constants import GLUCOSE_LOW, RISK_HYPO, risk_from_condition_class
 from src.data.loader import DiabetesDataLoader
 from src.rag import RAGPipeline
@@ -63,8 +64,8 @@ def predict_condition(window_df, clf, art):
 
 
 @st.cache_resource
-def load_artifacts():
-    bf = Path("models/rf_inference_bundle.pkl")
+def load_artifacts(path: str = "models/rf_inference_bundle.pkl"):
+    bf = Path(path)
     if not bf.exists():
         return None
     b = pickle.load(open(bf, "rb"))
@@ -75,6 +76,24 @@ def load_artifacts():
             "use_engineered": bool(b.get("use_engineered", False)),
             "predict_delta": bool(b.get("predict_delta", False)),
             "feature_engineering": dict(b.get("feature_engineering", {}))}
+
+
+# Bundle per horizon. Sebelumnya aplikasi hanya memuat rf_inference_bundle.pkl (= h6),
+# padahal bundle h12 sudah ada di models/ dan deskripsi KF-03 menuntut dua horizon.
+HORIZON_BUNDLES = ["models/rf_inference_bundle_h6.pkl", "models/rf_inference_bundle_h12.pkl"]
+
+
+def load_horizons():
+    """Muat semua bundle horizon yang tersedia, urut horizon menaik.
+
+    Jatuh kembali ke bundle generik bila berkas per-horizon tidak ada, supaya instalasi
+    lama tetap berjalan dengan satu horizon alih-alih gagal total.
+    """
+    arts = [a for a in (load_artifacts(p) for p in HORIZON_BUNDLES) if a is not None]
+    if not arts:
+        generik = load_artifacts()
+        arts = [generik] if generik is not None else []
+    return sorted(arts, key=lambda a: a["horizon"])
 
 
 @st.cache_resource
@@ -129,11 +148,13 @@ def predict_uncertainty(window_df, art):
 app_header("Konsultasi Pasien Diabetes",
            "Alat bantu keputusan klinis — prediksi glukosa & rekomendasi antisipatif", "🩺")
 
-art = load_artifacts()
-if art is None:
+horizons = load_horizons()
+if not horizons:
     st.error("Model belum siap. Jalankan pelatihan dari terminal:")
     st.code("python -m src.models.rf_model --config config.yaml --data_source ohio_t1dm")
     disclaimer_footer(); st.stop()
+# Horizon terpendek menjadi acuan jendela fitur dan pengklasifikasi kondisi.
+art = horizons[0]
 
 try:
     data_df = load_dataset()
@@ -148,7 +169,8 @@ with st.sidebar:
                        if st.session_state.get("patient_id") in patient_ids else 0)
     st.session_state["patient_id"] = sel
     horizon_min = art["horizon"] * 5
-    st.caption(f"Horizon prediksi: **+{horizon_min} menit**")
+    daftar_horizon = ", ".join(f"+{a['horizon'] * 5} mnt" for a in horizons)
+    st.caption(f"Horizon prediksi: **{daftar_horizon}**")
     st.markdown("---")
     st.caption("Alur: tinjau status → prediksi & risiko → rekomendasi → simulasi/keputusan.")
 
@@ -160,8 +182,22 @@ if len(pat) < seq_len:
 window_df = build_window(pat, art)
 current = float(window_df["glucose"].iloc[-1])
 try:
-    pred = predict_next(window_df, art)
-    pred_std = predict_uncertainty(window_df, art)
+    # Satu baris ringkasan per horizon. Setiap horizon memakai faktor konformalnya
+    # SENDIRI: prediksi 60 menit jauh lebih tidak pasti daripada 30 menit, sehingga
+    # satu faktor untuk keduanya pasti keliru pada salah satunya.
+    ramalan = []
+    for a in horizons:
+        w = build_window(pat, a)
+        p = predict_next(w, a)
+        s = predict_uncertainty(w, a)
+        ramalan.append({
+            "art": a, "window": w, "horizon": a["horizon"],
+            "menit": a["horizon"] * 5, "pred": p, "std": s,
+            "interval": prediction_interval(p, s, a["horizon"], level=95),
+            "cakupan": coverage_achieved(a["horizon"], level=95),
+        })
+    utama = ramalan[0]
+    pred, pred_std = utama["pred"], utama["std"]
 except Exception as exc:  # noqa: BLE001
     st.error("Gagal menjalankan model — kemungkinan environment tidak cocok. "
              "Model dilatih dengan scikit-learn 1.3.0; jalankan aplikasi di environment **diabetes-ta**:")
@@ -185,15 +221,23 @@ with c1:
 with c2:
     risk_badge(pred, prefix=f"Prediksi +{horizon_min} mnt")
     st.markdown("")
-    k = st.columns(2)
-    k[0].metric("Glukosa sekarang", f"{current:.0f} mg/dL", help=cur_label)
-    k[1].metric(f"Prediksi +{horizon_min} mnt", f"{pred:.0f} mg/dL", delta=f"{delta:+.0f}")
-    if pred_std:
-        # Faktor conformal ternormalisasi (kalibrasi split-conformal → cakupan ~95.5% tervalidasi).
-        # ±1.96·std hanya menutup ~86% (falsely confident); lihat scripts/conformal_calibration.py.
-        CONFORMAL_K = 3.3
-        lo, hi = pred - CONFORMAL_K * pred_std, pred + CONFORMAL_K * pred_std
-        st.caption(f"Rentang keyakinan 95% (terkalibrasi conformal): **{lo:.0f}–{hi:.0f}** mg/dL")
+    st.metric("Glukosa sekarang", f"{current:.0f} mg/dL", help=cur_label)
+
+    # Satu blok per horizon, masing-masing dengan intervalnya sendiri.
+    for r in ramalan:
+        st.metric(f"Prediksi +{r['menit']} mnt", f"{r['pred']:.0f} mg/dL",
+                  delta=f"{r['pred'] - current:+.0f}")
+        if r["interval"] is not None:
+            lo, hi = r["interval"]
+            cov = f"{r['cakupan']:.1f}%" if r["cakupan"] is not None else "?"
+            st.caption(f"Rentang 95% terkalibrasi conformal: **{lo:.0f}–{hi:.0f}** mg/dL "
+                       f"(cakupan terukur {cov})")
+        else:
+            # Sengaja TIDAK memakai faktor cadangan. Interval dengan faktor tebakan tidak
+            # dapat dibedakan dokter dari interval yang benar-benar terkalibrasi.
+            st.caption(f"Interval +{r['menit']} mnt belum terkalibrasi — jalankan "
+                       f"`python scripts/conformal_calibration.py --horizon {r['horizon']}`")
+
     trend = "↑ Meningkat" if delta > 10 else ("↓ Menurun" if delta < -10 else "→ Stabil")
     st.metric("Tren", trend)
     # ringkasan kondisi aktif
@@ -208,9 +252,14 @@ with c2:
 # Logikanya ada di src/alerts.py, bukan di sini: keputusan klinis harus dapat diuji
 # tanpa menjalankan Streamlit. Versi lama hanya menyala bila kondisi kini "Dalam
 # Target", sehingga ayunan hipo<->hiper tidak pernah tertangkap.
-divergensi = evaluate_divergence(current, pred, horizon_min)
-if divergensi is not None:
-    render_divergence_alert(divergensi)
+#
+# Dievaluasi pada SETIAP horizon dan disebutkan horizon mana yang memicunya. Divergensi
+# bisa muncul hanya di +60 menit sementara +30 menit masih terlihat aman; kalau hanya
+# horizon pendek yang diperiksa, justru peringatan paling awal yang hilang.
+for r in ramalan:
+    d = evaluate_divergence(current, r["pred"], r["menit"])
+    if d is not None:
+        render_divergence_alert(d, horizon_note=f" (+{r['menit']} mnt)")
 
 # Peringatan HIPOGLIKEMIA DINI.
 # Prediksi titik regresi menyusut ke tengah: pada ambang <70 ia hanya menangkap 14% kejadian
@@ -220,9 +269,9 @@ if divergensi is not None:
 #   (b) batas bawah interval konformal       -> menandai risiko yang masih tercakup ketidakpastian
 cond_clf = load_condition_classifier()
 pred_condition = predict_condition(window_df, cond_clf, art)
-lo95 = hi95 = None
-if pred_std:
-    lo95, hi95 = pred - 3.3 * pred_std, pred + 3.3 * pred_std
+# Interval yang sama dengan yang ditampilkan di atas — dulu faktor 3,3 ditulis ulang di
+# sini, sehingga dua interval pada halaman yang sama bisa berbeda tanpa error apa pun.
+lo95, hi95 = utama["interval"] if utama["interval"] is not None else (None, None)
 
 if pred_condition == RISK_HYPO and pred >= GLUCOSE_LOW:
     st.warning(f"🔻 **Waspada hipoglikemia:** prediksi titik **{pred:.0f} mg/dL** masih di atas {GLUCOSE_LOW:.0f}, "
