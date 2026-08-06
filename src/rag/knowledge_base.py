@@ -352,8 +352,18 @@ class MedicalKnowledgeBase:
                 Document(page_content=row["text"], metadata=_sanitize_metadata(raw_meta))
             )
 
-        vector_store.add_documents(documents)
-        logger.info("Saved %d chunks to ChromaDB at %s", len(documents), self.persist_dir)
+        # ChromaDB menolak batch di atas batas internalnya (5.461 pada versi ini) dengan
+        # InternalError, BUKAN dengan pesan yang menyarankan pemecahan. Korpus produksi
+        # sekarang 2.061 chunk sehingga belum pernah menyentuhnya, tetapi ukuran potongan
+        # yang lebih kecil langsung melewatinya: chunk_size=300 menghasilkan 5.896 chunk
+        # dan seluruh ingest gagal. Memecah di sini membuat batasnya tidak lagi menjadi
+        # batas korpus.
+        BATCH = 4000
+        for mulai in range(0, len(documents), BATCH):
+            vector_store.add_documents(documents[mulai:mulai + BATCH])
+        logger.info("Saved %d chunks to ChromaDB at %s (%d batch)",
+                    len(documents), self.persist_dir,
+                    (len(documents) + BATCH - 1) // max(BATCH, 1))
         return True
 
     def save_chunks(self, output_path: Optional[Path] = None) -> None:

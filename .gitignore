@@ -35,6 +35,9 @@ models/*.gguf
 # vector DB (generated; rebuild via scripts/reingest_kb.py)
 models/chroma_db/
 models/chroma_db_multilingual/
+# Indeks sementara sapuan ukuran potongan (B4) — dibangun ulang oleh
+# scripts/eval_chunk_size.py, tidak perlu masuk repo.
+models/_chunk_sweep/
 # Koleksi evaluasi RAGAS (dibangun ulang via scripts/build_eval_kb.py)
 models/chroma_db_eval/
 

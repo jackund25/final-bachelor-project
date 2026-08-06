@@ -73,5 +73,80 @@
     },
     "waktu": "2026-08-06 11:58:04",
     "catatan": "set penyetelan n=240, korpus=kb12_sym"
+  },
+  {
+    "parameter": "chunk_size",
+    "nilai": 300,
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 3.3,
+      "hit@3(%)": 60.0,
+      "hit@5(%)": 65.4,
+      "mrr": 0.306,
+      "n_chunk": 5896
+    },
+    "waktu": "2026-08-06 12:04:59",
+    "catatan": "overlap=40, set penyetelan n=240, korpus=kb12_sym"
+  },
+  {
+    "parameter": "chunk_size",
+    "nilai": 500,
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 40.0,
+      "hit@3(%)": 63.3,
+      "hit@5(%)": 77.9,
+      "mrr": 0.541,
+      "n_chunk": 3587
+    },
+    "waktu": "2026-08-06 12:07:28",
+    "catatan": "overlap=67, set penyetelan n=240, korpus=kb12_sym"
+  },
+  {
+    "parameter": "chunk_size",
+    "nilai": 900,
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 26.2,
+      "hit@3(%)": 62.9,
+      "hit@5(%)": 66.7,
+      "mrr": 0.425,
+      "n_chunk": 2061
+    },
+    "waktu": "2026-08-06 12:09:47",
+    "catatan": "overlap=120, set penyetelan n=240, korpus=kb12_sym"
+  },
+  {
+    "parameter": "chunk_size",
+    "nilai": 1400,
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 16.2,
+      "hit@3(%)": 45.0,
+      "hit@5(%)": 52.9,
+      "mrr": 0.313,
+      "n_chunk": 1404
+    },
+    "waktu": "2026-08-06 12:11:26",
+    "catatan": "overlap=187, set penyetelan n=240, korpus=kb12_sym"
+  },
+  {
+    "parameter": "chunk_size",
+    "nilai": 2000,
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 13.8,
+      "hit@3(%)": 49.2,
+      "hit@5(%)": 53.8,
+      "mrr": 0.302,
+      "n_chunk": 1014
+    },
+    "waktu": "2026-08-06 12:12:55",
+    "catatan": "overlap=267, set penyetelan n=240, korpus=kb12_sym"
   }
 ]
