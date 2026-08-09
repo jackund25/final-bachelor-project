@@ -115,10 +115,23 @@ rag:
 
   llm:
     provider: "gemini"  # Options: gemini, ollama, template
-    model: "gemini-2.5-flash-lite"  # Kuota free-tier gemini-2.5-flash-lite (diverifikasi 2026-08):
-                                    # 15 request/menit, 1.000 request/HARI. Cukup untuk aplikasi
-                                    # maupun RAGAS (~110 panggilan untuk 10 kasus x 4 metrik).
-                                    # flash-lite dipilih karena non-thinking (latensi rendah).
+    # Diubah dari gemini-2.5-flash-lite pada 7 Agustus 2026. ALASANNYA KUOTA, BUKAN MUTU.
+    #
+    # Kuota free-tier BERBEDA JAUH antargenerasi (dasbor AI Studio, 7 Agu 2026):
+    #   gemini-3.5-flash-lite : 15 RPM, 500 RPD   <-- dipakai sekarang
+    #   gemini-3.1-flash-lite : 15 RPM, 500 RPD
+    #   gemini-2.5-flash-lite : 10 RPM,  20 RPD   <-- sebelumnya; 25x lebih kecil
+    #   gemini-2.5-flash      :  5 RPM,  20 RPD
+    #   gemini-3-flash        :  5 RPM,  20 RPD
+    #
+    # Dengan 20 RPD, evaluasi RAGAS (~116 panggilan) butuh 6 hari dan praktis tidak
+    # dapat dijalankan. Dengan 500 RPD selesai dalam satu hari. Kuota berlaku PER MODEL.
+    #
+    # Kepatuhan SYSTEM_PROMPT diuji lewat jalur produksi sebelum diadopsi: penanda [S..]
+    # valid, tidak menulis nomor halaman sendiri, jawaban tersusun, Bahasa Indonesia
+    # penuh. Pada kasus yang konteksnya tidak memuat jawaban, 3.5 MENGAKUI keterbatasan
+    # itu sedangkan 2.5 mengarang dari konteks yang salah.
+    model: "gemini-3.5-flash-lite"
     ollama_model: "llama3.1:8b"
     # Temperature rendah demi keselamatan klinis: menekan risiko halusinasi pada
     # nasihat medis. Nilai >0,5 menghasilkan bahasa lebih bervariasi tetapi berisiko

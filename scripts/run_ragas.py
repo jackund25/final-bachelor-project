@@ -86,6 +86,26 @@ DEFAULT_METRICS = ["faithfulness", "answer_relevancy", "context_precision", "con
 # supaya klasifikasinya tidak sensitif terhadap pembulatan.
 GLUKOSA_PER_KONDISI = {"hipoglikemia": 58.0, "normal": 120.0, "hiperglikemia": 230.0}
 
+# KUOTA BERLAKU PER MODEL, dan selisihnya antargenerasi mencapai 25 KALI LIPAT.
+# Sumber: dasbor Google AI Studio, diperiksa 7 Agustus 2026. Sebelumnya skrip ini memakai
+# SATU angka RPD untuk semua model — sebagian penyebab kesalahan estimasi Tugas 6.
+# Format: nama_model -> (RPM, RPD)
+KUOTA_PER_MODEL = {
+    "gemini-3.5-flash-lite": (15, 500),
+    "gemini-3.1-flash-lite": (15, 500),
+    "gemini-2.5-flash-lite": (10, 20),
+    "gemini-2.5-flash": (5, 20),
+    "gemini-3-flash": (5, 20),
+}
+# Model yang tidak terdaftar diperlakukan konservatif: pakai kuota terkecil yang diketahui,
+# supaya estimasi tidak pernah terlalu optimistis pada model yang belum diukur.
+KUOTA_TIDAK_DIKENAL = (5, 20)
+
+
+def kuota_model(nama: str) -> tuple[int, int]:
+    """(RPM, RPD) untuk satu model. Konservatif bila model belum terdaftar."""
+    return KUOTA_PER_MODEL.get(nama, KUOTA_TIDAK_DIKENAL)
+
 # Frasa disclaimer yang dipaksa RAGPipeline._ensure_disclaimer().
 DISCLAIMER_FRASA = "keputusan medis final tetap pada dokter"
 
@@ -195,7 +215,8 @@ def _project(n: int, metrics: List[str], top_k: int) -> int:
     return total
 
 
-def _print_estimate(est: Dict[str, Any], rpd: int = 20) -> None:
+def _print_estimate(est: Dict[str, Any], rpd: int = 20, rpm: int = 10,
+                    model: str = "?") -> None:
     print("=" * 66)
     print("ESTIMASI PANGGILAN LLM SEBELUM EKSEKUSI")
     print("=" * 66)
@@ -216,24 +237,25 @@ def _print_estimate(est: Dict[str, Any], rpd: int = 20) -> None:
         print(f"  Proyeksi bila {penuh['n']} kasus terisi penuh: ~{penuh['total']} panggilan")
         print("=" * 66)
 
-    # Batas laju TERUKUR pada A4, bukan angka dari dokumentasi.
-    RPM_TERUKUR = 10
     rps = float(os.getenv("RAGAS_RPS", "0.13"))
-    menit_min = total / RPM_TERUKUR
+    menit_min = total / max(rpm, 1)
     menit_setelan = total / (rps * 60) if rps > 0 else float("inf")
-    print("  KUOTA DAN WAKTU (angka TERUKUR pada A4, bukan dari dokumentasi):")
-    print(f"    batas laju terukur   : {RPM_TERUKUR} permintaan/menit")
+    hari = -(-total // max(rpd, 1))  # pembulatan ke atas
+    print(f"  KUOTA PER MODEL — berlaku PER MODEL, bukan per akun:")
+    print(f"    model                : {model}")
+    print(f"    batas laju           : {rpm} permintaan/menit")
+    print(f"    KUOTA HARIAN         : {rpd} permintaan/hari")
     print(f"    setelan RAGAS_RPS    : {rps} req/dtk (~{rps * 60:.1f}/menit)")
     print(f"    waktu minimum        : ~{menit_min:.0f} mnt (pada batas laju)")
     print(f"    waktu pada setelan   : ~{menit_setelan:.0f} mnt")
-    hari = -(-total // rpd)  # pembulatan ke atas
-    print(f"    KUOTA HARIAN         : {rpd} permintaan/hari/model (TERUKUR dari galat 429)")
     print(f"    perlu                : ~{hari} HARI untuk {total} panggilan")
     print("=" * 66)
     if hari > 1:
+        lebih_besar = [m for m, (_, d) in KUOTA_PER_MODEL.items() if d > rpd]
         print(f"  PERINGATAN: {total} panggilan MELEBIHI kuota harian {rpd}.")
-        print(f"  Jalankan bertahap; cache per kasus-per-metrik menjaga agar penilaian")
-        print(f"  yang sudah berhasil tidak diulang. Menurunkan laju TIDAK menambah kuota.")
+        print(f"  Menurunkan laju TIDAK menambah kuota harian.")
+        if lebih_besar:
+            print(f"  Model dengan kuota lebih besar: {', '.join(sorted(lebih_besar))}")
         print("=" * 66)
     print("Catatan: jumlah faithfulness bergantung panjang jawaban, jadi angka di")
     print("atas adalah perkiraan BAWAH.")
@@ -283,7 +305,11 @@ def main() -> int:
         "n": n_kerangka,
         "total": _project(n_kerangka, metrics, top_k),
     }
-    _print_estimate(est)
+    _rpm, _rpd = kuota_model(judge_model)
+    est["model"] = judge_model
+    est["kuota_model"] = {"rpm": _rpm, "rpd": _rpd,
+                          "terdaftar": judge_model in KUOTA_PER_MODEL}
+    _print_estimate(est, rpd=_rpd, rpm=_rpm, model=judge_model)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "estimasi_terakhir.json").write_text(
@@ -342,12 +368,14 @@ def main() -> int:
         print("GAGAL: GOOGLE_API_KEY tidak ditemukan di environment / .env", file=sys.stderr)
         return 1
 
-    # Batas laju TERUKUR LANGSUNG pada A4 (6 Agustus 2026): pesan galat Gemini menyebut
-    # `quota_value: 10` per menit untuk gemini-2.5-flash-lite, BUKAN 15 RPM seperti catatan
-    # Tugas 6. Karena itu default diturunkan ke 0,13 req/detik (~8/menit), memberi margin
-    # di bawah 10 RPM. Menyetel terlalu tinggi menyebabkan retry backoff yang justru
-    # membuat seluruh evaluasi jauh lebih lambat (A4: satu permintaan menunggu 33 detik).
-    rate = float(os.getenv("RAGAS_RPS", "0.13"))
+    # Laju DITURUNKAN DARI KUOTA MODEL, bukan dipatok satu angka. Sebelumnya nilainya
+    # hardcoded dan harus disunting tiap kali model berganti — sumber kesalahan yang sama
+    # dengan RPD tunggal. Margin 80% dari batas laju supaya tidak menyentuh 429; retry
+    # backoff justru memperlambat seluruh evaluasi (A4: satu permintaan menunggu 33 detik).
+    _rpm_model, _ = kuota_model(judge_model)
+    rate = float(os.getenv("RAGAS_RPS", str(round(_rpm_model * 0.8 / 60, 3))))
+    print(f"Batas laju model {judge_model}: {_rpm_model} RPM -> "
+          f"RAGAS_RPS={rate} ({rate * 60:.1f}/menit, margin 80%)")
     limiter = InMemoryRateLimiter(requests_per_second=rate, check_every_n_seconds=0.5,
                                   max_bucket_size=1)
 

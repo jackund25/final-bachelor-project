@@ -1,19 +1,29 @@
 {
-  "n_sampel": 2,
+  "n_sampel": 10,
   "metrik": [
     "faithfulness",
-    "context_precision"
+    "answer_relevancy",
+    "context_precision",
+    "context_recall"
   ],
   "top_k": 5,
-  "panggilan_pembangkitan": 2,
+  "panggilan_pembangkitan": 10,
   "panggilan_per_metrik": {
-    "faithfulness": 4,
-    "context_precision": 10
+    "faithfulness": 20,
+    "answer_relevancy": 30,
+    "context_precision": 50,
+    "context_recall": 10
   },
   "sudah_ter-cache": 0,
-  "total_estimasi": 16,
+  "total_estimasi": 120,
   "proyeksi_dataset_penuh": {
     "n": 10,
-    "total": 80
+    "total": 120
+  },
+  "model": "gemini-3.5-flash-lite",
+  "kuota_model": {
+    "rpm": 15,
+    "rpd": 500,
+    "terdaftar": true
   }
 }
