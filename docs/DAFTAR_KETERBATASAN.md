@@ -255,6 +255,77 @@ pembaca laporan tidak menemukan ketidakcocokan itu tanpa penjelasan.
 
 ---
 
+## K10. Kesahihan metrik faithfulness — bukan ukuran mutu, dan labil per kasus
+
+Terpisah dari K3: K3 menyangkut **kerapuhan pengaman**, K10 menyangkut **kesahihan metrik**.
+
+**Apa.** `faithfulness` tidak mengukur mutu jawaban dan tidak monoton terhadap kebenaran.
+Dua mekanisme:
+
+**(a) Ia hanya menguji dukungan konteks, bukan kesesuaian dengan pertanyaan.** Kutipan
+verbatim dari konteks yang **salah** tetap memperoleh skor sempurna.
+
+**(b) Ia labil per kasus.** Dua run dengan konfigurasi identik:
+
+| Besaran | Nilai |
+|---|---|
+| Selisih absolut per kasus, median | **0,18** |
+| Selisih absolut per kasus, maksimum | **0,56** (E04: 0,56 → 0,00) |
+| Selisih rerata 10 kasus | **0,003** (0,681 vs 0,678) |
+
+**Tiga bukti.**
+
+1. Skor **1,000** pada dua jawaban yang **salah topik** (Tahap A awal).
+2. Skor **1,000** pada model yang **mengarang** (2.5) dan model yang **mengakui
+   keterbatasan** (3.5), pada kasus E01 yang sama. Metrik tidak membedakan keduanya.
+3. Ketidakstabilan run-ke-run di atas.
+
+**Bukti keempat DICABUT.** Sempat diusulkan bahwa metrik "menghukum panjang jawaban"
+sehingga jawaban terpendek paling aman. Diuji pada 10 kasus: korelasi panjang karakter
+**+0,163** dan jumlah kalimat **−0,089** — praktis nol, dan yang panjang bahkan berarah
+positif. E08 (298 karakter) memperoleh 1,000 sedangkan E04 (396 karakter) memperoleh 0,000.
+Klaim itu berasal dari satu pasang pengamatan pada E02 yang digeneralisasi tanpa diuji;
+setelah bukti 3 diketahui, selisih E02 itu tidak memerlukan penjelasan mekanisme apa pun.
+Pencabutan dicatat, tidak dihapus.
+
+**Jumlah pernyataan tidak dapat diperoleh.** `faithfulness` adalah rasio
+pernyataan-didukung terhadap total pernyataan, sehingga penafsirannya menuntut kedua angka
+itu. RAGAS 0.2.6 **tidak memaparkannya**: medan `traces` dan `ragas_traces` pada
+`EvaluationResult` ada tetapi tidak terisi daftar pernyataan (0 dari 10 sampel). Kolom
+`n_pernyataan_faithfulness` disimpan kosong sebagai catatan bahwa angka dicari dan tidak
+ditemukan. **Tanpa angka itu, penafsiran skor terbatas.**
+
+**Kestabilan tiga metrik lain BELUM DIUJI.**
+
+| Metrik | Run berulang | Status |
+|---|---|---|
+| faithfulness | ada (2 run) | labil per kasus |
+| answer_relevancy | tidak ada | **belum diuji** |
+| context_precision | tidak ada | **belum diuji** |
+| context_recall | tidak ada | **belum diuji** |
+
+Ketiganya **tidak boleh diasumsikan stabil**. Mengujinya memerlukan run ulang dengan cache
+dikosongkan, sekitar 90 panggilan.
+
+**Aturan pelaporan yang mengikat** — ditanamkan pada `results/ragas/summary.json` dan
+`results/ragas/contoh_kasus_bab6.json`:
+
+1. Skor `faithfulness` **per kasus tidak boleh dikutip**.
+2. Perbandingan antarmodel pada **satu kasus tidak sah**, termasuk E02 (selisih 0,55, masih
+   di dalam rentang variasi run).
+3. Hanya **rerata atas sepuluh kasus** yang layak dilaporkan.
+
+**Dampak.** Skor `faithfulness` 0,681 hanya sah dikutip sebagai **rerata**, dan hanya
+sebagai bukti bahwa jawaban tidak mengarang **di luar konteks** — bukan sebagai bukti
+kebenaran jawaban. Yang mengukur kesesuaian dengan pertanyaan adalah `answer_relevancy`
+(0,763), dan yang mengukur mutu konteks adalah kedua metrik konteks.
+
+**Perkiraan pekerjaan.** Menguji kestabilan tiga metrik lain: **sedang** (~90 panggilan
+LLM). Memperoleh jumlah pernyataan: memerlukan pemanggilan prompt ekstraksi RAGAS secara
+terpisah, **sedang**, atau menunggu versi pustaka yang memaparkannya.
+
+---
+
 ## Ringkasan untuk Bab VII
 
 | Kode | Keterbatasan | Dampak | Pekerjaan |
@@ -268,7 +339,43 @@ pembaca laporan tidak menemukan ketidakcocokan itu tanpa penjelasan.
 | K7 | Kuota LLM membatasi rancangan | Sedang — memaksa korpus kecil | selesai/di luar lingkup |
 | K8 | Positif palsu pemeriksa angka | Rendah — satu kolom tidak dapat dibaca langsung | kecil |
 | K9 | `top_k` produksi vs evaluasi | Rendah — sudah diperbaiki | selesai |
+| K10 | `faithfulness` bukan ukuran mutu, labil per kasus | **Tinggi** — membatasi cara metrik RAGAS dikutip | sedang |
 
-**Tiga yang paling menentukan batas klaim laporan: K1, K3, dan K5.** Ketiganya bukan cacat
-implementasi melainkan batas metodologis, dan ketiganya harus dinyatakan sebelum angka apa
-pun dikutip sebagai bukti kelayakan klinis.
+**Empat yang paling menentukan batas klaim laporan: K1, K3, K5, dan K10.** Keempatnya
+bukan cacat implementasi melainkan batas metodologis, dan seluruhnya harus dinyatakan
+sebelum angka apa pun dikutip sebagai bukti kelayakan klinis.
+
+---
+
+## Butir yang TIDAK lagi menjadi keterbatasan
+
+### KNF-10 waktu tanggap — SUDAH TERUKUR, tidak lagi menunggu pengukuran
+
+Audit awal menempatkan KNF-10 sebagai satu-satunya butir berstatus **TIDAK ADA**: nol
+instrumentasi waktu tanggap. Status itu **sudah tidak berlaku**.
+
+Nilai acuan pada `gemini-3.5-flash-lite`, Ryzen 5 5600H tanpa GPU:
+
+| Besaran | Median | p95 |
+|---|---|---|
+| Komputasi lokal | **0,339 dtk** | 0,529 dtk |
+| Generasi LLM | 2,060 dtk | 2,750 dtk |
+| **TOTAL ujung-ke-ujung** | **2,474 dtk** | **3,163 dtk** |
+| Proporsi menunggu LLM | 85,0% | 88,7% |
+
+**Kerapatan median terhadap p95 justru informatif.** Selisihnya hanya **0,689 detik**
+(2,474 → 3,163), yang berarti waktu tanggap **konsisten** dan tidak punya ekor panjang.
+Dua belas dari dua belas permintaan berjalan tanpa satu pun galat 429.
+
+Bandingkan dengan `gemini-2.5-flash-lite`, yang p95-nya **17,3 detik** — bukan karena sifat
+model, melainkan karena satu permintaan menunggu **33,4 detik** akibat menembus batas kuota
+20 RPD. p95 itu mengukur **waktu tunggu retry**, bukan kecepatan model, dan dinyatakan
+tidak sah.
+
+Kerapatan pada model baru inilah yang membedakan keduanya: p95 yang rapat menandakan
+pengukuran bersih, sedangkan p95 yang jauh dari median pada model lama menandakan
+pencemaran kuota. **Angka 2,474 dtk median dan 3,163 dtk p95 menjadi nilai acuan KNF-10
+yang selama ini kosong.**
+
+Sisa yang masih terbuka pada KNF-10 bukan angkanya, melainkan temuan A4 bahwa sistem tidak
+memberi tahu dokter ketika jalur cadangan template yang aktif — dan itu tercakup K3.

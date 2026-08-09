@@ -1,62 +1,20 @@
 {
-  "n_kasus": 10,
+  "n": 10,
   "metrik": {
-    "faithfulness": 0.681,
-    "answer_relevancy": 0.763,
-    "context_precision": 0.45,
-    "context_recall": 0.45
-  },
-  "per_kasus": {
-    "faithfulness": {
-      "E01": 1.0,
-      "E02": 0.455,
-      "E03": 0.556,
-      "E04": 0.556,
-      "E05": 0.944,
-      "E06": 0.571,
-      "E07": 0.333,
-      "E08": 0.8,
-      "E09": 0.6,
-      "E10": 1.0
-    },
-    "answer_relevancy": {
-      "E01": 0.685,
-      "E02": 0.505,
-      "E03": 0.65,
-      "E04": 0.661,
-      "E05": 0.887,
-      "E06": 0.827,
-      "E07": 0.775,
-      "E08": 0.933,
-      "E09": 0.821,
-      "E10": 0.886
-    },
-    "context_precision": {
-      "E01": 0.0,
-      "E02": 0.5,
-      "E03": 0.0,
-      "E04": 1.0,
-      "E05": 0.0,
-      "E06": 1.0,
-      "E07": 0.0,
-      "E08": 1.0,
-      "E09": 0.0,
-      "E10": 1.0
-    },
-    "context_recall": {
-      "E01": 0.0,
-      "E02": 1.0,
-      "E03": 0.0,
-      "E04": 0.5,
-      "E05": 0.0,
-      "E06": 1.0,
-      "E07": 0.0,
-      "E08": 1.0,
-      "E09": 0.0,
-      "E10": 1.0
-    }
+    "faithfulness": 0.6781204906204906
   },
   "judge_model": "gemini-3.5-flash-lite",
   "top_k": 5,
-  "catatan": "Hanya entri cache berkunci gemini-3.5-flash-lite. Entri dari gemini-2.5-flash-lite (run gagal 429) TIDAK diikutkan."
+  "ATURAN_PELAPORAN_MENGIKAT": [
+    "1. Skor faithfulness PER KASUS TIDAK BOLEH dikutip. Dua run identik menghasilkan selisih absolut median 0,18 dan maksimum 0,56 (E04: 0,56 -> 0,00).",
+    "2. Perbandingan antarmodel pada SATU kasus TIDAK SAH, termasuk E02 yang selisihnya 0,55 - masih di dalam rentang variasi run.",
+    "3. Hanya RERATA atas sepuluh kasus yang layak dilaporkan."
+  ],
+  "kestabilan_metrik": {
+    "faithfulness": "LABIL per kasus; rerata stabil (0,681 vs 0,678 pada dua run)",
+    "answer_relevancy": "BELUM DIUJI - jangan diasumsikan stabil",
+    "context_precision": "BELUM DIUJI - jangan diasumsikan stabil",
+    "context_recall": "BELUM DIUJI - jangan diasumsikan stabil"
+  },
+  "jumlah_pernyataan": "TIDAK TERSEDIA dari RAGAS 0.2.6. faithfulness adalah rasio pernyataan-didukung terhadap total pernyataan, sehingga tanpa angka itu penafsiran skor terbatas. Kolom n_pernyataan_faithfulness sengaja kosong sebagai catatan bahwa angka dicari dan tidak ditemukan."
 }

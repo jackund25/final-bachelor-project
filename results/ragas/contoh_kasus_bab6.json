@@ -3,7 +3,7 @@
   "tanggal": "2026-08-09",
   "commit": "d76a2349a1a1608a1a75afc3d34056d23c8f17c2",
   "pelajaran_1": "faithfulness mengukur apakah jawaban DIDUKUNG konteks yang diberikan, bukan apakah jawaban BENAR. Pada jalur non-produksi, 2.5-flash-lite memperoleh faithfulness 1,000 pada dua jawaban yang salah topik karena keduanya kutipan verbatim.",
-  "pelajaran_2": "Perbandingan antargenerasi pada E01: konteks TIDAK memuat jawaban. 2.5-flash-lite MENGARANG dari dosis prandial; 3.5-flash-lite MENGAKUI informasi tidak tersedia. Kode sama, perilaku berbeda - bukti bahwa pengaman yang bertumpu perilaku model rapuh (lihat K3).",
+  "pelajaran_2": "Perbandingan antargenerasi pada E01: konteks TIDAK memuat jawaban. 2.5-flash-lite MENGARANG dari dosis prandial; 3.5-flash-lite MENGAKUI informasi tidak tersedia. KEDUANYA memperoleh faithfulness 1,000 - metrik tidak membedakan mengarang dari mengakui keterbatasan. Kode sama, perilaku berbeda: bukti bahwa pengaman yang bertumpu perilaku model rapuh (lihat K3).",
   "catatan_2_5": "Jawaban 2.5 berasal dari jalur NON-PRODUKSI (prompt minimal, tanpa SYSTEM_PROMPT).",
   "catatan_3_5": "Jawaban 3.5 berasal dari JALUR PRODUKSI penuh (RAGPipeline.answer), disclaimer dibuang sebelum penilaian.",
   "kasus": [
@@ -47,5 +47,18 @@
       },
       "diagnosis": "context_precision 1,00 berarti konteksnya relevan SELURUHNYA, tetapi jawabannya tetap salah topik: mengutip aturan penambahan bolus, bukan respons hipoglikemia. Karena konteks benar dan jawaban meleset, penyebabnya ada di lapisan pembangkitan, bukan retrieval."
     }
-  ]
+  ],
+  "ATURAN_PELAPORAN_MENGIKAT": [
+    "1. Skor faithfulness PER KASUS TIDAK BOLEH dikutip. Dua run identik menghasilkan selisih absolut median 0,18 dan maksimum 0,56 (E04: 0,56 -> 0,00).",
+    "2. Perbandingan antarmodel pada SATU kasus TIDAK SAH, termasuk E02 yang selisihnya 0,55 - masih di dalam rentang variasi run.",
+    "3. Hanya RERATA atas sepuluh kasus yang layak dilaporkan."
+  ],
+  "kestabilan_metrik": {
+    "faithfulness": "LABIL per kasus; rerata stabil (0,681 vs 0,678 pada dua run)",
+    "answer_relevancy": "BELUM DIUJI - jangan diasumsikan stabil",
+    "context_precision": "BELUM DIUJI - jangan diasumsikan stabil",
+    "context_recall": "BELUM DIUJI - jangan diasumsikan stabil"
+  },
+  "jumlah_pernyataan": "TIDAK TERSEDIA dari RAGAS 0.2.6. faithfulness adalah rasio pernyataan-didukung terhadap total pernyataan, sehingga tanpa angka itu penafsiran skor terbatas. Kolom n_pernyataan_faithfulness sengaja kosong sebagai catatan bahwa angka dicari dan tidak ditemukan.",
+  "PERINGATAN_PERBANDINGAN_E02": "Penyandingan skor faithfulness E02 antarmodel (2.5 = 1,000 vs 3.5 = 0,455) TIDAK SAH dan tidak boleh dikutip. Selisih 0,55 masih berada di dalam rentang variasi run-ke-run metrik ini (maksimum terukur 0,56 pada konfigurasi identik). Yang tetap sah dari kasus ini adalah PERBEDAAN PERILAKU yang dapat diperiksa langsung dari teks jawaban: 2.5 mengarang, 3.5 mengakui keterbatasan. Perbedaan itu tidak bergantung pada skor."
 }

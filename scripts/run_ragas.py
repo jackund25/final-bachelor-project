@@ -44,6 +44,7 @@ os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 import argparse
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
@@ -176,6 +177,40 @@ def _load_cases(limit: int | None) -> List[Dict[str, Any]]:
             f"Lengkapi medan 'pertanyaan', 'jawaban_acuan', dan 'konteks_acuan' terlebih dulu."
         )
     return cases[:limit] if limit else cases
+
+
+def _hitung_pernyataan(result: Any, ids: List[str]) -> Dict[str, Any]:
+    """Jumlah pernyataan yang diekstraksi RAGAS per sampel saat menilai faithfulness.
+
+    RAGAS 0.2.6 menyimpan jejak antara pada `ragas_traces`. Strukturnya tidak dijamin
+    stabil antarversi, jadi penelusurannya defensif: bila apa pun meleset, nilainya
+    `None` dan ketidaktersediaannya DICATAT alih-alih ditebak.
+    """
+    hasil: Dict[str, Any] = {i: None for i in ids}
+    traces = getattr(result, "ragas_traces", None) or getattr(result, "traces", None)
+    if not traces:
+        return hasil
+    try:
+        runs = list(traces.values()) if isinstance(traces, dict) else list(traces)
+        for idx, run in enumerate(runs):
+            if idx >= len(ids):
+                break
+            n = None
+            for atribut in ("children", "outputs", "output"):
+                simpul = getattr(run, atribut, None) or (
+                    run.get(atribut) if isinstance(run, dict) else None)
+                if simpul is None:
+                    continue
+                teks = json.dumps(simpul, default=str)
+                # NLIStatementOutput memuat daftar `statements`; hitung elemennya.
+                cocok = re.findall(r'"statement"\s*:', teks)
+                if cocok:
+                    n = len(cocok)
+                    break
+            hasil[ids[idx]] = n
+    except Exception:  # noqa: BLE001 — ketidaktersediaan bukan kegagalan evaluasi
+        return {i: None for i in ids}
+    return hasil
 
 
 def _cache_key(case_id: str, metric: str, judge_model: str, top_k: int) -> str:
@@ -480,7 +515,20 @@ def main() -> int:
 
     df = result.to_pandas()
     df.insert(0, "id", [c["id"] for c in cases])
+
+    # JUMLAH PERNYATAAN yang diekstraksi RAGAS saat menghitung faithfulness.
+    # Tanpa angka ini skor faithfulness TIDAK DAPAT DITAFSIRKAN: metrik itu adalah
+    # rasio pernyataan-didukung terhadap total pernyataan, sehingga jawaban panjang
+    # punya lebih banyak peluang gagal. Jawaban terpendek paling aman skornya.
+    # Bila pustaka tidak memaparkannya, hal itu DICATAT, bukan didiamkan.
+    n_pernyataan = _hitung_pernyataan(result, [c["id"] for c in cases])
+    df["n_pernyataan_faithfulness"] = [n_pernyataan.get(i) for i in df["id"]]
+    df["panjang_jawaban_char"] = [len(str(r)) for r in df.get("response", [""] * len(df))]
+
     df.to_csv(OUT_DIR / "per_sample.csv", index=False, encoding="utf-8")
+    tersedia = sum(1 for v in n_pernyataan.values() if v is not None)
+    print(f"\nJumlah pernyataan faithfulness: {tersedia}/{len(cases)} sampel tersedia"
+          + ("" if tersedia else "  -> TIDAK TERSEDIA dari keluaran pustaka; dicatat apa adanya"))
 
     # Cache per (sampel, metrik) agar analisis ulang tidak memanggil LLM lagi.
     for _, row in df.iterrows():
