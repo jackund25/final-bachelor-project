@@ -1,20 +1,11 @@
 {
-  "judul": "Contoh kasus Bab VI: faithfulness tinggi BUKAN bukti jawaban benar",
-  "tanggal": "2026-08-06",
-  "commit": "97f734cf1bd311382d01554cdfdd265cfb458487",
-  "konteks_pengukuran": {
-    "tahap": "T1.2 Tahap A",
-    "n_sampel": 2,
-    "metrik": [
-      "faithfulness",
-      "context_precision"
-    ],
-    "judge_model": "gemini-2.5-flash-lite",
-    "top_k": 5,
-    "koleksi": "diabetes_kb_eval (17 chunk, KB-03 hal. 23/44/45/48)",
-    "PERINGATAN": "Jawaban dihasilkan oleh run_ragas.py yang TIDAK memakai RAGPipeline produksi. Lihat temuan penyelidikan. Skor ini TIDAK menggambarkan sistem yang dibahas laporan, tetapi contoh kasusnya tetap sah untuk menunjukkan sifat metrik faithfulness."
-  },
-  "pelajaran": "faithfulness mengukur apakah jawaban DIDUKUNG konteks yang diberikan, bukan apakah jawaban BENAR menjawab pertanyaan. Kedua kasus di bawah memperoleh faithfulness 1,000 dengan jawaban yang salah topik, karena keduanya mengutip verbatim potongan konteks. Yang menangkap kesalahannya adalah context_precision (E01) dan answer_relevancy (belum dijalankan).",
+  "judul": "Contoh kasus Bab VI: faithfulness tinggi BUKAN bukti jawaban benar, dan perbandingan antargenerasi model",
+  "tanggal": "2026-08-09",
+  "commit": "d76a2349a1a1608a1a75afc3d34056d23c8f17c2",
+  "pelajaran_1": "faithfulness mengukur apakah jawaban DIDUKUNG konteks yang diberikan, bukan apakah jawaban BENAR. Pada jalur non-produksi, 2.5-flash-lite memperoleh faithfulness 1,000 pada dua jawaban yang salah topik karena keduanya kutipan verbatim.",
+  "pelajaran_2": "Perbandingan antargenerasi pada E01: konteks TIDAK memuat jawaban. 2.5-flash-lite MENGARANG dari dosis prandial; 3.5-flash-lite MENGAKUI informasi tidak tersedia. Kode sama, perilaku berbeda - bukti bahwa pengaman yang bertumpu perilaku model rapuh (lihat K3).",
+  "catatan_2_5": "Jawaban 2.5 berasal dari jalur NON-PRODUKSI (prompt minimal, tanpa SYSTEM_PROMPT).",
+  "catatan_3_5": "Jawaban 3.5 berasal dari JALUR PRODUKSI penuh (RAGPipeline.answer), disclaimer dibuang sebelum penilaian.",
   "kasus": [
     {
       "id": "E01",
@@ -22,17 +13,17 @@
       "kondisi_terprediksi": "hiperglikemia",
       "jawaban_acuan": "Dosis awal insulin basal adalah 5 sampai 10 unit per hari dengan referensi berat badan 50 kg. Penyesuaian dilakukan 10% sampai 15% atau 2 sampai 4 unit, satu sampai dua kali per minggu, sampai tercapai sasaran glukosa darah puasa.",
       "halaman_sumber": 23,
-      "jawaban_sistem": "4 unit, 0,1 unit/kgBB atau 10% dosis basal.",
-      "konteks_terambil": [
-        "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosis 1 Æ 2 unit atau 10 – 15% dalam 1-2 kali seminggu hingga sasaran SMBG tercapai. Hipoglikemia : tentukan dan atasi penyebab, turunkan dosis 2 Æ 4 unit atau 10% - 20%\n1\n2\n3\nTINGGI\nSEDANG\nRENDAH\nJUMLAH INJEKSI\nKOMPLEKSITAS\nFLEKSIBILITAS\nLEBIH FLEKSIBEL\nFLEKSIBEL",
-        "Bila GD < 200 ² 250 mg/dL, ganti\nDextrose 5% dengan NaCL 0,45% 100\n² 200 mL/jam.\n\nBila kadar Na > 145 mEq, infus NaCl\n0,9% diganti dengan NaCl 0,45%.\n\nPada pasien dengan gagal jantung dan\ngagal ginjal direkomendasikan\npemasangan CVC ( Central Venous\n\nPada jam ke -2, Insulin b olus mulai\ndosis 0,05 ² 0,1 unit/kgBB\n(disesuaikan dengan kondisi pasien)\ndilanjutkan dengan insulin IV kontinyu\n0,1 unit/kgBB/jam dalam NaCL 0,9%.\n\nPenyesuaian dosis insulin IV kontinyu\n(dilakukan pemeriksaan GD per jam)\nJika GD meningkat Æ re-bolus\ninsulin 0,1 unit/kgBB dan\nmeningkatkan kecepatan insulin IV\nkontinyu.\nGD menurun 0 -49 mg/dL/jam Æ\nnaikkan drip insulin 25 ² 50% dari\ndosis awal.\nGD menurun 50 -75 mg/dL/jam Æ\ndosis insulin drip tetap\nGD menurun >75 mg/dL/jam Æ\nTurunkan kecepatan insulin drip\n50% dari dosis awal.",
-        "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї 75 mg/dL/jam serta dapat menghambat lipolisis, menghentikan ketogenesis, dan menekan proses glukoneogenesis di hati. Kecepatan infus insulin harus selalu disesuaikan. Bila terdapat faktor lain yang menyebabkan penurunan kadar glukosa darah kurang dari 60 mg/dL/jam, misalnya rehidrasi yang kurang adekuat dan asidosis yang memburuk, maka kecepatan infus insulin perlu ditingkatkan. Bila kadar glukosa darah sudah turun < 250 mg/dL, dosis insulin infus harus dikurangi menjadi 50% dari dosis sebelumnya. Infus insulin terus dilanjutkan sampai ketosis teratasi dan pasien sudah bisa makan/minum. B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus",
-        "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik dengan harapan mengurangi kejadian hipoglikemia. Edukasi ini meliputi konsep tentang glukosa darah puasa dan prandial, fungsi insulin basal dan insulin prandial, serta pemantauan glukosa darah mandiri. Tabel VIII.1 Klasifikasi Hipoglikemia Level Glukosa Darah Nilai peringatan hipoglikemia (Level 1) ≤ 70 mg/dL Hipoglikemia signifikan secara klinis (Level 2) < 54 mg/dL Hipoglikemia berat (Level 3) Tanpa nilai ambang glukosa spesifik.",
-        "NaCl 0,9% 1 liter/jam (15 ї 20 mL/kgBB/jam). Tabel VII.2. Skema Penatalaksanaan Ketoasidosis Diabetik dan Sindroma Hiperosmolar Hiperglikemia Jam Ke - Infus NaCl 0,9% Infus II (Insulin) Infus III (Koreksi K+) Infus IV (Koreksi Bikarbonat (HCO 3))"
-      ],
-      "skor": {
+      "jawaban_gemini_2_5_flash_lite": "4 unit, 0,1 unit/kgBB atau 10% dosis basal.",
+      "skor_2_5": {
         "faithfulness": 1.0,
         "context_precision": 0.0
+      },
+      "jawaban_gemini_3_5_flash_lite": "Berdasarkan panduan PERKENI, dosis awal untuk penambahan injeksi insulin kerja cepat sebelum makan (bagian dari regimen basal-bolus) adalah 4 unit, 0,1 unit/kgBB, atau 10% dari dosis basal [S1]. \n\n**Langkah Aksi:**\n1. Tentukan dosis awal insulin kerja cepat berdasarkan panduan di atas (4 unit, 0,1 unit/kgBB, atau 10% dosis basal) [S1].\n2. Jika nilai A1C <8%, pertimbangkan untuk menurunkan dosis insulin basal dalam jumlah yang sama [S1].\n3. Lakukan pemantauan glukosa darah mandiri (SMBG) dan edukasi pasien terkait fungsi insulin serta pencegahan hipoglikemia [S2].\n4. Sesuaikan dosis secara bertahap (naikkan 1–2 unit atau 10–15% dalam 1–2 kali seminggu) hingga sasaran SMBG tercapai [S1].",
+      "skor_3_5": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.685,
+        "context_precision": 0.0,
+        "context_recall": 0.0
       },
       "diagnosis": "Jawaban mengutip dosis PRANDIAL (insulin kerja cepat) padahal pertanyaannya dosis BASAL. Tiga dari lima konteks berasal dari halaman krisis hiperglikemia yang tidak relevan; context_precision 0,00 menangkapnya dengan benar."
     },
@@ -42,17 +33,17 @@
       "kondisi_terprediksi": "hipoglikemia",
       "jawaban_acuan": "Tentukan dan atasi dahulu penyebab hipoglikemianya, lalu turunkan dosis insulin basal sebanyak 4 unit atau sebesar 10% sampai 20%.",
       "halaman_sumber": 23,
-      "jawaban_sistem": "Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama.",
-      "konteks_terambil": [
-        "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosis 1 Æ 2 unit atau 10 – 15% dalam 1-2 kali seminggu hingga sasaran SMBG tercapai. Hipoglikemia : tentukan dan atasi penyebab, turunkan dosis 2 Æ 4 unit atau 10% - 20%\n1\n2\n3\nTINGGI\nSEDANG\nRENDAH\nJUMLAH INJEKSI\nKOMPLEKSITAS\nFLEKSIBILITAS\nLEBIH FLEKSIBEL\nFLEKSIBEL",
-        "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik dengan harapan mengurangi kejadian hipoglikemia. Edukasi ini meliputi konsep tentang glukosa darah puasa dan prandial, fungsi insulin basal dan insulin prandial, serta pemantauan glukosa darah mandiri. Tabel VIII.1 Klasifikasi Hipoglikemia Level Glukosa Darah Nilai peringatan hipoglikemia (Level 1) ≤ 70 mg/dL Hipoglikemia signifikan secara klinis (Level 2) < 54 mg/dL Hipoglikemia berat (Level 3) Tanpa nilai ambang glukosa spesifik.",
-        "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї 75 mg/dL/jam serta dapat menghambat lipolisis, menghentikan ketogenesis, dan menekan proses glukoneogenesis di hati. Kecepatan infus insulin harus selalu disesuaikan. Bila terdapat faktor lain yang menyebabkan penurunan kadar glukosa darah kurang dari 60 mg/dL/jam, misalnya rehidrasi yang kurang adekuat dan asidosis yang memburuk, maka kecepatan infus insulin perlu ditingkatkan. Bila kadar glukosa darah sudah turun < 250 mg/dL, dosis insulin infus harus dikurangi menjadi 50% dari dosis sebelumnya. Infus insulin terus dilanjutkan sampai ketosis teratasi dan pasien sudah bisa makan/minum. B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus",
-        "Bila GD < 200 ² 250 mg/dL, ganti\nDextrose 5% dengan NaCL 0,45% 100\n² 200 mL/jam.\n\nBila kadar Na > 145 mEq, infus NaCl\n0,9% diganti dengan NaCl 0,45%.\n\nPada pasien dengan gagal jantung dan\ngagal ginjal direkomendasikan\npemasangan CVC ( Central Venous\n\nPada jam ke -2, Insulin b olus mulai\ndosis 0,05 ² 0,1 unit/kgBB\n(disesuaikan dengan kondisi pasien)\ndilanjutkan dengan insulin IV kontinyu\n0,1 unit/kgBB/jam dalam NaCL 0,9%.\n\nPenyesuaian dosis insulin IV kontinyu\n(dilakukan pemeriksaan GD per jam)\nJika GD meningkat Æ re-bolus\ninsulin 0,1 unit/kgBB dan\nmeningkatkan kecepatan insulin IV\nkontinyu.\nGD menurun 0 -49 mg/dL/jam Æ\nnaikkan drip insulin 25 ² 50% dari\ndosis awal.\nGD menurun 50 -75 mg/dL/jam Æ\ndosis insulin drip tetap\nGD menurun >75 mg/dL/jam Æ\nTurunkan kecepatan insulin drip\n50% dari dosis awal.",
-        "Hipoglikemia berat dengan ganggan status\nmental dan/atau fisik yang membutuhkan\nbantuan orang lain."
-      ],
-      "skor": {
+      "jawaban_gemini_2_5_flash_lite": "Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama.",
+      "skor_2_5": {
         "faithfulness": 1.0,
         "context_precision": 0.9999999999
+      },
+      "jawaban_gemini_3_5_flash_lite": "Berdasarkan panduan klinis, berikut adalah langkah penanganan untuk pasien dengan kondisi hipoglikemia (glukosa darah 58 mg/dL, yang masuk dalam kategori nilai peringatan hipoglikemia / Level 1 hingga signifikan) [S1]:\n\n**Langkah Aksi:**\n1. **Atasi Hipoglikemia Segera:** Tentukan dan atasi penyebab hipoglikemia [S2]. Berikan karbohidrat kerja cepat sesuai protokol tata laksana hipoglikemia.\n2. **Penyesuaian Dosis Insulin:** \n   - Turunkan dosis insulin sebesar 2 hingga 4 unit, atau turunkan sebanyak 10% – 20% [S2].\n3. **Edukasi Pemantauan:** Lakukan pemantauan glukosa darah mandiri (SMBG) secara rutin dan pastikan pasien memahami konsep glukosa darah puasa serta prandial [S1].",
+      "skor_3_5": {
+        "faithfulness": 0.455,
+        "answer_relevancy": 0.505,
+        "context_precision": 0.5,
+        "context_recall": 1.0
       },
       "diagnosis": "context_precision 1,00 berarti konteksnya relevan SELURUHNYA, tetapi jawabannya tetap salah topik: mengutip aturan penambahan bolus, bukan respons hipoglikemia. Karena konteks benar dan jawaban meleset, penyebabnya ada di lapisan pembangkitan, bukan retrieval."
     }
