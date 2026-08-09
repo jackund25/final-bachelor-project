@@ -31,10 +31,11 @@
       "porsi_kolam_kandidat_fetch_k_persen": 70.6,
       "porsi_pada_korpus_produksi_persen": 0.24,
       "faktor": 121,
-      "metrik_yang_optimistis": ["context_precision", "context_recall"],
+      "metrik_yang_optimistis": ["context_precision"],
       "implikasi_context_precision": "top_k=5 dari 17 chunk berarti 29,4% koleksi terambil tiap kueri, versus 0,24% pada korpus produksi 2.061 chunk — 121x lebih besar. Peluang chunk relevan masuk top-k jauh lebih besar, sehingga presisi konteks cenderung tinggi bukan karena penelusurannya baik melainkan karena kolamnya sempit.",
-      "implikasi_context_recall": "Kolam kandidat fetch_k=12 mencakup 70,6% koleksi. Artinya hampir semua konteks acuan PASTI terjangkau sebelum MMR memilih, sehingga context_recall nyaris dijamin tinggi secara struktural. Pada korpus produksi, fetch_k=12 hanya mencakup 0,58% dari 2.061 chunk, dan tidak ada jaminan semacam itu.",
-      "implikasi_umum": "Angka RAGAS di sini mengukur mutu PEMBANGKITAN pada konteks yang hampir pasti memadai, BUKAN mutu penelusuran pada korpus penuh. KEDUA metrik berbasis konteks (context_precision DAN context_recall) optimistis dan TIDAK dapat digeneralisasi ke korpus produksi. Metrik yang relatif tidak terpengaruh sempitnya korpus adalah faithfulness dan answer_relevancy, karena keduanya menilai jawaban terhadap konteks yang diberikan, bukan kemampuan menemukan konteks itu."
+      "implikasi_context_recall": "DIKOREKSI setelah pengukuran. Dugaan semula: kolam kandidat fetch_k=12 mencakup 70,6% koleksi, sehingga hampir semua konteks acuan pasti terjangkau dan context_recall nyaris dijamin tinggi secara struktural. TERBANTAH — hasil terukur 0,450, sama rendahnya dengan context_precision. Sebabnya: yang menentukan bukan apakah konteks acuan ada di KOLAM, melainkan apakah ia lolos ke top_k=5 setelah MMR memilih. Kolam luas tidak menjamin itu. Dugaan semula mencampurkan cakupan kolam dengan cakupan hasil akhir.",
+      "implikasi_umum": "Angka RAGAS di sini mengukur mutu PEMBANGKITAN pada konteks yang diberikan, BUKAN mutu penelusuran pada korpus penuh. Yang TERBUKTI optimistis hanya context_precision. Untuk context_recall, data tidak mendukung klaim optimisme. faithfulness dan answer_relevancy relatif tidak terpengaruh sempitnya korpus karena menilai jawaban terhadap konteks yang diberikan, bukan kemampuan menemukan konteks itu.",
+      "hasil_terukur": {"faithfulness": 0.681, "answer_relevancy": 0.763, "context_precision": 0.45, "context_recall": 0.45, "model": "gemini-3.5-flash-lite", "n": 10}
     },
     "medan": {
       "id": "Pengenal kasus, dipakai sebagai kunci cache penilaian.",
