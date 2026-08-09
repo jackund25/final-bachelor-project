@@ -1,0 +1,9 @@
+{
+  "n": 2,
+  "metrik": {
+    "faithfulness": 1.0,
+    "context_precision": NaN
+  },
+  "judge_model": "gemini-2.5-flash-lite",
+  "top_k": 5
+}

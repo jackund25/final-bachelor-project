@@ -63,6 +63,80 @@ CALLS_PER_SAMPLE = {
 }
 DEFAULT_METRICS = ["faithfulness", "answer_relevancy", "context_precision", "context_recall"]
 
+# Pemetaan kondisi_terprediksi -> nilai glukosa (mg/dL) untuk membangun kueri
+# terkondisi-prediksi. DITETAPKAN SEBELUM EKSEKUSI dan tidak boleh disesuaikan setelah
+# melihat hasil, karena nilai inilah yang menentukan kueri yang dihasilkan.
+#
+# Alasan pemilihan nilai:
+#   58  — di bawah GLUCOSE_LOW (70) tetapi di atas GLUCOSE_CRITICAL_LOW (54), sehingga
+#         terklasifikasi hipoglikemia tanpa memicu jalur "kritis" yang mengubah urgensi.
+#   120 — pertengahan rentang target 70-180, jauh dari kedua ambang.
+#   230 — di atas GLUCOSE_HIGH (180) tetapi di bawah GLUCOSE_CRITICAL_HIGH (250), sehingga
+#         terklasifikasi hiperglikemia tanpa memicu jalur "kritis".
+# Ketiganya sengaja diambil di TENGAH kelasnya masing-masing, bukan di dekat ambang,
+# supaya klasifikasinya tidak sensitif terhadap pembulatan.
+GLUKOSA_PER_KONDISI = {"hipoglikemia": 58.0, "normal": 120.0, "hiperglikemia": 230.0}
+
+# Frasa disclaimer yang dipaksa RAGPipeline._ensure_disclaimer().
+DISCLAIMER_FRASA = "keputusan medis final tetap pada dokter"
+
+
+def _patient_state(pred: float) -> Dict[str, Any]:
+    """Keadaan pasien minimal namun lengkap untuk PredictionConditionedQueryBuilder.
+
+    Nilai non-glukosa sengaja netral (stres 5, aktivitas 20, IOB 0, COB 0) supaya kueri
+    tidak membawa faktor kontribusi yang tidak ada di dataset dan tidak dapat diverifikasi.
+    """
+    return {"current_glucose": pred, "stress_level": 5, "activity_level": 20,
+            "insulin_on_board": 0.0, "carbs_on_board": 0.0}
+
+
+# Kalimat yang ditambahkan RAGPipeline._ensure_disclaimer() bila LLM tidak menulisnya.
+_SUFIKS_SISTEM = "Catatan: Keputusan medis final tetap pada dokter."
+
+# Penanda disclaimer yang ditulis LLM SENDIRI. Versi pertama penghapus ini hanya menyasar
+# sufiks sistem, sehingga paragraf disclaimer buatan LLM tetap ikut dinilai faithfulness —
+# persis artefak yang seharusnya dibuang.
+# Ditulis longgar dengan sengaja. Versi sebelumnya menyasar heading persis
+# "**Disclaimer:**" dan lolos ketika LLM menulis "**Disclaimer Dokter:**" — variasi kata
+# di antara "Disclaimer" dan titik dua. Karena teks disclaimer selalu berada di AKHIR
+# jawaban, pola pertama menyapu dari kemunculan kata "Disclaimer" sampai habis.
+_POLA_DISCLAIMER_LLM = [
+    # 'Disclaimer' sebagai JUDUL BLOK: di awal baris, boleh diawali **, ##, atau -.
+    # Sengaja TIDAK menyapu kata 'disclaimer' di tengah kalimat — pola longgar
+    # sebelumnya memotong kalimat sah seperti "Jawab tanpa disclaimer sama sekali"
+    # menjadi "Jawab tanpa", yaitu merusak data tanpa tanda.
+    r"(?ms)^[ \t]*(?:\*{1,2}|#{1,4}|-)?\s*Disclaimer\b.*",
+    r"(?mi)^\s*(Catatan|Penting|Perhatian)\s*:\s*[^\n]*tidak menggantikan[^\n]*$",
+    r"[^.!?\n]*tidak menggantikan penilaian klinis[^.!?]*[.!?]",
+    r"[^.!?\n]*keputusan medis final tetap pada dokter[^.!?]*[.!?]",
+    r"[^.!?\n]*bersifat (umum|panduan)[^.!?]*tidak menggantikan[^.!?]*[.!?]",
+]
+
+
+def _tulis_disclaimer_sendiri(teks_utuh: str) -> bool:
+    """Apakah LLM menulis disclaimer SENDIRI, bukan hasil penegakan sistem?
+
+    Diperiksa dengan membuang sufiks sistem lebih dulu. Tanpa langkah ini, pemeriksaan
+    selalu bernilai True menurut konstruksi, karena _ensure_disclaimer() menambahkan
+    frasa wajib bila belum ada — dan angka "100% kepatuhan" menjadi tidak bermakna.
+    """
+    import re as _re
+    tanpa_sufiks = teks_utuh.strip()
+    if tanpa_sufiks.endswith(_SUFIKS_SISTEM):
+        tanpa_sufiks = tanpa_sufiks[: -len(_SUFIKS_SISTEM)].strip()
+    return bool(_re.search(r"disclaimer|tidak menggantikan penilaian klinis",
+                           tanpa_sufiks, _re.IGNORECASE))
+
+
+def _buang_disclaimer(teks: str) -> str:
+    """Hapus SELURUH disclaimer — sufiks sistem maupun paragraf buatan LLM."""
+    import re as _re
+    bersih = teks.strip()
+    for pola in _POLA_DISCLAIMER_LLM:
+        bersih = _re.sub(pola, "", bersih, flags=_re.IGNORECASE | _re.DOTALL)
+    return _re.sub(r"\n{3,}", "\n\n", bersih).strip()
+
 
 def _load_cases(limit: int | None) -> List[Dict[str, Any]]:
     data = json.loads(DATASET.read_text(encoding="utf-8"))
@@ -281,22 +355,80 @@ def main() -> int:
         "context_recall": M.context_recall,
     }
 
+    # ── Pembangkitan lewat JALUR PRODUKSI ──────────────────────────────────────
+    # Versi sebelumnya membangun prompt minimal sendiri dan memanggil gen_llm
+    # langsung, sehingga RAGPipeline TIDAK PERNAH dipakai. Akibatnya evaluasi
+    # mengukur LLM telanjang, bukan sistem yang dibahas laporan: tanpa SYSTEM_PROMPT,
+    # tanpa kueri terkondisi-prediksi, tanpa penanda sumber, dan medan
+    # `kondisi_terprediksi` pada dataset tidak pernah terpakai sama sekali.
+    from src.rag.pipeline import RAGPipeline
+
+    pipeline = RAGPipeline(chroma_persist_dir=args.persist, collection_name=args.collection,
+                           llm_provider="gemini")
+    pipeline.build()
+    chain = getattr(pipeline.generator, "chain", None)
+    if not (chain is not None and getattr(chain, "is_ready", False)):
+        print("GAGAL: rantai LLM produksi tidak siap. Sistem akan menjawab dengan "
+              "template tanpa error, dan skor RAGAS-nya tidak sah.", file=sys.stderr)
+        return 1
+
     samples = []
+    disclaimer_ada = patuh_sistem_n = sisa_disclaimer = 0
     for c in cases:
-        docs = retriever.retrieve(c["pertanyaan"], top_k=top_k)
-        contexts = [d["text"] for d in docs]
-        prompt = (
-            "Jawab pertanyaan klinisi HANYA berdasarkan KONTEKS berikut. "
-            "Bila konteks tidak memuat jawabannya, katakan demikian.\n\n"
-            f"KONTEKS:\n" + "\n\n".join(contexts) + f"\n\nPERTANYAAN: {c['pertanyaan']}"
-        )
-        answer = gen_llm.invoke(prompt).content.strip()
+        pred = GLUKOSA_PER_KONDISI[c["kondisi_terprediksi"]]
+        res = pipeline.answer(patient_state=_patient_state(pred), prediction=float(pred),
+                              query=c["pertanyaan"], top_k=top_k)
+        contexts = [d["text"] for d in res["retrieved_docs"]]
+        jawaban_utuh = res["explanation"]
+
+        # Kepatuhan disclaimer diperiksa dengan PENCOCOKAN TEKS BIASA — tanpa panggilan
+        # LLM sama sekali — lalu disclaimernya DIBUANG sebelum penilaian RAGAS.
+        # Alasan membuang: faithfulness menilai apakah pernyataan didukung konteks,
+        # sedangkan disclaimer adalah artefak sistem yang tetap dan bukan pernyataan
+        # tentang pasien. Membiarkannya berarti mengukur disclaimer, bukan mutu
+        # pembangkitan. Ini PERLAKUAN yang disengaja dan dicatat, bukan manipulasi skor:
+        # angka kepatuhannya dilaporkan terpisah sebagai bukti KNF-06.
+        # DUA tingkat kepatuhan, diukur terpisah karena maknanya berbeda:
+        #   model  = LLM menulis disclaimer sendiri  -> kepatuhan MODEL
+        #   sistem = frasa wajib ada setelah penegakan -> kepatuhan SISTEM (KNF-06)
+        # Tingkat sistem selalu 100% menurut konstruksi; yang informatif justru
+        # tingkat model.
+        patuh_model = _tulis_disclaimer_sendiri(jawaban_utuh)
+        patuh_sistem = DISCLAIMER_FRASA in jawaban_utuh.lower()
+        disclaimer_ada += int(patuh_model)
+        patuh_sistem_n += int(patuh_sistem)
+        jawaban_dinilai = _buang_disclaimer(jawaban_utuh)
+        sisa_disclaimer += int("disclaimer" in jawaban_dinilai.lower()
+                               or "tidak menggantikan penilaian" in jawaban_dinilai.lower())
+
         samples.append(SingleTurnSample(
             user_input=c["pertanyaan"],
-            response=answer,
+            response=jawaban_dinilai,
             retrieved_contexts=contexts,
             reference=c["jawaban_acuan"],
         ))
+
+    n = max(len(cases), 1)
+    print(f"\n=== Kepatuhan disclaimer (pencocokan teks, TANPA panggilan LLM) ===")
+    print(f"  Tingkat MODEL  : {disclaimer_ada}/{len(cases)} = "
+          f"{100.0 * disclaimer_ada / n:.1f}% menulis disclaimer sendiri")
+    print(f"  Tingkat SISTEM : {patuh_sistem_n}/{len(cases)} = "
+          f"{100.0 * patuh_sistem_n / n:.1f}% memuat frasa wajib setelah penegakan"
+          f"  [bukti KNF-06]")
+    print(f"  Catatan: tingkat SISTEM selalu 100% menurut konstruksi karena "
+          f"_ensure_disclaimer() menambahkan frasa bila belum ada. Yang informatif "
+          f"adalah tingkat MODEL.")
+    # Penjagaan: bila disclaimer masih tersisa di teks yang dinilai, perlakuan yang
+    # dinyatakan TIDAK terlaksana dan skor faithfulness ikut menilai disclaimer.
+    if sisa_disclaimer:
+        print(f"\n  PERINGATAN: {sisa_disclaimer}/{len(cases)} jawaban MASIH memuat sisa "
+              f"disclaimer setelah pembersihan. Skor faithfulness ikut menilai teks "
+              f"disclaimer — perlakuan yang dinyatakan TIDAK terlaksana sepenuhnya.")
+    else:
+        print(f"  Verifikasi: 0/{len(cases)} jawaban menyisakan disclaimer setelah "
+              f"pembersihan — perlakuan terlaksana.")
+    print("Disclaimer DIBUANG sebelum penilaian RAGAS — perlakuan disengaja dan dicatat, "
+          "lihat docs/journey.md.")
 
     result = evaluate(
         dataset=EvaluationDataset(samples=samples),

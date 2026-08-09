@@ -28,9 +28,13 @@
     },
     "keterbatasan_kuantitatif": {
       "porsi_koleksi_terambil_per_kueri_persen": 29.4,
+      "porsi_kolam_kandidat_fetch_k_persen": 70.6,
       "porsi_pada_korpus_produksi_persen": 0.24,
       "faktor": 121,
-      "implikasi": "top_k=5 dari 17 chunk berarti 29,4% koleksi terambil tiap kueri, versus 0,24% pada korpus produksi 2.061 chunk — 121x lebih besar. context_precision di sini cenderung OPTIMISTIS karena peluang chunk relevan masuk top-k jauh lebih besar. Angka RAGAS ini mengukur mutu PEMBANGKITAN pada konteks yang hampir pasti memadai, BUKAN mutu penelusuran pada korpus penuh, dan TIDAK dapat digeneralisasi ke sana."
+      "metrik_yang_optimistis": ["context_precision", "context_recall"],
+      "implikasi_context_precision": "top_k=5 dari 17 chunk berarti 29,4% koleksi terambil tiap kueri, versus 0,24% pada korpus produksi 2.061 chunk — 121x lebih besar. Peluang chunk relevan masuk top-k jauh lebih besar, sehingga presisi konteks cenderung tinggi bukan karena penelusurannya baik melainkan karena kolamnya sempit.",
+      "implikasi_context_recall": "Kolam kandidat fetch_k=12 mencakup 70,6% koleksi. Artinya hampir semua konteks acuan PASTI terjangkau sebelum MMR memilih, sehingga context_recall nyaris dijamin tinggi secara struktural. Pada korpus produksi, fetch_k=12 hanya mencakup 0,58% dari 2.061 chunk, dan tidak ada jaminan semacam itu.",
+      "implikasi_umum": "Angka RAGAS di sini mengukur mutu PEMBANGKITAN pada konteks yang hampir pasti memadai, BUKAN mutu penelusuran pada korpus penuh. KEDUA metrik berbasis konteks (context_precision DAN context_recall) optimistis dan TIDAK dapat digeneralisasi ke korpus produksi. Metrik yang relatif tidak terpengaruh sempitnya korpus adalah faithfulness dan answer_relevancy, karena keduanya menilai jawaban terhadap konteks yang diberikan, bukan kemampuan menemukan konteks itu."
     },
     "medan": {
       "id": "Pengenal kasus, dipakai sebagai kunci cache penilaian.",

@@ -1,17 +1,19 @@
 {
-  "n_sampel": 1,
+  "n_sampel": 2,
   "metrik": [
-    "context_recall"
+    "faithfulness",
+    "context_precision"
   ],
-  "top_k": 4,
-  "panggilan_pembangkitan": 1,
+  "top_k": 5,
+  "panggilan_pembangkitan": 2,
   "panggilan_per_metrik": {
-    "context_recall": 1
+    "faithfulness": 4,
+    "context_precision": 10
   },
   "sudah_ter-cache": 0,
-  "total_estimasi": 2,
+  "total_estimasi": 16,
   "proyeksi_dataset_penuh": {
     "n": 10,
-    "total": 20
+    "total": 80
   }
 }
