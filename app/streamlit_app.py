@@ -20,10 +20,13 @@ import streamlit as st
 
 from src.alerts import evaluate_divergence
 from src.clinical_state import ClinicalDecisionLog
+from src.config import cfg_get
 from src.conformal import coverage_achieved, prediction_interval
 from src.timing import STAGE_CALIBRATE, STAGE_FEATURES, STAGE_PREDICT, StageTimer
 from src.constants import GLUCOSE_LOW, RISK_HYPO, risk_from_condition_class
 from src.data.loader import DiabetesDataLoader
+from src.logbook import (LAYAK, TIDAK_CUKUP, baca_logbook, gabung_dengan_dataset,
+                         periksa_kelayakan)
 from src.rag import RAGPipeline
 from src.rag.citations import build_source_list
 from ui import (app_header, risk_badge, glucose_zone_chart, zone_legend,
@@ -38,6 +41,13 @@ st.set_page_config(page_title="Konsultasi — Pendukung Keputusan Diabetes", pag
 def load_dataset():
     return DiabetesDataLoader("data/raw").load_preferred_dataset("ohio_t1dm", "latest_generated")[0] \
         .sort_values(["patient_id", "timestamp"])
+
+
+@st.cache_data
+def load_logbook_df():
+    """Logbook manual. Dipisah dari load_dataset supaya cache-nya dapat dibuang sendiri
+    setiap kali dokter menyimpan catatan baru, tanpa memuat ulang seluruh OhioT1DM."""
+    return baca_logbook()
 
 
 @st.cache_resource
@@ -173,6 +183,23 @@ with st.sidebar:
     horizon_min = art["horizon"] * 5
     daftar_horizon = ", ".join(f"+{a['horizon'] * 5} mnt" for a in horizons)
     st.caption(f"Horizon prediksi: **{daftar_horizon}**")
+
+    # T4.2 — logbook manual dulu hanya ditulis ke berkas dan tidak pernah dibaca jalur
+    # prediksi. Sekarang dapat disertakan, tetapi lewat pilihan sadar: menyertakan
+    # catatan bertimestamp bebas mengubah kerapatan jendela, dan itu harus terlihat.
+    lb_semua = load_logbook_df()
+    n_lb_pasien = int((lb_semua["patient_id"].astype(str) == str(sel)).sum()) if not lb_semua.empty else 0
+    st.markdown("---")
+    st.markdown("### 📝 Logbook manual")
+    pakai_logbook = st.checkbox(
+        f"Sertakan catatan logbook ({n_lb_pasien} untuk pasien ini)",
+        value=False, disabled=n_lb_pasien == 0,
+        help="Catatan manual digabungkan ke deret CGM menurut stempel waktunya. "
+             "Jendela hasil gabungan diperiksa terhadap kriteria kerapatan yang sama "
+             "dengan yang dipakai saat melatih model.")
+    if n_lb_pasien == 0:
+        st.caption("Belum ada catatan untuk pasien ini — isi di halaman **Input Logbook**.")
+
     st.markdown("---")
     st.caption("Alur: tinjau status → prediksi & risiko → rekomendasi → simulasi/keputusan.")
 
@@ -180,6 +207,27 @@ pat = data_df[data_df["patient_id"] == sel].sort_values("timestamp")
 seq_len = art["sequence_length"]
 if len(pat) < seq_len:
     st.warning(f"Data pasien {sel} belum cukup ({len(pat)}/{seq_len} pembacaan)."); disclaimer_footer(); st.stop()
+
+# Penggabungan logbook + penjaganya. Bila jendela gabungan tidak sepadan dengan sebaran
+# pelatihan, aplikasi KEMBALI ke deret dataset saja dan mengatakan alasannya — bukan
+# menginterpolasi jeda supaya jendelanya "terlihat" rapat. Menginterpolasi jeda berjam-jam
+# menghasilkan baris yang tampak sah bagi dokter padahal karangan, persis kekeliruan yang
+# membuat segmentasi jeda sensor (Tugas 5) diperlukan.
+catatan_logbook = None
+if pakai_logbook and n_lb_pasien:
+    hasil = gabung_dengan_dataset(pat, lb_semua, sel)
+    # Kriteria kerapatan dibaca dari config.yaml — sumber yang SAMA dengan yang dipakai
+    # create_sequences() saat melatih model. Kalau angkanya ditulis ulang di sini, suatu
+    # saat keduanya akan berbeda tanpa ada yang gagal.
+    kelayakan = periksa_kelayakan(
+        hasil.deret, seq_len,
+        cfg_get("model.max_gap_steps"),
+        cadence_min=float(cfg_get("data.sampling_interval_min", 5)))
+    if kelayakan.verdict == LAYAK:
+        pat = hasil.deret
+        catatan_logbook = ("ok", hasil, kelayakan)
+    else:
+        catatan_logbook = ("tolak", hasil, kelayakan)
 
 window_df = build_window(pat, art)
 current = float(window_df["glucose"].iloc[-1])
@@ -216,6 +264,36 @@ _, pred_label, _ = classify_glucose(pred)
 
 # ── SECTION 1: Status + Prediksi ──────────────────────────────
 st.subheader(f"Pasien: {sel}")
+
+# Asal-usul jendela dinyatakan tepat di atas prediksinya. Kalau catatan manual ikut
+# membentuk prediksi, dokter harus tahu — dan kalau catatan itu DITOLAK, dokter harus
+# tahu bahwa yang dilihatnya bukan prediksi yang menyertakan catatannya.
+if catatan_logbook is not None:
+    status, hasil, kelayakan = catatan_logbook
+    if status == "ok":
+        st.success(
+            f"✅ Jendela prediksi memakai **{kelayakan.n_manual} catatan logbook** "
+            f"dari {seq_len} baris (jeda terpanjang "
+            f"{(kelayakan.jeda_maks_langkah or 0) * 5:.0f} menit, batas "
+            f"{(kelayakan.batas_langkah or 0) * 5:.0f} menit)."
+            + (f" {hasil.n_manual_menimpa} catatan menimpa pembacaan CGM pada waktu yang sama."
+               if hasil.n_manual_menimpa else ""))
+    elif kelayakan.verdict == TIDAK_CUKUP:
+        st.warning(f"⚠️ Catatan logbook tidak dipakai: {kelayakan.alasan}. "
+                   "Prediksi di bawah memakai deret CGM saja.")
+    else:
+        st.error(
+            f"⛔ **Catatan logbook tidak dipakai untuk prediksi ini.** {kelayakan.alasan}. "
+            f"Model produksi dilatih hanya pada jendela yang jarak antar-barisnya rapat; "
+            f"jendela gabungan ini berada di luar sebaran itu, sehingga galatnya tidak "
+            f"terwakili oleh angka validasi mana pun. Jeda tidak diinterpolasi dengan "
+            f"sengaja — nilai di dalam jeda memang tidak terobservasi. "
+            f"Prediksi di bawah memakai **deret CGM saja**.")
+    if hasil.kolom_diabaikan:
+        st.caption("Kolom logbook yang tidak menjadi fitur model: "
+                   + ", ".join(f"`{k}`" for k in hasil.kolom_diabaikan)
+                   + " — tetap tersimpan sebagai rekam jejak klinis, tetapi model "
+                     "produksi dilatih tanpa kolom-kolom ini.")
 c1, c2 = st.columns([1.15, 1])
 with c1:
     fig = glucose_zone_chart(

@@ -73,7 +73,15 @@ with left:
         }
         save_entry(entry)
         st.session_state["patient_id"] = patient_id.strip()
+        # Halaman Konsultasi men-cache logbook (@st.cache_data). Tanpa pembersihan ini,
+        # catatan yang baru disimpan tidak akan terlihat di jalur prediksi sampai aplikasi
+        # dimuat ulang — dan dokter akan mengira catatannya tidak tersimpan.
+        st.cache_data.clear()
         st.success(f"✅ Tersimpan untuk {patient_id} pada {entry['timestamp']}")
+        st.info("Catatan ini dapat disertakan ke jendela prediksi lewat kotak centang "
+                "**Sertakan catatan logbook** di sidebar halaman Konsultasi. "
+                "Catatan hanya dipakai bila jaraknya terhadap pembacaan di sekitarnya "
+                "masih serapat jendela yang dipakai melatih model.")
 
 with right:
     st.subheader("Status Logbook")
@@ -99,5 +107,8 @@ with right:
     else:
         st.info("Belum ada data logbook. Tambahkan catatan pertama di sebelah kiri.")
 
-st.caption("Logbook disimpan ke `data/raw/manual_logbook.csv` sebagai sumber input manual pasien.")
+st.caption("Logbook disimpan ke `data/raw/manual_logbook.csv`. Hanya `glucose`, `carbs`, "
+           "`insulin`, dan `activity` yang menjadi fitur model; `stress`, `sleep`, `work`, "
+           "`illness`, `meal_type`, dan `notes` disimpan sebagai rekam jejak klinis karena "
+           "model produksi dilatih tanpa kolom-kolom tersebut.")
 disclaimer_footer()
