@@ -13,11 +13,20 @@ Pengaman kuota:
   cache            sampel yang sudah dinilai tidak dinilai ulang
   konfirmasi       estimasi panggilan dicetak dan meminta persetujuan sebelum jalan
 
-Kuota gemini-2.5-flash-lite tier gratis. Catatan Tugas 6 menyebut 15 RPM / 1.000 RPD,
-tetapi pengukuran LANGSUNG pada A4 (6 Agustus 2026) menunjukkan angka berbeda: pesan galat
-Gemini menyebut `quota_value: 10` per menit, dan kuota harian tampak habis setelah sekitar
-35 permintaan benchmark. Angka Tugas 6 karena itu diperlakukan sebagai TIDAK TERVERIFIKASI.
-Estimasi 10 kasus x 4 metrik kira-kira 110 panggilan, yaitu ~11% kuota harian —
+KUOTA gemini-2.5-flash-lite tier gratis, TERUKUR dari galat 429 (7 Agustus 2026):
+
+    quotaId    : GenerateRequestsPerDayPerProjectPerModel-FreeTier
+    quotaValue : 20          <-- DUA PULUH per hari per model
+    batas laju : 10 permintaan/menit
+
+Angka 15 RPM / 1.000 RPD pada catatan Tugas 6 SALAH; itu berasal dari pembacaan
+dokumentasi untuk tier lain, bukan pengukuran. Angka 20/hari sudah tercatat benar pada
+journey L6 (8 Juli) lalu keliru dibatalkan. JANGAN mengulangi: bila dokumentasi vendor
+bertentangan dengan pengukuran proyek ini, yang berlaku adalah pengukuran.
+
+Konsekuensi praktis: 4 metrik x 10 kasus kira-kira 120 panggilan = SEKITAR 6 HARI.
+Jalankan bertahap dan andalkan cache; menurunkan laju TIDAK menambah kuota harian.
+Estimasi 10 kasus x 4 metrik kira-kira 110 panggilan —
 muat dalam satu hari dengan margin lebar.
 
 Jalankan:
@@ -186,7 +195,7 @@ def _project(n: int, metrics: List[str], top_k: int) -> int:
     return total
 
 
-def _print_estimate(est: Dict[str, Any], rpd: int = 1000) -> None:
+def _print_estimate(est: Dict[str, Any], rpd: int = 20) -> None:
     print("=" * 66)
     print("ESTIMASI PANGGILAN LLM SEBELUM EKSEKUSI")
     print("=" * 66)
@@ -217,11 +226,15 @@ def _print_estimate(est: Dict[str, Any], rpd: int = 1000) -> None:
     print(f"    setelan RAGAS_RPS    : {rps} req/dtk (~{rps * 60:.1f}/menit)")
     print(f"    waktu minimum        : ~{menit_min:.0f} mnt (pada batas laju)")
     print(f"    waktu pada setelan   : ~{menit_setelan:.0f} mnt")
-    print(f"    kuota harian         : catatan Tugas 6 menyebut {rpd} RPD, tetapi A4")
-    print(f"                           menunjukkan kuota habis setelah ~35 permintaan.")
-    print(f"                           Angka {rpd} TIDAK terverifikasi — siapkan")
-    print(f"                           kemungkinan melanjutkan esok hari dari cache.")
+    hari = -(-total // rpd)  # pembulatan ke atas
+    print(f"    KUOTA HARIAN         : {rpd} permintaan/hari/model (TERUKUR dari galat 429)")
+    print(f"    perlu                : ~{hari} HARI untuk {total} panggilan")
     print("=" * 66)
+    if hari > 1:
+        print(f"  PERINGATAN: {total} panggilan MELEBIHI kuota harian {rpd}.")
+        print(f"  Jalankan bertahap; cache per kasus-per-metrik menjaga agar penilaian")
+        print(f"  yang sudah berhasil tidak diulang. Menurunkan laju TIDAK menambah kuota.")
+        print("=" * 66)
     print("Catatan: jumlah faithfulness bergantung panjang jawaban, jadi angka di")
     print("atas adalah perkiraan BAWAH.")
 
