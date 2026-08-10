@@ -1,25 +1,113 @@
 {
   "horizon_min": 30,
-  "catatan": "Importance dijumlahkan lintas langkah look-back, dinormalisasi ke persen. Kontribusi multimodal = insulin + karbohidrat.",
+  "catatan": "Importance dijumlahkan lintas langkah look-back, dinormalisasi ke persen. Kontribusi multimodal = insulin + karbohidrat. Jendela TERSEGMENTASI (max_gap_steps), sama dengan pelatihan produksi.",
+  "dua_ukuran_mengapa": "MDI (feature_importances_) dihitung pada data LATIH dan bias ke fitur bernilai-unik banyak; bias itu menguntungkan glucose/glucose_delta atas iob/cob, yaitu bekerja melawan klaim yang diuji. Permutation importance dihitung pada pasien HOLD-OUT dan mengukur kenaikan RMSE ketika fitur dirusak, sehingga tidak terkena kedua masalah itu. Keduanya dilaporkan; bila keduanya sepakat, klaimnya jauh lebih kuat daripada MDI sendirian.",
   "fitur_mentah": {
-    "features": {
-      "glucose": 96.49,
-      "carbs": 0.76,
-      "insulin": 2.64,
-      "activity": 0.11
+    "mdi": {
+      "glucose": 97.11,
+      "carbs": 0.73,
+      "insulin": 2.08,
+      "activity": 0.08
     },
-    "kontribusi_insulin_karbohidrat_%": 3.4
+    "permutasi": {
+      "rmse_dasar": 21.2758,
+      "n_uji": 26445,
+      "n_repeats": 5,
+      "per_fitur": {
+        "glucose": {
+          "kenaikan_rmse": 52.4945,
+          "sd": 0.2288,
+          "persen": 99.46
+        },
+        "carbs": {
+          "kenaikan_rmse": 0.1965,
+          "sd": 0.0163,
+          "persen": 0.37
+        },
+        "insulin": {
+          "kenaikan_rmse": 0.0843,
+          "sd": 0.0022,
+          "persen": 0.16
+        },
+        "activity": {
+          "kenaikan_rmse": 0.0057,
+          "sd": 0.0026,
+          "persen": 0.01
+        }
+      },
+      "pasien_uji": [
+        "ohio_591",
+        "ohio_596"
+      ]
+    }
   },
   "fitur_engineered": {
-    "features": {
-      "glucose": 23.11,
-      "glucose_delta": 39.46,
-      "iob": 11.86,
-      "cob": 10.47,
-      "activity": 0.44,
-      "hour_sin": 7.2,
-      "hour_cos": 7.47
+    "mdi": {
+      "glucose": 22.23,
+      "glucose_delta": 43.21,
+      "iob": 11.42,
+      "cob": 10.25,
+      "activity": 0.4,
+      "hour_sin": 6.17,
+      "hour_cos": 6.31
     },
-    "kontribusi_insulin_karbohidrat_%": 22.33
+    "permutasi": {
+      "rmse_dasar": 21.1154,
+      "n_uji": 26445,
+      "n_repeats": 5,
+      "per_fitur": {
+        "glucose": {
+          "kenaikan_rmse": 2.84,
+          "sd": 0.0647,
+          "persen": 40.69
+        },
+        "glucose_delta": {
+          "kenaikan_rmse": 2.8415,
+          "sd": 0.0381,
+          "persen": 40.71
+        },
+        "iob": {
+          "kenaikan_rmse": 0.4369,
+          "sd": 0.0311,
+          "persen": 6.26
+        },
+        "cob": {
+          "kenaikan_rmse": 0.6743,
+          "sd": 0.0278,
+          "persen": 9.66
+        },
+        "activity": {
+          "kenaikan_rmse": 0.0125,
+          "sd": 0.0007,
+          "persen": 0.18
+        },
+        "hour_sin": {
+          "kenaikan_rmse": 0.0183,
+          "sd": 0.0077,
+          "persen": 0.26
+        },
+        "hour_cos": {
+          "kenaikan_rmse": 0.1563,
+          "sd": 0.0107,
+          "persen": 2.24
+        }
+      },
+      "pasien_uji": [
+        "ohio_591",
+        "ohio_596"
+      ]
+    }
+  },
+  "kontribusi_insulin_karbohidrat": {
+    "mdi": {
+      "mentah_%": 2.81,
+      "engineered_%": 21.67,
+      "kelipatan": 7.71
+    },
+    "permutasi": {
+      "mentah_%": 0.53,
+      "engineered_%": 15.92,
+      "kelipatan": 30.04
+    }
   }
 }
