@@ -1,7 +1,7 @@
 {
   "horizon_min": 30,
   "catatan": "Importance dijumlahkan lintas langkah look-back, dinormalisasi ke persen. Kontribusi multimodal = insulin + karbohidrat. Jendela TERSEGMENTASI (max_gap_steps), sama dengan pelatihan produksi.",
-  "dua_ukuran_mengapa": "MDI (feature_importances_) dihitung pada data LATIH dan bias ke fitur bernilai-unik banyak; bias itu menguntungkan glucose/glucose_delta atas iob/cob, yaitu bekerja melawan klaim yang diuji. Permutation importance dihitung pada pasien HOLD-OUT dan mengukur kenaikan RMSE ketika fitur dirusak, sehingga tidak terkena kedua masalah itu. Keduanya dilaporkan; bila keduanya sepakat, klaimnya jauh lebih kuat daripada MDI sendirian.",
+  "dua_ukuran_mengapa": "MDI (feature_importances_) dihitung pada data LATIH dan bias ke fitur bernilai-unik banyak. Cacah nilai unik pada 166.533 baris: glucose 361, glucose_delta 362, hour_sin ~1.300, activity 10, sedangkan iob 165.950 dan cob 163.968. Bias itu MENGUNTUNGKAN iob/cob, sehingga MDI cenderung MELEBIH-LEBIHKAN klaim multimodal, bukan menekannya. Permutation importance dihitung pada pasien HOLD-OUT, sehingga bebas dari kedua masalah. Angka yang dikutip laporan adalah PERMUTASI (15,92%).",
   "fitur_mentah": {
     "mdi": {
       "glucose": 97.11,
@@ -109,5 +109,16 @@
       "engineered_%": 15.92,
       "kelipatan": 30.04
     }
+  },
+  "koreksi_alasan": "Alasan yang semula ditulis menyatakan bias kardinalitas 'bekerja melawan klaim yang diuji', dengan premis iob/cob kurang beragam daripada glucose. Premis itu TERBALIK dan sudah diperiksa dengan mencacah nilai unik. Kesimpulan praktis tidak berubah (15,92% tetap angka laporan); arah alasannya berubah.",
+  "cacah_nilai_unik": {
+    "glucose": 361,
+    "glucose_delta": 362,
+    "iob": 165950,
+    "cob": 163968,
+    "activity": 10,
+    "hour_sin": 1294,
+    "hour_cos": 1311,
+    "_n_baris": 166533
   }
 }

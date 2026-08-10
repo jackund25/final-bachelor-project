@@ -54,10 +54,12 @@ def permutation_importance_grouped(model, X, y_true, anchor, features, predict_d
     Mengapa ini ditambahkan di samping ``feature_importances_``:
 
     1. **MDI bias ke fitur bernilai-unik banyak.** Gini importance memberi keuntungan
-       sistematis kepada fitur kontinu yang titik pisahnya banyak. ``glucose`` dan
-       ``glucose_delta`` jauh lebih beragam daripada ``iob``/``cob``, yang merupakan
-       akumulasi meluruh dan sering bernilai nol. Bias itu bekerja **tepat melawan** klaim
-       yang sedang diuji, sehingga MDI sendirian tidak cukup untuk membuktikannya.
+       sistematis kepada fitur yang titik pisahnya banyak. Cacah nilai unik pada 166.533
+       baris: ``glucose`` 361 (bulat mg/dL), ``glucose_delta`` 362, ``hour_sin`` ~1.300,
+       ``activity`` 10 — sementara ``iob`` **165.950** dan ``cob`` **163.968**, yaitu
+       praktis kontinu. Bias itu karena itu **MENGUNTUNGKAN** iob/cob sekitar 460 kali
+       lipat dalam hal titik pisah yang tersedia, sehingga MDI cenderung
+       **melebih-lebihkan** klaim multimodal yang sedang diuji, bukan menekannya.
     2. **MDI dihitung pada data LATIH.** Ia mengukur apa yang dipakai model untuk memecah
        simpul, bukan apa yang benar-benar membantu pada pasien yang belum pernah dilihat.
 
@@ -173,11 +175,18 @@ def main() -> None:
             "(max_gap_steps), sama dengan pelatihan produksi."),
         "dua_ukuran_mengapa": (
             "MDI (feature_importances_) dihitung pada data LATIH dan bias ke fitur "
-            "bernilai-unik banyak; bias itu menguntungkan glucose/glucose_delta atas "
-            "iob/cob, yaitu bekerja melawan klaim yang diuji. Permutation importance "
-            "dihitung pada pasien HOLD-OUT dan mengukur kenaikan RMSE ketika fitur "
-            "dirusak, sehingga tidak terkena kedua masalah itu. Keduanya dilaporkan; "
-            "bila keduanya sepakat, klaimnya jauh lebih kuat daripada MDI sendirian."),
+            "bernilai-unik banyak. Cacah nilai unik: glucose 361, glucose_delta 362, "
+            "hour_sin ~1.300, activity 10, sedangkan iob 165.950 dan cob 163.968. Bias itu "
+            "MENGUNTUNGKAN iob/cob, sehingga MDI cenderung MELEBIH-LEBIHKAN klaim "
+            "multimodal, bukan menekannya. Permutation importance dihitung pada pasien "
+            "HOLD-OUT dan mengukur kenaikan RMSE ketika fitur dirusak, sehingga bebas dari "
+            "kedua masalah itu. Angka yang dikutip laporan adalah angka PERMUTASI (15,92%); "
+            "MDI (21,67%) dilaporkan berdampingan untuk memperlihatkan besar bias tersebut."),
+        "koreksi_alasan": (
+            "Alasan yang semula ditulis menyatakan bias kardinalitas 'bekerja melawan klaim "
+            "yang diuji' dengan premis bahwa iob/cob kurang beragam daripada glucose. Premis "
+            "itu TERBALIK dan sudah diperiksa dengan mencacah nilai unik. Kesimpulan praktis "
+            "tidak berubah, arah alasannya berubah."),
         "fitur_mentah": raw,
         "fitur_engineered": eng,
         "kontribusi_insulin_karbohidrat": ringkas,
