@@ -1,0 +1,611 @@
+{
+  "percobaan": "T5.1 — distribusi panjang token per chunk",
+  "model_embedding": "all-MiniLM-L6-v2",
+  "model_embedding_penuh": "sentence-transformers/all-MiniLM-L6-v2",
+  "batas_token_max_seq_length": 256,
+  "sumber_batas": "sentence_bert_config.json pada snapshot model terpasang",
+  "catatan_model_max_length": "tokenizer melaporkan model_max_length=512, tetapi itu konfigurasi BERT-nya. sentence-transformers memotong pada 256. Memakai 512 akan membuat pemotongan tampak tidak pernah terjadi.",
+  "chunk_size_produksi": 900,
+  "chunk_overlap_produksi": 120,
+  "catatan_overlap": "Overlap diskalakan sebanding dengan chunk_size supaya perbandingan 900 vs 500 tidak mencampur dua perubahan.",
+  "n_halaman_korpus": 488,
+  "hasil": {
+    "900": {
+      "n_chunk": 2186,
+      "token_min": 9,
+      "token_maks": 443,
+      "token_rerata": 214.5,
+      "persentil": {
+        "5": 19.0,
+        "25": 176.0,
+        "50": 213.0,
+        "75": 285.0,
+        "90": 325.0,
+        "95": 337.0,
+        "99": 358.3
+      },
+      "n_melewati_batas": 766,
+      "persen_melewati_batas": 35.04,
+      "total_token": 468992,
+      "total_token_terpotong": 38620,
+      "persen_token_terpotong": 8.23,
+      "chunk_size_karakter": 900,
+      "chunk_overlap_karakter": 120,
+      "adalah_produksi": true,
+      "karakter_rerata": 723.2,
+      "karakter_per_token": 3.371,
+      "per_dokumen": {
+        "KB-01_IDAI-2015_Konsensus-DMT1.pdf": {
+          "n_chunk": 341,
+          "token_median": 224.0,
+          "token_maks": 443,
+          "n_melewati_batas": 153,
+          "persen_melewati_batas": 44.87
+        },
+        "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf": {
+          "n_chunk": 85,
+          "token_median": 224.0,
+          "token_maks": 355,
+          "n_melewati_batas": 35,
+          "persen_melewati_batas": 41.18
+        },
+        "KB-03_PERKENI-2021_Terapi-Insulin.pdf": {
+          "n_chunk": 172,
+          "token_median": 248.5,
+          "token_maks": 354,
+          "n_melewati_batas": 84,
+          "persen_melewati_batas": 48.84
+        },
+        "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf": {
+          "n_chunk": 256,
+          "token_median": 312.5,
+          "token_maks": 422,
+          "n_melewati_batas": 172,
+          "persen_melewati_batas": 67.19
+        },
+        "KB-05_ADA-EASD-2021_Tatalaksana-DMT1-Dewasa.pdf": {
+          "n_chunk": 279,
+          "token_median": 202.0,
+          "token_maks": 333,
+          "n_melewati_batas": 80,
+          "persen_melewati_batas": 28.67
+        },
+        "KB-06_ATTD-2019_Target-Glikemik-TIR.pdf": {
+          "n_chunk": 86,
+          "token_median": 221.5,
+          "token_maks": 351,
+          "n_melewati_batas": 14,
+          "persen_melewati_batas": 16.28
+        },
+        "KB-07_ISPAD-2022_Ch10-Nutrisi.pdf": {
+          "n_chunk": 192,
+          "token_median": 197.0,
+          "token_maks": 318,
+          "n_melewati_batas": 53,
+          "persen_melewati_batas": 27.6
+        },
+        "KB-08_ISPAD-2022_Ch11-KAD-HHS.pdf": {
+          "n_chunk": 163,
+          "token_median": 221.0,
+          "token_maks": 338,
+          "n_melewati_batas": 58,
+          "persen_melewati_batas": 35.58
+        },
+        "KB-09_ISPAD-2022_Ch12-Hipoglikemia.pdf": {
+          "n_chunk": 142,
+          "token_median": 224.0,
+          "token_maks": 349,
+          "n_melewati_batas": 41,
+          "persen_melewati_batas": 28.87
+        },
+        "KB-10_ISPAD-2022_Ch13-Manajemen-Hari-Sakit.pdf": {
+          "n_chunk": 88,
+          "token_median": 208.5,
+          "token_maks": 334,
+          "n_melewati_batas": 20,
+          "persen_melewati_batas": 22.73
+        },
+        "KB-11_ISPAD-2022_Ch14-Aktivitas-Fisik.pdf": {
+          "n_chunk": 220,
+          "token_median": 200.0,
+          "token_maks": 416,
+          "n_melewati_batas": 36,
+          "persen_melewati_batas": 16.36
+        },
+        "KB-12_ISPAD-2022_Ch25-Sumber-Daya-Terbatas.pdf": {
+          "n_chunk": 162,
+          "token_median": 198.5,
+          "token_maks": 319,
+          "n_melewati_batas": 20,
+          "persen_melewati_batas": 12.35
+        }
+      }
+    },
+    "500": {
+      "n_chunk": 3745,
+      "token_min": 12,
+      "token_maks": 291,
+      "token_rerata": 125.8,
+      "persentil": {
+        "5": 30.0,
+        "25": 99.0,
+        "50": 122.0,
+        "75": 163.0,
+        "90": 184.0,
+        "95": 191.0,
+        "99": 205.0
+      },
+      "n_melewati_batas": 4,
+      "persen_melewati_batas": 0.11,
+      "total_token": 471079,
+      "total_token_terpotong": 61,
+      "persen_token_terpotong": 0.01,
+      "chunk_size_karakter": 500,
+      "chunk_overlap_karakter": 67,
+      "adalah_produksi": false,
+      "karakter_rerata": 420.4,
+      "karakter_per_token": 3.342,
+      "per_dokumen": {
+        "KB-01_IDAI-2015_Konsensus-DMT1.pdf": {
+          "n_chunk": 513,
+          "token_median": 174.0,
+          "token_maks": 254,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf": {
+          "n_chunk": 138,
+          "token_median": 144.5,
+          "token_maks": 205,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-03_PERKENI-2021_Terapi-Insulin.pdf": {
+          "n_chunk": 271,
+          "token_median": 161.0,
+          "token_maks": 207,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf": {
+          "n_chunk": 423,
+          "token_median": 177.0,
+          "token_maks": 264,
+          "n_melewati_batas": 1,
+          "persen_melewati_batas": 0.24
+        },
+        "KB-05_ADA-EASD-2021_Tatalaksana-DMT1-Dewasa.pdf": {
+          "n_chunk": 513,
+          "token_median": 113.0,
+          "token_maks": 196,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-06_ATTD-2019_Target-Glikemik-TIR.pdf": {
+          "n_chunk": 162,
+          "token_median": 117.0,
+          "token_maks": 291,
+          "n_melewati_batas": 1,
+          "persen_melewati_batas": 0.62
+        },
+        "KB-07_ISPAD-2022_Ch10-Nutrisi.pdf": {
+          "n_chunk": 352,
+          "token_median": 109.0,
+          "token_maks": 193,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-08_ISPAD-2022_Ch11-KAD-HHS.pdf": {
+          "n_chunk": 288,
+          "token_median": 122.5,
+          "token_maks": 192,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-09_ISPAD-2022_Ch12-Hipoglikemia.pdf": {
+          "n_chunk": 251,
+          "token_median": 120.0,
+          "token_maks": 198,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-10_ISPAD-2022_Ch13-Manajemen-Hari-Sakit.pdf": {
+          "n_chunk": 158,
+          "token_median": 113.0,
+          "token_maks": 185,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-11_ISPAD-2022_Ch14-Aktivitas-Fisik.pdf": {
+          "n_chunk": 384,
+          "token_median": 112.0,
+          "token_maks": 269,
+          "n_melewati_batas": 2,
+          "persen_melewati_batas": 0.52
+        },
+        "KB-12_ISPAD-2022_Ch25-Sumber-Daya-Terbatas.pdf": {
+          "n_chunk": 292,
+          "token_median": 106.0,
+          "token_maks": 183,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        }
+      }
+    },
+    "300": {
+      "n_chunk": 6112,
+      "token_min": 5,
+      "token_maks": 201,
+      "token_rerata": 76.2,
+      "persentil": {
+        "5": 32.0,
+        "25": 57.0,
+        "50": 73.0,
+        "75": 100.0,
+        "90": 112.0,
+        "95": 116.0,
+        "99": 129.0
+      },
+      "n_melewati_batas": 0,
+      "persen_melewati_batas": 0.0,
+      "total_token": 465534,
+      "total_token_terpotong": 0,
+      "persen_token_terpotong": 0.0,
+      "chunk_size_karakter": 300,
+      "chunk_overlap_karakter": 40,
+      "adalah_produksi": false,
+      "karakter_rerata": 249.9,
+      "karakter_per_token": 3.281,
+      "per_dokumen": {
+        "KB-01_IDAI-2015_Konsensus-DMT1.pdf": {
+          "n_chunk": 762,
+          "token_median": 107.5,
+          "token_maks": 161,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf": {
+          "n_chunk": 213,
+          "token_median": 99.0,
+          "token_maks": 123,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-03_PERKENI-2021_Terapi-Insulin.pdf": {
+          "n_chunk": 422,
+          "token_median": 100.0,
+          "token_maks": 137,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf": {
+          "n_chunk": 673,
+          "token_median": 107.0,
+          "token_maks": 156,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-05_ADA-EASD-2021_Tatalaksana-DMT1-Dewasa.pdf": {
+          "n_chunk": 828,
+          "token_median": 66.0,
+          "token_maks": 127,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-06_ATTD-2019_Target-Glikemik-TIR.pdf": {
+          "n_chunk": 298,
+          "token_median": 65.5,
+          "token_maks": 201,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-07_ISPAD-2022_Ch10-Nutrisi.pdf": {
+          "n_chunk": 590,
+          "token_median": 64.0,
+          "token_maks": 114,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-08_ISPAD-2022_Ch11-KAD-HHS.pdf": {
+          "n_chunk": 484,
+          "token_median": 71.5,
+          "token_maks": 121,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-09_ISPAD-2022_Ch12-Hipoglikemia.pdf": {
+          "n_chunk": 424,
+          "token_median": 70.0,
+          "token_maks": 153,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-10_ISPAD-2022_Ch13-Manajemen-Hari-Sakit.pdf": {
+          "n_chunk": 264,
+          "token_median": 66.0,
+          "token_maks": 124,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-11_ISPAD-2022_Ch14-Aktivitas-Fisik.pdf": {
+          "n_chunk": 656,
+          "token_median": 64.0,
+          "token_maks": 176,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        },
+        "KB-12_ISPAD-2022_Ch25-Sumber-Daya-Terbatas.pdf": {
+          "n_chunk": 498,
+          "token_median": 61.0,
+          "token_maks": 120,
+          "n_melewati_batas": 0,
+          "persen_melewati_batas": 0.0
+        }
+      }
+    },
+    "1400": {
+      "n_chunk": 1489,
+      "token_min": 13,
+      "token_maks": 642,
+      "token_rerata": 314.1,
+      "persentil": {
+        "5": 19.0,
+        "25": 244.0,
+        "50": 317.0,
+        "75": 430.0,
+        "90": 498.0,
+        "95": 516.6,
+        "99": 545.4
+      },
+      "n_melewati_batas": 1091,
+      "persen_melewati_batas": 73.27,
+      "total_token": 467631,
+      "total_token_terpotong": 138693,
+      "persen_token_terpotong": 29.66,
+      "chunk_size_karakter": 1400,
+      "chunk_overlap_karakter": 187,
+      "adalah_produksi": false,
+      "karakter_rerata": 1066.2,
+      "karakter_per_token": 3.395,
+      "per_dokumen": {
+        "KB-01_IDAI-2015_Konsensus-DMT1.pdf": {
+          "n_chunk": 248,
+          "token_median": 218.5,
+          "token_maks": 642,
+          "n_melewati_batas": 114,
+          "persen_melewati_batas": 45.97
+        },
+        "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf": {
+          "n_chunk": 62,
+          "token_median": 295.0,
+          "token_maks": 531,
+          "n_melewati_batas": 35,
+          "persen_melewati_batas": 56.45
+        },
+        "KB-03_PERKENI-2021_Terapi-Insulin.pdf": {
+          "n_chunk": 119,
+          "token_median": 307.0,
+          "token_maks": 553,
+          "n_melewati_batas": 69,
+          "persen_melewati_batas": 57.98
+        },
+        "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf": {
+          "n_chunk": 181,
+          "token_median": 420.0,
+          "token_maks": 581,
+          "n_melewati_batas": 126,
+          "persen_melewati_batas": 69.61
+        },
+        "KB-05_ADA-EASD-2021_Tatalaksana-DMT1-Dewasa.pdf": {
+          "n_chunk": 182,
+          "token_median": 321.5,
+          "token_maks": 499,
+          "n_melewati_batas": 153,
+          "persen_melewati_batas": 84.07
+        },
+        "KB-06_ATTD-2019_Target-Glikemik-TIR.pdf": {
+          "n_chunk": 57,
+          "token_median": 338.0,
+          "token_maks": 531,
+          "n_melewati_batas": 52,
+          "persen_melewati_batas": 91.23
+        },
+        "KB-07_ISPAD-2022_Ch10-Nutrisi.pdf": {
+          "n_chunk": 129,
+          "token_median": 308.0,
+          "token_maks": 492,
+          "n_melewati_batas": 106,
+          "persen_melewati_batas": 82.17
+        },
+        "KB-08_ISPAD-2022_Ch11-KAD-HHS.pdf": {
+          "n_chunk": 107,
+          "token_median": 343.0,
+          "token_maks": 491,
+          "n_melewati_batas": 93,
+          "persen_melewati_batas": 86.92
+        },
+        "KB-09_ISPAD-2022_Ch12-Hipoglikemia.pdf": {
+          "n_chunk": 93,
+          "token_median": 339.0,
+          "token_maks": 507,
+          "n_melewati_batas": 81,
+          "persen_melewati_batas": 87.1
+        },
+        "KB-10_ISPAD-2022_Ch13-Manajemen-Hari-Sakit.pdf": {
+          "n_chunk": 59,
+          "token_median": 309.0,
+          "token_maks": 498,
+          "n_melewati_batas": 50,
+          "persen_melewati_batas": 84.75
+        },
+        "KB-11_ISPAD-2022_Ch14-Aktivitas-Fisik.pdf": {
+          "n_chunk": 144,
+          "token_median": 309.5,
+          "token_maks": 573,
+          "n_melewati_batas": 120,
+          "persen_melewati_batas": 83.33
+        },
+        "KB-12_ISPAD-2022_Ch25-Sumber-Daya-Terbatas.pdf": {
+          "n_chunk": 108,
+          "token_median": 304.0,
+          "token_maks": 498,
+          "n_melewati_batas": 92,
+          "persen_melewati_batas": 85.19
+        }
+      }
+    },
+    "2000": {
+      "n_chunk": 1022,
+      "token_min": 13,
+      "token_maks": 814,
+      "token_rerata": 450.7,
+      "persentil": {
+        "5": 110.0,
+        "25": 364.0,
+        "50": 465.0,
+        "75": 597.8,
+        "90": 670.0,
+        "95": 704.0,
+        "99": 747.0
+      },
+      "n_melewati_batas": 830,
+      "persen_melewati_batas": 81.21,
+      "total_token": 460572,
+      "total_token_terpotong": 220843,
+      "persen_token_terpotong": 47.95,
+      "chunk_size_karakter": 2000,
+      "chunk_overlap_karakter": 267,
+      "adalah_produksi": false,
+      "karakter_rerata": 1539.9,
+      "karakter_per_token": 3.417,
+      "per_dokumen": {
+        "KB-01_IDAI-2015_Konsensus-DMT1.pdf": {
+          "n_chunk": 122,
+          "token_median": 540.0,
+          "token_maks": 768,
+          "n_melewati_batas": 106,
+          "persen_melewati_batas": 86.89
+        },
+        "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf": {
+          "n_chunk": 48,
+          "token_median": 317.0,
+          "token_maks": 769,
+          "n_melewati_batas": 29,
+          "persen_melewati_batas": 60.42
+        },
+        "KB-03_PERKENI-2021_Terapi-Insulin.pdf": {
+          "n_chunk": 80,
+          "token_median": 482.5,
+          "token_maks": 744,
+          "n_melewati_batas": 52,
+          "persen_melewati_batas": 65.0
+        },
+        "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf": {
+          "n_chunk": 118,
+          "token_median": 610.5,
+          "token_maks": 814,
+          "n_melewati_batas": 96,
+          "persen_melewati_batas": 81.36
+        },
+        "KB-05_ADA-EASD-2021_Tatalaksana-DMT1-Dewasa.pdf": {
+          "n_chunk": 138,
+          "token_median": 446.0,
+          "token_maks": 719,
+          "n_melewati_batas": 109,
+          "persen_melewati_batas": 78.99
+        },
+        "KB-06_ATTD-2019_Target-Glikemik-TIR.pdf": {
+          "n_chunk": 39,
+          "token_median": 491.0,
+          "token_maks": 674,
+          "n_melewati_batas": 37,
+          "persen_melewati_batas": 94.87
+        },
+        "KB-07_ISPAD-2022_Ch10-Nutrisi.pdf": {
+          "n_chunk": 94,
+          "token_median": 435.5,
+          "token_maks": 680,
+          "n_melewati_batas": 80,
+          "persen_melewati_batas": 85.11
+        },
+        "KB-08_ISPAD-2022_Ch11-KAD-HHS.pdf": {
+          "n_chunk": 80,
+          "token_median": 469.0,
+          "token_maks": 704,
+          "n_melewati_batas": 66,
+          "persen_melewati_batas": 82.5
+        },
+        "KB-09_ISPAD-2022_Ch12-Hipoglikemia.pdf": {
+          "n_chunk": 68,
+          "token_median": 487.0,
+          "token_maks": 704,
+          "n_melewati_batas": 59,
+          "persen_melewati_batas": 86.76
+        },
+        "KB-10_ISPAD-2022_Ch13-Manajemen-Hari-Sakit.pdf": {
+          "n_chunk": 45,
+          "token_median": 444.0,
+          "token_maks": 692,
+          "n_melewati_batas": 37,
+          "persen_melewati_batas": 82.22
+        },
+        "KB-11_ISPAD-2022_Ch14-Aktivitas-Fisik.pdf": {
+          "n_chunk": 110,
+          "token_median": 435.5,
+          "token_maks": 753,
+          "n_melewati_batas": 92,
+          "persen_melewati_batas": 83.64
+        },
+        "KB-12_ISPAD-2022_Ch25-Sumber-Daya-Terbatas.pdf": {
+          "n_chunk": 80,
+          "token_median": 432.0,
+          "token_maks": 689,
+          "n_melewati_batas": 67,
+          "persen_melewati_batas": 83.75
+        }
+      }
+    }
+  },
+  "penyandingan_dengan_sapuan_B4": {
+    "sumber_mrr": "results/tuning_log.json (parameter=chunk_size, korpus kb12_sym, n=240)",
+    "per_ukuran": {
+      "900": {
+        "persen_token_terpotong": 8.23,
+        "persen_chunk_melewati_batas": 35.04,
+        "mrr_B4": 0.425,
+        "hit@1_B4": 26.2
+      },
+      "500": {
+        "persen_token_terpotong": 0.01,
+        "persen_chunk_melewati_batas": 0.11,
+        "mrr_B4": 0.541,
+        "hit@1_B4": 40.0
+      },
+      "300": {
+        "persen_token_terpotong": 0.0,
+        "persen_chunk_melewati_batas": 0.0,
+        "mrr_B4": 0.306,
+        "hit@1_B4": 3.3
+      },
+      "1400": {
+        "persen_token_terpotong": 29.66,
+        "persen_chunk_melewati_batas": 73.27,
+        "mrr_B4": 0.313,
+        "hit@1_B4": 16.2
+      },
+      "2000": {
+        "persen_token_terpotong": 47.95,
+        "persen_chunk_melewati_batas": 81.21,
+        "mrr_B4": 0.302,
+        "hit@1_B4": 13.8
+      }
+    },
+    "spearman_rho": -0.4,
+    "spearman_p": 0.5046,
+    "HASIL_UJI": "Spearman atas KELIMA ukuran TIDAK signifikan. Hubungannya tidak monoton, dan itu informatif: chunk 300 tidak terpotong sama sekali (0,00%) tetapi MRR-nya 0,306, terburuk kedua. Pemotongan karena itu JELAS bukan satu-satunya yang bekerja.",
+    "penafsiran_dua_faktor": "chunk_size menggerakkan dua hal yang berlawanan arah: makin besar chunk, makin banyak konteks per potongan (membantu), tetapi makin besar pula bagian yang dipotong diam-diam (merugikan). Optimum di sekitar 500 konsisten dengan kedua gaya itu bertemu, tetapi ini PENAFSIRAN atas pola, bukan hasil uji.",
+    "pengamatan_post_hoc_JANGAN_dibaca_sebagai_uji": "Di antara empat ukuran >=500, MRR turun monoton seiring naiknya proporsi pemotongan (0,01%->0,541; 8,23%->0,425; 29,66%->0,313; 47,95%->0,302), yaitu korelasi peringkat sempurna. Subhimpunan itu dipilih SETELAH melihat data, sehingga angka signifikansi apa pun atasnya tidak sah. Dicatat sebagai pengamatan yang mengarahkan percobaan berikutnya, bukan sebagai bukti.",
+    "UJI_YANG_MEMISAHKAN_KEDUANYA": "Pertahankan chunk_size 900 tetapi hilangkan pemotongannya — indeks ulang dengan model ber-max_seq_length lebih besar (mis. all-mpnet-base-v2) atau paksa setiap chunk <=256 token. Hanya satu faktor yang berubah, sehingga kenaikan MRR (bila ada) dapat dikaitkan pada pemotongan. Tanpa uji itu, pemotongan tetap berstatus mekanisme yang terukur tetapi belum terbukti sebagai penyebab."
+  },
+  "RELEVANSI_BAGI_KEPUTUSAN_YANG_SUDAH_DIAMBIL": "chunk_size dipertahankan 900 pada Tahap 0 dengan alasan selisih B4 tidak signifikan (p=0,078). Saat keputusan itu diambil, BELUM diketahui bahwa 900 membuang 8,23% token korpus secara diam-diam, dan bahwa KB-03 (dokumen sumber evaluasi RAGAS) kehilangan 48,84% chunk-nya. Ini informasi baru yang bersinggungan dengan keputusan tersebut, bukan pembatalannya."
+}
