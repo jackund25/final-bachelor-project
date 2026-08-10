@@ -148,5 +148,434 @@
     },
     "waktu": "2026-08-06 12:12:55",
     "catatan": "overlap=267, set penyetelan n=240, korpus=kb12_sym"
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n200_d20",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n_estimators": 200,
+      "max_depth": 20,
+      "RMSE": 23.671,
+      "MAE": 16.472,
+      "Clarke_A+B": 94.42,
+      "ukuran_MB": 297.15,
+      "total_simpul": 4126394,
+      "kedalaman_tercapai_median": 20,
+      "waktu_latih_dtk": 531.5,
+      "inferensi_ms_per_sampel": 0.0046
+    },
+    "waktu": "2026-08-09 22:00:56",
+    "catatan": "horizon=6, set penyetelan n=29248",
+    "DIGANTIKAN": true,
+    "kriteria_tercatat_keliru": "Tercatat 'mrr' karena catat() dulu menstempel kriteria secara tetap. Kriteria percobaan ini sebenarnya kesetaraan RMSE terhadap acuan (200, 20).",
+    "catatan_penggantian": "Dari jalan yang TERBUNUH pada konfigurasi ke-11 sebelum menghasilkan berkas apa pun. Digantikan entri dengan kriteria='rmse_setara_dengan_acuan'. Nilai RMSE, ukuran MB, dan jumlah simpul pada kedua jalan IDENTIK; hanya kolom waktu latih berbeda karena beban CPU. Dipertahankan, bukan dihapus, karena log yang entrinya dapat hilang tidak membuktikan apa pun."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n100_d20",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n_estimators": 100,
+      "max_depth": 20,
+      "RMSE": 23.693,
+      "MAE": 16.482,
+      "Clarke_A+B": 94.38,
+      "ukuran_MB": 148.67,
+      "total_simpul": 2064490,
+      "kedalaman_tercapai_median": 20,
+      "waktu_latih_dtk": 290.7,
+      "inferensi_ms_per_sampel": 0.0033
+    },
+    "waktu": "2026-08-09 22:05:47",
+    "catatan": "horizon=6, set penyetelan n=29248",
+    "DIGANTIKAN": true,
+    "kriteria_tercatat_keliru": "Tercatat 'mrr' karena catat() dulu menstempel kriteria secara tetap. Kriteria percobaan ini sebenarnya kesetaraan RMSE terhadap acuan (200, 20).",
+    "catatan_penggantian": "Dari jalan yang TERBUNUH pada konfigurasi ke-11 sebelum menghasilkan berkas apa pun. Digantikan entri dengan kriteria='rmse_setara_dengan_acuan'. Nilai RMSE, ukuran MB, dan jumlah simpul pada kedua jalan IDENTIK; hanya kolom waktu latih berbeda karena beban CPU. Dipertahankan, bukan dihapus, karena log yang entrinya dapat hilang tidak membuktikan apa pun."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n50_d20",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n_estimators": 50,
+      "max_depth": 20,
+      "RMSE": 23.808,
+      "MAE": 16.549,
+      "Clarke_A+B": 94.32,
+      "ukuran_MB": 74.44,
+      "total_simpul": 1033652,
+      "kedalaman_tercapai_median": 20,
+      "waktu_latih_dtk": 158.3,
+      "inferensi_ms_per_sampel": 0.002
+    },
+    "waktu": "2026-08-09 22:08:25",
+    "catatan": "horizon=6, set penyetelan n=29248",
+    "DIGANTIKAN": true,
+    "kriteria_tercatat_keliru": "Tercatat 'mrr' karena catat() dulu menstempel kriteria secara tetap. Kriteria percobaan ini sebenarnya kesetaraan RMSE terhadap acuan (200, 20).",
+    "catatan_penggantian": "Dari jalan yang TERBUNUH pada konfigurasi ke-11 sebelum menghasilkan berkas apa pun. Digantikan entri dengan kriteria='rmse_setara_dengan_acuan'. Nilai RMSE, ukuran MB, dan jumlah simpul pada kedua jalan IDENTIK; hanya kolom waktu latih berbeda karena beban CPU. Dipertahankan, bukan dihapus, karena log yang entrinya dapat hilang tidak membuktikan apa pun."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n200_d15",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n_estimators": 200,
+      "max_depth": 15,
+      "RMSE": 23.658,
+      "MAE": 16.444,
+      "Clarke_A+B": 94.43,
+      "ukuran_MB": 115.16,
+      "total_simpul": 1598764,
+      "kedalaman_tercapai_median": 15,
+      "waktu_latih_dtk": 434.0,
+      "inferensi_ms_per_sampel": 0.0037
+    },
+    "waktu": "2026-08-09 22:15:40",
+    "catatan": "horizon=6, set penyetelan n=29248",
+    "DIGANTIKAN": true,
+    "kriteria_tercatat_keliru": "Tercatat 'mrr' karena catat() dulu menstempel kriteria secara tetap. Kriteria percobaan ini sebenarnya kesetaraan RMSE terhadap acuan (200, 20).",
+    "catatan_penggantian": "Dari jalan yang TERBUNUH pada konfigurasi ke-11 sebelum menghasilkan berkas apa pun. Digantikan entri dengan kriteria='rmse_setara_dengan_acuan'. Nilai RMSE, ukuran MB, dan jumlah simpul pada kedua jalan IDENTIK; hanya kolom waktu latih berbeda karena beban CPU. Dipertahankan, bukan dihapus, karena log yang entrinya dapat hilang tidak membuktikan apa pun."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n200_d12",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n_estimators": 200,
+      "max_depth": 12,
+      "RMSE": 23.696,
+      "MAE": 16.468,
+      "Clarke_A+B": 94.45,
+      "ukuran_MB": 43.87,
+      "total_simpul": 608566,
+      "kedalaman_tercapai_median": 12,
+      "waktu_latih_dtk": 330.2,
+      "inferensi_ms_per_sampel": 0.003
+    },
+    "waktu": "2026-08-09 22:21:10",
+    "catatan": "horizon=6, set penyetelan n=29248",
+    "DIGANTIKAN": true,
+    "kriteria_tercatat_keliru": "Tercatat 'mrr' karena catat() dulu menstempel kriteria secara tetap. Kriteria percobaan ini sebenarnya kesetaraan RMSE terhadap acuan (200, 20).",
+    "catatan_penggantian": "Dari jalan yang TERBUNUH pada konfigurasi ke-11 sebelum menghasilkan berkas apa pun. Digantikan entri dengan kriteria='rmse_setara_dengan_acuan'. Nilai RMSE, ukuran MB, dan jumlah simpul pada kedua jalan IDENTIK; hanya kolom waktu latih berbeda karena beban CPU. Dipertahankan, bukan dihapus, karena log yang entrinya dapat hilang tidak membuktikan apa pun."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n200_d10",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n_estimators": 200,
+      "max_depth": 10,
+      "RMSE": 23.74,
+      "MAE": 16.501,
+      "Clarke_A+B": 94.37,
+      "ukuran_MB": 18.23,
+      "total_simpul": 252464,
+      "kedalaman_tercapai_median": 10,
+      "waktu_latih_dtk": 261.5,
+      "inferensi_ms_per_sampel": 0.0035
+    },
+    "waktu": "2026-08-09 22:25:32",
+    "catatan": "horizon=6, set penyetelan n=29248",
+    "DIGANTIKAN": true,
+    "kriteria_tercatat_keliru": "Tercatat 'mrr' karena catat() dulu menstempel kriteria secara tetap. Kriteria percobaan ini sebenarnya kesetaraan RMSE terhadap acuan (200, 20).",
+    "catatan_penggantian": "Dari jalan yang TERBUNUH pada konfigurasi ke-11 sebelum menghasilkan berkas apa pun. Digantikan entri dengan kriteria='rmse_setara_dengan_acuan'. Nilai RMSE, ukuran MB, dan jumlah simpul pada kedua jalan IDENTIK; hanya kolom waktu latih berbeda karena beban CPU. Dipertahankan, bukan dihapus, karena log yang entrinya dapat hilang tidak membuktikan apa pun."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n100_d15",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n_estimators": 100,
+      "max_depth": 15,
+      "RMSE": 23.662,
+      "MAE": 16.45,
+      "Clarke_A+B": 94.39,
+      "ukuran_MB": 57.81,
+      "total_simpul": 802540,
+      "kedalaman_tercapai_median": 15,
+      "waktu_latih_dtk": 212.7,
+      "inferensi_ms_per_sampel": 0.0019
+    },
+    "waktu": "2026-08-09 22:29:04",
+    "catatan": "horizon=6, set penyetelan n=29248",
+    "DIGANTIKAN": true,
+    "kriteria_tercatat_keliru": "Tercatat 'mrr' karena catat() dulu menstempel kriteria secara tetap. Kriteria percobaan ini sebenarnya kesetaraan RMSE terhadap acuan (200, 20).",
+    "catatan_penggantian": "Dari jalan yang TERBUNUH pada konfigurasi ke-11 sebelum menghasilkan berkas apa pun. Digantikan entri dengan kriteria='rmse_setara_dengan_acuan'. Nilai RMSE, ukuran MB, dan jumlah simpul pada kedua jalan IDENTIK; hanya kolom waktu latih berbeda karena beban CPU. Dipertahankan, bukan dihapus, karena log yang entrinya dapat hilang tidak membuktikan apa pun."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n100_d12",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n_estimators": 100,
+      "max_depth": 12,
+      "RMSE": 23.687,
+      "MAE": 16.458,
+      "Clarke_A+B": 94.44,
+      "ukuran_MB": 22.06,
+      "total_simpul": 305976,
+      "kedalaman_tercapai_median": 12,
+      "waktu_latih_dtk": 165.5,
+      "inferensi_ms_per_sampel": 0.0018
+    },
+    "waktu": "2026-08-09 22:31:50",
+    "catatan": "horizon=6, set penyetelan n=29248",
+    "DIGANTIKAN": true,
+    "kriteria_tercatat_keliru": "Tercatat 'mrr' karena catat() dulu menstempel kriteria secara tetap. Kriteria percobaan ini sebenarnya kesetaraan RMSE terhadap acuan (200, 20).",
+    "catatan_penggantian": "Dari jalan yang TERBUNUH pada konfigurasi ke-11 sebelum menghasilkan berkas apa pun. Digantikan entri dengan kriteria='rmse_setara_dengan_acuan'. Nilai RMSE, ukuran MB, dan jumlah simpul pada kedua jalan IDENTIK; hanya kolom waktu latih berbeda karena beban CPU. Dipertahankan, bukan dihapus, karena log yang entrinya dapat hilang tidak membuktikan apa pun."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n50_d15",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n_estimators": 50,
+      "max_depth": 15,
+      "RMSE": 23.735,
+      "MAE": 16.484,
+      "Clarke_A+B": 94.39,
+      "ukuran_MB": 29.09,
+      "total_simpul": 403898,
+      "kedalaman_tercapai_median": 15,
+      "waktu_latih_dtk": 112.2,
+      "inferensi_ms_per_sampel": 0.0011
+    },
+    "waktu": "2026-08-09 22:33:42",
+    "catatan": "horizon=6, set penyetelan n=29248",
+    "DIGANTIKAN": true,
+    "kriteria_tercatat_keliru": "Tercatat 'mrr' karena catat() dulu menstempel kriteria secara tetap. Kriteria percobaan ini sebenarnya kesetaraan RMSE terhadap acuan (200, 20).",
+    "catatan_penggantian": "Dari jalan yang TERBUNUH pada konfigurasi ke-11 sebelum menghasilkan berkas apa pun. Digantikan entri dengan kriteria='rmse_setara_dengan_acuan'. Nilai RMSE, ukuran MB, dan jumlah simpul pada kedua jalan IDENTIK; hanya kolom waktu latih berbeda karena beban CPU. Dipertahankan, bukan dihapus, karena log yang entrinya dapat hilang tidak membuktikan apa pun."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n50_d12",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n_estimators": 50,
+      "max_depth": 12,
+      "RMSE": 23.74,
+      "MAE": 16.477,
+      "Clarke_A+B": 94.37,
+      "ukuran_MB": 11.09,
+      "total_simpul": 153888,
+      "kedalaman_tercapai_median": 12,
+      "waktu_latih_dtk": 85.5,
+      "inferensi_ms_per_sampel": 0.0012
+    },
+    "waktu": "2026-08-09 22:35:08",
+    "catatan": "horizon=6, set penyetelan n=29248",
+    "DIGANTIKAN": true,
+    "kriteria_tercatat_keliru": "Tercatat 'mrr' karena catat() dulu menstempel kriteria secara tetap. Kriteria percobaan ini sebenarnya kesetaraan RMSE terhadap acuan (200, 20).",
+    "catatan_penggantian": "Dari jalan yang TERBUNUH pada konfigurasi ke-11 sebelum menghasilkan berkas apa pun. Digantikan entri dengan kriteria='rmse_setara_dengan_acuan'. Nilai RMSE, ukuran MB, dan jumlah simpul pada kedua jalan IDENTIK; hanya kolom waktu latih berbeda karena beban CPU. Dipertahankan, bukan dihapus, karena log yang entrinya dapat hilang tidak membuktikan apa pun."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n200_d20",
+    "kriteria": "rmse_setara_dengan_acuan",
+    "metrik_set_penyetelan": {
+      "n_estimators": 200,
+      "max_depth": 20,
+      "RMSE": 23.671,
+      "MAE": 16.472,
+      "Clarke_A+B": 94.42,
+      "ukuran_MB": 297.15,
+      "total_simpul": 4126394,
+      "kedalaman_tercapai_median": 20,
+      "waktu_latih_dtk": 740.5,
+      "inferensi_ms_per_sampel": 0.0049
+    },
+    "waktu": "2026-08-10 09:45:06",
+    "catatan": "horizon=6, set penyetelan n=29248. Kriteria: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari (200, 20)."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n100_d20",
+    "kriteria": "rmse_setara_dengan_acuan",
+    "metrik_set_penyetelan": {
+      "n_estimators": 100,
+      "max_depth": 20,
+      "RMSE": 23.693,
+      "MAE": 16.482,
+      "Clarke_A+B": 94.38,
+      "ukuran_MB": 148.67,
+      "total_simpul": 2064490,
+      "kedalaman_tercapai_median": 20,
+      "waktu_latih_dtk": 294.0,
+      "inferensi_ms_per_sampel": 0.0028
+    },
+    "waktu": "2026-08-10 09:50:00",
+    "catatan": "horizon=6, set penyetelan n=29248. Kriteria: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari (200, 20)."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n50_d20",
+    "kriteria": "rmse_setara_dengan_acuan",
+    "metrik_set_penyetelan": {
+      "n_estimators": 50,
+      "max_depth": 20,
+      "RMSE": 23.808,
+      "MAE": 16.549,
+      "Clarke_A+B": 94.32,
+      "ukuran_MB": 74.44,
+      "total_simpul": 1033652,
+      "kedalaman_tercapai_median": 20,
+      "waktu_latih_dtk": 151.4,
+      "inferensi_ms_per_sampel": 0.0016
+    },
+    "waktu": "2026-08-10 09:52:31",
+    "catatan": "horizon=6, set penyetelan n=29248. Kriteria: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari (200, 20)."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n200_d15",
+    "kriteria": "rmse_setara_dengan_acuan",
+    "metrik_set_penyetelan": {
+      "n_estimators": 200,
+      "max_depth": 15,
+      "RMSE": 23.658,
+      "MAE": 16.444,
+      "Clarke_A+B": 94.43,
+      "ukuran_MB": 115.16,
+      "total_simpul": 1598764,
+      "kedalaman_tercapai_median": 15,
+      "waktu_latih_dtk": 518.7,
+      "inferensi_ms_per_sampel": 0.0058
+    },
+    "waktu": "2026-08-10 10:01:11",
+    "catatan": "horizon=6, set penyetelan n=29248. Kriteria: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari (200, 20)."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n200_d12",
+    "kriteria": "rmse_setara_dengan_acuan",
+    "metrik_set_penyetelan": {
+      "n_estimators": 200,
+      "max_depth": 12,
+      "RMSE": 23.696,
+      "MAE": 16.468,
+      "Clarke_A+B": 94.45,
+      "ukuran_MB": 43.87,
+      "total_simpul": 608566,
+      "kedalaman_tercapai_median": 12,
+      "waktu_latih_dtk": 449.7,
+      "inferensi_ms_per_sampel": 0.0035
+    },
+    "waktu": "2026-08-10 10:08:41",
+    "catatan": "horizon=6, set penyetelan n=29248. Kriteria: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari (200, 20)."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n200_d10",
+    "kriteria": "rmse_setara_dengan_acuan",
+    "metrik_set_penyetelan": {
+      "n_estimators": 200,
+      "max_depth": 10,
+      "RMSE": 23.74,
+      "MAE": 16.501,
+      "Clarke_A+B": 94.37,
+      "ukuran_MB": 18.23,
+      "total_simpul": 252464,
+      "kedalaman_tercapai_median": 10,
+      "waktu_latih_dtk": 299.0,
+      "inferensi_ms_per_sampel": 0.003
+    },
+    "waktu": "2026-08-10 10:13:40",
+    "catatan": "horizon=6, set penyetelan n=29248. Kriteria: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari (200, 20)."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n100_d15",
+    "kriteria": "rmse_setara_dengan_acuan",
+    "metrik_set_penyetelan": {
+      "n_estimators": 100,
+      "max_depth": 15,
+      "RMSE": 23.662,
+      "MAE": 16.45,
+      "Clarke_A+B": 94.39,
+      "ukuran_MB": 57.81,
+      "total_simpul": 802540,
+      "kedalaman_tercapai_median": 15,
+      "waktu_latih_dtk": 231.5,
+      "inferensi_ms_per_sampel": 0.0019
+    },
+    "waktu": "2026-08-10 10:17:31",
+    "catatan": "horizon=6, set penyetelan n=29248. Kriteria: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari (200, 20)."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n100_d12",
+    "kriteria": "rmse_setara_dengan_acuan",
+    "metrik_set_penyetelan": {
+      "n_estimators": 100,
+      "max_depth": 12,
+      "RMSE": 23.687,
+      "MAE": 16.458,
+      "Clarke_A+B": 94.44,
+      "ukuran_MB": 22.06,
+      "total_simpul": 305976,
+      "kedalaman_tercapai_median": 12,
+      "waktu_latih_dtk": 171.9,
+      "inferensi_ms_per_sampel": 0.0019
+    },
+    "waktu": "2026-08-10 10:20:24",
+    "catatan": "horizon=6, set penyetelan n=29248. Kriteria: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari (200, 20)."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n50_d15",
+    "kriteria": "rmse_setara_dengan_acuan",
+    "metrik_set_penyetelan": {
+      "n_estimators": 50,
+      "max_depth": 15,
+      "RMSE": 23.735,
+      "MAE": 16.484,
+      "Clarke_A+B": 94.39,
+      "ukuran_MB": 29.09,
+      "total_simpul": 403898,
+      "kedalaman_tercapai_median": 15,
+      "waktu_latih_dtk": 122.7,
+      "inferensi_ms_per_sampel": 0.0012
+    },
+    "waktu": "2026-08-10 10:22:26",
+    "catatan": "horizon=6, set penyetelan n=29248. Kriteria: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari (200, 20)."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n50_d12",
+    "kriteria": "rmse_setara_dengan_acuan",
+    "metrik_set_penyetelan": {
+      "n_estimators": 50,
+      "max_depth": 12,
+      "RMSE": 23.74,
+      "MAE": 16.477,
+      "Clarke_A+B": 94.37,
+      "ukuran_MB": 11.09,
+      "total_simpul": 153888,
+      "kedalaman_tercapai_median": 12,
+      "waktu_latih_dtk": 85.3,
+      "inferensi_ms_per_sampel": 0.0012
+    },
+    "waktu": "2026-08-10 10:23:52",
+    "catatan": "horizon=6, set penyetelan n=29248. Kriteria: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari (200, 20)."
+  },
+  {
+    "parameter": "rf_ukuran",
+    "nilai": "n50_d10",
+    "kriteria": "rmse_setara_dengan_acuan",
+    "metrik_set_penyetelan": {
+      "n_estimators": 50,
+      "max_depth": 10,
+      "RMSE": 23.774,
+      "MAE": 16.51,
+      "Clarke_A+B": 94.31,
+      "ukuran_MB": 4.61,
+      "total_simpul": 63834,
+      "kedalaman_tercapai_median": 10,
+      "waktu_latih_dtk": 67.7,
+      "inferensi_ms_per_sampel": 0.0012
+    },
+    "waktu": "2026-08-10 10:25:00",
+    "catatan": "horizon=6, set penyetelan n=29248. Kriteria: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari (200, 20)."
   }
 ]
