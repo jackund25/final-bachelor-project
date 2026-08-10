@@ -504,7 +504,7 @@ def main() -> int:
         print(f"  Verifikasi: 0/{len(cases)} jawaban menyisakan disclaimer setelah "
               f"pembersihan — perlakuan terlaksana.")
     print("Disclaimer DIBUANG sebelum penilaian RAGAS — perlakuan disengaja dan dicatat, "
-          "lihat docs/journey.md.")
+          "lihat docs/journey/.")
 
     result = evaluate(
         dataset=EvaluationDataset(samples=samples),

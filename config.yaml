@@ -27,7 +27,7 @@ model:
   default_horizon: 6   # horizon untuk bundle inferensi aplikasi (30 menit)
   # stress dikeluarkan: OhioT1DM nyaris tak punya data stres (7 event di seluruh
   # dataset) sehingga nol-varians & tak informatif bagi model. Tetap dipertahankan
-  # sebagai variabel Digital Twin / logbook (lihat docs/journey.md).
+  # sebagai variabel Digital Twin / logbook (lihat docs/journey/).
   features: ["glucose", "carbs", "insulin", "activity"]
 
   # Fitur hasil rekayasa (engineered) berbasis fisiologi — dipakai bila use_engineered=true.

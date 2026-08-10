@@ -161,7 +161,7 @@ def parse_ohio_xml(xml_path: Path | str) -> pd.DataFrame:
 
     cgm = _events_to_df(root, "glucose_level", "ts", ["value"]).rename(columns={"value": "glucose"})
     # Drop pembacaan glukosa tidak valid (<=0): mustahil secara fisiologis, indikasi
-    # error sensor/entri. Lihat docs/journey.md untuk justifikasi.
+    # error sensor/entri. Lihat docs/journey/ untuk justifikasi.
     cgm = cgm[cgm["glucose"] > 0].reset_index(drop=True)
     if cgm.empty:
         return pd.DataFrame()
@@ -179,7 +179,7 @@ def parse_ohio_fingerstick(xml_path: Path | str) -> pd.DataFrame:
 
     fs = _events_to_df(root, "finger_stick", "ts", ["value"]).rename(columns={"value": "glucose"})
     # Drop finger_stick tidak valid (<=0): ditemukan entri glukosa 0 mg/dL yang
-    # mustahil secara fisiologis. Lihat docs/journey.md untuk justifikasi.
+    # mustahil secara fisiologis. Lihat docs/journey/ untuk justifikasi.
     fs = fs[fs["glucose"] > 0].reset_index(drop=True)
     if fs.empty:
         return pd.DataFrame()

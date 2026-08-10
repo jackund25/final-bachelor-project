@@ -47,7 +47,7 @@ GPU, CGM *real-time*, maupun rekam medis elektronik.
 > PERKENI/ADA ke 12 dokumen KB-01..KB-12 (IDAI, PERKENI, ADA-EASD, ATTD, ISPAD), dan
 > jendela latih kini disegmentasi pada jeda sensor. **Angka prediksi di bawah sudah
 > diperbarui; angka *retrieval* pada bagian berikutnya BELUM dan tidak berlaku untuk
-> korpus baru.** Rincian di `docs/journey.md`.
+> korpus baru.** Rincian di `docs/journey/`.
 
 | Evaluasi | Hasil | Status |
 | --- | --- | --- |

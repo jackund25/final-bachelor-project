@@ -10,7 +10,7 @@
    RAGAS. Jalur Ollama boleh tetap ada di kode sebagai mekanisme cadangan, tetapi
    tidak dipakai menghasilkan angka yang dilaporkan.
 
-2. Satu percobaan satu commit. Tulis ringkasan ke docs/journey.md setiap kali selesai,
+2. Satu percobaan satu commit. Tulis ringkasan ke docs/journey/ setiap kali selesai,
    memuat apa yang diuji, angka hasilnya, dan kesimpulannya.
 
 3. Untuk percobaan yang bersifat penyetelan parameter, ikuti protokol pada

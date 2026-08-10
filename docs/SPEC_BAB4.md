@@ -30,7 +30,7 @@ Bagian tanpa penanda berarti **tidak berubah** dari Versi 1.
 | I. Konfigurasi | **Berubah total** | Tugas 2, 4, 5 (config otoritatif) |
 | Lampiran temuan | **Berubah** | 12 dari 22 temuan terselesaikan |
 
-Riwayat perubahan per tugas beserta commit-nya ada di `docs/journey.md`.
+Riwayat perubahan per tugas beserta commit-nya ada di `docs/journey/`.
 
 ---
 
@@ -2417,7 +2417,7 @@ model:
   default_horizon: 6   # horizon untuk bundle inferensi aplikasi (30 menit)
   # stress dikeluarkan: OhioT1DM nyaris tak punya data stres (7 event di seluruh
   # dataset) sehingga nol-varians & tak informatif bagi model. Tetap dipertahankan
-  # sebagai variabel Digital Twin / logbook (lihat docs/journey.md).
+  # sebagai variabel Digital Twin / logbook (lihat docs/journey/).
   features: ["glucose", "carbs", "insulin", "activity"]
 
   # Fitur hasil rekayasa (engineered) berbasis fisiologi — dipakai bila use_engineered=true.

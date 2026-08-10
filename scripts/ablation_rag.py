@@ -20,7 +20,7 @@ Output: results/baseline_ablation/
 from __future__ import annotations
 
 # PENTING (Windows + conda): torch HARUS di-import sebelum numpy/pandas, jika tidak
-# inisialisasi c10.dll gagal (WinError 1114) karena konflik DLL runtime. Lihat journey.md.
+# inisialisasi c10.dll gagal (WinError 1114) karena konflik DLL runtime. Lihat docs/journey/.
 import torch  # noqa: F401
 
 import json

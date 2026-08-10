@@ -1314,7 +1314,7 @@ keterbatasan sistem yang harus dinyatakan apa adanya di Bab VI.
 
 Audit ini memeriksa **kesesuaian kode terhadap deskripsi laporan**, bukan mutu
 klinis atau mutu hasil. Beberapa butir berstatus ADA tetap memiliki keterbatasan
-substantif yang dibahas di `docs/journey.md`.
+substantif yang dibahas di `docs/journey/`.
 
 Status **SEBAGIAN** diberikan secara ketat: bila deskripsi menuntut X dan kode melakukan
 Y yang mirip tetapi tidak sama, statusnya SEBAGIAN — bukan ADA. Tidak ada status yang
@@ -1353,6 +1353,6 @@ menyajikan metrik seolah-olah bebas asumsi.
 
 Selama Bagian B, kesimpulan sementara **empat kali** dinyatakan sebelum seluruh himpunan
 selesai diukur, dan tiga di antaranya terbantah oleh himpunan berikutnya (rincian di
-`docs/journey.md`). Ini dicatat karena relevan bagi pembacaan hasil: **setiap angka Bagian B
+`docs/journey/`). Ini dicatat karena relevan bagi pembacaan hasil: **setiap angka Bagian B
 hanya sah dibaca setelah seluruh himpunan selesai**, dan pola "empat himpunan pertama
 searah" terbukti bukan jaminan apa pun.

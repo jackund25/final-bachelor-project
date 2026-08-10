@@ -6,7 +6,7 @@
 
 Urutan: A1, A2, A3, A4, lalu B1, B2, B3, B4, B5.
 
-Aturan kerja: satu tugas satu commit. Tulis ringkasan ke `docs/journey.md` setiap kali
+Aturan kerja: satu tugas satu commit. Tulis ringkasan ke `docs/journey/` setiap kali
 selesai. Jalankan pytest sebelum dan sesudah tiap tugas.
 
 ---
@@ -25,7 +25,7 @@ pengujian pada Bagian B harus berjalan di atas kueri yang sudah benar.
    simetris dalam struktur kueri, hanya berbeda pada sumber angkanya.
 3. Tag "stress tinggi" tetap berlaku pada kedua mode.
 4. Cetak contoh kueri final untuk kedua mode pada satu skenario divergen yang sama, dan
-   tampilkan berdampingan agar perbedaannya terlihat. Simpan ke `docs/journey.md`.
+   tampilkan berdampingan agar perbedaannya terlihat. Simpan ke `docs/journey/`.
 5. JALANKAN ULANG seluruh evaluasi retrieval dan ablasi. Angka lama tidak berlaku.
    Laporkan tabel perbandingan angka sebelum dan sesudah.
 
