@@ -57,8 +57,21 @@ def bagi_dua(pasangan: list, benih: int = BENIH) -> Optional[tuple[list, list]]:
 
 
 def catat(parameter: str, nilai: Any, metrik_penyetelan: dict,
-          catatan: str = "", log_path: Path = LOG) -> None:
-    """Tambahkan satu konfigurasi ke tuning_log.json. Dipanggil untuk SETIAP nilai diuji."""
+          catatan: str = "", log_path: Path = LOG,
+          kriteria: Optional[str] = None) -> None:
+    """Tambahkan satu konfigurasi ke tuning_log.json. Dipanggil untuk SETIAP nilai diuji.
+
+    ``kriteria`` boleh ditimpa karena :data:`KRITERIA` (MRR) hanya berlaku bagi penyetelan
+    RETRIEVAL. Percobaan pada sisi prediksi memakai kriteria lain — T1.1b memilih
+    konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan. Sebelum parameter ini
+    ada, entri semacam itu tetap terstempel ``"mrr"``, sehingga log penyetelan —
+    justru artefak yang seharusnya membuktikan protokol dipatuhi — mencatat kriteria
+    yang tidak pernah dipakai.
+
+    Timpaan ini TIDAK melonggarkan Bagian C: kriterianya tetap harus ditetapkan sebagai
+    konstanta di skrip pemanggil sebelum hasil terlihat, dan yang berubah hanya
+    kejujuran pencatatannya.
+    """
     log_path.parent.mkdir(parents=True, exist_ok=True)
     riwayat = []
     if log_path.exists():
@@ -69,12 +82,13 @@ def catat(parameter: str, nilai: Any, metrik_penyetelan: dict,
     riwayat.append({
         "parameter": parameter,
         "nilai": nilai,
-        "kriteria": KRITERIA,
+        "kriteria": kriteria or KRITERIA,
         "metrik_set_penyetelan": metrik_penyetelan,
         "waktu": time.strftime("%Y-%m-%d %H:%M:%S"),
         "catatan": catatan,
     })
-    log_path.write_text(json.dumps(riwayat, indent=2), encoding="utf-8")
+    log_path.write_text(json.dumps(riwayat, indent=2, ensure_ascii=False),
+                        encoding="utf-8")
 
 
 def pilih_terbaik(kandidat: dict[Any, dict]) -> Any:

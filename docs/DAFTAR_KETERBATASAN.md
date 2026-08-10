@@ -326,6 +326,49 @@ terpisah, **sedang**, atau menunggu versi pustaka yang memaparkannya.
 
 ---
 
+## K11. Logbook manual tersambung, tetapi sebagian besar catatan akan ditolak
+
+**Apa keterbatasannya.** T4.2 menyambungkan `data/raw/manual_logbook.csv` ke jalur
+prediksi, sehingga masukan dokter kini benar-benar dapat membentuk prediksi. Dua hal tetap
+tidak terselesaikan.
+
+*Pertama, lima dari sembilan variabel logbook tidak menjadi fitur.* `stress`, `sleep`,
+`work`, `illness`, dan `meal_type` disimpan sebagai rekam jejak klinis tetapi tidak masuk
+model, karena model produksi dilatih tanpa kolom-kolom itu dan menambahkannya saat
+inferensi akan membuat bentuk masukan tidak cocok dengan scaler. Deskripsi KF-01 menyebut
+kelima variabel dapat "mendukung prediksi"; yang benar adalah keempat variabel numerik
+(`glucose`, `carbs`, `insulin`, `activity`) yang mendukungnya.
+
+*Kedua, dan lebih menentukan: catatan manual sering tidak layak dipakai.* Model dilatih
+hanya pada jendela yang jarak antar-barisnya ≤ 30 menit (`max_gap_steps`, Tugas 5).
+Catatan logbook dimasukkan pada waktu bebas. Sebuah catatan yang jaraknya berjam-jam dari
+pembacaan CGM terdekat menghasilkan jendela di luar sebaran pelatihan, dan
+`periksa_kelayakan()` menolaknya.
+
+**Mengapa tidak diperbaiki.** Jalan keluar yang tersedia adalah menginterpolasi jeda
+supaya jendelanya rapat. Itu ditolak: menginterpolasi jeda delapan jam menghasilkan dua
+belas baris yang tampak sah bagi model **dan bagi dokter**, padahal sebelas di antaranya
+karangan. Kekeliruan itulah yang membuat segmentasi jeda sensor diperlukan pada Tugas 5,
+dan mengulanginya di sisi antarmuka tidak lebih dapat dibenarkan.
+
+**Dampak pada kesimpulan.** KF-01 dan KF-02 naik dari SEBAGIAN menjadi
+**SEBAGIAN-tersambung**, bukan ADA. Klaim yang boleh dibuat: masukan manual dapat masuk ke
+jalur prediksi dan sistem menyatakan dengan jelas kapan ia dipakai dan kapan ditolak.
+Klaim yang **tidak** boleh dibuat: bahwa sistem memanfaatkan seluruh variabel logbook, atau
+bahwa dokter dapat mengandalkan catatan manual sebagai sumber masukan sehari-hari.
+
+**Angka yang belum ada.** Berapa persen catatan nyata yang akan ditolak belum terukur,
+karena belum ada pengguna nyata. Angka itu hanya dapat diperoleh dari uji pakai, yang
+merupakan bagian dari K5.
+
+**Perkiraan pekerjaan.** Memasukkan kelima variabel sisa sebagai fitur: **besar** —
+menuntut pelatihan ulang seluruh model beserta kalibrasi konformalnya, sementara OhioT1DM
+nyaris tidak memuat data stres (7 kejadian di seluruh dataset), sehingga fiturnya akan
+nyaris nol-varians. Menurunkan angka penolakan: **sedang** — memerlukan kebijakan
+interpolasi terbatas yang dibenarkan secara fisiologis, bukan sekadar mengendurkan ambang.
+
+---
+
 ## Ringkasan untuk Bab VII
 
 | Kode | Keterbatasan | Dampak | Pekerjaan |
@@ -340,6 +383,7 @@ terpisah, **sedang**, atau menunggu versi pustaka yang memaparkannya.
 | K8 | Positif palsu pemeriksa angka | Rendah — satu kolom tidak dapat dibaca langsung | kecil |
 | K9 | `top_k` produksi vs evaluasi | Rendah — sudah diperbaiki | selesai |
 | K10 | `faithfulness` bukan ukuran mutu, labil per kasus | **Tinggi** — membatasi cara metrik RAGAS dikutip | sedang |
+| K11 | Logbook tersambung tetapi catatan sering ditolak | Sedang — KF-01/KF-02 tidak menjadi ADA penuh | sedang-besar |
 
 **Empat yang paling menentukan batas klaim laporan: K1, K3, K5, dan K10.** Keempatnya
 bukan cacat implementasi melainkan batas metodologis, dan seluruhnya harus dinyatakan

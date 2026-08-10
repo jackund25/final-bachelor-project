@@ -10,6 +10,10 @@ ta1/
 .venv/
 venv/
 
+# Keadaan setengah jadi dari sapuan panjang (checkpoint eval_rf_ukuran.py dsb).
+# Sengaja di luar results/ supaya tidak pernah terbaca sebagai hasil.
+.cache/
+
 # Python build/test artifacts
 .pytest_cache/
 .mypy_cache/
