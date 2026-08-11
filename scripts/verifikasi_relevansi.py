@@ -62,6 +62,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
+# Pembaca berkas penilaian dipisahkan ke src/utils agar dapat diuji tanpa menarik
+# torch (WinError 1114 bila torch diimpor setelah numpy).
+from src.utils.csv_penilaian import mulai_dari_header  # noqa: E402
+
 BERKAS_NILAI = ROOT / "evaluation/verifikasi_relevansi.csv"
 BERKAS_KUNCI = ROOT / "evaluation/verifikasi_relevansi_KUNCI.json"
 BERKAS_HASIL = ROOT / "results/eval_rag/verifikasi_relevansi.json"
@@ -226,9 +230,16 @@ def nilai() -> int:
     kunci = json.loads(BERKAS_KUNCI.read_text(encoding="utf-8"))
     baris = []
     with BERKAS_NILAI.open(encoding="utf-8-sig", newline="") as f:
-        for row in csv.DictReader(x for x in f if not x.startswith("#") and x.strip()):
+        pembaca = csv.DictReader(mulai_dari_header(f))
+        if not pembaca.fieldnames or "penilaian_manusia" not in pembaca.fieldnames:
+            raise SystemExit(
+                f"Baris header tidak ditemukan pada {BERKAS_NILAI.name}. Kolom yang "
+                f"terbaca: {pembaca.fieldnames}. Baris header harus dimulai dengan 'id,'.")
+        for row in pembaca:
             if row.get("id"):
                 baris.append(row)
+    if not baris:
+        raise SystemExit(f"Tidak ada satu pun baris data terbaca dari {BERKAS_NILAI.name}.")
 
     manusia, otomatis, tak_sah, kosong = [], [], [], 0
     for row in baris:

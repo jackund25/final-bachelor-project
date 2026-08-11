@@ -1,10 +1,10 @@
-﻿# T2.2 — verifikasi relevansi. Isi HANYA kolom penilaian_manusia.
-# Nilai yang sah: hipoglikemia | hiperglikemia | normal | lain
-# Pertanyaannya: APA TOPIK UTAMA yang dibahas potongan ini?
-# BUKAN: apakah potongan ini berguna bagi pasien pada kueri tersebut.
-"# 'lain' dipakai bila potongan tidak membahas ketiga kondisi itu (mis. definisi diabetes, alat suntik, gizi umum)."
-# Label otomatis SENGAJA tidak ditampilkan; ada di berkas KUNCI.
-
+﻿# T2.2 — verifikasi relevansi. Isi HANYA kolom penilaian_manusia.,,,,,,
+# Nilai yang sah: hipoglikemia | hiperglikemia | normal | lain,,,,,,
+# Pertanyaannya: APA TOPIK UTAMA yang dibahas potongan ini?,,,,,,
+# BUKAN: apakah potongan ini berguna bagi pasien pada kueri tersebut.,,,,,,
+"# 'lain' dipakai bila potongan tidak membahas ketiga kondisi itu (mis. definisi diabetes, alat suntik, gizi umum).",,,,,,
+# Label otomatis SENGAJA tidak ditampilkan; ada di berkas KUNCI.,,,,,,
+,,,,,,
 id,penilaian_manusia,kueri,sumber,halaman_cetak,peringkat,teks_potongan
 1,,Bagaimana tatalaksana pasien diabetes dengan hiperglikemia pada kadar glukosa 227 mg/dL?,KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf,46,4,"18% pasien berusia <20 tahun. Dua pertiga pasien KAD memiliki diabetes melitus tipe (DM1) dan sepertiganya memiliki diabetes melitus tipe 2 (DM2), dengan perbandingan yang sama antara laki-laki dan perempuan. KAD menjadi penyebab kematian tersering pada anak dan remaja dengan DM1. Pada pasien dewasa, mortalitas hanya terjadi <1%, tetapi meningkat hingga >5% pada lansia dan pasien dengan penyakit kritis. Kematian pada kondisi ini jarang disebabkan karena komplikasi metabolik berupa hiperglikemia atau ketoasidosis, namun karena penyakit pencetus yang mendasarinya. Mortalitas yang dikaitkan dengan SHH jauh lebih tinggi daripada yang dikaitkan dengan KAD, dengan data terbaru sebesar 5-20%. Prognosis dari kedua kondisi tersebut secara substansial diperburuk pada lansia dengan adanya koma, hipotensi, dan komorbiditas berat.1 Ketoasidosis diabetik terjadi karena defisiensi insulin dengan"
 2,,Kadar glukosa darah 50 mg/dL.,KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf,25,4,"yang dapat memengaruhi akurasi hasil pemeriksaan, antara lain: proses produksi glukometer, faktor lingkungan (seperti kelembaban, suhu lingkungan yang terlalu dingin atau panas), dan kesalahan cara penggunaan. Akurasi hasil pemeriksaan merupakan hal yang sangat penting karena akan memengaruhi keputusan klinis.55 Salah satu Standar minimum alat glukometer adalah ISO 15197:2013 yang berarti 95% dari pemeriksaan yang dilakukan bila dibandingkan pemeriksaan laboratorium harus berada pada kisaran:55 x ±15 mg/dL jika kadar glukosa darah < 100 mg/dL x ±15% jika kadar glukosa darah ш 100 mg/dL"
