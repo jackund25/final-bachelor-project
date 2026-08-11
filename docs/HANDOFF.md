@@ -503,6 +503,7 @@ mengalahkan angka dari dokumentasi vendor.**
 | Yang dicari                    | Berkas                                                                      |
 | ------------------------------ | --------------------------------------------------------------------------- |
 | Rekaman lengkap kronologis     | `docs/journey/README.md` → tujuh part                                       |
+| **Keputusan menunggu pembimbing** | **`docs/RINGKASAN_KEPUTUSAN_PEMBIMBING.md`** (delapan, berikut angka pendukung) |
 | Rincian tiap keterbatasan      | `docs/DAFTAR_KETERBATASAN.md`                                               |
 | Status tiap kebutuhan KF/KNF   | `docs/AUDIT_KEBUTUHAN.md`                                                   |
 | Angka final siap kutip         | `results/ringkasan_untuk_bab6.json` (T5.2)                                  |
