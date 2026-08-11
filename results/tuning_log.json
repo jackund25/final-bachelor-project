@@ -577,5 +577,103 @@
     },
     "waktu": "2026-08-10 10:25:00",
     "catatan": "horizon=6, set penyetelan n=29248. Kriteria: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari (200, 20)."
+  },
+  {
+    "parameter": "susunan_kueri",
+    "nilai": "produksi",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 90,
+      "hit@1": 0.4222,
+      "mrr": 0.6211,
+      "ndcg@5": 0.4058,
+      "p_wilcoxon_vs_produksi": null
+    },
+    "waktu": "2026-08-11 10:05:14",
+    "catatan": "T3.1 — set penyetelan ['ohio_584', 'ohio_588'] n=90, 7 varian diuji, pemenang=kata_kunci. Relevansi dari pelabel kata kunci (K1)."
+  },
+  {
+    "parameter": "susunan_kueri",
+    "nilai": "hanya_angka",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 90,
+      "hit@1": 0.0,
+      "mrr": 0.2276,
+      "ndcg@5": 0.1214,
+      "p_wilcoxon_vs_produksi": 0.0
+    },
+    "waktu": "2026-08-11 10:05:14",
+    "catatan": "T3.1 — set penyetelan ['ohio_584', 'ohio_588'] n=90, 7 varian diuji, pemenang=kata_kunci. Relevansi dari pelabel kata kunci (K1)."
+  },
+  {
+    "parameter": "susunan_kueri",
+    "nilai": "hanya_kondisi",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 90,
+      "hit@1": 0.7111,
+      "mrr": 0.7111,
+      "ndcg@5": 0.4562,
+      "p_wilcoxon_vs_produksi": 0.000582
+    },
+    "waktu": "2026-08-11 10:05:14",
+    "catatan": "T3.1 — set penyetelan ['ohio_584', 'ohio_588'] n=90, 7 varian diuji, pemenang=kata_kunci. Relevansi dari pelabel kata kunci (K1)."
+  },
+  {
+    "parameter": "susunan_kueri",
+    "nilai": "kondisi_dulu",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 90,
+      "hit@1": 0.4333,
+      "mrr": 0.6231,
+      "ndcg@5": 0.4278,
+      "p_wilcoxon_vs_produksi": 0.730968
+    },
+    "waktu": "2026-08-11 10:05:14",
+    "catatan": "T3.1 — set penyetelan ['ohio_584', 'ohio_588'] n=90, 7 varian diuji, pemenang=kata_kunci. Relevansi dari pelabel kata kunci (K1)."
+  },
+  {
+    "parameter": "susunan_kueri",
+    "nilai": "pertanyaan",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 90,
+      "hit@1": 0.1556,
+      "mrr": 0.4744,
+      "ndcg@5": 0.3193,
+      "p_wilcoxon_vs_produksi": 2.3e-05
+    },
+    "waktu": "2026-08-11 10:05:14",
+    "catatan": "T3.1 — set penyetelan ['ohio_584', 'ohio_588'] n=90, 7 varian diuji, pemenang=kata_kunci. Relevansi dari pelabel kata kunci (K1)."
+  },
+  {
+    "parameter": "susunan_kueri",
+    "nilai": "ringkas",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 90,
+      "hit@1": 0.3778,
+      "mrr": 0.5774,
+      "ndcg@5": 0.3614,
+      "p_wilcoxon_vs_produksi": 0.235997
+    },
+    "waktu": "2026-08-11 10:05:14",
+    "catatan": "T3.1 — set penyetelan ['ohio_584', 'ohio_588'] n=90, 7 varian diuji, pemenang=kata_kunci. Relevansi dari pelabel kata kunci (K1)."
+  },
+  {
+    "parameter": "susunan_kueri",
+    "nilai": "kata_kunci",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 90,
+      "hit@1": 0.7111,
+      "mrr": 0.7722,
+      "ndcg@5": 0.5196,
+      "p_wilcoxon_vs_produksi": 9e-06
+    },
+    "waktu": "2026-08-11 10:05:14",
+    "catatan": "T3.1 — set penyetelan ['ohio_584', 'ohio_588'] n=90, 7 varian diuji, pemenang=kata_kunci. Relevansi dari pelabel kata kunci (K1)."
   }
 ]

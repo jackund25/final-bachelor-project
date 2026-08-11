@@ -1,0 +1,156 @@
+{
+  "percobaan": "T3.1 — susunan kalimat kueri prediction-conditioned",
+  "waktu": "2026-08-11T10:05:14",
+  "protokol_bagian_c": {
+    "set_latih": [
+      "ohio_540",
+      "ohio_544",
+      "ohio_552",
+      "ohio_559",
+      "ohio_563",
+      "ohio_567",
+      "ohio_570",
+      "ohio_575"
+    ],
+    "set_penyetelan": [
+      "ohio_584",
+      "ohio_588"
+    ],
+    "set_pelaporan": [
+      "ohio_591",
+      "ohio_596"
+    ],
+    "kriteria_ditetapkan_di_muka": "mrr",
+    "jumlah_varian_diuji": 7,
+    "seluruh_varian_dicatat": true,
+    "set_pelaporan_disentuh_berapa_kali": 1,
+    "set_evaluasi_diubah_setelah_melihat_hasil": false
+  },
+  "keterbatasan_menentukan": "Relevansi ditetapkan classify_chunk(), pelabel KATA KUNCI, bukan penilaian manusia (K1). Bila satu susunan menang karena menarik chunk yang kaya kata kunci pelabel, kemenangannya artifisial. T3.1 tidak boleh dinyatakan mantap sebelum T2.2 (verifikasi manual) selesai.",
+  "top_k": 5,
+  "horizon_steps": 6,
+  "n_kasus_per_himpunan": 90,
+  "contoh_kueri": {
+    "produksi": "Kadar glukosa darah 58 mg/dL. Hipoglikemia, gula darah rendah di bawah 70 mg/dL. Penyebab, gejala, dan penanganan segera (aturan 15-15).",
+    "hanya_angka": "Kadar glukosa darah 58 mg/dL.",
+    "hanya_kondisi": "Hipoglikemia, gula darah rendah di bawah 70 mg/dL. Penyebab, gejala, dan penanganan segera (aturan 15-15).",
+    "kondisi_dulu": "Hipoglikemia, gula darah rendah di bawah 70 mg/dL. Penyebab, gejala, dan penanganan segera (aturan 15-15). Kadar glukosa darah 58 mg/dL.",
+    "pertanyaan": "Bagaimana tatalaksana pasien diabetes dengan hipoglikemia pada kadar glukosa 58 mg/dL?",
+    "ringkas": "Kadar glukosa darah 58 mg/dL. Hipoglikemia, gula darah rendah.",
+    "kata_kunci": "hipoglikemia gula darah rendah penanganan aturan 15-15 glukagon"
+  },
+  "hasil_set_penyetelan": {
+    "produksi": {
+      "n": 90,
+      "hit@1": 0.4222,
+      "mrr": 0.6211,
+      "ndcg@5": 0.4058,
+      "p_wilcoxon_vs_produksi": null,
+      "berbeda_signifikan": false
+    },
+    "hanya_angka": {
+      "n": 90,
+      "hit@1": 0.0,
+      "mrr": 0.2276,
+      "ndcg@5": 0.1214,
+      "p_wilcoxon_vs_produksi": 0.0,
+      "berbeda_signifikan": true
+    },
+    "hanya_kondisi": {
+      "n": 90,
+      "hit@1": 0.7111,
+      "mrr": 0.7111,
+      "ndcg@5": 0.4562,
+      "p_wilcoxon_vs_produksi": 0.000582,
+      "berbeda_signifikan": true
+    },
+    "kondisi_dulu": {
+      "n": 90,
+      "hit@1": 0.4333,
+      "mrr": 0.6231,
+      "ndcg@5": 0.4278,
+      "p_wilcoxon_vs_produksi": 0.730968,
+      "berbeda_signifikan": false
+    },
+    "pertanyaan": {
+      "n": 90,
+      "hit@1": 0.1556,
+      "mrr": 0.4744,
+      "ndcg@5": 0.3193,
+      "p_wilcoxon_vs_produksi": 2.3e-05,
+      "berbeda_signifikan": true
+    },
+    "ringkas": {
+      "n": 90,
+      "hit@1": 0.3778,
+      "mrr": 0.5774,
+      "ndcg@5": 0.3614,
+      "p_wilcoxon_vs_produksi": 0.235997,
+      "berbeda_signifikan": false
+    },
+    "kata_kunci": {
+      "n": 90,
+      "hit@1": 0.7111,
+      "mrr": 0.7722,
+      "ndcg@5": 0.5196,
+      "p_wilcoxon_vs_produksi": 9e-06,
+      "berbeda_signifikan": true
+    }
+  },
+  "pemenang_set_penyetelan": "kata_kunci",
+  "hasil_set_pelaporan": {
+    "produksi": {
+      "n": 90,
+      "hit@1": 0.4,
+      "mrr": 0.5874,
+      "ndcg@5": 0.3832
+    },
+    "kata_kunci": {
+      "n": 90,
+      "hit@1": 0.6778,
+      "mrr": 0.7444,
+      "ndcg@5": 0.4945
+    },
+    "p_wilcoxon": 3e-06,
+    "bertahan_di_set_pelaporan": true
+  },
+  "KONTAMINASI_KOSAKATA_PELABEL": {
+    "ringkas": "Peringkat antar-varian berkorelasi 0,964 (Spearman, p=0,0005, n=7) dengan berapa banyak kata kunci classify_chunk() yang ada di dalam kuerinya. classify_chunk() adalah pelabel yang menentukan relevansi, yaitu penyebut seluruh metrik di berkas ini.",
+    "spearman_rho": 0.964,
+    "spearman_p": 0.0005,
+    "n": 7,
+    "bobot_kata_kunci_per_varian": {
+      "kata_kunci": 22,
+      "produksi": 17,
+      "hanya_kondisi": 17,
+      "kondisi_dulu": 17,
+      "ringkas": 10,
+      "pertanyaan": 6,
+      "hanya_angka": 0
+    },
+    "AKIBAT": "Pemenang kata_kunci TIDAK boleh diadopsi dan peringkat antar-varian TIDAK boleh dilaporkan sebagai hasil sampai T2.2 selesai. Kriteria tidak diubah setelah melihat hasil; yang dinyatakan adalah bahwa pemenang menurut kriteria itu terkontaminasi.",
+    "rincian": "results/eval_rag/tumpang_tindih_kata_kunci.json"
+  },
+  "PERBANDINGAN_KEBAL_KONTAMINASI": {
+    "dasar": "produksi, hanya_kondisi, dan kondisi_dulu memiliki bobot kata kunci pelabel IDENTIK (17), sehingga selisih di antara ketiganya tidak dapat dijelaskan tumpang tindih kosakata.",
+    "temuan": "Membuang angka glukosa dari teks kueri (hanya_kondisi) menaikkan Hit@1 dari 0,4222 menjadi 0,7111, naik 68% relatif, p=0,00058.",
+    "bukti_pendukung": "hanya_angka -- kueri berisi angka saja tanpa frasa kondisi -- menghasilkan Hit@1 0,0000.",
+    "TIDAK_membatalkan_PC_RAG": "hanya_kondisi tetap sepenuhnya prediction-conditioned: frasa kondisi dipilih classify_glucose(prediksi). Yang dibuang hanya NUMERAL di dalam teks kueri, bukan pengondisiannya."
+  },
+  "PRAPENDAFTARAN_kondisi_dulu": {
+    "berkas": "docs/PRAPENDAFTARAN_T3.1.md",
+    "commit": "4292960",
+    "dibuat_sebelum_percobaan": true,
+    "prakiraan": "identik dengan produksi atau berbeda hanya sebesar galat pembulatan",
+    "hasil": {
+      "selisih_mrr": 0.002,
+      "selisih_hit@1": 0.0111,
+      "selisih_hit@1_dalam_kasus": "1 dari 90",
+      "selisih_ndcg@5": 0.022,
+      "p_wilcoxon": 0.730968,
+      "signifikan": false
+    },
+    "TERKONFIRMASI": true,
+    "makna": "Posisi klausa tidak berpengaruh pada model embedding ini; menyusun ulang urutan kalimat bukan tuas yang layak dikejar. Yang berpengaruh adalah ISI."
+  }
+}
