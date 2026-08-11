@@ -411,6 +411,187 @@ perbaikan berdampak tertinggi yang tersisa pada sisi penelusuran.
 
 ---
 
+## K13. Angka penelusuran diukur pada bentuk kueri yang tidak dipakai aplikasi
+
+**Apa.** Seluruh metrik penelusuran di laporan — Hit@k, MRR, nDCG@5, T3.1, T3.2, T3.3 —
+membangun kuerinya dengan `build_ablation_query()` di `src/rag/ablation_query.py`:
+
+```
+Kadar glukosa darah 58 mg/dL. Hipoglikemia, gula darah rendah di bawah 70 mg/dL.
+Penyebab, gejala, dan penanganan segera (aturan 15-15).
+```
+
+Kueri penelusuran yang benar-benar dijalankan aplikasi dibangun
+`PredictionConditionedQueryBuilder._primary_query()` di `src/rag/conditioned_query.py`, dan
+bentuknya jauh berbeda — numeral empat kali, klausa tren, faktor kontribusi, dan ditutup
+kalimat tanya:
+
+```
+Prediksi glukosa 30 menit ke depan: 58.0 mg/dL (dari 112.0 mg/dL, perubahan -54.0 mg/dL,
+tren menurun). Status risiko prediksi: BAHAYA - Hipoglikemia. Faktor kontribusi: tren cepat
+menurun, aktivitas fisik rendah. Berikan penilaian risiko, tindakan pencegahan, dan
+protokol pemantauan untuk kondisi prediksi glukosa 58 mg/dL (BAHAYA - Hipoglikemia) dalam
+30 menit ke depan. Sertakan rekomendasi yang bisa dilakukan dokter maupun pasien.
+```
+
+**Cakupan pemakaiannya terukur.** `build_ablation_query()` dipakai **12 skrip evaluasi dan
+satu tes** (`tests/test_rag_retrieval.py` menegaskan stringnya persis berikut angkanya),
+sedangkan **jalur aplikasi tidak memakainya sama sekali**. Konsekuensinya berarah dua:
+mengubah `build_ablation_query()` mengubah **seluruh angka evaluasi** tanpa mengubah
+**perilaku aplikasi** satu pun.
+
+**Konsekuensinya kini terukur, dan tidak merugikan.** T3.3 menjalankan bentuk aplikasi pada
+kerangka T3.1, set penyetelan, 90 kasus:
+
+| lengan | MRR | Hit@1 | bobot kata kunci pelabel |
+|---|---:|---:|---:|
+| `aplikasi_delta0` | 0,6611 | 0,5444 | 6 |
+| `aplikasi_penuh` | 0,6556 | 0,5333 | 6 |
+| produksi (`build_ablation_query`) | 0,6211 | 0,4222 | 17 |
+
+**Yang sah dinyatakan hanya bahwa bentuk aplikasi TIDAK LEBIH BURUK.** Selisih +0,0400
+**tidak signifikan** (Wilcoxon p=0,441), **dan** bobot kata kunci pelabelnya berbeda (6 lawan
+17) sehingga perbandingannya tidak kebal kontaminasi K1. Dua alasan terpisah, masing-masing
+sudah cukup untuk melarang klaim "bentuk aplikasi lebih baik".
+
+**Mengapa tidak diperbaiki.** Menyatukan kedua bentuk menuntut memilih salah satunya. Memakai
+bentuk aplikasi di evaluasi membatalkan seluruh angka penelusuran yang sudah dihitung;
+memakai bentuk evaluasi di aplikasi mengubah perilaku produksi tanpa bukti bahwa itu lebih
+baik — T3.3 justru menunjukkan sebaliknya, walau tidak signifikan.
+
+**Dampak.** Angka penelusuran sah sebagai **perbandingan antar-konfigurasi pada bentuk kueri
+yang sama**, dan itulah pemakaiannya di seluruh laporan. Yang **tidak** sah adalah membaca
+Hit@1 atau MRR sebagai gambaran mutu penelusuran yang dialami pengguna aplikasi. Sesudah
+T3.3, batas itu diperlunak: bentuk aplikasi **tidak lebih buruk**, sehingga angka evaluasi
+bukan gambaran yang terlalu optimistis — tetapi ia tetap gambaran sistem lain.
+
+**Perkiraan pekerjaan.** Menjalankan seluruh metrik penelusuran ulang pada bentuk aplikasi:
+**sedang**. Menyatukan kedua jalur: **sedang–besar**, menuntut keputusan mana yang menang.
+
+---
+
+## K14. Aturan pelaporan efek mencampur dua pertanyaan, dan skala derau tidak pernah ditetapkan
+
+**Apa.** Aturan pelaporan yang berlaku sejak T1.1 berbunyi: *"selisih yang lebih kecil
+daripada simpangan baku antar-fold tidak boleh dinarasikan sebagai temuan."* Aturan itu
+**mencampur dua pertanyaan yang berbeda**, dan karena itu tidak dapat menjawab keduanya.
+
+| | pertanyaan | dijawab oleh | TIDAK dijawab oleh |
+|---|---|---|---|
+| 1 | Apakah efeknya **konsisten** antar-kelompok? | SD selisih berpasangan, Wilcoxon tingkat fold | — |
+| 2 | Apakah besarnya **cukup untuk berarti**? | ambang dari luar data | varians antar-kelompok |
+
+Varians antar-fold mengukur **keragaman pasien**, bukan ambang kebermaknaan. Memakainya
+sebagai ambang adalah **kekeliruan kategori**. Karena keduanya tercampur, "melampaui SD"
+kadang berarti *konsisten* dan kadang berarti *besar*, bergantung definisi mana yang dipakai
+— dan itulah sebabnya verdiknya berpindah-pindah.
+
+### Lima skala derau beredar di proyek ini
+
+| # | skala | rumus | dipakai di | status |
+|---|---|---|---|---|
+| 1 | SD gabungan | `np.std(concat([A, B]))` | T2.1 `eval_hipoglikemia.py:245` | dipakai tanpa disebut |
+| 2 | SD maks per model | `max(SD_A, SD_B)` | T4.1 RMSE `eval_gradient_boosting.py:414` | dipakai tanpa disebut |
+| 3 | SD selisih berpasangan | `np.std(A − B)` | T4.1, dilaporkan sejak temuan ini | paling dapat dipertahankan untuk rancangan berpasangan |
+| 4 | SD satu model | `SD_RF` saja | part-6, pencabutan klaim zona D | dipakai tanpa disebut, **dan keliru** |
+| 5 | SD bootstrap RMSE | 1.000 resample | T1.4 | **SAH** — ditetapkan di muka pada prapendaftaran, karena T1.4 tidak punya struktur fold |
+
+Nomor 5 tidak menjadi masalah: ia dideklarasikan sebelum hasil terlihat, beserta alasannya.
+Yang menjadi masalah adalah **nomor 1 sampai 4 dipakai tanpa pernah menyebut yang mana.**
+
+### Tabel audit — sepakat atau rapuh
+
+Dihitung ulang untuk setiap klaim keunggulan yang bersandar pada aturan ini. **Tidak satu pun
+angka lama diubah**; yang dikerjakan hanya menandai.
+
+| klaim | selisih | SD gab | SD maks | SD selisih | verdik |
+|---|---:|---:|---:|---:|---|
+| T2.1 h6 sens RF vs LSTM | −10,429 | 7,591 | 6,209 | 4,727 | **sepakat layak** |
+| T2.1 h6 MAE pada hipo | +2,954 | 2,271 | 2,170 | 1,384 | **sepakat layak** |
+| T2.1 h6 bias pada hipo | +3,216 | 2,312 | 2,092 | 1,383 | **sepakat layak** |
+| **T2.1 h12 sens RF vs LSTM** | **−6,203** | **5,862** | **6,754** | **6,877** | **RAPUH** |
+| T4.1 h6 GBM vs LSTM sens | −8,180 | 7,288 | 6,209 | 3,465 | **sepakat layak** |
+| T4.1 h12 GBM vs LSTM sens | −8,139 | 6,437 | 6,754 | 6,641 | **sepakat layak** |
+| T4.1 h6 RF vs GBM bias hipo | +2,010 | 1,670 | 1,552 | 0,725 | **sepakat layak** |
+| **T4.1 h6 RMSE RF vs GBM** | **+0,358** | 1,171 | 1,163 | **0,135** | **RAPUH** |
+| **T4.1 h12 RMSE RF vs GBM** | **+0,976** | 1,550 | 1,499 | **0,388** | **RAPUH** |
+| **T1.1 h6 RMSE RF vs LSTM** | **+0,478** | 1,266 | 1,329 | **0,239** | **RAPUH** |
+| T1.1 h6 Clarke D RF vs LSTM | +0,699 | 0,594 | 0,602 | 0,460 | **sepakat layak** |
+| T1.1 h12 Clarke D RF vs LSTM | −0,065 | 1,056 | 1,130 | 0,379 | sepakat tidak layak |
+| T1.1 h12 RMSE RF vs LSTM | +0,288 | 1,483 | 1,499 | 0,476 | sepakat tidak layak |
+
+**Kerapuhannya memotong dua arah, dan itu yang membuatnya serius.** Empat klaim rapuh: satu
+(T2.1 h12) sekarang **dinarasikan** dan hanya lolos di bawah definisi 1; tiga (T4.1 h6, T4.1
+h12, T1.1 h6) sekarang **ditahan** dan justru akan **lolos** di bawah definisi 3. Pilihan
+definisi bukan soal ketat lawan longgar — ia mengubah **isi** kesimpulan.
+
+**Satu klaim yang alasannya sudah diperbaiki.** Pencabutan "RF menghasilkan 27% lebih banyak
+kesalahan zona D" semula beralasan SD, memakai definisi 4. Terhitung ulang, 0,699 melampaui
+ketiga definisi. **Pencabutannya tetap sah** karena alasan keduanya — di h12 zona D berbalik
+tanda (7,66 vs 7,72), tidak tereplikasi antar-horizon. Yang diperbaiki alasannya, bukan
+keputusannya.
+
+### Ambang kebermaknaan: memisahkan pertanyaan 2, dengan ambang dari luar
+
+Pertanyaan 2 memerlukan ambang yang tidak berasal dari data ini. Yang dipakai, dan sumbernya
+ada di **korpus proyek ini sendiri**:
+
+> ISO 15197:2013 mensyaratkan 95% pemeriksaan glukometer berada pada kisaran **±15 mg/dL**
+> bila glukosa < 100 mg/dL, dan ±15% bila ≥ 100 mg/dL.
+> — `KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf`, halaman cetak 25
+
+**Bingkainya argumen ORDE BESARAN, bukan penerapan standar.** Selisih RMSE antarmodel
+0,358–0,976 mg/dL berada **dua orde besaran di bawah** toleransi per-pengukuran alat yang
+menghasilkan datanya. Angka sekecil itu tidak dapat ditafsirkan secara fisik, karena variabel
+yang diukurnya sendiri tidak pernah diketahui pada ketelitian tersebut.
+
+Yang **tidak** diklaim: bahwa ISO 15197 menetapkan ambang kebermaknaan bagi selisih
+antarmodel. Ia mengatur akurasi alat ukur. Yang dipinjam hanya skala besarannya. Menyandingkan
+RMSE agregat dengan toleransi per-pengukuran sebagai persentase — seperti versi pertama
+catatan T1.4 melakukannya — **tidak sepadan satuan statistiknya** dan sudah dikoreksi.
+
+**Ambang mg/dL TIDAK berlaku untuk sensitivitas hipoglikemia**, karena satuannya **poin persen
+deteksi kejadian**, bukan galat konsentrasi. Klaim sensitivitas LSTM karena itu tidak tergugur
+oleh ambang ini; ia berdiri atau jatuh murni pada pertanyaan konsistensi — dan di situ ia
+**sepakat layak di +30 menit** tetapi **rapuh di +60 menit**.
+
+**Pengakuan yang wajib.** Ambang ini **diadopsi setelah hasil terlihat**. Yang membuatnya tetap
+dapat dipertahankan: ia diturunkan dari literatur eksternal dan **tidak menyebut satu pun
+angka proyek ini**, sehingga tidak dapat dipilih demi meloloskan atau menggugurkan klaim
+tertentu. Perbedaan itu ditulis, bukan disembunyikan. MARD CGM dicari di seluruh teks
+terekstrak proyek ini dan **tidak ditemukan**, sehingga angkanya tidak dikutip.
+
+### Akar yang sama dengan T1.1b
+
+Ini **bukan** kekeliruan baru. Ia kekeliruan yang sama dengan T1.1b, dan lebih berharga
+dilaporkan sebagai satu daripada dua catatan terpisah:
+
+| | T1.1b | K14 |
+|---|---|---|
+| pertanyaan yang diajukan | apakah 50/12 **setara** dengan 200/20? | apakah selisih ini **cukup besar** untuk berarti? |
+| instrumen yang dipakai | uji beda (Wilcoxon) | varians antar-fold |
+| yang seharusnya dipakai | uji kesetaraan (TOST) dengan **margin** ditetapkan di muka | **ambang kebermaknaan** ditetapkan di muka |
+| apa yang tidak pernah ditetapkan | margin kesetaraan | ambang kebermaknaan |
+
+Keduanya: **pertanyaan tentang besaran dijawab dengan instrumen tentang perbedaan**, karena
+angka pembandingnya tidak pernah ditetapkan sebelum hasil terlihat.
+
+**Mengapa tidak diperbaiki dengan memilih satu definisi.** Pilihan apa pun yang diambil
+sekarang diambil **setelah tabel auditnya terlihat**, dan itu yang dilarang protokol Bagian C.
+Yang dikerjakan: melaporkan ketiga definisi di setiap tempat klaim keunggulan muncul, beserta
+medan `sd_sepakat`. Klaim yang sepakat dinyatakan sebagai hasil; klaim yang rapuh dinyatakan
+apa adanya dan **tidak dipakai menopang kesimpulan apa pun**.
+
+**Dampak.** Empat klaim keunggulan berstatus rapuh dan tidak boleh dikutip Bab VI sebagai
+mantap. Penetapan skala derau dan ambang kebermaknaan menjadi **keputusan menggantung #8**
+untuk pembimbing.
+
+**Perkiraan pekerjaan.** Melaporkan ketiga definisi di seluruh skrip: **kecil**, sudah
+dikerjakan untuk T4.1 dan T1.4. Menetapkan ambang secara sah untuk seluruh laporan:
+**keputusan, bukan pekerjaan**.
+
+---
+
 ## Ringkasan untuk Bab VII
 
 | Kode | Keterbatasan | Dampak | Pekerjaan |
@@ -427,10 +608,17 @@ perbaikan berdampak tertinggi yang tersisa pada sisi penelusuran.
 | K10 | `faithfulness` bukan ukuran mutu, labil per kasus | **Tinggi** — membatasi cara metrik RAGAS dikutip | sedang |
 | K11 | Logbook tersambung tetapi catatan sering ditolak | Sedang — KF-01/KF-02 tidak menjadi ADA penuh | sedang-besar |
 | K12 | Jangkauan penelusuran hanya 1,16% korpus | **Tinggi** — satu sebab bagi K2, jurang Hit@1/Hit@5, dan E01 | kecil-sedang |
+| K13 | Angka penelusuran diukur pada bentuk kueri yang tidak dipakai aplikasi | Sedang — konsekuensinya terukur dan tidak merugikan; bentuk aplikasi tidak lebih buruk | sedang |
+| **K14** | Aturan pelaporan efek mencampur konsistensi dengan kebermaknaan; skala derau tak pernah ditetapkan | **Tinggi** — empat klaim keunggulan berstatus rapuh | keputusan, bukan pekerjaan |
 
-**Empat yang paling menentukan batas klaim laporan: K1, K3, K5, dan K10.** Keempatnya
+**Lima yang paling menentukan batas klaim laporan: K1, K3, K5, K10, dan K14.** Kelimanya
 bukan cacat implementasi melainkan batas metodologis, dan seluruhnya harus dinyatakan
 sebelum angka apa pun dikutip sebagai bukti kelayakan klinis.
+
+**K14 berbeda sifatnya dari empat lainnya**: ia bukan batas pada apa yang dapat diukur,
+melainkan pada cara hasil pengukuran ditafsirkan. Ia karena itu satu-satunya yang dapat
+diselesaikan tanpa data baru — dengan menetapkan ambang, yang merupakan keputusan
+pembimbing (#8).
 
 ---
 

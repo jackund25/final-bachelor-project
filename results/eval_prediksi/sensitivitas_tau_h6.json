@@ -383,8 +383,37 @@
       "rentang_sapuan_persen_dari_ambang": 0.71,
       "selisih_set_pelaporan_persen_dari_ambang": 0.59,
       "CATATAN_KEJUJURAN": "Ambang ini diadopsi SETELAH hasil terlihat. Yang membuatnya tetap dapat dipertahankan: ia diturunkan dari literatur eksternal dan tidak menyebut satu pun angka proyek ini, sehingga tidak dapat dipilih demi meloloskan atau menggugurkan klaim tertentu.",
-      "MARD_CGM": "Dicari di seluruh teks terekstrak proyek ini dan TIDAK DITEMUKAN. Tidak dikutip."
+      "MARD_CGM": "Dicari di seluruh teks terekstrak proyek ini dan TIDAK DITEMUKAN. Tidak dikutip.",
+      "bingkai": "ARGUMEN ORDE BESARAN, bukan penerapan standar ISO pada perbandingan model. Lihat KOREKSI_11_AGUSTUS_2026 butir 1.",
+      "orde_selisih_thd_toleransi": "dua orde besaran di bawah",
+      "yang_TIDAK_diklaim": "Bahwa ISO 15197 menetapkan ambang kebermaknaan bagi selisih antarmodel. Ia mengatur akurasi alat ukur. Yang dipinjam hanya skala besarannya."
     },
-    "pytest": "133 passed, sama dengan baseline"
+    "pytest": "133 passed, sama dengan baseline",
+    "KOREKSI_11_AGUSTUS_2026": [
+      {
+        "no": 1,
+        "perkara": "bingkai argumen ISO 15197",
+        "yang_keliru": "Menyandingkan selisih RMSE AGREGAT dengan toleransi PER-PENGUKURAN 95% seolah keduanya sepadan. Keduanya bukan besaran statistik yang sama: RMSE adalah galat rerata kuadratik atas puluhan ribu jendela, sedangkan +-15 mg/dL adalah selang toleransi satu pengukuran tunggal.",
+        "yang_benar": "Argumen ORDE BESARAN, bukan penerapan standar. Selisih 0,089 mg/dL berada DUA ORDE di bawah toleransi per-pengukuran alat yang menghasilkan datanya. Angka sekecil itu tidak dapat ditafsirkan secara fisik, karena variabel yang diukurnya sendiri tidak pernah diketahui pada ketelitian itu. Ini ANALOGI BERDASAR LITERATUR, BUKAN penerapan ISO 15197 pada perbandingan model. ISO 15197 mengatur akurasi alat ukur, bukan ambang kebermaknaan selisih antarmodel prediksi."
+      },
+      {
+        "no": 2,
+        "perkara": "batas atas efek tau di seluruh ruang parameter",
+        "yang_kurang": "Temuan monoton berhenti pada \"optimum mungkin di bawah 120/60 dan belum diukur\", tanpa batas atas.",
+        "yang_ditambahkan": "Batas atas dapat diturunkan dari J7. tau mendekati nol membuat IOB meluruh seketika, sehingga fiturnya secara kasar mendekati keadaan TAK BERINFORMASI. J7 mengukur biaya memusnahkan iob sepenuhnya: 0,4369 mg/dL. Efek maksimum di SELURUH ruang tau karena itu terbatas sekitar 0,44 mg/dL. Angka itu SEDIKIT DI ATAS ambang peka 0,3936 mg/dL, sehingga tidak dapat dinyatakan bahwa seluruh ruang tau pasti tidak peka -- hanya bahwa rentang yang DISAPU tidak peka, dan bahwa ruang sisanya tidak dapat menyumbang lebih dari sekitar satu ambang peka.",
+        "kualifikasi": "Peluruhan seketika TIDAK identik dengan permutasi. Fitur ber-tau sangat kecil tetap membawa informasi kejadian insulin pada langkah terakhir, sedangkan permutasi menghancurkan seluruh kaitannya dengan sasaran. Batas 0,44 karena itu batas LONGGAR, dan arah longgarnya tidak dapat dipastikan."
+      }
+    ],
+    "batas_atas_efek_tau": {
+      "sumber": "J7 permutation importance iob",
+      "nilai_mg_dL": 0.4369,
+      "ambang_peka": 0.3936,
+      "melampaui_ambang": true,
+      "arti": "Ruang tau yang belum disapu tidak dapat menyumbang lebih dari sekitar satu ambang peka."
+    },
+    "batas_lingkup": {
+      "horizon_diukur": "+30 menit SAJA (h6)",
+      "arti": "Klaim ketidakpekaan DIBATASI ke +30 menit. Pada +60 menit RMSE dasar naik dari ~21 ke ~34 mg/dL dan bobot IOB/COB relatif dapat berbeda; T1.4 tidak mengukurnya."
+    }
   }
 }
