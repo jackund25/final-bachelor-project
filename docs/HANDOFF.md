@@ -5,7 +5,7 @@
 > Berkas ini hanya memuat apa yang perlu diketahui untuk melanjutkan, tanpa perlu
 > menelusuri 5.500 baris journey.
 >
-> **Dibuat:** 11 Agustus 2026 · **Commit:** `e0b3cca` · **Cabang:** `refaktor-tujuh-tugas`
+> **Dibuat:** 11 Agustus 2026 · **Commit:** `11c8ac1` · **Cabang:** `refaktor-tujuh-tugas`
 
 ---
 
@@ -18,9 +18,9 @@
 | **T1.2** | RAGAS 4 metrik + 2 kasus negatif | ✅ selesai | `c5a170e`, `d76a234` |
 | **T1.3** | Cakupan konformal per rentang glukosa | ✅ selesai | `b29eef7` |
 | **T1.4** | Sensitivitas `tau` IOB/COB | ⬜ belum — skrip siap | — |
-| **T2.1** | Galat khusus hipoglikemia, RF vs LSTM | ✅ selesai | belum di-commit* |
+| **T2.1** | Galat khusus hipoglikemia, RF vs LSTM | ✅ selesai | `cd41fa3` |
 | **T2.2** | Verifikasi manusia atas pelabel relevansi | ⏳ **menunggu pengisian manual** | `35d5866` |
-| **T3.1** | Susunan kalimat kueri | ⏳ **sedang berjalan** | — |
+| **T3.1** | Susunan kalimat kueri | ✅ selesai | `11c8ac1` |
 | **T3.2** | Horizon sumber pengondisian retrieval | ⬜ belum — skrip siap | — |
 | **T4.1** | Gradient Boosting sebagai pembanding ketiga | ⬜ belum — skrip siap | — |
 | **T4.2** | Logbook manual → jalur prediksi | ✅ selesai | `5915b2d` |
@@ -29,15 +29,12 @@
 | **J7** | Kontribusi fitur (MDI + permutasi) | ✅ selesai | `dc51c2f`, `09dc35e` |
 | — | **TEMUAN: jangkauan penelusuran** | ✅ selesai | `e0b3cca` |
 
-\* Berkas hasil T2.1 sudah ada (`hipoglikemia_h6.json`, `hipoglikemia_h12.json`); entri
-journey dan commit-nya belum dibuat.
-
 **Skrip yang sudah siap dan lolos pemeriksaan impor:** `eval_sensitivitas_tau.py` (T1.4),
 `eval_horizon_retrieval.py` (T3.2), `eval_gradient_boosting.py` (T4.1),
 `buat_ringkasan_bab6.py` (T5.2).
 
-**Urutan sisa yang direncanakan:** T3.1 (berjalan) → T3.2 (~20 mnt) → T4.1 (~40 mnt) →
-T1.4 (~100 mnt) → T5.2 final.
+**Urutan sisa yang direncanakan:** T3.2 (~20 mnt) → T4.1 (~40 mnt) → T1.4 (~100 mnt) →
+T5.2 final.
 
 ---
 
@@ -251,6 +248,35 @@ Tuasnya **keragaman kueri** dan **`fetch_k`**, bukan `lambda_mult` dan bukan `to
 Menyatukan tiga temuan yang tadinya terpisah: pola biner `context_precision`, jurang
 Hit@1 23,3% lawan Hit@5 91,7%, dan konteks tak relevan pada E01.
 
+### T3.1 — susunan kueri
+
+Tujuh varian, Bagian C penuh, kriteria MRR ditetapkan di muka, 90 kasus per himpunan.
+
+| varian | MRR | Hit@1 | p vs produksi | **bobot kata kunci pelabel** |
+|---|---|---|---|---|
+| `kata_kunci` | 0,7722 | 0,7111 | 9e-06 | **22** |
+| `hanya_kondisi` | **0,7111** | **0,7111** | 0,00058 | 17 |
+| `kondisi_dulu` | 0,6231 | 0,4333 | 0,73 | 17 |
+| **produksi** | 0,6211 | 0,4222 | acuan | 17 |
+| `ringkas` | 0,5774 | 0,3778 | 0,24 | 10 |
+| `pertanyaan` | 0,4744 | 0,1556 | 2,3e-05 | 6 |
+| `hanya_angka` | 0,2276 | **0,0000** | ~0 | 0 |
+
+**Pemenang `kata_kunci` TERKONTAMINASI dan tidak boleh diadopsi.**
+Spearman(bobot kata kunci `classify_chunk`, MRR) = **0,964, p=0,0005** — peringkat
+antar-varian nyaris seluruhnya diramalkan oleh tumpang tindih kosakata dengan pelabelnya
+sendiri. Peringkat antar-varian **tidak boleh dilaporkan** sampai T2.2 selesai.
+
+**Perbandingan yang KEBAL:** produksi, `hanya_kondisi`, dan `kondisi_dulu` punya bobot kata
+kunci **identik (17)**. Membuang angka glukosa dari teks kueri menaikkan **Hit@1 dari 42,2%
+ke 71,1%** (+68% relatif, p=0,00058). Pendukung: `hanya_angka` → Hit@1 **0,0000**.
+
+**Tidak membatalkan PC-RAG:** `hanya_kondisi` tetap prediction-conditioned — frasa dipilih
+`classify_glucose(prediksi)`. Yang dibuang hanya numeral di teks kueri.
+
+**Prapendaftaran `kondisi_dulu` TERKONFIRMASI:** MRR +0,0020, Hit@1 +0,0111 = 1 kasus dari
+90, p=0,73. Posisi klausa tidak berpengaruh; yang berpengaruh isi.
+
 ### Retrieval crossfold (6 fold, korpus kb12_sym, `top_k` 5)
 
 | mode | MRR divergen | MRR natural |
@@ -392,7 +418,8 @@ mengalahkan angka dari dokumentasi vendor.**
 | **3** | **Tinjau ulang `chunk_size` 900?** | Dipertahankan pada Tahap 0 karena selisih B4 tidak signifikan (p=0,078). Saat itu **belum diketahui** 900 membuang 8,23% token korpus dan KB-03 kehilangan 48,84% chunk | Seluruh angka penelusuran tetap diukur pada korpus yang sebagian tidak terindeks |
 | **4** | **Kerjakan K12?** (perbanyak frasa kondisi, naikkan `fetch_k`) | Pekerjaan kecil–sedang, keduanya parameter tanpa indeks ulang. Kandidat perbaikan berdampak tertinggi yang tersisa | 98,84% korpus tetap tak terjangkau; K2 dan jurang Hit@1/Hit@5 tetap tanpa perbaikan |
 | **5** | **Pemilihan model RF vs LSTM — final atau belum?** | T2.1 menunjukkan **LSTM unggul signifikan pada sensitivitas hipoglikemia di kedua horizon** (21,7% vs 32,1%; 4,4% vs 10,6%). Pembenaran RF bertumpu pada keterjelasan kontribusi fitur | Bab VI menyatakan pilihan yang datanya sendiri menantang pada aspek paling kritis secara klinis |
-| **6** | **Uji kestabilan tiga metrik RAGAS lain?** | ~90 panggilan LLM. Saat ini hanya `faithfulness` yang punya data run berulang | Tiga metrik tetap berstatus "belum diuji, jangan diasumsikan stabil" |
+| **6** | **Adopsi `hanya_kondisi` ke produksi?** | Membuang numeral dari teks kueri menaikkan Hit@1 42,2% → 71,1%, perbandingan kebal kontaminasi. Perlu ubah `build_ablation_query()` di `src/rag/ablation_query.py` | Jalur produksi tetap memakai susunan yang terbukti merugikan peringkat |
+| **7** | **Uji kestabilan tiga metrik RAGAS lain?** | ~90 panggilan LLM. Saat ini hanya `faithfulness` yang punya data run berulang | Tiga metrik tetap berstatus "belum diuji, jangan diasumsikan stabil" |
 
 ---
 
