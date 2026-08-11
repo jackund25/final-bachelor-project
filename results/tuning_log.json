@@ -753,5 +753,57 @@
     },
     "waktu": "2026-08-11 11:27:16",
     "catatan": "T3.2 — sasaran dipakukan +60 mnt, set penyetelan ['ohio_584', 'ohio_588'], pemenang dapat dicapai=pred_h12. oracle_h12 = langit-langit, tidak dapat diadopsi."
+  },
+  {
+    "parameter": "horizon_pengondisian",
+    "nilai": "current",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 90,
+      "hit@1": 0.3889,
+      "mrr": 0.5533,
+      "ndcg@5": 0.3555
+    },
+    "waktu": "2026-08-11 17:50:41",
+    "catatan": "T3.2 — sasaran dipakukan +60 mnt, set penyetelan ['ohio_584', 'ohio_588'], pemenang dapat dicapai=pred_h12. oracle_h12 = langit-langit, tidak dapat diadopsi."
+  },
+  {
+    "parameter": "horizon_pengondisian",
+    "nilai": "pred_h6",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 90,
+      "hit@1": 0.3778,
+      "mrr": 0.5565,
+      "ndcg@5": 0.3551
+    },
+    "waktu": "2026-08-11 17:50:41",
+    "catatan": "T3.2 — sasaran dipakukan +60 mnt, set penyetelan ['ohio_584', 'ohio_588'], pemenang dapat dicapai=pred_h12. oracle_h12 = langit-langit, tidak dapat diadopsi."
+  },
+  {
+    "parameter": "horizon_pengondisian",
+    "nilai": "pred_h12",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 90,
+      "hit@1": 0.3778,
+      "mrr": 0.5706,
+      "ndcg@5": 0.3598
+    },
+    "waktu": "2026-08-11 17:50:41",
+    "catatan": "T3.2 — sasaran dipakukan +60 mnt, set penyetelan ['ohio_584', 'ohio_588'], pemenang dapat dicapai=pred_h12. oracle_h12 = langit-langit, tidak dapat diadopsi."
+  },
+  {
+    "parameter": "horizon_pengondisian",
+    "nilai": "oracle_h12",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 90,
+      "hit@1": 0.6778,
+      "mrr": 0.8352,
+      "ndcg@5": 0.5263
+    },
+    "waktu": "2026-08-11 17:50:41",
+    "catatan": "T3.2 — sasaran dipakukan +60 mnt, set penyetelan ['ohio_584', 'ohio_588'], pemenang dapat dicapai=pred_h12. oracle_h12 = langit-langit, tidak dapat diadopsi."
   }
 ]
