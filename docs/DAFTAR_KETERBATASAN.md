@@ -369,6 +369,48 @@ interpolasi terbatas yang dibenarkan secara fisiologis, bukan sekadar mengendurk
 
 ---
 
+## K12. Jangkauan penelusuran hanya 1,16% korpus
+
+**Apa keterbatasannya.** Seluruh rentang glukosa 40–400 mg/dL disapu langkah 5 — 73 nilai,
+mencakup setiap angka yang dapat dihasilkan prediktor — dan konfigurasi produksi hanya
+menjangkau **24 dari 2.061 chunk**. **98,84% korpus tidak pernah terambil oleh nilai
+glukosa mana pun.** Sepuluh potongan teratas menyerap 75,07% seluruh pengambilan.
+
+**Mekanismenya terukur, dan bukan `lambda_mult`.** Dua batas keras bekerja bersamaan:
+
+1. `build_ablation_query()` meruntuhkan seluruh rentang glukosa menjadi **tiga frasa
+   kondisi**. Angka glukosa nyaris tidak menggeser embedding: frasa saja menjangkau 14
+   potongan, ditambah angka menjadi 24 — angka hanya menyumbang 10.
+2. `fetch_k` = 12 membatasi kolam kandidat menjadi ~3 × 12 = 36 potongan; 31 yang
+   benar-benar masuk. **MMR tidak dapat mengembalikan potongan di luar kolam**, betapa pun
+   relevannya.
+
+`lambda_mult` 0,0 lawan 0,5 menghasilkan 24 lawan 22 potongan — nilai produksi sudah yang
+lebih baik dari keduanya, dan selisihnya terlalu kecil untuk menjadi tuas.
+
+**Mengapa ini menaikkan bobot tiga temuan lain.** Pola biner `context_precision` (K2),
+jurang Hit@1 23,3% lawan Hit@5 91,7%, dan konteks tidak relevan pada kasus E01 selama ini
+dilaporkan sebagai tiga hal terpisah. Ketiganya konsisten dengan **satu sebab**: kolam
+kandidat yang membeku membuat peringkat membeku pula.
+
+**Dampak pada kesimpulan.** Setiap angka penelusuran di laporan — Hit@k, MRR, nDCG@5, T3.1,
+T3.2 — diukur pada sistem yang hanya menyentuh 1,16% korpusnya sendiri. Angka-angka itu sah
+sebagai gambaran **sistem sebagaimana dikonfigurasi**, tetapi **tidak** boleh dibaca sebagai
+gambaran mutu korpus atau mutu model embedding. Klaim "korpus 12 pedoman klinis" perlu
+disertai keterangan bahwa jalur penelusuran produksi hanya pernah menyentuh sebagian sangat
+kecil darinya.
+
+**Yang belum dibuktikan.** Bahwa konsentrasi ini *menyebabkan* ketiga temuan itu. Yang ada
+adalah satu sebab yang konsisten dengan ketiganya dan terukur besarnya. Pembuktian menuntut
+menaikkan jangkauan lalu memeriksa apakah ketiga pola ikut berubah.
+
+**Perkiraan pekerjaan.** Memperbanyak frasa kondisi (mis. per rentang glukosa, bukan per
+tiga kelas) dan menaikkan `fetch_k`: **kecil–sedang**, keduanya parameter, tanpa indeks
+ulang. Mengukur ulang seluruh metrik penelusuran sesudahnya: **sedang**. Ini kandidat
+perbaikan berdampak tertinggi yang tersisa pada sisi penelusuran.
+
+---
+
 ## Ringkasan untuk Bab VII
 
 | Kode | Keterbatasan | Dampak | Pekerjaan |
@@ -384,6 +426,7 @@ interpolasi terbatas yang dibenarkan secara fisiologis, bukan sekadar mengendurk
 | K9 | `top_k` produksi vs evaluasi | Rendah — sudah diperbaiki | selesai |
 | K10 | `faithfulness` bukan ukuran mutu, labil per kasus | **Tinggi** — membatasi cara metrik RAGAS dikutip | sedang |
 | K11 | Logbook tersambung tetapi catatan sering ditolak | Sedang — KF-01/KF-02 tidak menjadi ADA penuh | sedang-besar |
+| K12 | Jangkauan penelusuran hanya 1,16% korpus | **Tinggi** — satu sebab bagi K2, jurang Hit@1/Hit@5, dan E01 | kecil-sedang |
 
 **Empat yang paling menentukan batas klaim laporan: K1, K3, K5, dan K10.** Keempatnya
 bukan cacat implementasi melainkan batas metodologis, dan seluruhnya harus dinyatakan
