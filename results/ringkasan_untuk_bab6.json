@@ -1,11 +1,11 @@
 {
   "judul": "Ringkasan angka untuk Bab VI",
-  "dibuat": "2026-08-13T18:10:59",
-  "dibuat_utc": "2026-08-13T11:10:59+00:00",
-  "commit": "db969b05e4dee98c830ed8a04bac55f13feb218e",
-  "commit_pendek": "db969b0",
+  "dibuat": "2026-08-13T21:19:11",
+  "dibuat_utc": "2026-08-13T14:19:11+00:00",
+  "commit": "408b515f43f19409b9399c636dc1ca0dcf1d096b",
+  "commit_pendek": "408b515",
   "cabang": "refaktor-tujuh-tugas",
-  "pohon_kerja_bersih": false,
+  "pohon_kerja_bersih": true,
   "cara_pakai": "Setiap blok memuat _status dan _diubah. Sebelum mengutip angka mana pun, periksa _diubah terhadap tanggal commit yang terakhir mengubah skrip penghasilnya. Angka yang lebih tua daripada perubahan skripnya adalah angka yang dihasilkan kode yang sudah tidak ada.",
   "peringatan_riwayat": "Dua kali dalam proyek ini angka kedaluwarsa nyaris terpakai: faktor konformal 3,3 yang mengkalibrasi model pra-Tugas 5, dan crossfold.json 5 Agustus yang berdampingan dengan berkas baru sambil terlihat sah. Medan _diubah ada untuk itu.",
   "n_sumber": 24,
@@ -28,13 +28,7 @@
     ],
     "catatan_cacah_provenans": "Medan yang TIDAK TERCATAT tidak dapat diverifikasi dari artefak. Bukti bahwa berkas ini berasal dari lambda_mult 0,0 hanyalah nama direktorinya (_kb12_final) dan catatan journey part-5. Memperbaikinya menuntut skrip crossfold menuliskan konfigurasi efektifnya, lalu menjalankan ulang 2 jam 3 menit — di luar lingkup sesi ini, masuk daftar pekerjaan menunggu."
   },
-  "sumber_belum_tercommit": [
-    {
-      "kunci": "generasi.contoh_kasus",
-      "berkas": "results/ragas/contoh_kasus_bab6.json",
-      "git": "M"
-    }
-  ],
+  "sumber_belum_tercommit": [],
   "keterbatasan": "docs/DAFTAR_KETERBATASAN.md",
   "data": {
     "prediksi.rf_vs_lstm_h6": {
@@ -3451,8 +3445,6 @@
       "_status": "ADA",
       "_berkas": "results/ragas/contoh_kasus_bab6.json",
       "_diubah": "2026-08-13T18:07:55",
-      "_git": "M",
-      "_PERINGATAN_GIT": "Berkas TERMODIFIKASI atau BELUM TERLACAK git, sehingga angkanya TIDAK tertelusur ke commit yang dicatat ringkasan ini. Bila ini akibat skrip yang menimpa berkas lama, periksa `git diff` sebelum mengutipnya.",
       "isi": {
         "judul": "Contoh kasus Bab VI: faithfulness tinggi BUKAN bukti jawaban benar, dan perbandingan antargenerasi model",
         "tanggal": "2026-08-09",
