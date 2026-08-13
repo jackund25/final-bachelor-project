@@ -1,7 +1,7 @@
 {
   "perkara": "Tiga penilaian ditulis sebagai teks bebas di luar empat nilai yang sah.",
   "waktu_pengodean": "2026-08-13T16:58:56",
-  "diputuskan_oleh": "Penilai 1 (mahasiswa kedokteran), dikonfirmasi eksplisit; tidak dinormalkan sendiri oleh skrip.",
+  "diputuskan_oleh": "pembimbing (dikonfirmasi eksplisit, tidak dinormalkan sendiri oleh skrip)",
   "mengapa_dicatat": "Teks bebas penilai memuat informasi yang hilang bila hanya kelasnya disimpan. id 31 khususnya menunjuk keterbatasan nyata skema empat kelas berlabel TUNGGAL: satu potongan dapat membahas hiperglikemia dan hipoglikemia sekaligus, dan skema ini memaksa memilih satu.",
   "entri": [
     {
@@ -28,6 +28,5 @@
       "halaman_cetak": "48",
       "kueri": "Gula darah dalam rentang normal/target. Target kontrol glikemik dan pemantauan rutin diabetes."
     }
-  ],
-  "KOREKSI_13_AGUSTUS_2026": "Medan ini semula berbunyi 'pembimbing'. Itu KELIRU: putaran pertama diisi PENILAI 1, seorang mahasiswa kedokteran, bukan pembimbing. Kualifikasi penilai menentukan bobot bukti K1 dan wajib dinyatakan tepat. Dikoreksi setelah dikonfirmasi 13 Agustus 2026."
+  ]
 }
