@@ -405,6 +405,21 @@ def main() -> int:
     rf_f = np.array([b["RF"]["RMSE"] for b in baris])
     gb_f = np.array([b["GBM"]["RMSE"] for b in baris])
     e_rf, e_gb = np.concatenate(err_rf), np.concatenate(err_gb)
+    d_f = rf_f - gb_f
+    # KEPUTUSAN #8 (11 Agustus 2026, docs/KEPUTUSAN_DIAMBIL.md): dua pertanyaan DIPISAH.
+    #   konsistensi  -> SD selisih berpasangan std(A-B) + Wilcoxon tingkat fold
+    #   kebermaknaan -> ambang orde besaran ISO 15197:2013, +-15 mg/dL untuk glukosa
+    #                   < 100 mg/dL (KB-02_PERKENI-2021 hal. 25)
+    # Ketiga definisi SD tetap dilaporkan: menetapkan satu tidak menghapus kewajiban
+    # menunjukkan ketiganya.
+    AMBANG_KLINIS_MGDL = 15.0
+    sd_tiga = {
+        "gabungan_definisi_T2.1": round(float(np.std(np.concatenate([rf_f, gb_f]))), 3),
+        "maks_per_model": round(float(max(rf_f.std(), gb_f.std())), 3),
+        "selisih_berpasangan": round(float(d_f.std()), 3),
+    }
+    lewat_tiga = {k: bool(abs(d_f.mean()) > v) for k, v in sd_tiga.items()}
+    persen_ambang = round(100 * abs(float(d_f.mean())) / AMBANG_KLINIS_MGDL, 2)
     uji = {
         "RF_vs_GBM": {
             "fold_level": {
@@ -413,6 +428,25 @@ def main() -> int:
                 "selisih": round(float((rf_f - gb_f).mean()), 3),
                 "sd_antar_fold_RF": round(float(rf_f.std()), 3),
                 "sd_antar_fold_GBM": round(float(gb_f.std()), 3),
+                "sd_tiga_definisi": sd_tiga,
+                "melampaui_sd": lewat_tiga,
+                "sd_sepakat": bool(len(set(lewat_tiga.values())) == 1),
+                "KONSISTEN_definisi_terpilih": lewat_tiga["selisih_berpasangan"],
+                "ambang_klinis_mg_dL": AMBANG_KLINIS_MGDL,
+                "persen_dari_ambang_klinis": persen_ambang,
+                "BERMAKNA_secara_klinis": bool(abs(float(d_f.mean())) >= AMBANG_KLINIS_MGDL),
+                "RUMUSAN": (
+                    "KONSISTEN TETAPI TIDAK BERMAKNA"
+                    if lewat_tiga["selisih_berpasangan"]
+                    and abs(float(d_f.mean())) < AMBANG_KLINIS_MGDL
+                    else ("tidak konsisten" if not lewat_tiga["selisih_berpasangan"]
+                          else "konsisten dan bermakna")),
+                "keputusan_8": (
+                    "docs/KEPUTUSAN_DIAMBIL.md. Konsistensi diukur SD selisih berpasangan; "
+                    "kebermaknaan diukur ambang ORDE BESARAN dari ISO 15197:2013 (+-15 mg/dL "
+                    "untuk glukosa < 100 mg/dL, KB-02_PERKENI-2021 hal. 25). Ambang itu "
+                    "ANALOGI BERDASAR LITERATUR, bukan penerapan ISO pada perbandingan "
+                    "model, dan diadopsi SETELAH hasil terlihat."),
                 "wilcoxon_p": round(float(stats.wilcoxon(rf_f, gb_f).pvalue), 4),
                 "ttest_rel_p": round(float(stats.ttest_rel(rf_f, gb_f).pvalue), 4),
                 "selisih_melampaui_sd": bool(abs((rf_f - gb_f).mean()) >
@@ -479,8 +513,13 @@ def main() -> int:
             "basis_kejadian": hipo_total,
             "rerata_lintas_fold": hipo_rerata,
             "uji_berpasangan_tingkat_fold": uji_hipo,
-            "aturan_pelaporan": ("Selisih yang tidak melampaui SD antar-fold tidak "
-                                 "dinarasikan sebagai keunggulan, berapa pun p-nya."),
+            "aturan_pelaporan": (
+                "KEPUTUSAN #8, 11 Agustus 2026 (docs/KEPUTUSAN_DIAMBIL.md). Dua pertanyaan "
+                "DIPISAH. Konsistensi: SD selisih berpasangan std(A-B) + Wilcoxon tingkat "
+                "fold. Kebermaknaan: ambang ORDE BESARAN dari ISO 15197:2013, +-15 mg/dL "
+                "untuk glukosa < 100 mg/dL. Ketiga definisi SD tetap dilaporkan. Ambang "
+                "klinis TIDAK berlaku bagi besaran bersatuan poin persen (mis. "
+                "sensitivitas); bagi besaran itu hanya konsistensi yang dapat dijawab."),
         },
         "checkpoint": {
             "direktori": jalur_pendek(cache_dir),
@@ -530,10 +569,18 @@ def main() -> int:
                   "TIDAK sepadan dan tidak boleh disandingkan.")
 
     fl = uji["RF_vs_GBM"]["fold_level"]
-    print(f"\nRF vs GBM tingkat fold: selisih RMSE {fl['selisih']:+.3f} "
-          f"(SD RF {fl['sd_antar_fold_RF']:.2f}, GBM {fl['sd_antar_fold_GBM']:.2f}) "
+    s3 = fl["sd_tiga_definisi"]
+    print(f"\nRF vs GBM tingkat fold: selisih RMSE {fl['selisih']:+.3f} mg/dL "
           f"| Wilcoxon p={fl['wilcoxon_p']}")
-    print(f"  -> {'layak dinarasikan' if fl['selisih_melampaui_sd'] else 'DI BAWAH SD antar-fold — jangan dinarasikan sebagai keunggulan'}")
+    print(f"  SD antar-fold  : gabungan {s3['gabungan_definisi_T2.1']:.3f} | "
+          f"maks {s3['maks_per_model']:.3f} | SELISIH {s3['selisih_berpasangan']:.3f}"
+          f"   (sepakat: {'ya' if fl['sd_sepakat'] else 'TIDAK'})")
+    print(f"  KONSISTEN?     : {'ya' if fl['KONSISTEN_definisi_terpilih'] else 'tidak'}"
+          f"   (definisi terpilih #8: SD selisih berpasangan)")
+    print(f"  BERMAKNA?      : {'ya' if fl['BERMAKNA_secara_klinis'] else 'tidak'}"
+          f"   ({fl['persen_dari_ambang_klinis']}% dari ambang "
+          f"{fl['ambang_klinis_mg_dL']:.0f} mg/dL, ISO 15197 sebagai ORDE BESARAN)")
+    print(f"  -> {fl['RUMUSAN']}")
     print(f"RF vs GBM tingkat sampel: Wilcoxon p={uji['RF_vs_GBM']['sample_level']['wilcoxon_p']:.2e} "
           f"(n={uji['RF_vs_GBM']['sample_level']['n']:,})")
 

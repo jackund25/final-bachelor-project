@@ -1342,7 +1342,7 @@
         "layak_menurut_definisi_T2.1": true
       }
     },
-    "aturan_pelaporan": "Selisih yang tidak melampaui SD antar-fold tidak dinarasikan sebagai keunggulan, berapa pun p-nya."
+    "aturan_pelaporan": "KEPUTUSAN #8, 11 Agustus 2026 (docs/KEPUTUSAN_DIAMBIL.md). Dua pertanyaan DIPISAH. Konsistensi: SD selisih berpasangan std(A-B) + Wilcoxon tingkat fold. Kebermaknaan: ambang ORDE BESARAN dari ISO 15197:2013, +-15 mg/dL untuk glukosa < 100 mg/dL. Ketiga definisi SD tetap dilaporkan. Ambang klinis TIDAK berlaku bagi besaran bersatuan poin persen (mis. sensitivitas); bagi besaran itu hanya konsistensi yang dapat dijawab."
   },
   "checkpoint": {
     "direktori": ".cache\\gradient_boosting_h6",
@@ -1416,6 +1416,23 @@
         "selisih": 0.358,
         "sd_antar_fold_RF": 1.152,
         "sd_antar_fold_GBM": 1.163,
+        "sd_tiga_definisi": {
+          "gabungan_definisi_T2.1": 1.171,
+          "maks_per_model": 1.163,
+          "selisih_berpasangan": 0.135
+        },
+        "melampaui_sd": {
+          "gabungan_definisi_T2.1": false,
+          "maks_per_model": false,
+          "selisih_berpasangan": true
+        },
+        "sd_sepakat": false,
+        "KONSISTEN_definisi_terpilih": true,
+        "ambang_klinis_mg_dL": 15.0,
+        "persen_dari_ambang_klinis": 2.39,
+        "BERMAKNA_secara_klinis": false,
+        "RUMUSAN": "KONSISTEN TETAPI TIDAK BERMAKNA",
+        "keputusan_8": "docs/KEPUTUSAN_DIAMBIL.md. Konsistensi diukur SD selisih berpasangan; kebermaknaan diukur ambang ORDE BESARAN dari ISO 15197:2013 (+-15 mg/dL untuk glukosa < 100 mg/dL, KB-02_PERKENI-2021 hal. 25). Ambang itu ANALOGI BERDASAR LITERATUR, bukan penerapan ISO pada perbandingan model, dan diadopsi SETELAH hasil terlihat.",
         "wilcoxon_p": 0.0312,
         "ttest_rel_p": 0.0019,
         "selisih_melampaui_sd": false

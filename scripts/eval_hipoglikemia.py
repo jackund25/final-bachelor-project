@@ -300,12 +300,26 @@ def main() -> None:
           f"LSTM {out['terlewat_ke_rentang_target']['LSTM']:,}")
     print(f"hipo BERAT terlewat        : RF {out['hipo_berat_terlewat']['RF']:,} | "
           f"LSTM {out['hipo_berat_terlewat']['LSTM']:,}")
-    print("\nUji berpasangan tingkat fold:")
+    # KEPUTUSAN #8 (docs/KEPUTUSAN_DIAMBIL.md): definisi SD yang dipakai WAJIB disebut.
+    # Skrip ini memakai SD GABUNGAN, np.std atas nilai kedua model disatukan. Itu BUKAN
+    # definisi yang ditetapkan #8 (SD selisih berpasangan), dan keduanya dapat memberi
+    # verdik berlawanan — pada h12 sensitivitas, gabungan 5,862 meloloskan selisih 6,203
+    # sedangkan SD selisih 6,877 menggugurkannya.
+    #
+    # Angka di sini SENGAJA TIDAK diubah: aturan sesi melarang mengubah angka lama, dan
+    # menghitung ulang dengan definisi baru berarti menulis ulang hasil T2.1. Yang
+    # diperbaiki hanya LABELNYA, supaya pembaca tahu definisi mana yang menghasilkan
+    # verdik ini. Verdik menurut definisi terpilih ada di K14 dan KEPUTUSAN_DIAMBIL.
+    print("\nUji berpasangan tingkat fold "
+          "(SD = GABUNGAN kedua model; definisi #8 adalah SD SELISIH — lihat K14):")
     for nama, u in uji.items():
-        layak = "layak dinarasikan" if u["selisih_melampaui_sd_antar_fold"] else \
-                "DI BAWAH SD antar-fold — jangan dinarasikan"
+        layak = "layak menurut SD gabungan" if u["selisih_melampaui_sd_antar_fold"] else \
+                "DI BAWAH SD gabungan — jangan dinarasikan"
         print(f"  {nama:<22} selisih {u['selisih_RF_minus_LSTM']:>+7.2f} "
-              f"(SD {u['sd_antar_fold_gabungan']:.2f}) p={u['wilcoxon_p']} -> {layak}")
+              f"(SD gabungan {u['sd_antar_fold_gabungan']:.2f}) p={u['wilcoxon_p']} "
+              f"-> {layak}")
+    print("  CATATAN: verdik final memakai SD selisih berpasangan (#8). Pada h12 "
+          "sensitivitas,\n  kedua definisi BERBEDA dan klaimnya berstatus RAPUH.")
     print(f"\nDisimpan ke {p}")
 
 

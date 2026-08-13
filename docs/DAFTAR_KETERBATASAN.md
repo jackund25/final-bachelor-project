@@ -634,19 +634,73 @@ dilaporkan sebagai satu daripada dua catatan terpisah:
 Keduanya: **pertanyaan tentang besaran dijawab dengan instrumen tentang perbedaan**, karena
 angka pembandingnya tidak pernah ditetapkan sebelum hasil terlihat.
 
-**Mengapa tidak diperbaiki dengan memilih satu definisi.** Pilihan apa pun yang diambil
-sekarang diambil **setelah tabel auditnya terlihat**, dan itu yang dilarang protokol Bagian C.
-Yang dikerjakan: melaporkan ketiga definisi di setiap tempat klaim keunggulan muncul, beserta
-medan `sd_sepakat`. Klaim yang sepakat dinyatakan sebagai hasil; klaim yang rapuh dinyatakan
-apa adanya dan **tidak dipakai menopang kesimpulan apa pun**.
+### DIPUTUSKAN 11 Agustus 2026 — dua pertanyaan dipisah (keputusan #8)
 
-**Dampak.** Empat klaim keunggulan berstatus rapuh dan tidak boleh dikutip Bab VI sebagai
-mantap. Penetapan skala derau dan ambang kebermaknaan menjadi **keputusan menggantung #8**
-untuk pembimbing.
+| pertanyaan | alat ukur yang ditetapkan |
+|---|---|
+| Apakah efeknya **konsisten**? | **SD selisih berpasangan** `std(A−B)` + Wilcoxon tingkat fold |
+| Apakah besarnya **bermakna**? | **Ambang orde besaran** ISO 15197:2013, ±15 mg/dL untuk glukosa < 100 mg/dL |
 
-**Perkiraan pekerjaan.** Melaporkan ketiga definisi di seluruh skrip: **kecil**, sudah
-dikerjakan untuk T4.1 dan T1.4. Menetapkan ambang secara sah untuk seluruh laporan:
-**keputusan, bukan pekerjaan**.
+Sumber ambang: `KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf` halaman cetak 25 — korpus
+proyek ini sendiri.
+
+#### Kedua pilihan ini MEMPERKETAT, bukan melonggarkan
+
+Ini wajib dinyatakan apa adanya, karena pemilihannya dilakukan **setelah tabel audit di atas
+terlihat**, dan hanya satu hal yang membuatnya dapat dipertahankan sama sekali.
+
+**SD selisih menggugurkan klaim yang menguntungkan narasi penelitian ini.** Sensitivitas
+hipoglikemia LSTM di +60 menit (−6,203) lolos di bawah definisi lama (SD gabungan 5,862) dan
+**gugur** di bawah SD selisih (6,877). Klaim itu menopang argumen bahwa keterbatasan
+prediktor bersifat klinis, bukan sekadar statistik — dan definisi yang dipilih mencabutnya.
+
+**Ambang klinis menggugurkan ketiga klaim RMSE yang justru LOLOS di bawah SD selisih.**
+Ketiganya konsisten antar-fold; ketiganya tidak bermakna.
+
+**Definisi yang dipilih merugikan pihak yang memilihnya.** Itu bukan kebetulan yang layak
+dibanggakan — itu satu-satunya alasan pemilihan pasca-hoc ini dapat dipertahankan.
+
+#### Dua kejujuran yang wajib menyertai ambang klinis
+
+1. **Diadopsi SETELAH hasil terlihat.** Yang membuatnya dapat dipertahankan: ia diturunkan
+   dari literatur eksternal dan **tidak menyebut satu pun angka proyek ini**, sehingga tidak
+   dapat dipilih demi meloloskan atau menggugurkan klaim tertentu.
+2. **Analogi berdasar literatur, BUKAN penerapan ISO pada perbandingan model.** ISO mengatur
+   akurasi alat ukur. Yang dipinjam hanya skala besarannya. Menyandingkan RMSE agregat
+   dengan toleransi per-pengukuran 95% sebagai persentase tidak sepadan satuan
+   statistiknya; yang sah adalah pernyataan **orde besaran**.
+
+#### Rumusan yang berlaku bagi keempat klaim rapuh
+
+| klaim | selisih | SD selisih | konsisten? | % ambang | rumusan |
+|---|---:|---:|---|---:|---|
+| T4.1 h6 RMSE RF vs GBM | +0,358 | 0,135 | ya | **2,39%** | **konsisten tetapi tidak bermakna** |
+| T4.1 h12 RMSE RF vs GBM | +0,976 | 0,388 | ya | **6,51%** | **konsisten tetapi tidak bermakna** |
+| T1.1 h6 RMSE RF vs LSTM | +0,478 | 0,239 | ya | **3,19%** | **konsisten tetapi tidak bermakna** |
+| T2.1 h12 sens RF vs LSTM | −6,203 | 6,877 | **tidak** | — | **RAPUH, tidak dinarasikan** |
+
+**Bagi ketiga klaim RMSE, rumusannya sama di bawah ketiga definisi SD.** Semuanya menyatakan
+efek yang konsisten, dan ambang klinislah yang menggugurkan kebermaknaannya — sehingga
+**pilihan definisi SD tidak relevan bagi ketiganya**.
+
+**T2.1 h12** gugur pada pertanyaan konsistensi, bukan kebermaknaan; **ambang mg/dL tidak
+berlaku baginya** karena satuannya poin persen deteksi. **T2.1 h6** (−10,429, SD selisih
+4,727) bertahan menurut ketiga definisi. Keunggulan sensitivitas hipoglikemia LSTM karena
+itu **mantap di +30 menit dan rapuh di +60 menit** — bukan "mantap pada kedua horizon".
+
+**Yang tetap berlaku:** setiap klaim keunggulan wajib **menyebut definisi yang dipakainya**,
+dan ketiga definisi tetap dilaporkan di keluaran skrip beserta medan `sd_sepakat`. Menetapkan
+satu definisi tidak menghapus kewajiban menunjukkan ketiganya.
+
+**Tidak satu pun angka lama diubah.** T1.1, T1.1b, T2.1, T3.x, dan T4.1 tetap sebagaimana
+tersimpan; yang berubah hanya cara pelaporannya.
+
+**Dampak setelah keputusan.** Tiga klaim RMSE dirumuskan sebagai *konsisten tetapi tidak
+bermakna*; satu klaim sensitivitas ditarik dari narasi. Nol klaim keunggulan akurasi yang
+tersisa dapat dikutip Bab VI sebagai keunggulan yang berarti secara klinis.
+
+**Perkiraan pekerjaan.** Melaporkan ketiga definisi di seluruh skrip: **selesai** untuk T4.1
+dan T1.4. Menerapkan rumusan baru ke naskah Bab VI: **penulisan, bukan pengukuran**.
 
 ---
 

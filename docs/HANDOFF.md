@@ -186,13 +186,23 @@ hipoglikemia **+21,03** di +30 mnt dan **+42,66** di +60 mnt — arah positif be
 menduga LEBIH TINGGI daripada kenyataan, yaitu arah yang **menyembunyikan** kejadian
 rendah. Ini penyusutan ke tengah pada kelas langka, bukan bias global.
 
-Uji berpasangan tingkat fold, dengan penjaga "selisih harus melampaui SD antar-fold":
+Uji berpasangan tingkat fold. **SD di tabel ini adalah SD GABUNGAN** (definisi lama T2.1),
+sedangkan definisi yang ditetapkan keputusan #8 adalah **SD selisih berpasangan** — dan
+keduanya berbeda verdik pada satu baris:
 
 |                | +30 mnt                                          | +60 mnt                                          |
 | -------------- | ------------------------------------------------ | ------------------------------------------------ |
-| sensitivitas   | −10,43 (SD 7,59) p=0,031 → **layak dinarasikan** | −6,20 (SD 5,86) p=0,031 → **layak**              |
-| MAE pada hipo  | +2,95 (SD 2,27) p=0,031 → layak                  | +4,56 (SD 5,21) p=0,063 → **jangan dinarasikan** |
-| bias pada hipo | +3,22 (SD 2,31) p=0,031 → layak                  | +4,63 (SD 5,28) p=0,063 → **jangan dinarasikan** |
+| sensitivitas   | −10,43 (SD gab 7,59) p=0,031 → **layak**        | −6,20 (SD gab 5,86) p=0,031 → **RAPUH** ⚠        |
+| MAE pada hipo  | +2,95 (SD gab 2,27) p=0,031 → layak              | +4,56 (SD gab 5,21) p=0,063 → **jangan dinarasikan** |
+| bias pada hipo | +3,22 (SD gab 2,31) p=0,031 → layak              | +4,63 (SD gab 5,28) p=0,063 → **jangan dinarasikan** |
+
+⚠ **Sensitivitas +60 mnt berstatus RAPUH dan TIDAK dinarasikan** (keputusan #8): selisih
+−6,203 lolos di bawah SD gabungan 5,862 tetapi **gugur** di bawah SD selisih berpasangan
+**6,877**. Ambang klinis mg/dL tidak berlaku baginya karena satuannya poin persen deteksi.
+
+**Rumusan yang berlaku:** keunggulan sensitivitas hipoglikemia LSTM **mantap di +30 menit**
+(konsisten menurut ketiga definisi, SD selisih 4,727) dan **rapuh di +60 menit** — bukan
+"mantap pada kedua horizon". Lihat K14 dan `docs/KEPUTUSAN_DIAMBIL.md`.
 
 **LSTM unggul pada hipoglikemia dan itu sah dinarasikan pada kedua horizon
 (sensitivitas).** Ini bersinggungan langsung dengan keputusan mempertahankan RF.
@@ -310,10 +320,26 @@ Sumber: `results/retrieval_realcases_kb12_final/crossfold.json`
 | pc_rag_classifier | **0,464 ± 0,036** | —             |
 | oracle            | **0,829 ± 0,005** | 0,686 ± 0,064 |
 
-**Temuan utamanya bukan angka absolutnya, melainkan pemisahannya:** PC-RAG unggul +0,051
-pada kasus **divergen** dan +0,001 pada kasus **natural** — yang kedua jauh di bawah SD
-antar-fold 0,068. Pengondisian prediksi memberi perbaikan nyata pada kasus divergen dan
-tidak memberi apa-apa pada kasus non-divergen, dan 13,2% jendela nyata termasuk divergen.
+**Temuan utamanya bukan angka absolutnya, melainkan pemisahannya:** PC-RAG unggul
+**+0,0505** pada kasus **divergen** dan **+0,0017** pada kasus **natural**. Diperiksa
+terhadap **ketiga** definisi SD (keputusan #8):
+
+| himpunan | selisih | SD gab | SD maks | **SD selisih** | verdik |
+| -------- | ------: | -----: | ------: | -------------: | ------ |
+| **divergen** | **+0,0505** | 0,0298 | 0,0209 | **0,0263** | **konsisten, ketiga definisi** |
+| natural | +0,0017 | 0,0628 | 0,0636 | 0,0136 | tidak konsisten, ketiga definisi |
+
+Pada kasus divergen selisihnya **positif di keenam fold** (0,048 · 0,070 · 0,067 · 0,084 ·
+0,025 · 0,009); pada natural tandanya berganti-ganti. **Klaim inti kontribusi karena itu
+bertahan utuh di bawah definisi yang lebih ketat sekalipun.**
+
+Pengondisian prediksi memberi perbaikan nyata pada kasus divergen dan tidak memberi apa-apa
+pada kasus non-divergen, dan 13,2% jendela nyata termasuk divergen.
+
+> **Batas yang tersisa:** ambang kebermaknaan ±15 mg/dL **tidak berlaku** bagi MRR. Untuk
+> metrik penelusuran hanya pertanyaan **konsistensi** yang dapat dijawab; apakah +0,0505 MRR
+> cukup besar untuk berarti bagi dokter **tetap terbuka**, dan tidak boleh dijawab diam-diam
+> dengan uji signifikansi.
 
 > **KOREKSI 11 Agustus 2026.** Tabel ini semula memuat angka dari korpus **`_kb12_sym`**
 > (standard 0,335 · pc_rag 0,383 · pc_rag_classifier 0,424 · oracle 0,794). Berkas
