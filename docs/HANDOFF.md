@@ -5,7 +5,7 @@
 > Berkas ini hanya memuat apa yang perlu diketahui untuk melanjutkan, tanpa perlu
 > menelusuri 5.500 baris journey.
 >
-> **Diperbarui:** 11 Agustus 2026 · **Commit:** `18b9609` · **Cabang:** `refaktor-tujuh-tugas`
+> **Diperbarui:** 13 Agustus 2026 · **Commit:** `38011ab` · **Cabang:** `refaktor-tujuh-tugas`
 
 ---
 
@@ -19,7 +19,7 @@
 | **T1.3**  | Cakupan konformal per rentang glukosa       | ✅ selesai                                           | `b29eef7`            |
 | **T1.4**  | Sensitivitas `tau` IOB/COB                  | ✅ selesai — **TIDAK PEKA**                          | `18b9609`            |
 | **T2.1**  | Galat khusus hipoglikemia, RF vs LSTM       | ✅ selesai                                           | `cd41fa3`            |
-| **T2.2**  | Verifikasi manusia atas pelabel relevansi   | ✅ selesai — **κ 0,2505 LEMAH**                      | `35d5866`, sesi ini  |
+| **T2.2**  | Verifikasi manusia atas pelabel relevansi   | ✅ putaran 1 — **κ 0,2505 LEMAH**; putaran 2 **disiapkan** | `35d5866`, `38011ab` |
 | **T3.1**  | Susunan kalimat kueri                       | ✅ selesai                                           | `11c8ac1`            |
 | **T3.2**  | Horizon sumber pengondisian retrieval       | ✅ selesai — **tidak berpengaruh**                   | `55bf85a`            |
 | **T3.3**  | Jangkauan varian kueri + bentuk aplikasi    | ✅ selesai — **D2 terbantah**                        | `3373dd5`            |
@@ -29,6 +29,7 @@
 | **T5.2**  | Ringkasan angka Bab VI                      | 🔄 jalan pertama selesai, **perlu diulang di akhir** | —                    |
 | **J7**    | Kontribusi fitur (MDI + permutasi)          | ✅ selesai                                           | `dc51c2f`, `09dc35e` |
 | —         | **TEMUAN: jangkauan penelusuran**           | ✅ selesai                                           | `e0b3cca`            |
+| —         | **Kestabilan RAGAS** (keputusan #7)         | ✅ selesai — 2 metrik **reprodusibel**, 1 **labil**  | `db969b0`            |
 
 **Seluruh percobaan Bab VI SELESAI.** Yang tersisa bukan percobaan:
 
@@ -36,8 +37,12 @@
    mentah 52,5%, di bawah tebakan konstan kelas mayoritas (77,5%). Aturan κ < 0,40 kini
    **TERPICU**: seluruh angka penelusuran wajib disertai kualifikasi eksplisit **di setiap
    penyebutannya**. Rincian di K1.
-2. **Delapan keputusan menggantung** menunggu pembimbing — lihat §7 dan
-   `docs/RINGKASAN_KEPUTUSAN_PEMBIMBING.md`.
+2. **KEDELAPAN keputusan SUDAH DIAMBIL** 11–13 Agustus 2026. Rujukan tunggal:
+   **`docs/KEPUTUSAN_DIAMBIL.md`**. Ringkasnya: RF tetap produksi (#5, pilihan D);
+   bundle RF, `chunk_size` 900, K12, dan `hanya_kondisi` tidak diubah (#2, #3, #4, #6);
+   kestabilan RAGAS diukur (#7); skala derau dan ambang kebermaknaan ditetapkan (#8);
+   T2.2 putaran kedua disiapkan (#1). `RINGKASAN_KEPUTUSAN_PEMBIMBING.md` tetap disimpan
+   sebagai bahan yang mendahuluinya.
 3. **Revisi naskah** yang sudah ditulis: Bab II subbab II.4.1 membenarkan pemilihan RF atas
    keterjelasan kontribusi fitur dan efisiensi komputasi, dan J7 + T4.1 melemahkan keduanya.
 
@@ -361,7 +366,7 @@ pada kasus non-divergen, dan 13,2% jendela nyata termasuk divergen.
 
 ---
 
-## 4. Keterbatasan K1–K14
+## 4. Keterbatasan K1–K15
 
 Rincian di `docs/DAFTAR_KETERBATASAN.md`.
 
@@ -381,8 +386,9 @@ Rincian di `docs/DAFTAR_KETERBATASAN.md`.
 | **K12** | Jangkauan penelusuran hanya 1,16% korpus                            | **Tinggi** — satu sebab bagi K2, jurang Hit@1/Hit@5, dan E01                             |
 | K13     | Angka penelusuran diukur pada bentuk kueri yang tidak dipakai aplikasi | Sedang — terukur pada T3.3; bentuk aplikasi **tidak lebih buruk** |
 | **K14** | Aturan pelaporan efek mencampur konsistensi dengan kebermaknaan | **Tinggi** — empat klaim keunggulan RAPUH; lima skala derau beredar |
+| **K15** | Jawaban sistem tidak tereproduksi; 1 dari 10 kasus berbalik MENOLAK menjawab | **Tinggi** — keandalan fungsional, bukan sekadar metrik |
 
-**Lima paling menentukan batas klaim: K1, K3, K5, K10, K14.** K12 tetap tinggi dampaknya.
+**Enam paling menentukan batas klaim: K1, K3, K5, K10, K14, dan K15.** K12 tetap tinggi dampaknya.
 K14 satu-satunya yang dapat diselesaikan **tanpa data baru**, lewat keputusan #8.
 
 Kestabilan metrik RAGAS: hanya `faithfulness` yang punya data run berulang (labil per

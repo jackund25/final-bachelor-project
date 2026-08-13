@@ -2,13 +2,19 @@
 
 > **Disusun 11 Agustus 2026 · commit `f9e521d` · cabang `refaktor-tujuh-tugas`**
 >
-> Seluruh percobaan Bab VI **selesai**, termasuk T2.2 yang diisi 11 Agustus 2026. Berkas ini
-> mengumpulkan **tujuh keputusan yang masih terbuka** — #1 sudah selesai dan disimpan sebagai
-> rekaman — masing-masing dengan angka pendukungnya dan pilihan yang tersedia. Saya menyiapkan
-> bahannya; keputusannya milik Anda.
+> ## ⚠ BERKAS INI SUDAH TIDAK BERLAKU SEBAGAI DAFTAR KEPUTUSAN TERBUKA
+>
+> **Kedelapan keputusan SUDAH DIAMBIL pada 11–13 Agustus 2026.** Rujukan tunggalnya kini
+> **`docs/KEPUTUSAN_DIAMBIL.md`**, yang memuat apa yang diputuskan, alasannya, dan **apa yang
+> tidak dikerjakan sebagai akibatnya**.
+>
+> Berkas ini **tetap disimpan** sebagai **bahan yang mendahului** keputusan itu: ia memuat
+> pilihan yang tersedia beserta angka pendukungnya pada saat keputusan belum diambil. Ia
+> berguna untuk menelusuri *mengapa* pilihan tertentu tersedia, **bukan** untuk mengetahui
+> apa yang akhirnya dipilih.
 >
 > Angka final siap kutip: `results/ringkasan_untuk_bab6.json` (**24 dari 24 sumber ADA**).
-> Rincian keterbatasan: `docs/DAFTAR_KETERBATASAN.md` (K1–K14).
+> Rincian keterbatasan: `docs/DAFTAR_KETERBATASAN.md` (**K1–K15**).
 > Rekaman kronologis: `docs/journey/part-8-uji-lanjutan-3-t33-t32-t41-t14.md`.
 
 ---
@@ -26,7 +32,7 @@
 | 7 | Uji kestabilan tiga metrik RAGAS? | ~90 panggilan LLM | status "belum diuji" |
 | 8 | **Tetapkan skala derau dan ambang kebermaknaan** | **pilihan metodologis** | **empat klaim keunggulan** |
 
-Dua yang paling menentukan isi laporan: **#5** dan **#8**.
+Dua yang paling menentukan isi laporan: **#5** dan **#8**. Keduanya sudah diputuskan — lihat `docs/KEPUTUSAN_DIAMBIL.md`.
 
 > **#1 sudah selesai (11 Agustus 2026), dan hasilnya mengikat.** Cohen's κ = **0,2505
 > (lemah)**; kesepakatan mentah 52,5%, **di bawah** tebakan konstan kelas mayoritas (77,5%).
