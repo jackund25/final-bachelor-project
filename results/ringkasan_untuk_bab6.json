@@ -1,18 +1,18 @@
 {
   "judul": "Ringkasan angka untuk Bab VI",
-  "dibuat": "2026-08-11T23:10:02",
-  "dibuat_utc": "2026-08-11T16:10:02+00:00",
-  "commit": "f9e521d2a4aa61025ca1889dfd05fe0e8b607a4f",
-  "commit_pendek": "f9e521d",
+  "dibuat": "2026-08-13T17:06:07",
+  "dibuat_utc": "2026-08-13T10:06:07+00:00",
+  "commit": "eb62dfd1a9bd8489014baa263714bffe62d73d38",
+  "commit_pendek": "eb62dfd",
   "cabang": "refaktor-tujuh-tugas",
-  "pohon_kerja_bersih": true,
+  "pohon_kerja_bersih": false,
   "cara_pakai": "Setiap blok memuat _status dan _diubah. Sebelum mengutip angka mana pun, periksa _diubah terhadap tanggal commit yang terakhir mengubah skrip penghasilnya. Angka yang lebih tua daripada perubahan skripnya adalah angka yang dihasilkan kode yang sudah tidak ada.",
   "peringatan_riwayat": "Dua kali dalam proyek ini angka kedaluwarsa nyaris terpakai: faktor konformal 3,3 yang mengkalibrasi model pra-Tugas 5, dan crossfold.json 5 Agustus yang berdampingan dengan berkas baru sambil terlihat sah. Medan _diubah ada untuk itu.",
   "n_sumber": 24,
-  "n_ada": 23,
+  "n_ada": 24,
   "n_tidak_ada": 0,
   "n_rusak": 0,
-  "n_menunggu_manusia": 1,
+  "n_menunggu_manusia": 0,
   "daftar_tidak_ada": [],
   "daftar_rusak": [],
   "daftar_medan_tidak_ditemukan": [],
@@ -3342,20 +3342,40 @@
       "catatan_model_max_length": "tokenizer melaporkan model_max_length=512, tetapi itu konfigurasi BERT-nya. sentence-transformers memotong pada 256. Memakai 512 akan membuat pemotongan tampak tidak pernah terjadi."
     },
     "retrieval.verifikasi_pelabel": {
-      "_status": "MENUNGGU PENILAIAN MANUSIA",
+      "_status": "ADA",
       "_berkas": "results/eval_rag/verifikasi_relevansi.json",
-      "_berkas_untuk_diisi": "evaluation/verifikasi_relevansi.csv",
-      "_n_pasangan": 40,
-      "_kolom": "penilaian_manusia",
-      "_nilai_sah": [
-        "hipoglikemia",
-        "hiperglikemia",
-        "normal",
-        "lain"
-      ],
-      "_kunci_jangan_dibuka": "evaluation/verifikasi_relevansi_KUNCI.json",
-      "_setelah_diisi": "python scripts/verifikasi_relevansi.py --nilai",
-      "_PERINGATAN": "Selama kolom penilaian_manusia kosong, T3.1, T3.2, dan T3.3 TIDAK BOLEH dinyatakan mantap. Seluruh metrik penelusuran (Hit@k, MRR, nDCG@5) memakai relevansi dari classify_chunk(), pelabel kata kunci — keterbatasan K1. Kesepakatan yang diukur T2.2 adalah BATAS ATAS seberapa jauh angka-angka itu mencerminkan relevansi sebenarnya."
+      "_diubah": "2026-08-13T17:01:05",
+      "n_dinilai": 40,
+      "kesepakatan_mentah_persen": 52.5,
+      "cohen_kappa": 0.2505,
+      "tafsir_kappa": "lemah",
+      "per_kelas": {
+        "hipoglikemia": {
+          "n_menurut_otomatis": 10,
+          "n_menurut_manusia": 7,
+          "presisi_otomatis": 0.5,
+          "recall_otomatis": 0.714
+        },
+        "hiperglikemia": {
+          "n_menurut_otomatis": 16,
+          "n_menurut_manusia": 31,
+          "presisi_otomatis": 0.875,
+          "recall_otomatis": 0.452
+        },
+        "normal": {
+          "n_menurut_otomatis": 4,
+          "n_menurut_manusia": 0,
+          "presisi_otomatis": 0.0,
+          "recall_otomatis": null
+        },
+        "lain": {
+          "n_menurut_otomatis": 10,
+          "n_menurut_manusia": 2,
+          "presisi_otomatis": 0.2,
+          "recall_otomatis": 1.0
+        }
+      },
+      "aturan_pelaporan": "kappa < 0,40: angka retrieval tidak boleh dilaporkan tanpa kualifikasi eksplisit di setiap penyebutannya. kappa 0,40-0,60: dilaporkan dengan catatan. kappa > 0,60: pelabel dapat dianggap memadai untuk tujuan ini."
     },
     "generasi.ragas": {
       "_status": "ADA",
