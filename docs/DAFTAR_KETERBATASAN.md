@@ -27,16 +27,74 @@ Tiga akibat terukur:
 | Sirkularitas dengan metode leksikal | Kueri memuat kata kunci pelabel: hipoglikemia **7 dari 18** bobot, hiperglikemia 5 dari 26, normal 5 dari 11 |
 
 **Mengapa tidak diperbaiki.** Memerlukan pelabelan manual oleh klinisi atas ratusan
-pasangan kueri-chunk. T2.2 menyiapkan verifikasi sampel 30-50 pasangan, tetapi itu
-mengukur *tingkat kesesuaian* pelabel, bukan menggantikannya.
+pasangan kueri-chunk. T2.2 mengukur *tingkat kesesuaian* pelabel, bukan menggantikannya.
 
-**Dampak.** Menjadi **batas atas** bagi seluruh angka penelusuran yang pernah dilaporkan.
-Skor tidak boleh dibaca sebagai mutu penelusuran mutlak, hanya sebagai perbandingan
-antar-konfigurasi **yang memakai pelabel sama**. Sirkularitas membuat hasil B3 (BM25) tidak
-sah dipakai sebagai bukti keunggulan.
+### T2.2 SUDAH DIUKUR — dan hasilnya lemah (11 Agustus 2026)
 
-**Perkiraan pekerjaan.** Verifikasi sampel: **sedang**. Penggantian penuh dengan pelabel
-manusia: **di luar lingkup**.
+40 pasangan dinilai manusia secara buta (label otomatis disembunyikan, urutan diacak
+berbenih tetap, pasangan diambil dari retrieval sungguhan).
+
+| | |
+|---|---|
+| kesepakatan mentah | **52,5%** |
+| **Cohen's κ** | **0,2505 — lemah** |
+| tebakan konstan "hiperglikemia" akan mencapai | **77,5%** |
+
+**Pelabel otomatis kalah dari penebak konstan kelas mayoritas** pada sampel ini. Itu bukan
+pengganti κ — κ sudah mengoreksi kesepakatan kebetulan lewat kedua marginal — melainkan cara
+kedua membaca angka yang sama, dan arahnya sama-sama merugikan.
+
+**Pola ketidaksesuaian: TERLALU KETAT, bukan terlalu longgar.** 17 dari 19 ketidaksesuaian
+adalah pelabel gagal mengenali hiperglikemia:
+
+| pelabel otomatis | penilaian manusia | n |
+|---|---|---:|
+| `lain` | hiperglikemia | 8 |
+| `hipoglikemia` | hiperglikemia | 5 |
+| `normal` | hiperglikemia | 4 |
+| `hiperglikemia` | hipoglikemia | 2 |
+
+| kelas | presisi otomatis | recall otomatis |
+|---|---:|---:|
+| hipoglikemia | 0,500 | 0,714 |
+| hiperglikemia | 0,875 | **0,452** |
+| normal | **0,000** | tak terdefinisi (manusia tak pernah memilihnya) |
+| `lain` | **0,200** | 1,000 |
+
+**Mekanismenya terukur.** Pelabel memberi kelas hanya bila kata kuncinya cocok; **10 dari 40
+potongan berbobot kata kunci NOL** dan otomatis jatuh ke `lain`. Potongan yang tidak
+disepakati berbobot lebih rendah (2,32 lawan 3,29), sehingga kegagalannya terkonsentrasi pada
+teks klinis yang tidak memakai kosakata ambang yang diharapkan pelabel. Kesepakatan paling
+buruk pada potongan yang dimunculkan kueri kondisi **normal**: 4 dari 13 (30,8%).
+
+**Aturan yang kini TERPICU.** Aturan yang sudah ditanam pada keluaran T2.2 sejak sebelum
+penilaian: **κ < 0,40 → angka penelusuran tidak boleh dilaporkan tanpa kualifikasi eksplisit
+di setiap penyebutannya.** Berlaku untuk Hit@1, Hit@5, MRR, nDCG@5, T3.1, T3.2, T3.3,
+crossfold, realcases, dan K12.
+
+**Yang TETAP sah:** perbandingan **antar-konfigurasi yang memakai pelabel sama** tetap dapat
+dibaca sebagai perbandingan relatif — dan itulah pemakaiannya di seluruh laporan.
+
+**Yang menjadi LEBIH rapuh, dan belum diperiksa:** kesalahan pelabel bersifat **sistematis**
+(gagal mengenali hiperglikemia), bukan acak. Kesalahan sistematis **dapat** mencondongkan
+perbandingan antar-konfigurasi bila kedua konfigurasi berbeda dalam kelas apa yang mereka
+ambil. Itu belum diukur, dan tidak boleh diasumsikan tidak terjadi.
+
+**Kualifikasi atas angka κ itu sendiri.** Sebaran penilaian manusia sangat timpang pada
+sampel ini — 31 hiperglikemia, 7 hipoglikemia, 2 `lain`, dan **nol `normal`** — sehingga baik
+κ maupun perbandingan terhadap tebakan mayoritas bersifat **labil**. Tiga penilaian ditulis
+sebagai teks bebas dan dikodekan atas konfirmasi eksplisit pembimbing; teks aslinya disimpan
+verbatim di `evaluation/verifikasi_relevansi_CATATAN.json`. Salah satunya menunjuk
+keterbatasan skema itu sendiri: satu potongan dapat membahas hiperglikemia **dan**
+hipoglikemia sekaligus, dan skema empat kelas berlabel tunggal memaksa memilih satu.
+
+**Dampak.** Menjadi **batas atas terukur** — bukan lagi asumsi — bagi seluruh angka
+penelusuran yang pernah dilaporkan. Skor tidak boleh dibaca sebagai mutu penelusuran mutlak.
+Sirkularitas membuat hasil B3 (BM25) tidak sah dipakai sebagai bukti keunggulan.
+
+**Perkiraan pekerjaan.** Verifikasi sampel: **selesai**. Penggantian penuh dengan pelabel
+manusia: **di luar lingkup**. Memperluas sampel agar κ lebih stabil, dan memeriksa apakah
+kesalahan sistematis mencondongkan perbandingan antar-konfigurasi: **sedang**.
 
 ---
 

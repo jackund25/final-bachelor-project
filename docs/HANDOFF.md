@@ -19,7 +19,7 @@
 | **T1.3**  | Cakupan konformal per rentang glukosa       | ✅ selesai                                           | `b29eef7`            |
 | **T1.4**  | Sensitivitas `tau` IOB/COB                  | ✅ selesai — **TIDAK PEKA**                          | `18b9609`            |
 | **T2.1**  | Galat khusus hipoglikemia, RF vs LSTM       | ✅ selesai                                           | `cd41fa3`            |
-| **T2.2**  | Verifikasi manusia atas pelabel relevansi   | ⏳ **menunggu pengisian manual**                     | `35d5866`            |
+| **T2.2**  | Verifikasi manusia atas pelabel relevansi   | ✅ selesai — **κ 0,2505 LEMAH**                      | `35d5866`, sesi ini  |
 | **T3.1**  | Susunan kalimat kueri                       | ✅ selesai                                           | `11c8ac1`            |
 | **T3.2**  | Horizon sumber pengondisian retrieval       | ✅ selesai — **tidak berpengaruh**                   | `55bf85a`            |
 | **T3.3**  | Jangkauan varian kueri + bentuk aplikasi    | ✅ selesai — **D2 terbantah**                        | `3373dd5`            |
@@ -32,8 +32,10 @@
 
 **Seluruh percobaan Bab VI SELESAI.** Yang tersisa bukan percobaan:
 
-1. **T2.2** menunggu pengisian manusia — 40 baris pada `evaluation/verifikasi_relevansi.csv`.
-   Ia mengunci kualifikasi K1 atas seluruh angka penelusuran, termasuk T3.1, T3.2, dan T3.3.
+1. **T2.2 SUDAH DIISI, dan hasilnya mengikat.** Cohen's κ = **0,2505 (lemah)**; kesepakatan
+   mentah 52,5%, di bawah tebakan konstan kelas mayoritas (77,5%). Aturan κ < 0,40 kini
+   **TERPICU**: seluruh angka penelusuran wajib disertai kualifikasi eksplisit **di setiap
+   penyebutannya**. Rincian di K1.
 2. **Delapan keputusan menggantung** menunggu pembimbing — lihat §7 dan
    `docs/RINGKASAN_KEPUTUSAN_PEMBIMBING.md`.
 3. **Revisi naskah** yang sudah ditulis: Bab II subbab II.4.1 membenarkan pemilihan RF atas
@@ -487,7 +489,7 @@ mengalahkan angka dari dokumentasi vendor.**
 
 | #     | Keputusan                                                                           | Konteks                                                                                                                                                                                | Konsekuensi bila ditunda                                                                                   |
 | ----- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **1** | **Isi `evaluation/verifikasi_relevansi.csv`** (40 baris, kolom `penilaian_manusia`) | Satu-satunya cara mengukur K1. Jangan buka `_KUNCI.json` sebelum selesai. Lalu jalankan `python scripts/verifikasi_relevansi.py --nilai`                                               | T3.1 dan T3.2 **tidak boleh dinyatakan mantap**; seluruh angka penelusuran tetap tanpa kualifikasi terukur |
+| ~~**1**~~ | ~~Isi `evaluation/verifikasi_relevansi.csv`~~ — **SELESAI** | κ = 0,2505 (**lemah**), kesepakatan mentah 52,5% lawan tebakan mayoritas 77,5%. Pelabel **terlalu ketat**: recall hiperglikemia 0,452; presisi `lain` 0,200; presisi `normal` 0,000. Rincian di K1 | **Tidak lagi menggantung.** Aturan κ<0,40 TERPICU: seluruh angka penelusuran wajib berkualifikasi eksplisit di setiap penyebutannya |
 | **2** | **Ganti bundle produksi RF ke 50/12?**                                              | 297,15 → 11,09 MB dengan biaya 0,081 mg/dL RMSE. Nisbah terhadap LSTM turun 2.396× → 89×. T1.1b **tidak** membuktikan kesetaraan                                                       | Narasi keterterapan tetap memakai angka 297 MB yang bukan batas kemampuan RF                               |
 | **3** | **Tinjau ulang `chunk_size` 900?**                                                  | Dipertahankan pada Tahap 0 karena selisih B4 tidak signifikan (p=0,078). Saat itu **belum diketahui** 900 membuang 8,23% token korpus dan KB-03 kehilangan 48,84% chunk                | Seluruh angka penelusuran tetap diukur pada korpus yang sebagian tidak terindeks                           |
 | **4** | **Kerjakan K12?** (perbanyak frasa kondisi, naikkan `fetch_k`)                      | Pekerjaan kecil–sedang, keduanya parameter tanpa indeks ulang. Kandidat perbaikan berdampak tertinggi yang tersisa                                                                     | 98,84% korpus tetap tak terjangkau; K2 dan jurang Hit@1/Hit@5 tetap tanpa perbaikan                        |

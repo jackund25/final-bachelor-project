@@ -2,11 +2,12 @@
 
 > **Disusun 11 Agustus 2026 · commit `f9e521d` · cabang `refaktor-tujuh-tugas`**
 >
-> Seluruh percobaan Bab VI **selesai**. Berkas ini mengumpulkan **delapan keputusan** yang
-> tidak dapat saya ambil sendiri, masing-masing dengan angka pendukungnya dan pilihan yang
-> tersedia. Saya menyiapkan bahannya; keputusannya milik Anda.
+> Seluruh percobaan Bab VI **selesai**, termasuk T2.2 yang diisi 11 Agustus 2026. Berkas ini
+> mengumpulkan **tujuh keputusan yang masih terbuka** — #1 sudah selesai dan disimpan sebagai
+> rekaman — masing-masing dengan angka pendukungnya dan pilihan yang tersedia. Saya menyiapkan
+> bahannya; keputusannya milik Anda.
 >
-> Angka final siap kutip: `results/ringkasan_untuk_bab6.json` (23 dari 24 sumber ADA).
+> Angka final siap kutip: `results/ringkasan_untuk_bab6.json` (**24 dari 24 sumber ADA**).
 > Rincian keterbatasan: `docs/DAFTAR_KETERBATASAN.md` (K1–K14).
 > Rekaman kronologis: `docs/journey/part-8-uji-lanjutan-3-t33-t32-t41-t14.md`.
 
@@ -16,7 +17,7 @@
 
 | # | Keputusan | Sifat | Menghambat apa |
 | - | --------- | ----- | -------------- |
-| 1 | Isi 40 pasangan T2.2 | **pekerjaan manusia** | kualifikasi K1 atas SELURUH angka penelusuran |
+| ~~1~~ | ~~Isi 40 pasangan T2.2~~ **SELESAI** | κ = **0,2505 (lemah)** | aturan κ<0,40 **TERPICU** — lihat di bawah |
 | 2 | Ganti bundle RF ke 50/12? | pilihan rekayasa | narasi keterterapan |
 | 3 | Tinjau ulang `chunk_size` 900? | pilihan rancangan | seluruh angka penelusuran |
 | 4 | Kerjakan K12 (jangkauan 1,16%)? | pekerjaan kecil–sedang | K2, jurang Hit@1/Hit@5, E01 |
@@ -25,12 +26,29 @@
 | 7 | Uji kestabilan tiga metrik RAGAS? | ~90 panggilan LLM | status "belum diuji" |
 | 8 | **Tetapkan skala derau dan ambang kebermaknaan** | **pilihan metodologis** | **empat klaim keunggulan** |
 
-Dua yang paling menentukan isi laporan: **#5** dan **#8**. Satu yang paling murah dan
-mengunci paling banyak: **#1**.
+Dua yang paling menentukan isi laporan: **#5** dan **#8**.
+
+> **#1 sudah selesai (11 Agustus 2026), dan hasilnya mengikat.** Cohen's κ = **0,2505
+> (lemah)**; kesepakatan mentah 52,5%, **di bawah** tebakan konstan kelas mayoritas (77,5%).
+> Pelabel **terlalu ketat**: recall hiperglikemia 0,452, presisi `lain` 0,200, presisi
+> `normal` 0,000, dan 17 dari 19 ketidaksesuaian adalah kegagalan mengenali hiperglikemia.
+>
+> **Aturan yang kini berlaku — dan ia ditanam sebelum penilaian dilakukan, bukan dipilih
+> sesudahnya:** κ < 0,40 → angka penelusuran **tidak boleh dilaporkan tanpa kualifikasi
+> eksplisit di setiap penyebutannya**. Berlaku atas Hit@1, Hit@5, MRR, nDCG@5, T3.1, T3.2,
+> T3.3, crossfold, realcases, dan K12.
+>
+> **Tidak satu pun angka ditarik.** Perbandingan antar-konfigurasi pada pelabel yang sama
+> tetap sah. Yang belum diperiksa: kesalahan pelabel bersifat **sistematis**, dan kesalahan
+> sistematis dapat mencondongkan perbandingan antar-konfigurasi bila keduanya berbeda dalam
+> kelas apa yang mereka ambil. Rincian di **K1**.
 
 ---
 
-## #1 — Isi 40 pasangan T2.2 (pekerjaan manusia, bukan keputusan)
+## #1 — Isi 40 pasangan T2.2 — **SELESAI 11 Agustus 2026**
+
+> Bagian ini disimpan sebagai rekaman prosedurnya. Hasil dan konsekuensinya ada di
+> ikhtisar di atas dan di **K1**; jangan dibaca sebagai pekerjaan yang masih menunggu.
 
 **Letak berkasnya:** `evaluation/verifikasi_relevansi.csv` — 40 baris, isi **hanya** kolom
 `penilaian_manusia`. Nilai yang sah: `hipoglikemia` | `hiperglikemia` | `normal` | `lain`.
@@ -288,7 +306,10 @@ Ditulis supaya tidak ada yang mengira hal-hal ini sudah terukur.
 
 ## Bila ingin mengerjakan satu hal saja
 
-**Isi 40 pasangan T2.2** (#1). Ia satu-satunya yang: tidak menuntut komputasi, memakan waktu
-di bawah dua jam, dan **mengunci kualifikasi tiga percobaan sekaligus** (T3.1, T3.2, T3.3)
-beserta setiap angka penelusuran di laporan. Delapan keputusan lain dapat menunggu; yang ini
-menghalangi paling banyak dengan biaya paling kecil.
+**#8 — tetapkan skala derau dan ambang kebermaknaan.** Setelah T2.2 selesai, inilah yang
+tersisa dan tidak menuntut komputasi sama sekali: ia **keputusan, bukan pekerjaan**. Ia
+membebaskan empat klaim keunggulan dari status RAPUH, dan tanpanya Bab VI harus menyebut
+definisi SD pada setiap klaim satu per satu.
+
+Kalau yang dicari justru yang paling mengubah isi laporan, itu **#5** — dan #5 menuntut
+keputusan tentang naskah II.4.1 yang sudah ditulis, bukan sekadar tentang model.
