@@ -353,17 +353,63 @@ itu. RAGAS 0.2.6 **tidak memaparkannya**: medan `traces` dan `ragas_traces` pada
 `n_pernyataan_faithfulness` disimpan kosong sebagai catatan bahwa angka dicari dan tidak
 ditemukan. **Tanpa angka itu, penafsiran skor terbatas.**
 
-**Kestabilan tiga metrik lain BELUM DIUJI.**
+### Kestabilan tiga metrik lain — SUDAH DIUKUR 13 Agustus 2026 (keputusan #7)
 
-| Metrik | Run berulang | Status |
-|---|---|---|
-| faithfulness | ada (2 run) | labil per kasus |
-| answer_relevancy | tidak ada | **belum diuji** |
-| context_precision | tidak ada | **belum diuji** |
-| context_recall | tidak ada | **belum diuji** |
+Dua jalan penuh berkonfigurasi identik, sepuluh kasus, juri `gemini-3.5-flash-lite`.
+Hasilnya **membalik dugaan**, dan membelah ketiga metrik menjadi dua kelompok yang berlawanan.
 
-Ketiganya **tidak boleh diasumsikan stabil**. Mengujinya memerlukan run ulang dengan cache
-dikosongkan, sekitar 90 panggilan.
+| metrik | median \|selisih\| | maks | Δ rerata | kasus tak bergerak | status |
+|---|---:|---:|---:|---:|---|
+| faithfulness (acuan) | 0,180 | 0,560 | +0,003 | — | labil per kasus, rerata stabil |
+| **answer_relevancy** | **0,056** | **0,685** | **−0,176** | 1 dari 10 | **rerata TIDAK stabil** |
+| **context_precision** | **0,000** | **0,000** | **0,000** | **9 dari 9** | **reprodusibel sempurna** |
+| **context_recall** | **0,000** | **0,000** | **0,000** | **10 dari 10** | **reprodusibel sempurna** |
+
+**Sumber variasinya bukan juri, melainkan PEMBANGKIT.** Suhu juri **0,0**; suhu pembangkit
+**0,2**. Kedua metrik konteks tidak memakai jawaban sama sekali — hanya pertanyaan, konteks,
+dan acuan — sehingga keduanya **tidak bergerak satu digit pun**. `answer_relevancy` memakai
+jawaban, dan bergerak pada 9 dari 10 kasus.
+
+Bukti bahwa ini temuan dan bukan artefak cache: `answer_relevancy` bergerak pada jalan yang
+sama, sehingga `--no-cache` terbukti berlaku.
+
+**Dua lonjakan `answer_relevancy` adalah PENOLAKAN MENJAWAB, bukan penilaian yang berubah.**
+E01 jatuh 0,685 → **0,000** dan E03 0,650 → **0,000**. RAGAS menilai jawaban *noncommittal*
+sebagai nol. Pada jalan kedua kedua jawaban itu berbunyi *"informasi spesifik … tidak
+tercantum pada kutipan konteks saat ini"* dan *"belum tersedia pada knowledge base saat
+ini"*, sedangkan pada jalan pertama keduanya menjawab dengan angka.
+
+#### Akibat yang mengikat, dan ia berbeda per metrik
+
+**`context_precision` dan `context_recall`: aturan "hanya rerata" TIDAK perlu diperluas ke
+keduanya.** Nilai per kasusnya reprodusibel dan dapat dipertanggungjawabkan. Kualifikasi K2
+tentang korpus evaluasi sempit tetap berlaku penuh — **reprodusibel tidak berarti sahih**.
+
+**`answer_relevancy`: jalan keluar "kutip reratanya saja" TIDAK berlaku.** Rerata
+`faithfulness` selamat karena guncangannya saling meniadakan; pada `answer_relevancy` kedua
+guncangan **searah** (keduanya turun ke nol), sehingga reratanya sendiri bergeser **0,176**.
+Angka **0,763 yang dilaporkan tidak tereproduksi** — jalan kedua menghasilkan **0,587**.
+
+> **Setiap penyebutan `answer_relevancy` wajib menyertakan rentang dua jalan
+> (0,587–0,763), bukan angka tunggal.**
+
+Sesuai aturan yang dipra-registrasi, angka 0,763 **tidak diganti** menjadi 0,587 maupun
+menjadi reratanya; yang ditambahkan hanya pernyataan kestabilannya.
+
+#### Temuan sampingan tentang SISTEM, bukan tentang metrik
+
+Dua dari sepuluh kasus berubah dari **menjawab dengan angka** menjadi **menolak menjawab**,
+pada pertanyaan, korpus, dan konfigurasi yang identik. Yang berbeda hanya penarikan sampel
+pembangkit pada suhu 0,2.
+
+Ini sifat **sistem pendukung keputusan klinis**-nya, bukan sifat alat ukurnya: dokter yang
+menanyakan hal yang sama dua kali dapat memperoleh jawaban pada satu kesempatan dan
+penolakan pada kesempatan lain. **Batas klaim:** n = 2 dari 10 pada satu perbandingan —
+cukup untuk menyatakan peristiwa itu **terjadi**, tidak cukup untuk menyatakan **seberapa
+sering**.
+
+Arah perubahannya menenangkan (menolak, bukan mengarang — konsisten dengan Tahap D), tetapi
+pengaman itu **bertumpu pada perilaku model**, bukan mekanisme deterministik — yaitu K3.
 
 **Aturan pelaporan yang mengikat** — ditanamkan pada `results/ragas/summary.json` dan
 `results/ragas/contoh_kasus_bab6.json`:
