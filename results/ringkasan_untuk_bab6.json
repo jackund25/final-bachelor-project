@@ -1,11 +1,11 @@
 {
   "judul": "Ringkasan angka untuk Bab VI",
-  "dibuat": "2026-08-13T17:06:24",
-  "dibuat_utc": "2026-08-13T10:06:24+00:00",
-  "commit": "6aa736dfde60315901efc6bbda32e035048be108",
-  "commit_pendek": "6aa736d",
+  "dibuat": "2026-08-13T18:10:59",
+  "dibuat_utc": "2026-08-13T11:10:59+00:00",
+  "commit": "db969b05e4dee98c830ed8a04bac55f13feb218e",
+  "commit_pendek": "db969b0",
   "cabang": "refaktor-tujuh-tugas",
-  "pohon_kerja_bersih": true,
+  "pohon_kerja_bersih": false,
   "cara_pakai": "Setiap blok memuat _status dan _diubah. Sebelum mengutip angka mana pun, periksa _diubah terhadap tanggal commit yang terakhir mengubah skrip penghasilnya. Angka yang lebih tua daripada perubahan skripnya adalah angka yang dihasilkan kode yang sudah tidak ada.",
   "peringatan_riwayat": "Dua kali dalam proyek ini angka kedaluwarsa nyaris terpakai: faktor konformal 3,3 yang mengkalibrasi model pra-Tugas 5, dan crossfold.json 5 Agustus yang berdampingan dengan berkas baru sambil terlihat sah. Medan _diubah ada untuk itu.",
   "n_sumber": 24,
@@ -28,6 +28,13 @@
     ],
     "catatan_cacah_provenans": "Medan yang TIDAK TERCATAT tidak dapat diverifikasi dari artefak. Bukti bahwa berkas ini berasal dari lambda_mult 0,0 hanyalah nama direktorinya (_kb12_final) dan catatan journey part-5. Memperbaikinya menuntut skrip crossfold menuliskan konfigurasi efektifnya, lalu menjalankan ulang 2 jam 3 menit — di luar lingkup sesi ini, masuk daftar pekerjaan menunggu."
   },
+  "sumber_belum_tercommit": [
+    {
+      "kunci": "generasi.contoh_kasus",
+      "berkas": "results/ragas/contoh_kasus_bab6.json",
+      "git": "M"
+    }
+  ],
   "keterbatasan": "docs/DAFTAR_KETERBATASAN.md",
   "data": {
     "prediksi.rf_vs_lstm_h6": {
@@ -284,7 +291,7 @@
     "prediksi.gradient_boosting_h6": {
       "_status": "ADA",
       "_berkas": "results/eval_prediksi/gradient_boosting_h6.json",
-      "_diubah": "2026-08-11T20:47:28",
+      "_diubah": "2026-08-13T17:31:44",
       "rerata_lintas_fold": {
         "RF": {
           "RMSE": [
@@ -421,6 +428,23 @@
             "selisih": 0.358,
             "sd_antar_fold_RF": 1.152,
             "sd_antar_fold_GBM": 1.163,
+            "sd_tiga_definisi": {
+              "gabungan_definisi_T2.1": 1.171,
+              "maks_per_model": 1.163,
+              "selisih_berpasangan": 0.135
+            },
+            "melampaui_sd": {
+              "gabungan_definisi_T2.1": false,
+              "maks_per_model": false,
+              "selisih_berpasangan": true
+            },
+            "sd_sepakat": false,
+            "KONSISTEN_definisi_terpilih": true,
+            "ambang_klinis_mg_dL": 15.0,
+            "persen_dari_ambang_klinis": 2.39,
+            "BERMAKNA_secara_klinis": false,
+            "RUMUSAN": "KONSISTEN TETAPI TIDAK BERMAKNA",
+            "keputusan_8": "docs/KEPUTUSAN_DIAMBIL.md. Konsistensi diukur SD selisih berpasangan; kebermaknaan diukur ambang ORDE BESARAN dari ISO 15197:2013 (+-15 mg/dL untuk glukosa < 100 mg/dL, KB-02_PERKENI-2021 hal. 25). Ambang itu ANALOGI BERDASAR LITERATUR, bukan penerapan ISO pada perbandingan model, dan diadopsi SETELAH hasil terlihat.",
             "wilcoxon_p": 0.0312,
             "ttest_rel_p": 0.0019,
             "selisih_melampaui_sd": false
@@ -755,13 +779,13 @@
             "layak_menurut_definisi_T2.1": true
           }
         },
-        "aturan_pelaporan": "Selisih yang tidak melampaui SD antar-fold tidak dinarasikan sebagai keunggulan, berapa pun p-nya."
+        "aturan_pelaporan": "KEPUTUSAN #8, 11 Agustus 2026 (docs/KEPUTUSAN_DIAMBIL.md). Dua pertanyaan DIPISAH. Konsistensi: SD selisih berpasangan std(A-B) + Wilcoxon tingkat fold. Kebermaknaan: ambang ORDE BESARAN dari ISO 15197:2013, +-15 mg/dL untuk glukosa < 100 mg/dL. Ketiga definisi SD tetap dilaporkan. Ambang klinis TIDAK berlaku bagi besaran bersatuan poin persen (mis. sensitivitas); bagi besaran itu hanya konsistensi yang dapat dijawab."
       }
     },
     "prediksi.gradient_boosting_h12": {
       "_status": "ADA",
       "_berkas": "results/eval_prediksi/gradient_boosting_h12.json",
-      "_diubah": "2026-08-11T20:47:37",
+      "_diubah": "2026-08-13T17:31:54",
       "rerata_lintas_fold": {
         "RF": {
           "RMSE": [
@@ -898,6 +922,23 @@
             "selisih": 0.976,
             "sd_antar_fold_RF": 1.499,
             "sd_antar_fold_GBM": 1.443,
+            "sd_tiga_definisi": {
+              "gabungan_definisi_T2.1": 1.55,
+              "maks_per_model": 1.499,
+              "selisih_berpasangan": 0.388
+            },
+            "melampaui_sd": {
+              "gabungan_definisi_T2.1": false,
+              "maks_per_model": false,
+              "selisih_berpasangan": true
+            },
+            "sd_sepakat": false,
+            "KONSISTEN_definisi_terpilih": true,
+            "ambang_klinis_mg_dL": 15.0,
+            "persen_dari_ambang_klinis": 6.51,
+            "BERMAKNA_secara_klinis": false,
+            "RUMUSAN": "KONSISTEN TETAPI TIDAK BERMAKNA",
+            "keputusan_8": "docs/KEPUTUSAN_DIAMBIL.md. Konsistensi diukur SD selisih berpasangan; kebermaknaan diukur ambang ORDE BESARAN dari ISO 15197:2013 (+-15 mg/dL untuk glukosa < 100 mg/dL, KB-02_PERKENI-2021 hal. 25). Ambang itu ANALOGI BERDASAR LITERATUR, bukan penerapan ISO pada perbandingan model, dan diadopsi SETELAH hasil terlihat.",
             "wilcoxon_p": 0.0312,
             "ttest_rel_p": 0.0025,
             "selisih_melampaui_sd": false
@@ -1232,7 +1273,7 @@
             "layak_menurut_definisi_T2.1": false
           }
         },
-        "aturan_pelaporan": "Selisih yang tidak melampaui SD antar-fold tidak dinarasikan sebagai keunggulan, berapa pun p-nya."
+        "aturan_pelaporan": "KEPUTUSAN #8, 11 Agustus 2026 (docs/KEPUTUSAN_DIAMBIL.md). Dua pertanyaan DIPISAH. Konsistensi: SD selisih berpasangan std(A-B) + Wilcoxon tingkat fold. Kebermaknaan: ambang ORDE BESARAN dari ISO 15197:2013, +-15 mg/dL untuk glukosa < 100 mg/dL. Ketiga definisi SD tetap dilaporkan. Ambang klinis TIDAK berlaku bagi besaran bersatuan poin persen (mis. sensitivitas); bagi besaran itu hanya konsistensi yang dapat dijawab."
       }
     },
     "prediksi.kontribusi_fitur": {
@@ -3380,7 +3421,7 @@
     "generasi.ragas": {
       "_status": "ADA",
       "_berkas": "results/ragas/summary.json",
-      "_diubah": "2026-08-09T21:48:15",
+      "_diubah": "2026-08-13T17:52:42",
       "isi": {
         "n": 10,
         "metrik": {
@@ -3391,13 +3432,17 @@
         "ATURAN_PELAPORAN_MENGIKAT": [
           "1. Skor faithfulness PER KASUS TIDAK BOLEH dikutip. Dua run identik menghasilkan selisih absolut median 0,18 dan maksimum 0,56 (E04: 0,56 -> 0,00).",
           "2. Perbandingan antarmodel pada SATU kasus TIDAK SAH, termasuk E02 yang selisihnya 0,55 - masih di dalam rentang variasi run.",
-          "3. Hanya RERATA atas sepuluh kasus yang layak dilaporkan."
+          "3. Hanya RERATA atas sepuluh kasus yang layak dilaporkan.",
+          "4. answer_relevancy dikutip sebagai RENTANG 0,587-0,763, bukan angka tunggal 0,763. Dua jalan berkonfigurasi identik menghasilkan selisih rerata 0,176."
         ],
         "kestabilan_metrik": {
-          "faithfulness": "LABIL per kasus; rerata stabil (0,681 vs 0,678 pada dua run)",
-          "answer_relevancy": "BELUM DIUJI - jangan diasumsikan stabil",
-          "context_precision": "BELUM DIUJI - jangan diasumsikan stabil",
-          "context_recall": "BELUM DIUJI - jangan diasumsikan stabil"
+          "_diukur": "13 Agustus 2026, dua jalan penuh, keputusan #7. Rincian: results/ragas/kestabilan.json",
+          "faithfulness": "LABIL per kasus; rerata stabil (0,681 vs 0,678 pada dua jalan)",
+          "answer_relevancy": "LABIL, dan RERATANYA IKUT BERGESER: 0,763 vs 0,587 pada dua jalan (selisih 0,176). Median per kasus 0,056 tetapi maksimum 0,685. Jalan keluar 'kutip reratanya saja' TIDAK berlaku karena kedua guncangan searah. WAJIB dikutip sebagai rentang 0,587-0,763.",
+          "context_precision": "REPRODUSIBEL SEMPURNA: 9 dari 9 kasus identik, rerata 0,4444 pada kedua jalan (E02 NaN pada keduanya). Nilai per kasus dapat dipertanggungjawabkan.",
+          "context_recall": "REPRODUSIBEL SEMPURNA: 10 dari 10 kasus identik, rerata 0,4500 pada kedua jalan. Nilai per kasus dapat dipertanggungjawabkan.",
+          "SEBAB": "Suhu juri 0,0, suhu pembangkit 0,2. Metrik yang TIDAK memakai jawaban (context_precision, context_recall) nol variasi; yang memakai jawaban bergerak. Sumber ketidakstabilan adalah PEMBANGKITAN, bukan penjurian.",
+          "PERINGATAN": "Reprodusibel TIDAK berarti sahih. Kualifikasi K2 (korpus evaluasi sempit, 17 chunk dari 4 halaman KB-03) berlaku penuh atas kedua metrik konteks."
         },
         "jumlah_pernyataan": "TIDAK TERSEDIA dari RAGAS 0.2.6. faithfulness adalah rasio pernyataan-didukung terhadap total pernyataan, sehingga tanpa angka itu penafsiran skor terbatas. Kolom n_pernyataan_faithfulness sengaja kosong sebagai catatan bahwa angka dicari dan tidak ditemukan."
       }
@@ -3405,7 +3450,9 @@
     "generasi.contoh_kasus": {
       "_status": "ADA",
       "_berkas": "results/ragas/contoh_kasus_bab6.json",
-      "_diubah": "2026-08-09T21:48:15",
+      "_diubah": "2026-08-13T18:07:55",
+      "_git": "M",
+      "_PERINGATAN_GIT": "Berkas TERMODIFIKASI atau BELUM TERLACAK git, sehingga angkanya TIDAK tertelusur ke commit yang dicatat ringkasan ini. Bila ini akibat skrip yang menimpa berkas lama, periksa `git diff` sebelum mengutipnya.",
       "isi": {
         "judul": "Contoh kasus Bab VI: faithfulness tinggi BUKAN bukti jawaban benar, dan perbandingan antargenerasi model",
         "tanggal": "2026-08-09",
@@ -3463,12 +3510,13 @@
         ],
         "kestabilan_metrik": {
           "faithfulness": "LABIL per kasus; rerata stabil (0,681 vs 0,678 pada dua run)",
-          "answer_relevancy": "BELUM DIUJI - jangan diasumsikan stabil",
-          "context_precision": "BELUM DIUJI - jangan diasumsikan stabil",
-          "context_recall": "BELUM DIUJI - jangan diasumsikan stabil"
+          "answer_relevancy": "LABIL per kasus DAN reratanya bergeser: 0,763 vs 0,587. Wajib rentang.",
+          "context_precision": "REPRODUSIBEL SEMPURNA (9/9 kasus identik)",
+          "context_recall": "REPRODUSIBEL SEMPURNA (10/10 kasus identik)"
         },
         "jumlah_pernyataan": "TIDAK TERSEDIA dari RAGAS 0.2.6. faithfulness adalah rasio pernyataan-didukung terhadap total pernyataan, sehingga tanpa angka itu penafsiran skor terbatas. Kolom n_pernyataan_faithfulness sengaja kosong sebagai catatan bahwa angka dicari dan tidak ditemukan.",
-        "PERINGATAN_PERBANDINGAN_E02": "Penyandingan skor faithfulness E02 antarmodel (2.5 = 1,000 vs 3.5 = 0,455) TIDAK SAH dan tidak boleh dikutip. Selisih 0,55 masih berada di dalam rentang variasi run-ke-run metrik ini (maksimum terukur 0,56 pada konfigurasi identik). Yang tetap sah dari kasus ini adalah PERBEDAAN PERILAKU yang dapat diperiksa langsung dari teks jawaban: 2.5 mengarang, 3.5 mengakui keterbatasan. Perbedaan itu tidak bergantung pada skor."
+        "PERINGATAN_PERBANDINGAN_E02": "Penyandingan skor faithfulness E02 antarmodel (2.5 = 1,000 vs 3.5 = 0,455) TIDAK SAH dan tidak boleh dikutip. Selisih 0,55 masih berada di dalam rentang variasi run-ke-run metrik ini (maksimum terukur 0,56 pada konfigurasi identik). Yang tetap sah dari kasus ini adalah PERBEDAAN PERILAKU yang dapat diperiksa langsung dari teks jawaban: 2.5 mengarang, 3.5 mengakui keterbatasan. Perbedaan itu tidak bergantung pada skor.",
+        "PERINGATAN_answer_relevancy_PER_KASUS": "Skor answer_relevancy PER KASUS di berkas ini TIDAK BOLEH dikutip. Pengukuran kestabilan 13 Agustus 2026 menunjukkan E01 berpindah 0,685 -> 0,000 antar-jalan berkonfigurasi identik, dan E03 0,650 -> 0,000. Nilai per kasus di sini adalah nilai JALAN PERTAMA. Rerata pun hanya sah sebagai rentang 0,587-0,763. Lihat K10, K15, dan results/ragas/kestabilan.json."
       }
     },
     "sistem.penyetelan": {

@@ -280,8 +280,9 @@ tersisa di sisi penelusuran. Berkaitan langsung dengan #6.
 
 **#7 Uji kestabilan tiga metrik RAGAS?** ~90 panggilan LLM. Hanya `faithfulness` yang punya
 data run berulang (labil per kasus: selisih median 0,18, maksimum 0,56; rerata stabil 0,003).
-`answer_relevancy`, `context_precision`, dan `context_recall` **belum diuji dan tidak boleh
-diasumsikan stabil**. Kuota `gemini-3.5-flash-lite` 500 RPD memadai — satu hari kerja.
+**SUDAH diukur 13 Agustus 2026 (keputusan #7).** `context_precision` dan `context_recall`
+**reprodusibel sempurna**; `answer_relevancy` **labil dan reratanya bergeser 0,176**,
+wajib dikutip sebagai rentang **0,587–0,763**. Lihat K10 dan K15. Kuota `gemini-3.5-flash-lite` 500 RPD memadai — satu hari kerja.
 
 ---
 

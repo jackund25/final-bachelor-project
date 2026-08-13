@@ -396,20 +396,17 @@ Angka **0,763 yang dilaporkan tidak tereproduksi** — jalan kedua menghasilkan 
 Sesuai aturan yang dipra-registrasi, angka 0,763 **tidak diganti** menjadi 0,587 maupun
 menjadi reratanya; yang ditambahkan hanya pernyataan kestabilannya.
 
-#### Temuan sampingan tentang SISTEM, bukan tentang metrik
+#### Gerbang *noncommittal* menyala tidak konsisten — lihat K15
 
-Dua dari sepuluh kasus berubah dari **menjawab dengan angka** menjadi **menolak menjawab**,
-pada pertanyaan, korpus, dan konfigurasi yang identik. Yang berbeda hanya penarikan sampel
-pembangkit pada suhu 0,2.
+Kedua guncangan `answer_relevancy` bernilai **tepat 0,000**, dan itu semula saya baca
+sebagai tanda yang sama. Pemeriksaan teks jawabannya (2b-1) menunjukkan **keduanya berbeda
+sebabnya**, dan hanya salah satunya menyangkut perilaku sistem. Rinciannya di **K15**.
 
-Ini sifat **sistem pendukung keputusan klinis**-nya, bukan sifat alat ukurnya: dokter yang
-menanyakan hal yang sama dua kali dapat memperoleh jawaban pada satu kesempatan dan
-penolakan pada kesempatan lain. **Batas klaim:** n = 2 dari 10 pada satu perbandingan —
-cukup untuk menyatakan peristiwa itu **terjadi**, tidak cukup untuk menyatakan **seberapa
-sering**.
-
-Arah perubahannya menenangkan (menolak, bukan mengarang — konsisten dengan Tahap D), tetapi
-pengaman itu **bertumpu pada perilaku model**, bukan mekanisme deterministik — yaitu K3.
+> **Koreksi 13 Agustus 2026.** Versi pertama bagian ini menyatakan *"dua dari sepuluh kasus
+> berubah dari menjawab menjadi menolak menjawab"*. **Itu keliru untuk E03**, yang menolak
+> pada **kedua** jalan. Perubahan perilaku sistem terjadi pada **1 dari 10** kasus, bukan 2.
+> Kekeliruannya: skor nol pada E01 dan E03 saya perlakukan sebagai tanda yang sama tanpa
+> memeriksa teks jawabannya lebih dulu.
 
 **Aturan pelaporan yang mengikat** — ditanamkan pada `results/ragas/summary.json` dan
 `results/ragas/contoh_kasus_bab6.json`:
@@ -422,7 +419,8 @@ pengaman itu **bertumpu pada perilaku model**, bukan mekanisme deterministik —
 **Dampak.** Skor `faithfulness` 0,681 hanya sah dikutip sebagai **rerata**, dan hanya
 sebagai bukti bahwa jawaban tidak mengarang **di luar konteks** — bukan sebagai bukti
 kebenaran jawaban. Yang mengukur kesesuaian dengan pertanyaan adalah `answer_relevancy`
-(0,763), dan yang mengukur mutu konteks adalah kedua metrik konteks.
+(**0,587–0,763**, rentang dua jalan — dua jalan berkonfigurasi identik memberi 0,763 dan 0,587; kedua guncangannya SEARAH sehingga jalan keluar 'kutip reratanya saja' TIDAK berlaku), dan yang mengukur mutu konteks
+adalah kedua metrik konteks (keduanya reprodusibel sempurna).
 
 **Perkiraan pekerjaan.** Menguji kestabilan tiga metrik lain: **sedang** (~90 panggilan
 LLM). Memperoleh jumlah pernyataan: memerlukan pemanggilan prompt ekstraksi RAGAS secara
@@ -750,6 +748,80 @@ dan T1.4. Menerapkan rumusan baru ke naskah Bab VI: **penulisan, bukan pengukura
 
 ---
 
+## K15. Jawaban sistem tidak tereproduksi, dan satu kasus berbalik menjadi menolak menjawab
+
+**Apa.** Dua jalan berkonfigurasi identik — pertanyaan, korpus, indeks, `top_k`, dan model
+yang sama — menghasilkan **sepuluh dari sepuluh jawaban yang berbeda kata demi kata**
+(kemiripan difflib 0,071–0,677). Pada satu kasus perbedaannya bukan redaksional melainkan
+**fungsional**: sistem berhenti menjawab.
+
+Ini sifat **sistem pendukung keputusan klinis**-nya, bukan sifat alat ukurnya, dan karena itu
+dipisahkan dari K10.
+
+**Apa yang teramati, dari artefak tersimpan tanpa satu pun panggilan baru.**
+
+| | E01 | E03 | E09 |
+|---|---|---|---|
+| frasa penolakan, jalan 1 | **tidak ada** | ada | ada |
+| frasa penolakan, jalan 2 | **ada** | ada | ada |
+| `answer_relevancy` | 0,685 → **0,000** | 0,650 → **0,000** | 0,8214153893402991 → **bit-identik** |
+| tafsir | **sistem berbalik menolak** | menolak di kedua jalan | menolak di kedua jalan, tak pernah di-nol-kan |
+
+**E01** pada jalan pertama memberi angka dosis (*"4 unit, 0,1 unit/kgBB, atau 10% dari dosis
+basal"*); pada jalan kedua ia menjawab *"informasi spesifik mengenai dosis awal insulin basal
+tunggal tidak tercantum secara lengkap pada kutipan konteks saat ini"*. Konteks yang
+diambil **identik**.
+
+**Besarannya: 1 dari 10 kasus.** Sepuluh kasus **terlalu sedikit** untuk menyatakan
+frekuensinya; angka ini cukup untuk menyatakan peristiwa itu **terjadi**, tidak untuk
+menyatakan seberapa sering.
+
+**Sebabnya BELUM teridentifikasi, dan buktinya tidak memilah.** `finish_reason`,
+`safety_ratings`, dan penanda pemblokiran **tidak pernah disimpan** di artefak mana pun.
+Karena itu tiga kemungkinan — penarikan sampel pembangkit pada suhu 0,2, isi prompt, dan
+filter keamanan vendor — **tidak dapat dipisahkan** dari bukti yang ada. Menyebut salah
+satunya sebagai sebab akan menjadi tebakan, dan tidak dilakukan.
+
+Yang **dapat** disingkirkan: penelusuran (konteks identik 10/10) dan variasi juri (juri
+bersuhu 0,0; E09 menghasilkan skor bit-identik).
+
+**Tidak ada ciri bersama antara kedua kasus berskor nol.** Kueri E01 tidak memuat angka,
+E03 memuat; panjang konteksnya 3.098 lawan 1.933 karakter. E04 berbagi panjang konteks 1.933
+dengan E03 dan **tidak** berbalik. Dari n = 2 tidak ada pola yang dapat ditarik.
+
+**Temuan kedua, tentang alat ukurnya:** gerbang *noncommittal* RAGAS menyala **tidak
+konsisten** di antara jawaban yang sama-sama memuat frasa penolakan. E03 menolak pada kedua
+jalan tetapi hanya jalan kedua yang di-nol-kan; E09 menolak pada kedua jalan dan tidak pernah
+di-nol-kan. Gerbang itu mengubah selisih redaksi kecil menjadi guncangan **0,65 poin**.
+
+**Mengapa tidak diperbaiki.** Menurunkan suhu pembangkit ke 0 akan membuat jawaban
+reprodusibel, tetapi itu **mengubah konfigurasi produksi** dan membatalkan seluruh angka
+generasi yang sudah dilaporkan. Menyimpan `finish_reason` dan `safety_ratings` **kecil**
+dan seharusnya sudah ada sejak awal — tanpa itu, kelas kegagalan ini tidak dapat
+didiagnosis sama sekali.
+
+**Dampak pada kesimpulan.**
+
+Klaim yang **tidak** boleh dibuat: bahwa sistem memberi jawaban yang sama untuk pertanyaan
+yang sama. Ia tidak — bahkan pada sepuluh dari sepuluh kasus, teksnya berbeda.
+
+Klaim yang **boleh** dibuat: pada korpus dan konfigurasi ini, satu dari sepuluh kasus
+berhenti memberi rekomendasi antar-jalan, dan arahnya adalah **menolak, bukan mengarang**.
+
+**Konteks alur *doctor-mediated*, dinyatakan sebagai konteks dan BUKAN sebagai pembenaran.**
+Yang diterima dokter adalah **ketiadaan rekomendasi**, bukan rekomendasi yang salah. Itu
+kelas kegagalan yang lebih ringan, dan konsisten dengan hasil Tahap D. Tetapi ia **tidak**
+membuat perilakunya dapat diterima: sistem yang menjawab pada satu kesempatan dan menolak
+pada kesempatan lain, atas pertanyaan dan dokumen yang sama, tidak dapat disebut andal. Dan
+pengaman itu bertumpu pada **perilaku model**, bukan mekanisme deterministik — yaitu **K3**.
+
+**Perkiraan pekerjaan.** Menyimpan `finish_reason` dan `safety_ratings`: **kecil**.
+Mengukur frekuensi penolakan secara sah (banyak jalan berulang, korpus evaluasi lebih besar):
+**sedang**, dan terbentur kuota (K7). Menurunkan suhu pembangkit: **kecil** secara teknis,
+**besar** akibatnya karena membatalkan angka generasi yang sudah ada.
+
+---
+
 ## Ringkasan untuk Bab VII
 
 | Kode | Keterbatasan | Dampak | Pekerjaan |
@@ -768,12 +840,13 @@ dan T1.4. Menerapkan rumusan baru ke naskah Bab VI: **penulisan, bukan pengukura
 | K12 | Jangkauan penelusuran hanya 1,16% korpus | **Tinggi** — satu sebab bagi K2, jurang Hit@1/Hit@5, dan E01 | kecil-sedang |
 | K13 | Angka penelusuran diukur pada bentuk kueri yang tidak dipakai aplikasi | Sedang — konsekuensinya terukur dan tidak merugikan; bentuk aplikasi tidak lebih buruk | sedang |
 | **K14** | Aturan pelaporan efek mencampur konsistensi dengan kebermaknaan; skala derau tak pernah ditetapkan | **Tinggi** — empat klaim keunggulan berstatus rapuh | keputusan, bukan pekerjaan |
+| **K15** | Jawaban sistem tidak tereproduksi; 1 dari 10 kasus berbalik MENOLAK menjawab | **Tinggi** — keandalan fungsional, bukan sekadar metrik | kecil (simpan finish_reason) sampai sedang |
 
-**Lima yang paling menentukan batas klaim laporan: K1, K3, K5, K10, dan K14.** Kelimanya
+**Enam yang paling menentukan batas klaim laporan: K1, K3, K5, K10, K14, dan K15.** Keenamnya
 bukan cacat implementasi melainkan batas metodologis, dan seluruhnya harus dinyatakan
 sebelum angka apa pun dikutip sebagai bukti kelayakan klinis.
 
-**K14 berbeda sifatnya dari empat lainnya**: ia bukan batas pada apa yang dapat diukur,
+**K14 berbeda sifatnya dari yang lain**: ia bukan batas pada apa yang dapat diukur,
 melainkan pada cara hasil pengukuran ditafsirkan. Ia karena itu satu-satunya yang dapat
 diselesaikan tanpa data baru — dengan menetapkan ambang, yang merupakan keputusan
 pembimbing (#8).

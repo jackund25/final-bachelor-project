@@ -138,6 +138,33 @@ def verifikasi_provenans(data: dict, rel: str) -> dict:
     return hasil
 
 
+def status_git_sumber(rel_paths: list[str]) -> dict:
+    """Tandai sumber yang TERMODIFIKASI atau BELUM TERLACAK relatif terhadap git.
+
+    Penjagaan atas kelas cacat yang ditemukan 13 Agustus 2026: `run_ragas.py` menimpa
+    `summary.json` dan `per_sample.csv` diam-diam, bahkan menghilangkan satu medan. Audit
+    menemukan **33 dari 41** skrip penulis di `scripts/` melakukan hal yang sama.
+
+    Merombak ketiga puluh tiga skrip itu di luar lingkup. Penjagaan termurah yang
+    benar-benar melindungi ada DI SINI: berkas hasil dilacak git, sehingga yang tertimpa
+    muncul sebagai ``M`` pada ``git status`` — dan T5.2 satu-satunya tempat yang membaca
+    keduapuluh empat sumber sekaligus.
+
+    Sumber ``M`` belum tentu salah; ia hanya belum dicommit, sehingga angkanya tidak
+    tertelusur ke commit yang dicatat ringkasan ini. Itu tepat yang perlu diperingatkan.
+    """
+    try:
+        keluar = subprocess.run(["git", "status", "--porcelain", "--"] + list(rel_paths),
+                                cwd=ROOT, capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return {}
+    tanda = {}
+    for baris in (keluar.stdout or "").splitlines():
+        if len(baris) > 3:
+            tanda[baris[3:].strip().strip('"')] = baris[:2].strip()
+    return tanda
+
+
 def ambil(d, jalur: str):
     v = d
     for k in jalur.split("."):
@@ -158,6 +185,8 @@ def git(*args) -> str | None:
 def main() -> int:
     isi, hilang, rusak, medan_hilang = {}, [], [], []
     provenans = None
+    tanda_git = status_git_sumber([rel for _, rel, _ in SUMBER])
+    tak_tercommit = []
     for kunci, rel, jalur in SUMBER:
         p = ROOT / rel
         if not p.exists():
@@ -194,6 +223,14 @@ def main() -> int:
             continue
         mtime = datetime.fromtimestamp(p.stat().st_mtime).isoformat(timespec="seconds")
         blok = {"_status": "ADA", "_berkas": rel, "_diubah": mtime}
+        g = tanda_git.get(rel)
+        if g:
+            blok["_git"] = g
+            blok["_PERINGATAN_GIT"] = (
+                "Berkas TERMODIFIKASI atau BELUM TERLACAK git, sehingga angkanya TIDAK "
+                "tertelusur ke commit yang dicatat ringkasan ini. Bila ini akibat skrip "
+                "yang menimpa berkas lama, periksa `git diff` sebelum mengutipnya.")
+            tak_tercommit.append((kunci, rel, g))
         if kunci == "retrieval.crossfold":
             provenans = verifikasi_provenans(data, rel)
             blok["_verifikasi_provenans"] = provenans
@@ -239,6 +276,8 @@ def main() -> int:
         "daftar_medan_tidak_ditemukan": [{"kunci": k, "medan": j, "berkas": r}
                                          for k, j, r in medan_hilang],
         "verifikasi_provenans_crossfold": provenans,
+        "sumber_belum_tercommit": [{"kunci": k, "berkas": r, "git": g}
+                                   for k, r, g in tak_tercommit],
         "keterbatasan": "docs/DAFTAR_KETERBATASAN.md",
         "data": isi,
     }
@@ -301,6 +340,17 @@ def main() -> int:
             print(f"    Artefak tidak dapat menyatakan konfigurasinya sendiri; bukti satu-")
             print(f"    satunya adalah NAMA DIREKTORI. Ini keadaan yang membuat berkas")
             print(f"    _kb12 5 Agustus nyaris terkutip sebagai hasil produksi.")
+
+    if tak_tercommit:
+        print(f"\n  {'!' * 68}")
+        print(f"  {len(tak_tercommit)} SUMBER BELUM TERCOMMIT — angkanya tidak tertelusur "
+              f"ke commit di atas:")
+        for k, r, g in tak_tercommit:
+            print(f"    [{g:<2}] {k:<34} {r}")
+        print("  Berkas hasil dilacak git justru agar penimpaan diam-diam terlihat;")
+        print("  33 dari 41 skrip penulis menimpa tanpa penjagaan (audit 13 Agu 2026).")
+        print("  Periksa `git diff` sebelum mengutip angkanya.")
+        print(f"  {'!' * 68}")
 
     if medan_hilang:
         print(f"\n  {'!' * 68}")

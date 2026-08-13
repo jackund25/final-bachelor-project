@@ -55,10 +55,11 @@
   ],
   "kestabilan_metrik": {
     "faithfulness": "LABIL per kasus; rerata stabil (0,681 vs 0,678 pada dua run)",
-    "answer_relevancy": "BELUM DIUJI - jangan diasumsikan stabil",
-    "context_precision": "BELUM DIUJI - jangan diasumsikan stabil",
-    "context_recall": "BELUM DIUJI - jangan diasumsikan stabil"
+    "answer_relevancy": "LABIL per kasus DAN reratanya bergeser: 0,763 vs 0,587. Wajib rentang.",
+    "context_precision": "REPRODUSIBEL SEMPURNA (9/9 kasus identik)",
+    "context_recall": "REPRODUSIBEL SEMPURNA (10/10 kasus identik)"
   },
   "jumlah_pernyataan": "TIDAK TERSEDIA dari RAGAS 0.2.6. faithfulness adalah rasio pernyataan-didukung terhadap total pernyataan, sehingga tanpa angka itu penafsiran skor terbatas. Kolom n_pernyataan_faithfulness sengaja kosong sebagai catatan bahwa angka dicari dan tidak ditemukan.",
-  "PERINGATAN_PERBANDINGAN_E02": "Penyandingan skor faithfulness E02 antarmodel (2.5 = 1,000 vs 3.5 = 0,455) TIDAK SAH dan tidak boleh dikutip. Selisih 0,55 masih berada di dalam rentang variasi run-ke-run metrik ini (maksimum terukur 0,56 pada konfigurasi identik). Yang tetap sah dari kasus ini adalah PERBEDAAN PERILAKU yang dapat diperiksa langsung dari teks jawaban: 2.5 mengarang, 3.5 mengakui keterbatasan. Perbedaan itu tidak bergantung pada skor."
+  "PERINGATAN_PERBANDINGAN_E02": "Penyandingan skor faithfulness E02 antarmodel (2.5 = 1,000 vs 3.5 = 0,455) TIDAK SAH dan tidak boleh dikutip. Selisih 0,55 masih berada di dalam rentang variasi run-ke-run metrik ini (maksimum terukur 0,56 pada konfigurasi identik). Yang tetap sah dari kasus ini adalah PERBEDAAN PERILAKU yang dapat diperiksa langsung dari teks jawaban: 2.5 mengarang, 3.5 mengakui keterbatasan. Perbedaan itu tidak bergantung pada skor.",
+  "PERINGATAN_answer_relevancy_PER_KASUS": "Skor answer_relevancy PER KASUS di berkas ini TIDAK BOLEH dikutip. Pengukuran kestabilan 13 Agustus 2026 menunjukkan E01 berpindah 0,685 -> 0,000 antar-jalan berkonfigurasi identik, dan E03 0,650 -> 0,000. Nilai per kasus di sini adalah nilai JALAN PERTAMA. Rerata pun hanya sah sebagai rentang 0,587-0,763. Lihat K10, K15, dan results/ragas/kestabilan.json."
 }

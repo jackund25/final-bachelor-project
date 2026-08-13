@@ -137,7 +137,7 @@ tanpa uji hipotesis: pertukaran 0,081 mg/dL untuk 96,3% ukuran.
 | Metrik            | Nilai     | Optimistis?                |
 | ----------------- | --------- | -------------------------- |
 | faithfulness      | **0,678** | tidak                      |
-| answer_relevancy  | **0,763** | tidak                      |
+| answer_relevancy  | **0,587–0,763** | tidak — **tetapi TIDAK TEREPRODUKSI**, lihat K10 dan K15 |
 | context_precision | 0,450     | **ya**                     |
 | context_recall    | 0,450     | tidak — peringatan dicabut |
 
@@ -386,8 +386,10 @@ Rincian di `docs/DAFTAR_KETERBATASAN.md`.
 K14 satu-satunya yang dapat diselesaikan **tanpa data baru**, lewat keputusan #8.
 
 Kestabilan metrik RAGAS: hanya `faithfulness` yang punya data run berulang (labil per
-kasus, rerata stabil). `answer_relevancy`, `context_precision`, dan `context_recall`
-**belum diuji dan tidak boleh diasumsikan stabil**.
+kasus, rerata stabil). Ketiga metrik lain **SUDAH diuji 13 Agustus 2026**:
+`context_precision` dan `context_recall` **reprodusibel sempurna** (9/9 dan 10/10 kasus
+identik); `answer_relevancy` **labil DAN reratanya ikut bergeser** (0,763 lawan 0,587),
+sehingga ia wajib dikutip sebagai **rentang**. Lihat K10 dan K15.
 
 ---
 
