@@ -486,7 +486,66 @@ mengungguli EN256 pada integritas korpus tanpa merugikan MRR — bentuk penalara
 yang sama dengan Aturan 3 prapendaftaran T7, dan harus dinyatakan sebagai alasan
 integritas, **bukan** sebagai kemenangan hipotesis bahasa.
 
-## 13. Berkas yang disentuh
+## 13. Penerapan ke produksi, satu pencabutan, dan hasil akhir
+
+### Yang diterapkan lalu DICABUT pada hari yang sama
+
+Berdasarkan T9 (+0,014), model embedding sempat diganti ke
+`paraphrase-multilingual-MiniLM-L12-v2`. **Dicabut beberapa jam kemudian.** Dua
+sinyal yang saling bebas membantahnya:
+
+1. **Kontrol crossfold rusak.** Mode `oracle` — yang memakai glukosa yang
+   benar-benar terjadi dan karenanya batas atas menurut rancangan — turun ke
+   **0,516, di bawah `standard` 0,537**. Itu mustahil bila pengukurannya sehat.
+   Rentang antarmode runtuh dari 0,382–0,829 menjadi 0,52–0,56.
+2. **Sapuan kondisi seimbang** (120 kueri, 40 per kondisi, korpus sama):
+
+| Konfigurasi | hit@5 | MRR | Kondisi `normal` |
+|---|---:|---:|---:|
+| EN + pemisah lama | 100% | 0,831 | 100% |
+| **EN + pemisah kalimat** | **100%** | **0,790** | **100%** |
+| ML + pemisah lama | 98% | 0,586 | 95% |
+| ML + pemisah kalimat | 79% | 0,530 | **38%** |
+
+Rancangan 2×2 memisahkan kedua faktor: **pemisah kalimat hampir tidak berbiaya**
+(hit@5 tetap 100%), **pergantian model yang merusak** — kelas `normal` nyaris
+hilang.
+
+**Kekeliruan yang dicatat supaya tidak terulang.** T9 diukur dengan
+`classify_chunk`, alat yang di Bagian 7 sudah terbukti berbias panjang dan salah
+melabeli isi yang benar, di atas set pelaporan yang komposisinya menyembunyikan
+keruntuhan kelas `normal`. Bukti selemah itu diperlakukan cukup kuat untuk
+mengubah produksi. Sapuan kondisi seimbang seharusnya dijalankan lebih dulu.
+
+### Konfigurasi produksi akhir
+
+`all-MiniLM-L6-v2` + `pemisah_kalimat: true`, 2.248 potongan, hit@5 100% pada
+ketiga kondisi, dan **83,5% potongan berakhir kalimat utuh** (dari 19,7%).
+
+### Crossfold pada konfigurasi akhir
+
+Sumber: `results/retrieval_realcases_kb12_gbm_kalimat/crossfold.json`.
+
+| | Lama (pemisah lama) | Baru (pemisah kalimat) |
+|---|---:|---:|
+| `oracle` divergen | 0,829 | 0,776 |
+| `standard` divergen | 0,382 | 0,166 |
+| **`pc_rag` − `standard`** | +0,0527 (SD 0,0221) | **+0,0832** (SD 0,0135) |
+| positif | 6/6 | **6/6** |
+| `pc_rag_classifier` − `standard` | +0,1240 | **+0,1423**, 6/6 |
+| natural `pc_rag` − `standard` | −0,0033, 3/6 | −0,0042, 2/6 |
+
+**Kontribusi tereplikasi di dua konfigurasi berbeda** — keunggulan PC-RAG pada
+kasus divergen bukan artefak satu cara pemecahan tertentu. Pada kasus natural,
+tetap tidak ada manfaat, sesuai dugaan sejak awal.
+
+> **JANGAN menulis "kontribusi naik dari +0,053 ke +0,083".** Membandingkan angka
+> absolut antar-konfigurasi TIDAK SAH: pemecahan berubah sehingga label
+> `classify_chunk` ikut bergeser — temuan Bagian 7 berlaku di sini juga. Yang sah:
+> di dalam konfigurasi produksi, selisihnya +0,083 dan positif 6/6 fold; dan
+> kesimpulan yang sama muncul pada konfigurasi lama.
+
+## 14. Berkas yang disentuh
 
 | Berkas | Perubahan |
 |---|---|
