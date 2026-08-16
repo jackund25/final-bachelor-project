@@ -101,9 +101,36 @@ def main():
         df = prep.engineer_features(df, **fe)
     prep.feature_columns = list(feats)
 
+    # T12 — PEMBAGIAN WAJIB SELARAS DENGAN PRODUKSI.
+    #
+    # Sebelumnya: test_p, cal_p, train_p = pids[-2:], pids[-4:-2], pids[:-4]
+    # yakni melatih pada 8 pasien, sedangkan src/models/gbm_model.py:246 melatih
+    # bundel produksi pada 10 (patient_ids[-2:] sebagai uji). Akibatnya q
+    # mengkalibrasi model yang BERBEDA dari yang membuat prediksi, dan karena
+    # src/conformal.py membaca berkas ini untuk interval yang ditampilkan
+    # app/streamlit_app.py, jaminan cakupan 95% tidak berlaku bagi model yang
+    # sebenarnya dipakai. Cacat itu tidak terlihat dari angkanya: cakupan conformal
+    # dijamin secara teori, sehingga angka yang salah pun tetap tampak wajar.
+    #
+    # Split conformal hanya menuntut himpunan kalibrasi yang TIDAK PERNAH DILIHAT
+    # model (Angelopoulos & Bates 2021, Bagian 2). Dua pasien terakhir memang tidak
+    # pernah dilihat, sehingga memakainya sebagai kalibrasi membuat q sah TANPA
+    # perlu melatih ulang bundel produksi.
+    #
+    # KONSEKUENSI YANG DITERIMA: himpunan kalibrasi dan himpunan pelaporan menjadi
+    # sama, sehingga cakupan empiris di bawah bersifat OPTIMISTIS. Ia ditandai
+    # demikian pada keluaran dan TIDAK boleh dikutip sebagai cakupan yang tercapai.
+    #
+    # CV+/Jackknife+ (Barber dkk. 2021) memungkinkan seluruh data dipakai melatih
+    # sekaligus mengkalibrasi, tetapi ditolak: intervalnya dibangun dari model-model
+    # fold sehingga aplikasi harus menjalankan 10 model tiap prediksi, jaminannya
+    # 1-2a bukan 1-a, dan intervalnya tidak berpusat pada prediksi yang ditampilkan.
+    # Lihat docs/PRAPENDAFTARAN_T12_CONFORMAL.md Bagian 2b.
     pids = sorted(df["patient_id"].unique().tolist())
-    test_p, cal_p, train_p = pids[-2:], pids[-4:-2], pids[:-4]
-    print(f"train={len(train_p)} kalibrasi={cal_p} test={test_p}")
+    train_p, cal_p = pids[:-2], pids[-2:]
+    test_p = cal_p  # sengaja sama; lihat "KONSEKUENSI YANG DITERIMA" di atas
+    print(f"train={len(train_p)} kalibrasi={cal_p} test={test_p} "
+          f"(selaras produksi: gbm_model.py memakai patient_ids[-2:] sebagai uji)")
 
     def seqs(sub):
         return prep.create_sequences(
@@ -172,6 +199,22 @@ def main():
         "predict_delta": bool(predict_delta),
         "features": list(feats),
         "n_cal": int(len(yca)), "n_test": int(len(yte)),
+        # PROVENANS PASIEN (T12). Tanpa ini, ketidakselarasan antara model yang
+        # dikalibrasi dan model yang dipakai hanya dapat ditemukan dengan membaca
+        # kode dua berkas dan membandingkannya secara manual — dan itulah sebabnya
+        # cacat 8-lawan-10 pasien bertahan lama tanpa terdeteksi.
+        "pasien_latih": list(train_p),
+        "pasien_kalibrasi": list(cal_p),
+        "n_pasien_latih": len(train_p),
+        "selaras_dengan_produksi": (
+            "src/models/gbm_model.py memakai patient_ids[-2:] sebagai uji, sehingga "
+            "melatih pada pasien yang sama dengan pasien_latih di atas"),
+        "PERINGATAN_CAKUPAN": (
+            "Himpunan kalibrasi dan himpunan pelaporan SAMA, sehingga setiap "
+            "'coverage%' di bawah bersifat OPTIMISTIS dan TIDAK boleh dikutip "
+            "sebagai cakupan yang tercapai. Nilai q-nya SAH karena himpunan "
+            "kalibrasi tidak pernah dilihat model. Penaksir cakupan yang jujur "
+            "harus berasal dari pembagian pasien yang terpisah."),
         "levels": {},
     }
     for alpha, tgt in [(0.10, 90), (0.05, 95)]:

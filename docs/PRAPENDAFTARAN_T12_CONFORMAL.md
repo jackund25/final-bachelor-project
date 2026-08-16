@@ -57,8 +57,57 @@ rujukan itu **belum dibaca dan tidak ada di koleksi**. Aturan proyek melarang
 mengutip yang belum dibaca, sehingga CV+ tidak dipakai. Yang diperikan penuh oleh
 paper yang ada adalah **split conformal**, dan itulah yang dipakai.
 
-**Keputusan: pembagian 8/2/2 dipakai SERAGAM**, dan bundel produksi dilatih ulang
-pada 8 pasien yang sama dengan yang dipakai kalibrasi conformal.
+**Keputusan awal: pembagian 8/2/2 dipakai SERAGAM**, dan bundel produksi dilatih
+ulang pada 8 pasien yang sama dengan yang dipakai kalibrasi conformal.
+
+---
+
+## 2b. AMANDEMEN — sebelum satu pun angka dijalankan
+
+> **Ditulis 16 Agustus 2026, masih SEBELUM skrip dijalankan dan sebelum angka
+> cakupan baru dilihat.** Amandemen ini mengubah RANCANGAN, bukan menafsirkan
+> hasil, sehingga tidak melanggar disiplin prapendaftaran. Rumusan awal di Bagian 2
+> sengaja **tidak dihapus** agar perubahannya dapat ditelusuri.
+
+Pencarian atas CV+/Jackknife+ (diminta pengguna) dilakukan lewat pembacaan
+Barber dkk. (2021) — [42] pada Angelopoulos & Bates. Algoritmanya kini diketahui
+persis:
+
+```
+Ĉ_CV+ = [ q̂⁻{ μ̂_{-S_k(i)}(X_{n+1}) − R_i },  q̂⁺{ μ̂_{-S_k(i)}(X_{n+1}) + R_i } ]
+```
+
+**CV+ DITOLAK, dengan alasan yang kini berdasar bukti, bukan ketidaktahuan:**
+
+1. Interval dibangun dari **model-model fold**, bukan model penuh, sehingga
+   aplikasi harus memuat dan menjalankan **10 model** pada setiap prediksi.
+   Bertentangan langsung dengan batasan desain "berjalan tanpa GPU pada layanan
+   bersumber daya terbatas".
+2. Jaminannya **1 − 2α**, bukan 1 − α. Untuk mengklaim 95% intervalnya melebar.
+3. Intervalnya **tidak berpusat** pada angka prediksi yang ditampilkan kepada
+   dokter — sulit dipertanggungjawabkan secara klinis.
+
+**Pencarian itu justru membuka pilihan yang sebelumnya terlewat**, dan pilihan
+itulah yang dipakai:
+
+> **Latih 10 (tidak berubah), kalibrasi `q` pada 2 pasien sisa.**
+
+Split conformal hanya menuntut himpunan kalibrasi yang **tidak pernah dilihat**
+model. Dua pasien yang selama ini berperan sebagai himpunan uji produksi memang
+tidak pernah dilihat. Karena itu:
+
+| | Akibat |
+|---|---|
+| Bundel produksi | **tidak dilatih ulang** |
+| RMSE, MAE, Clarke, hipoglikemia, SMBG, Abstrak | **tidak berubah** |
+| `q` | menjadi **sah** bagi model yang benar-benar dipakai |
+| Cakupan **empiris** pada 2 pasien itu | menjadi **optimistis** dan TIDAK boleh dilaporkan apa adanya |
+
+Yang dikorbankan hanya yang terakhir, dan itu diganti dengan sapuan beberapa
+pembagian pasien sebagai penaksir cakupan yang jujur.
+
+**Bagian 3 (biaya) karena itu TIDAK LAGI BERLAKU** — tidak ada angka prediksi hilir
+yang berubah. Dipertahankan di bawah sebagai catatan mengapa jalan itu ditinggalkan.
 
 ---
 
@@ -84,10 +133,11 @@ sedikit **biasanya** sedikit lebih buruk.
   `conformal_calibration.py` WAJIB sama persis dengan pada `gbm_model.py`, dan
   keduanya wajib menuliskan daftar pasiennya ke dalam artefak. Ini pemeriksaan
   mekanis, bukan statistik; bila gagal, tidak ada angka yang dilaporkan.
-- **D2 — arah RMSE.** Melatih pada 8 pasien alih-alih 10 diperkirakan **menaikkan**
-  RMSE h6 (memburuk), dengan kenaikan **kurang dari 3 mg/dL**. Bila kenaikannya
-  melampaui itu, yang dicurigai lebih dulu adalah pipeline pelatihannya, bukan
-  kesimpulan bahwa data lebih sedikit merugikan.
+- **D2 — angka prediksi TIDAK berubah** (menggantikan rumusan D2 lama, yang
+  memperkirakan RMSE memburuk akibat melatih pada 8 pasien; lihat Amandemen 2b).
+  Karena bundel produksi tidak dilatih ulang, RMSE, MAE, MAPE, Clarke, sensitivitas
+  hipoglikemia, dan SMBG WAJIB tetap **sama persis**. Bila salah satunya bergerak,
+  ada yang berubah di luar kendali percobaan dan seluruh hasil T12 batal.
 - **D3 — arah cakupan TIDAK didugakan.** Sengaja. Cakupan conformal dijamin secara
   teori pada tingkat yang diminta, sehingga cakupan empiris seharusnya mendekati
   95% **baik sebelum maupun sesudah** perbaikan. Yang berubah adalah **keabsahan**
