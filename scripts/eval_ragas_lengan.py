@@ -13,9 +13,18 @@ DUA PENGHEMATAN YANG DISENGAJA
    konteks terambil, dan jawaban acuan; `response` tidak dipakai keduanya. Melewatinya
    menghemat kuota sekaligus membuang satu sumber variasi yang tidak relevan bagi
    pertanyaan penelusuran.
-2. KORPUS PRODUKSI dipakai, bukan koleksi terkontrol 17 potongan milik run_ragas.py.
-   Membandingkan retriever pada koleksi sekecil itu tidak bermakna: dengan top_k 5,
-   satu kueri sudah menyentuh 29% koleksinya.
+2. KORPUS PRODUKSI dipakai. Ini PENYIMPANGAN dari arahan pembimbing yang meminta
+   koleksi RAGAS khusus 2-4 halaman demi menjaga kuota, dan penyimpangan itu
+   dinyatakan terbuka di docs/PRAPENDAFTARAN_T14_RAGAS_LENGAN.md.
+
+   Koleksi terkontrol BUKAN kelemahan — ia instrumen yang tepat untuk pertanyaan
+   "seberapa baik mutu RAG ini", dengan ground truth terverifikasi sampai kalimat.
+   Tetapi ia tidak dapat menjawab "retriever mana yang lebih baik": metadata dataset
+   itu sendiri mencatat porsi_koleksi_terambil_per_kueri_persen = 29,4, sehingga
+   setiap retriever mengambil hampir sepertiga koleksi yang sama.
+
+   Tujuan arahan tetap dipatuhi: 120 panggilan dari 500 per hari, dan tahap
+   pembangkitan dilewati seluruhnya.
 
 Keluaran: results/ragas/lengan_penelusuran.json
 """

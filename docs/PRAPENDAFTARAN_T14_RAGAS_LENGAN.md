@@ -40,9 +40,39 @@ keduanya dan diterima.
 konteks terambil, dan jawaban acuan. Melewatinya menghemat kuota sekaligus
 menghilangkan satu sumber variasi yang tidak relevan bagi pertanyaan penelusuran.
 
-**Korpus produksi dipakai, bukan koleksi terkontrol**, karena membandingkan retriever
-pada koleksi 17 potongan tidak bermakna: dengan `top_k` 5, satu kueri sudah menyentuh
-29% koleksinya.
+### PENYIMPANGAN DARI ARAHAN PEMBIMBING — dinyatakan terbuka
+
+> **Koleksi RAGAS terkontrol (2–4 halaman, 17 potongan) adalah rancangan yang
+> DISENGAJA dan diarahkan pembimbing**, dengan tujuan menjaga kuota Gemini tidak
+> habis. `scripts/run_ragas.py` mencatat dua alasannya: *"ground truth dapat
+> diverifikasi manual sampai ke kalimat sumbernya"* dan *"jumlah panggilan LLM
+> penilai terkendali dan dapat diperkirakan di muka"*.
+>
+> **Rumusan awal prapendaftaran ini menyebut koleksi itu tidak bermakna. Itu keliru
+> dan dicabut.** Koleksi kecil bukan kelemahan; ia instrumen yang tepat untuk
+> pertanyaan yang menjadi tujuannya.
+
+Kedua koleksi menjawab **pertanyaan yang berbeda**:
+
+| Pertanyaan | Koleksi yang tepat | Alasan |
+|---|---|---|
+| Seberapa baik mutu RAG sistem ini? | **terkontrol, 17 potongan** | ground truth terverifikasi sampai kalimat; kuota terkendali |
+| Retriever mana yang lebih baik? | **produksi, 2.248 potongan** | lihat di bawah |
+
+T14 menjawab pertanyaan **kedua**, dan hanya untuk itulah korpus produksi dipakai.
+Alasannya bersifat mengukur, bukan preferensi: metadata dataset itu sendiri mencatat
+`porsi_koleksi_terambil_per_kueri_persen` = **29,4**. Dengan `top_k` 5 atas 17
+potongan, setiap retriever mengambil hampir sepertiga koleksi yang sama, sehingga
+perbandingan antar-retriever tidak dapat membedakan apa pun — bukan karena keduanya
+setara, melainkan karena koleksinya terlalu kecil untuk memisahkannya.
+
+**Tujuan arahan pembimbing tetap dipatuhi.** Kuota bukan hanya tidak dilanggar,
+melainkan ditekan: 120 panggilan dari jatah 500 per hari, dan tahap pembangkitan
+jawaban dilewati seluruhnya.
+
+**Wajib disampaikan saat bimbingan berikutnya**: bahwa T14 memakai korpus produksi,
+mengapa koleksi terkontrol tidak dapat menjawab pertanyaan ini, dan bahwa koleksi
+terkontrol TETAP dipakai untuk seluruh evaluasi RAGAS lainnya.
 
 ---
 
