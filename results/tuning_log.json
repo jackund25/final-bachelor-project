@@ -947,5 +947,62 @@
     },
     "waktu": "2026-08-16 19:13:29",
     "catatan": "kandidat produksi: jendela 512 + pemisah kalimat, korpus=kb12_sym"
+  },
+  {
+    "parameter": "model_embedding",
+    "nilai": "EN256",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 26.2,
+      "hit@5(%)": 80.8,
+      "mrr": 0.495,
+      "n_chunk": 2061,
+      "jendela": 256,
+      "token_rerata": 227.6,
+      "token_maks": 443,
+      "persen_melewati_jendela": 37.2,
+      "persen_token_terbuang": 8.23
+    },
+    "waktu": "2026-08-16 19:24:53",
+    "catatan": "all-MiniLM-L6-v2 @ 256, kontrol — model Inggris, jendela bawaannya, korpus=kb12_sym"
+  },
+  {
+    "parameter": "model_embedding",
+    "nilai": "ML128",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 25.8,
+      "hit@5(%)": 68.8,
+      "mrr": 0.456,
+      "n_chunk": 2061,
+      "jendela": 128,
+      "token_rerata": 201.7,
+      "token_maks": 401,
+      "persen_melewati_jendela": 86.4,
+      "persen_token_terbuang": 39.89
+    },
+    "waktu": "2026-08-16 19:28:06",
+    "catatan": "paraphrase-multilingual-MiniLM-L12-v2 @ 128, multibahasa, jendela bawaannya (LEBIH KECIL — dirugikan), korpus=kb12_sym"
+  },
+  {
+    "parameter": "model_embedding",
+    "nilai": "ML256",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 25.8,
+      "hit@5(%)": 77.5,
+      "mrr": 0.487,
+      "n_chunk": 2061,
+      "jendela": 256,
+      "token_rerata": 201.7,
+      "token_maks": 401,
+      "persen_melewati_jendela": 18.4,
+      "persen_token_terbuang": 2.3
+    },
+    "waktu": "2026-08-16 19:32:28",
+    "catatan": "paraphrase-multilingual-MiniLM-L12-v2 @ 256, multibahasa, jendela disamakan dengan kontrol, korpus=kb12_sym"
   }
 ]

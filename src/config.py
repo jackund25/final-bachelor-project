@@ -170,9 +170,15 @@ def _load_rag_config_cached(path_str: Optional[str]) -> RagConfig:
         embedding_max_seq_length=resolve(
             "embedding_max_seq_length", None, "EMBED_MAX_SEQ_LENGTH",
             "rag.embedding_max_seq_length", 0, cast=int, path=path),
+        # CATATAN: nilai di config.yaml ("models/embedding-001") sudah TIDAK ADA lagi
+        # pada API Google per 16 Agustus 2026 — diperiksa lewat models.list dan tidak
+        # muncul di antara 53 model yang terlihat. Jalur google karena itu akan gagal
+        # apa adanya. Slot environment ditambahkan agar percobaan dapat menimpanya
+        # tanpa menyentuh config.yaml; penggantian nilai di config.yaml sendiri
+        # menunggu keputusan (kandidat: models/gemini-embedding-2, jendela 8192).
         google_embedding_model=resolve(
-            "google_embedding_model", None, None, "rag.google_embedding_model",
-            "models/embedding-001", cast=str, path=path),
+            "google_embedding_model", None, "GOOGLE_EMBED_MODEL",
+            "rag.google_embedding_model", "models/embedding-001", cast=str, path=path),
         ollama_embed_model=resolve(
             "ollama_embed_model", None, "OLLAMA_EMBED_MODEL", "rag.ollama.embed_model",
             "nomic-embed-text", cast=str, path=path),

@@ -368,7 +368,72 @@ diadopsi**. Bila integritas korpus hendak diperbaiki, jalannya adalah model deng
 jendela yang memang **dilatih** untuk teks panjang — bukan menarik paksa jendela
 model yang disetel pada 256.
 
-## 9. Berkas yang disentuh
+## 9. T9 — apakah ketidakcocokan BAHASA penyebabnya?
+
+Sumber: `results/eval_rag/model_embedding.json`, skrip `scripts/eval_model_embedding.py`.
+
+T8 menyingkirkan pemotongan sebagai penyebab, sehingga dugaan berikutnya diuji:
+`all-MiniLM-L6-v2` adalah model **bahasa Inggris**, sedangkan korpusnya berbahasa
+Indonesia. Pembanding `paraphrase-multilingual-MiniLM-L12-v2` sudah tersedia luring,
+berdimensi sama (384), dan **berjendela 128 — lebih kecil** daripada 256 milik
+kontrol. Rancangan ini **sengaja memberatkan pihak yang didugakan menang**: bila
+model multibahasa tetap unggul meski terpotong jauh lebih parah, bahasa terbukti
+lebih menentukan daripada jendela.
+
+Potongan identik di semua varian (900/120, pemisah lama), sehingga label tidak
+bergeser dan perbandingannya sah.
+
+| Varian | Jendela | MRR | Hit@1 | Token terbuang | Dim |
+|---|---:|---:|---:|---:|---:|
+| **EN256** kontrol | 256 | 0,492 | 29,2% | 8,23% | 384 |
+| **ML128** multibahasa | 128 | 0,463 | **30,0%** | **39,89%** | 384 |
+| **ML256** multibahasa | 256 | **0,506** | **30,0%** | 2,30% | 384 |
+
+H1 LOLOS (ML128 memang terbuang lebih banyak), H3 LOLOS (dimensi sama 384, jadi
+perbedaan hasil tidak dapat dijelaskan oleh dimensi).
+
+**Selisih ML256 − EN256 = +0,014 — di bawah ambang 0,02 yang ditetapkan di muka.
+Dugaan ketidakcocokan bahasa TIDAK didukung.**
+
+Model multibahasa memang sedikit lebih baik (dan Hit@1-nya konsisten lebih tinggi,
+30,0% lawan 29,2%), tetapi tidak cukup untuk menyimpulkan bahasa sebagai penyebab.
+
+### Bukti tambahan yang memperkuat T8
+
+Perhatikan **ML128: membuang 39,89% token — hampir lima kali lipat kontrol — namun
+MRR-nya hanya turun 0,029.** Ini menguatkan kesimpulan T8 dari arah yang berbeda:
+sistem retrieval ini **sangat tidak peka terhadap pemotongan**. Kehilangan empat
+dari sepuluh token korpus hampir tidak menggerakkan metriknya.
+
+## 10. Kesimpulan gabungan T7–T9: penyebabnya bukan yang dikira
+
+Tiga percobaan berpisah jalan menuju satu kesimpulan yang sama:
+
+| Dugaan | Diuji di | Hasil |
+|---|---|---|
+| Potongan berhenti di tengah kalimat | T7 | **Nyata**, dan sudah diperbaiki (19,7% → 83,5%) |
+| Pemotongan senyap 256 token | T8 | **Bukan** penyebab; menghapusnya justru −0,023 |
+| Ketidakcocokan bahasa model | T9 | **Tidak didukung**; +0,014, di bawah ambang |
+
+Langit-langit MRR ~0,5 karena itu **tidak berasal dari sisi representasi sama
+sekali**. Kandidat yang tersisa, berurut menurut kekuatan bukti:
+
+1. **Alat ukurnya sendiri.** Sudah terbukti berbias panjang dan melabeli isi yang
+   benar sebagai `lain` (Bagian 7). Selama label kebenaran diturunkan dari teks
+   potongan, seluruh angka MRR di proyek ini menaksir sesuatu yang bergerak.
+2. **Susunan kueri.** Kueri disintesis dari angka glukosa lewat
+   `build_ablation_query()`; keragamannya sempit dan mungkin tidak menuntut
+   pembedaan yang halus.
+3. **`lambda_mult` 0,0.** MMR pada nilai itu memaksimalkan KERAGAMAN dan nyaris
+   mengabaikan relevansi dalam pengurutan. Ini pilihan yang sudah disetel, tetapi
+   interaksinya dengan metrik berbasis label topik belum pernah diperiksa.
+
+**Implikasi bagi Bab IV:** perbaikan chunking layak dinarasikan sebagai perbaikan
+**integritas korpus dan keterbacaan sitasi** — keduanya terukur dan tercapai.
+Ia **tidak boleh** dinarasikan sebagai perbaikan kinerja retrieval, karena tiga
+percobaan menunjukkan kinerja tidak bergerak di sana.
+
+## 11. Berkas yang disentuh
 
 | Berkas | Perubahan |
 |---|---|
