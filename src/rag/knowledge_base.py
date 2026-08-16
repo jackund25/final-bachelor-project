@@ -65,10 +65,10 @@ def _build_embeddings(
     if embed_provider == "google":
         from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-        return GoogleGenerativeAIEmbeddings(
+        return _EmbeddingsBerlaju(GoogleGenerativeAIEmbeddings(
             model=google_model or cfg.google_embedding_model,
             google_api_key=os.getenv("GOOGLE_API_KEY"),
-        )
+        ))
     # Default: Ollama
     from langchain_ollama import OllamaEmbeddings
 
@@ -163,6 +163,88 @@ def _penakar_token(nama_model: str):
         return len(tok.encode(teks, add_special_tokens=True))
 
     return panjang_token
+
+
+class _EmbeddingsBerlaju:
+    """Bungkus embedding berbasis API dengan pembatas laju dan coba-ulang 429.
+
+    WHAT  : pembatas laju sisi klien di depan penyedia embedding terkelola.
+    WHO   : dipakai jalur ``google`` pada _build_embeddings(); jalur
+            sentence-transformers lokal tidak memerlukannya.
+    WHERE : src/rag/knowledge_base.py, membungkus GoogleGenerativeAIEmbeddings.
+    WHEN  : setiap pemanggilan embed_documents/embed_query, yakni saat indexing
+            korpus dan saat setiap kueri dokter.
+    WHY   : free-tier Gemini membatasi 100 permintaan embedding per menit per
+            model. Mengindeks 2.061 potongan sekaligus MELAMPAUINYA dan gagal di
+            tengah jalan dengan 429, meninggalkan indeks separuh terisi — keadaan
+            yang lebih berbahaya daripada gagal total karena tampak berhasil.
+            Terverifikasi: percobaan pertama T10 gagal persis begitu.
+    HOW   : permintaan dipecah menjadi kelompok kecil, dijeda agar lajunya di
+            bawah batas, dan 429 dicoba ulang dengan mundur bertahap. Angka
+            bawaan disetel konservatif (90/menit) karena batasnya menghitung
+            KONTEN, bukan permintaan batch.
+
+    Sengaja bukan turunan kelas LangChain: antarmuka yang dipakai Chroma hanya
+    embed_documents dan embed_query, dan membungkus jauh lebih tahan terhadap
+    perubahan versi pustaka daripada mewarisi.
+    """
+
+    def __init__(self, inner: Any, per_menit: int = 90, ukuran_kelompok: int = 30,
+                 maks_coba: int = 5):
+        self._inner = inner
+        self._per_menit = max(per_menit, 1)
+        self._ukuran = max(ukuran_kelompok, 1)
+        self._maks_coba = max(maks_coba, 1)
+
+    def __getattr__(self, nama: str) -> Any:
+        # Atribut lain (mis. .model) diteruskan apa adanya.
+        return getattr(self._inner, nama)
+
+    def _coba_ulang(self, fungsi, *a):
+        import time
+        for percobaan in range(self._maks_coba):
+            try:
+                return fungsi(*a)
+            except Exception as exc:
+                if "429" not in str(exc) and "quota" not in str(exc).lower():
+                    raise
+                if percobaan == self._maks_coba - 1:
+                    raise
+                jeda = 30 * (percobaan + 1)
+                logger.warning("Kuota embedding tercapai; menunggu %d dtk (percobaan %d/%d)",
+                               jeda, percobaan + 1, self._maks_coba)
+                time.sleep(jeda)
+        raise RuntimeError("tidak tercapai")
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        import time
+        hasil: List[List[float]] = []
+        jeda_per_kelompok = 60.0 * self._ukuran / self._per_menit
+        total = (len(texts) + self._ukuran - 1) // max(self._ukuran, 1)
+        for i in range(0, len(texts), self._ukuran):
+            t0 = time.time()
+            hasil.extend(self._coba_ulang(self._inner.embed_documents,
+                                          texts[i:i + self._ukuran]))
+            if i // self._ukuran % 10 == 0:
+                logger.info("Embedding kelompok %d/%d", i // self._ukuran + 1, total)
+            # Jeda hanya bila masih ada sisa; menjeda sesudah kelompok terakhir
+            # hanya memperlambat tanpa manfaat.
+            if i + self._ukuran < len(texts):
+                time.sleep(max(0.0, jeda_per_kelompok - (time.time() - t0)))
+        return hasil
+
+    def embed_query(self, text: str) -> List[float]:
+        # Kueri juga dihitung kuota. Evaluasi menembakkan ratusan kueri berturut-turut
+        # sehingga tanpa jeda ia menabrak batas yang sama seperti indexing.
+        import time
+        minimal = 60.0 / self._per_menit
+        sejak = time.time() - getattr(self, "_terakhir", 0.0)
+        if sejak < minimal:
+            time.sleep(minimal - sejak)
+        try:
+            return self._coba_ulang(self._inner.embed_query, text)
+        finally:
+            self._terakhir = time.time()
 
 
 def _sanitize_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
