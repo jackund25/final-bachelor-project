@@ -6,16 +6,16 @@ Bab ini memaparkan perancangan solusi yang menjawab kebutuhan pada Bab~\ref{chap
 
 \section{Arsitektur Umum Solusi}
 \label{sec:arsitektur-umum}
-Arsitektur solusi mengubah alur reaktif pada Gambar~\ref{fig:alur-perawatan} menjadi alur \textbf{antisipatif} yang menghubungkan prediksi dengan pengetahuan klinis. Data \emph{logbook} tidak lagi berhenti sebagai catatan pasif yang ditafsirkan manual, melainkan mengalir melalui lapisan prediksi, lapisan \emph{state digital twin}, dan lapisan penalaran berbasis dokumen, hingga menghasilkan rekomendasi tertelusur yang divalidasi dokter. Gambar~\ref{fig:arsitektur} menyajikan arsitektur berlapis tersebut.
+Arsitektur solusi mengubah alur reaktif pada Gambar~\ref{fig:alur-perawatan} menjadi alur \textbf{antisipatif} yang menghubungkan prediksi dengan pengetahuan klinis. Data \emph{logbook} tidak lagi berhenti sebagai catatan pasif yang ditafsirkan manual, melainkan mengalir melalui lapisan prediksi, lapisan ringkasan keadaan pasien, dan lapisan penalaran berbasis dokumen, hingga menghasilkan rekomendasi tertelusur yang divalidasi dokter. Gambar~\ref{fig:arsitektur} menyajikan arsitektur berlapis tersebut.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{images/Gambar_IV1_Arsitektur.png}
-\caption{Arsitektur berlapis solusi: dari data \emph{logbook} menuju prediksi, \emph{state digital twin}, penalaran berbasis dokumen, dan rekomendasi tertelusur yang divalidasi dokter.}
+\caption{Arsitektur berlapis solusi: dari data \emph{logbook} menuju prediksi, ringkasan keadaan pasien, penalaran berbasis dokumen, dan rekomendasi tertelusur yang divalidasi dokter.}
 \label{fig:arsitektur}
 \end{figure}
 
-Perbedaan mendasar terhadap kondisi saat ini dirangkum sebagai berikut. \emph{Pertama}, titik masalah ``reaktif'' digantikan modul prediksi glukosa jangka pendek yang menatap ke depan ($+30/+60$ menit). \emph{Kedua}, ``interpretasi manual'' dibantu \emph{state digital twin} yang meringkas tingkat risiko, arah tren, dan urgensi. \emph{Ketiga}, ``prediksi terputus dari rekomendasi'' dijembatani mekanisme RAG \emph{terkondisi-prediksi} yang menjadikan nilai terprediksi sebagai konteks kueri. \emph{Keempat}, seluruh infrastruktur dirancang \emph{deployable} tanpa GPU, CGM \emph{real-time}, maupun EHR, sehingga selaras dengan kendala FKTP dan berbeda dari kerangka berbasis \emph{knowledge graph} yang menuntut infrastruktur berat \autocite{rad2024}.
+Perbedaan mendasar terhadap kondisi saat ini dirangkum sebagai berikut. \emph{Pertama}, titik masalah ``reaktif'' digantikan modul prediksi glukosa jangka pendek yang menatap ke depan ($+30/+60$ menit). \emph{Kedua}, ``interpretasi manual'' dibantu ringkasan keadaan pasien yang menyajikan tingkat risiko, arah tren, dan urgensi. \emph{Ketiga}, ``prediksi terputus dari rekomendasi'' dijembatani mekanisme RAG \emph{terkondisi-prediksi} yang menjadikan nilai terprediksi sebagai konteks kueri. \emph{Keempat}, seluruh infrastruktur dirancang \emph{deployable} tanpa GPU, CGM \emph{real-time}, maupun EHR, sehingga selaras dengan kendala layanan kesehatan bersumber daya terbatas dan berbeda dari kerangka berbasis \emph{knowledge graph} yang menuntut infrastruktur berat \autocite{rad2024}.
 
 \section{Batas Penalaran Mesin Prakiraan}
 \label{sec:batas-prakiraan}
@@ -37,15 +37,29 @@ Inti kebaruan tugas akhir ini adalah pipeline RAG \emph{terkondisi-prediksi} pad
 \label{fig:pipeline-pcrag}
 \end{figure}
 
-Alur pipeline: (1)~\emph{state} fisiologis terkini diekstraksi dari \emph{logbook}; (2)~model \emph{Random Forest} memprediksi glukosa $+30/+60$ menit; (3)~nilai terprediksi diklasifikasikan menjadi kondisi klinis (hipoglikemia/normal/hiperglikemia) dan digabung dengan konteks terkini untuk membentuk \textbf{kueri yang dikondisikan prediksi}; (4)~kueri di-\emph{embed} dengan \texttt{all-MiniLM-L6-v2} dan dipakai untuk \emph{retrieval} dari basis pengetahuan klinis pada ChromaDB; (5)~potongan dokumen teratas diberikan sebagai konteks kepada LLM \textbf{\texttt{gemini-2.5-flash-lite}} dengan parameter generatif konservatif; (6)~LLM menghasilkan rekomendasi berbahasa Indonesia yang \emph{grounded} dan tertelusur. Setiap lapisan dilengkapi \emph{graceful fallback} agar sistem tetap memberi keluaran aman saat salah satu komponen gagal.
+Alur pipeline: (1)~keadaan fisiologis terkini diekstraksi dari \emph{logbook}; (2)~model \emph{Gradient Boosting} memprediksi glukosa $+30/+60$ menit beserta interval ketidakpastiannya; (3)~nilai terprediksi diklasifikasikan menjadi kondisi klinis (hipoglikemia/normal/hiperglikemia) dan digabung dengan konteks terkini untuk membentuk \textbf{kueri yang dikondisikan prediksi}; (4)~kueri terkondisi ditelusurkan pada basis pengetahuan klinis memakai \textbf{penelusuran hibrida}, yakni jalur padat berbasis \texttt{all-MiniLM-L6-v2} atas indeks vektor ChromaDB yang ditata ulang dengan MMR, digabung menurut peringkat dengan jalur leksikal berbasis BM25 atas potongan yang sama (Subbab~\ref{sec:penelusuran-hibrida}); (5)~lima potongan dokumen teratas diberikan sebagai konteks kepada LLM \textbf{\texttt{gemini-3.5-flash-lite}} dengan parameter generatif konservatif; (6)~LLM menghasilkan rekomendasi berbahasa Indonesia yang \emph{grounded} dan tertelusur. Setiap lapisan dilengkapi \emph{graceful fallback} agar sistem tetap memberi keluaran aman saat salah satu komponen gagal.
+
+\section{Perancangan Penelusuran Hibrida}
+\label{sec:penelusuran-hibrida}
+Penelusuran pada sistem ini tidak bertumpu pada satu jalur. Kueri yang telah dikondisikan prediksi ditelusurkan melalui \textbf{dua jalur yang berjalan atas potongan dokumen yang sama}, lalu hasil keduanya digabung menurut peringkat.
+
+\textbf{Jalur padat} memakai model \texttt{all-MiniLM-L6-v2} atas indeks vektor ChromaDB, dengan penataan ulang \emph{Maximal Marginal Relevance} \autocite{carbonell1998} agar konteks yang diberikan kepada model bahasa tidak berulang isi. \textbf{Jalur leksikal} memakai pembobotan Okapi BM25 \autocite{manning2008} atas potongan yang sama, sehingga istilah klinis yang harus cocok persis, seperti nama sediaan insulin, ambang $70$~mg/dL, dan aturan 15--15, tetap terjangkau meskipun ruang maknanya tidak menangkapnya.
+
+Kedua jalur menghasilkan skor yang \textbf{tidak sebanding}: skor kosinus berbatas, sedangkan skor BM25 tidak berbatas dan bergantung pada statistik korpus. Penggabungannya karena itu dilakukan pada \textbf{peringkat}, bukan skor, memakai \emph{Reciprocal Rank Fusion} yang juga dipakai \textcite{xiong2024} pada tolok ukur penelusuran medis. Tetapan peredamnya dipertahankan pada nilai baku dan \textbf{tidak disetel}, agar tidak menambah parameter bebas yang menuntut protokol penyetelan tersendiri.
+
+\textbf{Dasar pemilihan.} Keputusan ini bukan penyetelan umum, melainkan jawaban atas keadaan yang khas pada penelitian ini. Model penelusuran padat yang tersedia dan memenuhi Batasan~5 adalah model \textbf{berbahasa Inggris}, sedangkan korpus pedomannya \textbf{berbahasa Indonesia}. Jalan yang paling langsung, yaitu berpindah ke model multibahasa, telah ditempuh dan \textbf{ditolak berdasarkan pengukuran}: kemampuan sistem membedakan kelas kondisi justru merosot dan kelas kondisi normal hampir hilang, sebagaimana dilaporkan pada Bab~\ref{chap:evaluasi}. Pencocokan leksikal menempuh jalan yang sama sekali berbeda karena tidak bergantung pada ruang makna, sehingga bekerja tepat pada titik model berbahasa Inggris paling lemah. \textcite{lee2024} melaporkan pertimbangan serupa pada sistem penelusuran atas pedoman diabetes.
+
+\textbf{Perilaku saat gagal.} Bila indeks leksikal tidak dapat dibangun, sistem tetap melayani penelusuran melalui jalur padat, tetapi \textbf{menyatakan penurunan itu secara eksplisit} beserta sebabnya. Sistem sengaja tidak dibiarkan mengaku menelusur secara hibrida sambil sesungguhnya menelusur dengan satu jalur, sejalan dengan KNF-04 yang menuntut kegagalan komponen tidak terjadi secara diam-diam.
+
+\textbf{Keterbatasan yang diakui.} Pemenggalan kata pada jalur leksikal belum memenggal imbuhan bahasa Indonesia, sehingga \emph{pemberian}, \emph{diberikan}, dan \emph{berikan} diperlakukan sebagai tiga istilah yang berbeda. \textcite{lee2024} menunjukkan pemenggal khusus bahasa berpengaruh pada pedoman diabetes berbahasa Korea; padanan bagi bahasa Indonesia belum diuji pada penelitian ini dan dicatat sebagai arah pengembangan pada Bab~\ref{chap:penutup}.
 
 \section{Perancangan Perangkat Lunak}
-Perangkat lunak dirancang memisahkan \emph{domain logic} dari antarmuka (KNF-07) agar mudah dipelihara. Struktur kelas utama, meliputi pemuat data, prediktor, \emph{engine} \emph{digital twin}, \emph{retriever}, dan generator rekomendasi, ditunjukkan pada Gambar~\ref{fig:class-diagram}.
+Perangkat lunak dirancang memisahkan \emph{domain logic} dari antarmuka (KNF-07) agar mudah dipelihara. Struktur kelas utama, meliputi pemuat data, prediktor, perakit keadaan pasien, \emph{retriever}, dan generator rekomendasi, ditunjukkan pada Gambar~\ref{fig:class-diagram}.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{images/Gambar_IV4_ClassDiagram.png}
-\caption{Diagram kelas komponen inti sistem, memisahkan \emph{domain logic} (prediksi, \emph{digital twin}, \emph{retrieval}, generasi) dari lapisan antarmuka.}
+\caption{Diagram kelas komponen inti sistem, memisahkan \emph{domain logic} (prediksi, perakitan keadaan pasien, \emph{retrieval}, generasi) dari lapisan antarmuka.}
 \label{fig:class-diagram}
 \end{figure}
 
@@ -59,11 +73,13 @@ Interaksi antarobjek saat menjalankan satu siklus RAG terkondisi-prediksi, dari 
 \end{figure}
 
 \section{Perancangan Antarmuka Pengguna}
-Antarmuka dirancang sebagai alat konsultasi klinis \emph{multi-page} berbasis Streamlit untuk dokter, dengan panel \emph{state digital twin}, penyajian prediksi beserta interval ketidakpastian, \emph{slider what-if} untuk simulasi intervensi, dan rekomendasi tertelusur ke dokumen sumber. Rancangan \emph{wireframe} antarmuka ditunjukkan pada Gambar~\ref{fig:wireframe}. Alur \emph{doctor-mediated} (KF-09) diwujudkan melalui langkah validasi eksplisit sebelum rekomendasi diteruskan kepada pasien.
+Antarmuka dirancang sebagai alat konsultasi klinis \emph{multi-page} berbasis Streamlit untuk dokter, mengikuti alur \emph{tinjau keadaan $\rightarrow$ prediksi dan risiko $\rightarrow$ rekomendasi $\rightarrow$ catat keputusan}. Empat unsurnya adalah panel ringkasan keadaan pasien (glukosa terkini, arah tren, dan tingkat risiko), penyajian prediksi tiap horizon beserta interval ketidakpastian terkalibrasi, rekomendasi yang tertelusur ke potongan dokumen sumber lengkap dengan nomor halamannya, dan pencatatan keputusan dokter. Rancangan \emph{wireframe} antarmuka ditunjukkan pada Gambar~\ref{fig:wireframe}. Alur \emph{doctor-mediated} (KF-09) diwujudkan melalui langkah validasi eksplisit sebelum rekomendasi diteruskan kepada pasien.
+
+Antarmuka \textbf{sengaja tidak} menyediakan kendali simulasi intervensi, sejalan dengan pembatasan yang diuraikan pada Subbab~\ref{sec:batas-prakiraan}: model prediksi bersifat korelasional sehingga tidak sah dipakai menjawab pertanyaan kontrafaktual, dan menyediakan kendali semacam itu justru akan mengundang penafsiran kausal yang tidak dapat dipertanggungjawabkan.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{images/Gambar_IV6_Wireframe.png}
-\caption{Rancangan \emph{wireframe} antarmuka alat konsultasi klinis: panel \emph{state digital twin}, prediksi dengan interval, \emph{slider what-if}, dan rekomendasi tertelusur.}
+\caption{Rancangan \emph{wireframe} antarmuka alat konsultasi klinis: panel ringkasan keadaan pasien, prediksi dengan interval terkalibrasi, rekomendasi tertelusur, dan pencatatan keputusan.}
 \label{fig:wireframe}
 \end{figure}
