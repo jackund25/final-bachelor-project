@@ -116,6 +116,9 @@ class RagConfig:
     collection_name: str
     chunk_size: int
     chunk_overlap: int
+    # Potongan berhenti di batas kalimat, bukan di sembarang kata (Gao dkk. 2023
+    # Bagian V.A.1). Hanya berpengaruh saat INDEXING; mengubahnya menuntut indeks ulang.
+    pemisah_kalimat: bool
     manual_chunk_size: int
     manual_chunk_overlap: int
     embedding_provider: str
@@ -152,6 +155,11 @@ def _load_rag_config_cached(path_str: Optional[str]) -> RagConfig:
             "chunk_size", None, None, "rag.chunk_size", 900, cast=int, path=path),
         chunk_overlap=resolve(
             "chunk_overlap", None, None, "rag.chunk_overlap", 120, cast=int, path=path),
+        # Default False = perilaku sebelum T7, sehingga membaca config lama tidak
+        # diam-diam mengubah cara korpus dipecah.
+        pemisah_kalimat=resolve(
+            "pemisah_kalimat", None, "PEMISAH_KALIMAT", "rag.pemisah_kalimat",
+            False, cast=bool, path=path),
         # Entri manual_kb adalah prosa pendek, bukan halaman buku — sengaja memakai
         # potongan yang lebih kecil. Bila diarahkan ke rag.chunk_size (900), jumlah
         # chunk-nya anjlok dan tests/test_kb.py gagal.

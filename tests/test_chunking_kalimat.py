@@ -63,21 +63,36 @@ def _penakar_atau_lewati(nama_model):
         pytest.skip(f"tokenizer tidak dapat dimuat di lingkungan ini: {exc}")
 
 
-def test_default_tetap_perilaku_lama(kb):
-    """Default WAJIB tidak berubah.
+def test_perilaku_lama_masih_dapat_diminta_secara_eksplisit(kb):
+    """Perilaku lama harus tetap DAPAT DICAPAI, karena ia kontrol percobaan.
 
-    Angka retrieval yang sudah dilaporkan dihitung dengan pemisah lama. Bila
-    default ikut berubah, seluruh angka itu berubah diam-diam tanpa ada yang
-    menyadarinya.
+    Sejak T7 diadopsi, rag.pemisah_kalimat pada config bernilai true sehingga
+    DEFAULT-nya kini pemisah kalimat. Yang wajib dijaga bukan lagi nilai
+    default-nya, melainkan bahwa pemisah lama tetap dapat diminta persis —
+    tanpa itu varian kontrol V0/W256/EN256 tidak dapat direproduksi.
     """
     assert PEMISAH_KARAKTER == ["\n## ", "\n### ", "\n\n", "\n", " ", ""]
 
-    potongan = kb.chunk_documents(documents=_docs(), chunk_size=300, chunk_overlap=40)
-    pembanding = kb.chunk_documents(
+    lama = kb.chunk_documents(documents=_docs(), chunk_size=300, chunk_overlap=40,
+                              pemisah_kalimat=False)
+    baru = kb.chunk_documents(documents=_docs(), chunk_size=300, chunk_overlap=40,
+                              pemisah_kalimat=True)
+    assert [c["text"] for c in lama] != [c["text"] for c in baru]
+
+
+def test_default_mengikuti_config_bukan_nilai_tetap(kb):
+    """Default WAJIB berasal dari config, bukan dipatri di kode.
+
+    Bila default dipatri, config dapat menyalakan pemisah kalimat sementara
+    produksi diam-diam tetap mengindeks dengan pemisah lama — persis jenis
+    penyimpangan senyap yang menjadi pokok seluruh penyelidikan T7.
+    """
+    dari_config = kb.chunk_documents(documents=_docs(), chunk_size=300, chunk_overlap=40)
+    eksplisit = kb.chunk_documents(
         documents=_docs(), chunk_size=300, chunk_overlap=40,
-        pemisah_kalimat=False, satuan_panjang="karakter",
+        pemisah_kalimat=bool(getattr(kb.cfg, "pemisah_kalimat", False)),
     )
-    assert [c["text"] for c in potongan] == [c["text"] for c in pembanding]
+    assert [c["text"] for c in dari_config] == [c["text"] for c in eksplisit]
 
 
 def test_urutan_pemisah_menaruh_kalimat_sebelum_newline_tunggal():
@@ -96,7 +111,8 @@ def test_urutan_pemisah_menaruh_kalimat_sebelum_newline_tunggal():
 
 def test_pemisah_kalimat_menaikkan_potongan_yang_berakhir_utuh(kb):
     """Keluhan pengguna: kutipan berhenti di tengah kalimat."""
-    lama = kb.chunk_documents(documents=_docs(), chunk_size=300, chunk_overlap=40)
+    lama = kb.chunk_documents(documents=_docs(), chunk_size=300, chunk_overlap=40,
+                              pemisah_kalimat=False)
     baru = kb.chunk_documents(documents=_docs(), chunk_size=300, chunk_overlap=40,
                               pemisah_kalimat=True)
 

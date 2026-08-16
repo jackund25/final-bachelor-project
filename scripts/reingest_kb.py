@@ -450,13 +450,23 @@ def main() -> int:
 
     chunks = kb.chunk_documents(documents=docs, chunk_size=args.chunk_size,
                                 chunk_overlap=args.chunk_overlap,
-                                pemisah_kalimat=args.pemisah_kalimat,
+                                # None = ikut rag.pemisah_kalimat pada config.
+                                # Meneruskan False saat argumen tidak diberikan akan
+                                # MENIMPA config dan diam-diam mengindeks dengan
+                                # pemisah lama meski config menyalakannya.
+                                pemisah_kalimat=(True if args.pemisah_kalimat else None),
                                 satuan_panjang=args.satuan_panjang)
     if args.chunk_size is not None or args.chunk_overlap is not None:
         print(f"    (chunk_size={args.chunk_size or 'config'}, "
               f"chunk_overlap={args.chunk_overlap or 'config'} — timpaan dari argumen)")
+    # Nilai EFEKTIF, bukan nilai argumen. Mencetak args.pemisah_kalimat akan
+    # melaporkan False padahal config menyalakannya — persis jenis penyimpangan
+    # senyap antara yang dilaporkan dan yang dijalankan yang menjadi pokok T7.
+    pemisah_efektif = bool(args.pemisah_kalimat or getattr(kb.cfg, "pemisah_kalimat", False))
     print(f"    (satuan_panjang={args.satuan_panjang}, "
-          f"pemisah_kalimat={args.pemisah_kalimat})")
+          f"pemisah_kalimat={pemisah_efektif}, "
+          f"embedding={kb.cfg.embedding_model}, "
+          f"max_seq_length={kb.cfg.embedding_max_seq_length or 'bawaan model'})")
 
     # Fragmen ekor halaman: pemecahan per halaman menghasilkan potongan pendek
     # yang dulu tersembunyi oleh penggabungan antar halaman.

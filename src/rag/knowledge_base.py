@@ -372,13 +372,15 @@ class MedicalKnowledgeBase:
         documents: Optional[List[Dict[str, Any]]] = None,
         chunk_size: Optional[int] = None,
         chunk_overlap: Optional[int] = None,
-        pemisah_kalimat: bool = False,
+        pemisah_kalimat: Optional[bool] = None,
         satuan_panjang: str = "karakter",
     ) -> List[Dict[str, Any]]:
         """Pecah dokumen menjadi potongan siap-indeks.
 
         pemisah_kalimat
-            False (default) mempertahankan perilaku lama: setelah baris baru,
+            None (default) mengambil nilai dari rag.pemisah_kalimat pada config,
+            sehingga produksi dan percobaan memakai aturan yang sama.
+            False mempertahankan perilaku lama: setelah baris baru,
             pemisah berikutnya adalah spasi, sehingga potongan berhenti di
             sembarang kata. True memakai PEMISAH_KALIMAT.
         satuan_panjang
@@ -393,6 +395,8 @@ class MedicalKnowledgeBase:
         """
         chunk_size = chunk_size if chunk_size is not None else self.cfg.chunk_size
         chunk_overlap = chunk_overlap if chunk_overlap is not None else self.cfg.chunk_overlap
+        if pemisah_kalimat is None:
+            pemisah_kalimat = getattr(self.cfg, "pemisah_kalimat", False)
         docs = documents if documents is not None else self.documents
         if not docs:
             logger.warning("No documents available to chunk")
