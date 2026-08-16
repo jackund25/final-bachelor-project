@@ -153,29 +153,31 @@ def _metrik_dari_topik(topics: list, expected: str) -> dict:
             "ndcg": ndcg_at_k(rels, TOP_K)}
 
 
-def score_lengan(r, bm25, teks_korpus, query: str, expected: str, n_kandidat: int = 50) -> dict:
-    """Skor ketiga lengan atas SATU kueri, memakai kolam kandidat yang sebanding."""
-    import numpy as _np
+def bangun_retriever_per_lengan() -> dict:
+    """Satu MMRRetriever per lengan, modenya DIPATOK eksplisit.
 
-    hasil = {}
+    Dua alasan, keduanya pernah menjadi sumber kesalahan di proyek ini:
 
-    # Lengan vektor: jalur produksi, tidak diubah sedikit pun agar D1 dapat diperiksa.
-    hasil["vektor"] = score(r, query, expected)
+    1. Sejak T13 diadopsi, config.yaml menyetel rag.retrieval_mode=hibrida.
+       Membuat MMRRetriever tanpa menyebut mode akan membuat lengan "vektor"
+       diam-diam berjalan hibrida, dan seluruh perbandingan menjadi tidak sah
+       TANPA satu pun galat.
+    2. Versi sebelumnya mengimplementasikan ULANG fusi RRF di dalam skrip ini,
+       terpisah dari src/rag/retriever.py. Yang diukur karena itu bukan jalur yang
+       benar-benar dijalankan sistem. Kini ketiga lengan memanggil kode produksi
+       yang sama, sehingga angkanya menggambarkan apa yang dipakai dokter.
+    """
+    from src.rag.retriever import MMRRetriever
+    return {l: MMRRetriever(persist_dir="models/chroma_db",
+                            collection_name="diabetes_kb",
+                            embed_provider="sentence-transformers",
+                            retrieval_mode=l)
+            for l in LENGAN}
 
-    # Lengan BM25.
-    skor_bm = bm25.get_scores(tokenisasi(query))
-    urut_bm = list(_np.argsort(-skor_bm)[:n_kandidat])
-    hasil["bm25"] = _metrik_dari_topik(
-        [classify_chunk(teks_korpus[i]) for i in urut_bm[:TOP_K]], expected)
 
-    # Lengan hibrida: peringkat vektor dipetakan ke indeks korpus lewat teksnya.
-    docs_v = r.retrieve(query, top_k=n_kandidat)
-    peta = {t: i for i, t in enumerate(teks_korpus)}
-    urut_v = [peta[d["text"]] for d in docs_v if d["text"] in peta]
-    gabung = _rrf([urut_v, urut_bm])[:TOP_K]
-    hasil["hibrida"] = _metrik_dari_topik(
-        [classify_chunk(teks_korpus[i]) for i in gabung], expected)
-    return hasil
+def score_lengan(retrievers: dict, query: str, expected: str) -> dict:
+    """Skor ketiga lengan atas SATU kueri, seluruhnya lewat kode produksi."""
+    return {l: score(retrievers[l], query, expected) for l in LENGAN}
 
 
 def pick(cases: pd.DataFrame, divergent: bool, rng) -> pd.DataFrame:
@@ -215,11 +217,11 @@ def main() -> None:
 
     patients = sorted(df["patient_id"].unique())
     folds = [patients[i:i + 2] for i in range(0, len(patients), 2)]
-    r = MMRRetriever(persist_dir="models/chroma_db", collection_name="diabetes_kb",
-                     embed_provider="sentence-transformers")
-    bm25, teks_korpus = bangun_bm25("models/chroma_db", "diabetes_kb")
-    print(f"Indeks BM25 dibangun atas {len(teks_korpus)} potongan yang SAMA "
-          f"dengan indeks vektor (T13).")
+    retrievers = bangun_retriever_per_lengan()
+    r = retrievers["vektor"]  # lengan kontrol, dipakai pula oleh medan lama
+    for l, rr in retrievers.items():
+        print(f"  lengan {l:8} mode aktif={rr.retrieval_mode}"
+              f" bm25={len(rr._bm25_teks) if rr._bm25 else 0} potongan")
 
     per_fold = []
     for fi, test_p in enumerate(folds):
@@ -288,7 +290,7 @@ def main() -> None:
                         q = build_query(float(c["predicted"]), True, cond=str(c["cond_clf"]))
                     else:
                         q = build_query(float(c["actual_future"]), True)
-                    sl = score_lengan(r, bm25, teks_korpus, q, exp)
+                    sl = score_lengan(retrievers, q, exp)
                     s = sl["vektor"]  # lengan produksi; nilainya identik score()
                     agg[m]["hit@1"].append(s["hit@1"])
                     agg[m]["mrr"].append(s["mrr"])
