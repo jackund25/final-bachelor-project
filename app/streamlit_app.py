@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent))          # app (ui)
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent.parent / ".env")
 
+import html
 import json
 import pickle
 from datetime import datetime
@@ -58,10 +59,13 @@ def load_condition_classifier():
     ambang 70/180: sensitivitas hipoglikemia hanya 14%. Pengklasifikasi sadar-biaya
     menaikkannya ke 44% pada ambang standar (lihat scripts/train_condition_classifier.py).
     """
-    cf = Path("models/rf_condition_classifier_h6.pkl")
-    if not cf.exists():
-        return None
-    return pickle.load(open(cf, "rb"))
+    # Prioritas keluarga sama dengan bundle regresi: pengklasifikasi dan regresor
+    # wajib sekeluarga, karena keduanya memakai scaler yang sama.
+    for nama in ("gbm_condition_classifier_h6.pkl", "rf_condition_classifier_h6.pkl"):
+        cf = Path("models") / nama
+        if cf.exists():
+            return pickle.load(open(cf, "rb"))
+    return None
 
 
 def predict_condition(window_df, clf, art):
@@ -76,7 +80,7 @@ def predict_condition(window_df, clf, art):
 
 
 @st.cache_resource
-def load_artifacts(path: str = "models/rf_inference_bundle.pkl"):
+def load_artifacts(path: str = "models/gbm_inference_bundle_h6.pkl"):
     bf = Path(path)
     if not bf.exists():
         return None
@@ -87,25 +91,41 @@ def load_artifacts(path: str = "models/rf_inference_bundle.pkl"):
             "horizon": int(b.get("prediction_horizon", 6)),
             "use_engineered": bool(b.get("use_engineered", False)),
             "predict_delta": bool(b.get("predict_delta", False)),
-            "feature_engineering": dict(b.get("feature_engineering", {}))}
+            "feature_engineering": dict(b.get("feature_engineering", {})),
+            # Cara ketidakpastian per sampel dihitung. Bundle RF lama tidak punya
+            # medan ini; bawaannya sebaran antar-pohon, sehingga bundle lama tetap
+            # dimuat dengan perilaku yang sama seperti sebelumnya.
+            "std_method": str(b.get("std_method", "tree_variance")),
+            "std_models": b.get("std_models"),
+            "model_family": str(b.get("model_family", type(b["model"]).__name__))}
 
 
-# Bundle per horizon. Sebelumnya aplikasi hanya memuat rf_inference_bundle.pkl (= h6),
-# padahal bundle h12 sudah ada di models/ dan deskripsi KF-03 menuntut dua horizon.
-HORIZON_BUNDLES = ["models/rf_inference_bundle_h6.pkl", "models/rf_inference_bundle_h12.pkl"]
+# Bundle per horizon, menurut PRIORITAS keluarga model. GBM adalah prediktor produksi
+# sejak 13 Agustus 2026 (lihat catatan pada config.yaml); bundle RF dipertahankan agar
+# instalasi lama dan skrip pembanding tetap berjalan.
+#
+# Prioritas diberlakukan per KELUARGA, bukan per berkas: mencampur h6 dari GBM dengan
+# h12 dari RF akan menghasilkan dua horizon dari dua model berbeda pada satu halaman,
+# dan dokter tidak punya cara mengetahuinya.
+KELUARGA_BUNDLE = [
+    ("GBM", ["models/gbm_inference_bundle_h6.pkl", "models/gbm_inference_bundle_h12.pkl"]),
+    ("RF", ["models/rf_inference_bundle_h6.pkl", "models/rf_inference_bundle_h12.pkl"]),
+]
 
 
 def load_horizons():
-    """Muat semua bundle horizon yang tersedia, urut horizon menaik.
+    """Muat bundle horizon dari SATU keluarga model, urut horizon menaik.
 
-    Jatuh kembali ke bundle generik bila berkas per-horizon tidak ada, supaya instalasi
+    Keluarga pertama yang punya minimal satu bundle dipakai seluruhnya. Jatuh kembali
+    ke bundle generik bila tidak ada berkas per-horizon sama sekali, supaya instalasi
     lama tetap berjalan dengan satu horizon alih-alih gagal total.
     """
-    arts = [a for a in (load_artifacts(p) for p in HORIZON_BUNDLES) if a is not None]
-    if not arts:
-        generik = load_artifacts()
-        arts = [generik] if generik is not None else []
-    return sorted(arts, key=lambda a: a["horizon"])
+    for _, berkas in KELUARGA_BUNDLE:
+        arts = [a for a in (load_artifacts(p) for p in berkas) if a is not None]
+        if arts:
+            return sorted(arts, key=lambda a: a["horizon"])
+    generik = load_artifacts("models/rf_inference_bundle.pkl")
+    return [generik] if generik is not None else []
 
 
 @st.cache_resource
@@ -142,16 +162,47 @@ def predict_next(window_df, art):
 
 
 def predict_uncertainty(window_df, art):
-    """Std prediksi dari sebaran antar-pohon RF (skala absolut; anchor konstan per sampel).
-    Mengkomunikasikan keyakinan model ke dokter — relevan karena deteksi hipoglikemia lemah."""
-    est = getattr(art["model"], "estimators_", None)
-    if not est:
-        return None
+    """Sigma prediksi per sampel (skala absolut; anchor konstan per sampel).
+
+    Mengkomunikasikan keyakinan model ke dokter — relevan karena deteksi hipoglikemia
+    lemah pada kedua keluarga model.
+
+    DUA SUMBER, bergantung keluarga model:
+
+    - ``tree_variance``   — sebaran antar-pohon Random Forest (``estimators_``).
+    - ``quantile_spread`` — rentang dua model kuantil GBM dibagi 3,92.
+      HistGradientBoostingRegressor TIDAK punya ``estimators_``, sehingga tanpa jalur
+      ini interval prediksi hilang sama sekali — padahal Tujuan 3 menyebut kalibrasi
+      ketidakpastian secara eksplisit.
+
+    Keduanya HEURISTIK dengan status yang sama. Jaminan cakupan konformal tidak
+    bergantung pada bagaimana sigma dipilih; kuantil konformal yang dihitung pada
+    himpunan kalibrasi menyerap skalanya (Angelopoulos & Bates, 2021). Mengganti
+    sumber sigma karena itu tidak menurunkan mutu jaminannya.
+
+    Mengembalikan ``None`` bila sumbernya tidak tersedia — pemanggil WAJIB menyatakan
+    intervalnya belum terkalibrasi, bukan menampilkan interval dengan sigma tebakan.
+    """
     import numpy as np
     X = window_df[art["features"]].values.astype(float)
     if art["scaler"] is not None:
         X = art["scaler"].transform(X)
     Xf = X.reshape(1, -1)
+
+    if art.get("std_method") == "quantile_spread":
+        qm = art.get("std_models") or {}
+        lo_m, hi_m = qm.get("low"), qm.get("high")
+        if lo_m is None or hi_m is None:
+            return None
+        from src.models.gbm_model import GAUSS_95_WIDTH
+        lebar = float(hi_m.predict(Xf)[0]) - float(lo_m.predict(Xf)[0])
+        # Kuantil yang dilatih terpisah tidak dijamin berurutan; lebar negatif
+        # dipangkas agar tidak menghasilkan interval terbalik.
+        return max(lebar, 0.0) / GAUSS_95_WIDTH
+
+    est = getattr(art["model"], "estimators_", None)
+    if not est:
+        return None
     preds = np.array([t.predict(Xf)[0] for t in est])
     return float(preds.std())
 
@@ -163,7 +214,7 @@ app_header("Konsultasi Pasien Diabetes",
 horizons = load_horizons()
 if not horizons:
     st.error("Model belum siap. Jalankan pelatihan dari terminal:")
-    st.code("python -m src.models.rf_model --config config.yaml --data_source ohio_t1dm")
+    st.code("python -m src.models.gbm_model --config config.yaml --data_source ohio_t1dm")
     disclaimer_footer(); st.stop()
 # Horizon terpendek menjadi acuan jendela fitur dan pengklasifikasi kondisi.
 art = horizons[0]
@@ -201,7 +252,7 @@ with st.sidebar:
         st.caption("Belum ada catatan untuk pasien ini — isi di halaman **Input Logbook**.")
 
     st.markdown("---")
-    st.caption("Alur: tinjau status → prediksi & risiko → rekomendasi → simulasi/keputusan.")
+    st.caption("Alur: tinjau status → prediksi & risiko → rekomendasi → catat keputusan.")
 
 pat = data_df[data_df["patient_id"] == sel].sort_values("timestamp")
 seq_len = art["sequence_length"]
@@ -410,7 +461,7 @@ with tab_rec:
     res = st.session_state.get("last_rec")
     if res:
         # Nomor halaman DIAMBIL DARI METADATA chunk, tidak pernah dari teks LLM.
-        sources = build_source_list(res.get("retrieved_docs", []), snippet_chars=200)
+        sources = build_source_list(res.get("retrieved_docs", []))
         st.session_state["last_rec_sources"] = sources
 
         if not sources:
@@ -449,6 +500,15 @@ with tab_rec:
                     "Karena urutan dipilih dengan MMR (yang juga menghindari pengulangan "
                     "isi), peringkat tidak selalu urut menurun terhadap skor."
                 )
+                # Kutipan panjang dipakai untuk MENCOCOKKAN hasil penelusuran dengan
+                # halaman dokumen aslinya. Pilihan "utuh" disediakan karena potongan
+                # yang dikirim ke LLM adalah potongan penuh, bukan versi terpotongnya.
+                utuh = st.checkbox(
+                    "Tampilkan potongan dokumen secara utuh",
+                    value=False,
+                    help="Menampilkan seluruh isi potongan persis seperti yang dikirim "
+                         "ke model bahasa, untuk dicocokkan dengan halaman sumbernya.",
+                )
                 for s in sources:
                     judul = s["judul_lengkap"] or s["nama_dokumen"]
                     head = f"**#{s['rank']} · {judul}**"
@@ -463,7 +523,50 @@ with tab_rec:
                         ] if p
                     )
                     st.caption(meta_line)
-                    st.caption(s["snippet"])
+
+                    teks = s["teks_lengkap"] if utuh else s["snippet"]
+                    # Di-escape dan dirender sebagai blok kutipan: isi potongan pedoman
+                    # memuat karakter yang bermakna di markdown (bullet, angka berimbuh
+                    # titik, tanda bintang) sehingga membiarkannya diparse akan mengubah
+                    # teks yang justru sedang dibandingkan dengan dokumen aslinya.
+                    st.markdown(
+                        '<div style="border-left:3px solid rgba(127,127,127,.4);'
+                        'padding:.45rem .85rem;margin:.15rem 0 .35rem 0;'
+                        'font-size:.9rem;line-height:1.55;opacity:.9;'
+                        'white-space:pre-wrap;">'
+                        f'{html.escape(teks)}</div>',
+                        unsafe_allow_html=True,
+                    )
+                    # Dua keterangan di bawah SENGAJA dipisah karena menjelaskan dua
+                    # pemotongan yang berbeda dan kerap tertukar:
+                    #   (1) pemotongan TAMPILAN — dilakukan di sini, dapat dibatalkan
+                    #       dengan mencentang "utuh";
+                    #   (2) pemotongan INDEXING — sudah terjadi saat korpus dipecah,
+                    #       tidak dapat dibatalkan dari UI. Menandainya penting supaya
+                    #       dokter tahu kalimat di tepi kutipan bersambung ke potongan
+                    #       tetangga, bukan kalimat yang rusak.
+                    if s["snippet_terpotong"] and not utuh:
+                        cara = {
+                            "batas_kalimat": "berhenti di akhir kalimat",
+                            "batas_kata": "berhenti di batas kata (tidak ada akhir "
+                                          "kalimat pada rentang ini)",
+                        }.get(s.get("cara_potong", ""), "dipotong")
+                        st.caption(
+                            f"Ditampilkan {len(s['snippet'])} dari {s['n_char']} karakter "
+                            f"potongan, {cara} — centang kotak di atas untuk melihat utuhnya."
+                        )
+                    if not s.get("mulai_kalimat_utuh", True) or not s.get(
+                        "akhir_kalimat_utuh", True
+                    ):
+                        tepi = []
+                        if not s.get("mulai_kalimat_utuh", True):
+                            tepi.append("awal")
+                        if not s.get("akhir_kalimat_utuh", True):
+                            tepi.append("akhir")
+                        st.caption(
+                            f"⚠️ Potongan ini bersambung di {' dan '.join(tepi)}: "
+                            "kalimatnya berlanjut pada potongan tetangga dokumen yang sama."
+                        )
                     st.markdown("")
 
 with tab_log:
