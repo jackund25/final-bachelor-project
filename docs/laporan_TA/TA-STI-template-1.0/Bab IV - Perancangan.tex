@@ -2,7 +2,7 @@
 \chapter{PERANCANGAN}
 \label{chap:perancangan}
 
-Bab ini memaparkan perancangan solusi yang menjawab kebutuhan pada Bab~\ref{chap:analisis-masalah}. Perancangan disajikan berurutan dari arsitektur umum (perbandingan \emph{before}--\emph{after} terhadap kondisi saat ini), desain dua mesin komputasi, pipeline \emph{Prediction-Conditioned RAG} sebagai inti kebaruan, perancangan perangkat lunak (struktur kelas dan interaksi antarobjek), hingga perancangan antarmuka pengguna.
+Bab ini memaparkan perancangan solusi yang menjawab kebutuhan pada Bab~\ref{chap:analisis-masalah}. Perancangan disajikan berurutan dari arsitektur umum (perbandingan \emph{before}--\emph{after} terhadap kondisi saat ini), desain dua mesin komputasi, pipeline RAG \emph{terkondisi-prediksi} sebagai inti kebaruan, perancangan perangkat lunak (struktur kelas dan interaksi antarobjek), hingga perancangan antarmuka pengguna.
 
 \section{Arsitektur Umum Solusi}
 Arsitektur solusi mengubah alur reaktif pada Gambar~\ref{fig:kondisi-saat-ini} menjadi alur \textbf{antisipatif} yang menghubungkan prediksi dengan pengetahuan klinis. Data \emph{logbook} tidak lagi berhenti sebagai catatan pasif yang ditafsirkan manual, melainkan mengalir melalui lapisan prediksi, lapisan \emph{state digital twin}, dan lapisan penalaran berbasis dokumen, hingga menghasilkan rekomendasi tertelusur yang divalidasi dokter. Gambar~\ref{fig:arsitektur} menyajikan arsitektur berlapis tersebut.
@@ -14,7 +14,7 @@ Arsitektur solusi mengubah alur reaktif pada Gambar~\ref{fig:kondisi-saat-ini} m
 \label{fig:arsitektur}
 \end{figure}
 
-Perbedaan mendasar terhadap kondisi saat ini dirangkum sebagai berikut. \emph{Pertama}, titik masalah ``reaktif'' digantikan modul prediksi glukosa jangka pendek yang menatap ke depan ($+30/+60$ menit). \emph{Kedua}, ``interpretasi manual'' dibantu \emph{state digital twin} yang meringkas tingkat risiko, arah tren, dan urgensi. \emph{Ketiga}, ``prediksi terputus dari rekomendasi'' dijembatani mekanisme \emph{Prediction-Conditioned RAG} yang menjadikan nilai terprediksi sebagai konteks kueri. \emph{Keempat}, seluruh infrastruktur dirancang \emph{deployable} tanpa GPU, CGM \emph{real-time}, maupun EHR, sehingga selaras dengan kendala FKTP dan berbeda dari kerangka berbasis \emph{knowledge graph} yang menuntut infrastruktur berat \autocite{rad2024}.
+Perbedaan mendasar terhadap kondisi saat ini dirangkum sebagai berikut. \emph{Pertama}, titik masalah ``reaktif'' digantikan modul prediksi glukosa jangka pendek yang menatap ke depan ($+30/+60$ menit). \emph{Kedua}, ``interpretasi manual'' dibantu \emph{state digital twin} yang meringkas tingkat risiko, arah tren, dan urgensi. \emph{Ketiga}, ``prediksi terputus dari rekomendasi'' dijembatani mekanisme RAG \emph{terkondisi-prediksi} yang menjadikan nilai terprediksi sebagai konteks kueri. \emph{Keempat}, seluruh infrastruktur dirancang \emph{deployable} tanpa GPU, CGM \emph{real-time}, maupun EHR, sehingga selaras dengan kendala FKTP dan berbeda dari kerangka berbasis \emph{knowledge graph} yang menuntut infrastruktur berat \autocite{rad2024}.
 
 \section{Perancangan Dua Mesin Komputasi}
 Sistem memisahkan dua pertanyaan klinis yang berbeda ke dalam dua mesin, sebagaimana Gambar~\ref{fig:dua-mesin}. Mesin pertama, \textbf{mesin prakiraan}, menjawab \emph{``apa yang akan terjadi?''} menggunakan model \emph{Random Forest} yang memetakan \emph{state} fisiologis terkini ke $\Delta$glukosa pada horizon tetap. Mesin kedua, \textbf{mesin \emph{what-if}}, menjawab \emph{``apa yang terjadi jika dokter mengubah insulin atau karbohidrat?''} menggunakan formula farmakokinetik (PK) mekanistik.
@@ -28,13 +28,13 @@ Sistem memisahkan dua pertanyaan klinis yang berbeda ke dalam dua mesin, sebagai
 
 Pemisahan ini bersifat \textbf{by design}, bukan inkonsistensi. Model \emph{Random Forest} bersifat korelasional: pada data latih, insulin diberikan \emph{karena} glukosa tinggi, sehingga bila model yang sama dipakai untuk mensimulasikan ``menambah insulin'' ia justru mempelajari asosiasi terbalik dan memberi arah kontrafaktual yang keliru. Formula PK menyediakan arah kausal yang benar untuk simulasi intervensi. Pemisahan model prediktif untuk prakiraan dan model mekanistik untuk kontrafaktual merupakan praktik yang lazim dan dapat dipertanggungjawabkan secara metodologis.
 
-\section{Perancangan Pipeline \emph{Prediction-Conditioned RAG}}
-Inti kebaruan tugas akhir ini adalah pipeline \emph{Prediction-Conditioned RAG} (PC-RAG) pada Gambar~\ref{fig:pipeline-pcrag}. Berbeda dari RAG standar yang menyusun kueri hanya dari kondisi \emph{terkini}, PC-RAG menyisipkan hasil prediksi ke dalam pembentukan kueri sehingga \emph{retrieval} diarahkan pada dokumen yang relevan terhadap kondisi yang \emph{akan datang}.
+\section{Perancangan Pipeline RAG \emph{terkondisi-prediksi}}
+Inti kebaruan tugas akhir ini adalah pipeline RAG \emph{terkondisi-prediksi} pada Gambar~\ref{fig:pipeline-pcrag}. Berbeda dari RAG standar yang menyusun kueri hanya dari kondisi \emph{terkini}, RAG terkondisi-prediksi menyisipkan hasil prediksi ke dalam pembentukan kueri sehingga \emph{retrieval} diarahkan pada dokumen yang relevan terhadap kondisi yang \emph{akan datang}.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{images/Gambar_IV3_PipelinePCRAG.png}
-\caption{Pipeline \emph{Prediction-Conditioned RAG}: nilai glukosa terprediksi mengondisikan pembentukan kueri \emph{retrieval} sebelum generasi rekomendasi.}
+\caption{Pipeline RAG \emph{terkondisi-prediksi}: nilai glukosa terprediksi mengondisikan pembentukan kueri \emph{retrieval} sebelum generasi rekomendasi.}
 \label{fig:pipeline-pcrag}
 \end{figure}
 
@@ -50,12 +50,12 @@ Perangkat lunak dirancang memisahkan \emph{domain logic} dari antarmuka (KNF-07)
 \label{fig:class-diagram}
 \end{figure}
 
-Interaksi antarobjek saat menjalankan satu siklus PC-RAG, dari permintaan dokter hingga rekomendasi tertelusur, ditunjukkan pada diagram sekuens Gambar~\ref{fig:sequence-pcrag}.
+Interaksi antarobjek saat menjalankan satu siklus RAG terkondisi-prediksi, dari permintaan dokter hingga rekomendasi tertelusur, ditunjukkan pada diagram sekuens Gambar~\ref{fig:sequence-pcrag}.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{images/Gambar_IV5_SequencePCRAG.png}
-\caption{Diagram sekuens satu siklus \emph{Prediction-Conditioned RAG}, dari permintaan dokter hingga rekomendasi tertelusur.}
+\caption{Diagram sekuens satu siklus RAG \emph{terkondisi-prediksi}, dari permintaan dokter hingga rekomendasi tertelusur.}
 \label{fig:sequence-pcrag}
 \end{figure}
 

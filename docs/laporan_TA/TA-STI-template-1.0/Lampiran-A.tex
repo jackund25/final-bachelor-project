@@ -1,7 +1,7 @@
 \cleardoublepage
 \chapter{KODE PROGRAM}
 
-Kode program sistem cukup panjang dan telah disimpan secara lengkap pada repositori daring, sehingga tidak disertakan seluruhnya di dalam laporan ini. Kode sumber lengkap, meliputi pemrosesan data, model prediksi, \emph{engine digital twin}, pipeline \emph{Prediction-Conditioned RAG}, serta antarmuka, tersedia di:
+Kode program sistem cukup panjang dan telah disimpan secara lengkap pada repositori daring, sehingga tidak disertakan seluruhnya di dalam laporan ini. Kode sumber lengkap, meliputi pemrosesan data, model prediksi, \emph{engine digital twin}, pipeline RAG \emph{terkondisi-prediksi}, serta antarmuka, tersedia di:
 \begin{center}
 \url{https://github.com/jackund25/final-bachelor-project}
 \end{center}
@@ -13,5 +13,5 @@ Potongan kode berikut menghitung fitur \emph{engineered} (IOB, COB, tren, dan ko
 \lstinputlisting[language=Python, caption={Rekayasa fitur berbasis fisiologi (IOB, COB, tren, diurnal)}, label={lst:engineer-features}]{listings/engineer-features.tex}
 
 \section{Pembentukan Kueri Terkondisi Prediksi}
-Potongan kode berikut merealisasikan inti kebaruan \emph{Prediction-Conditioned RAG}: kueri \emph{retrieval} dibangun dari nilai glukosa yang \emph{diprediksi}, bukan kondisi saat ini (bandingkan Algoritma~\ref{alg:pcrag}).
-\lstinputlisting[language=Python, caption={Pembentukan kueri terkondisi prediksi (inti PC-RAG)}, label={lst:conditioned-query}]{listings/conditioned-query.tex}
+Potongan kode berikut merealisasikan inti kebaruan RAG \emph{terkondisi-prediksi}: kueri \emph{retrieval} dibangun dari nilai glukosa yang \emph{diprediksi}, bukan kondisi saat ini (bandingkan Algoritma~\ref{alg:pcrag}).
+\lstinputlisting[language=Python, caption={Pembentukan kueri terkondisi prediksi (inti RAG terkondisi-prediksi)}, label={lst:conditioned-query}]{listings/conditioned-query.tex}

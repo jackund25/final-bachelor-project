@@ -2,7 +2,7 @@ def build_conditioned_query(patient_id, current_glucose, predicted_glucose,
                             feature_row=None, user_question=None,
                             strategy=QueryStrategy.COMPREHENSIVE,
                             prediction_horizon_minutes=60):
-    """Keluaran model prediksi -> kueri retrieval terkondisi (inti PC-RAG).
+    """Keluaran model prediksi -> kueri retrieval terkondisi (inti RAG terkondisi-prediksi).
 
     Kueri dibangun dari glukosa yang DIPREDIKSI (bukan kondisi saat ini),
     sehingga dokumen yang di-retrieve bersifat antisipatif.
