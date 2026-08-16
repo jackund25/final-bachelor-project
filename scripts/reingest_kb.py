@@ -352,6 +352,17 @@ def main() -> int:
                         help="Timpa rag.chunk_size untuk satu jalannya (dipakai sapuan B4)")
     parser.add_argument("--chunk-overlap", type=int, default=None,
                         help="Timpa rag.chunk_overlap untuk satu jalannya (dipakai sapuan B4)")
+    # Ditambahkan untuk T7 (strategi chunking). Default keduanya = perilaku lama,
+    # supaya indeks yang angkanya sudah dilaporkan tidak berubah diam-diam.
+    parser.add_argument("--pemisah-kalimat", action="store_true",
+                        help="Sisipkan '. ', '! ', '? ', '; ' sebelum spasi pada daftar "
+                             "pemisah, sehingga potongan berhenti di batas kalimat "
+                             "(Gao dkk. 2023 §V.A.1)")
+    parser.add_argument("--satuan-panjang", choices=["karakter", "token"],
+                        default="karakter",
+                        help="Satuan pengukur chunk_size. 'token' menakar dengan "
+                             "tokenizer model embedding sehingga pemotongan senyap "
+                             "256 token menjadi mustahil")
     args = parser.parse_args()
 
     from src.rag.knowledge_base import MedicalKnowledgeBase
@@ -426,10 +437,14 @@ def main() -> int:
         print(f"[4] Folder chroma lama dihapus (fresh rebuild): {persist}")
 
     chunks = kb.chunk_documents(documents=docs, chunk_size=args.chunk_size,
-                                chunk_overlap=args.chunk_overlap)
+                                chunk_overlap=args.chunk_overlap,
+                                pemisah_kalimat=args.pemisah_kalimat,
+                                satuan_panjang=args.satuan_panjang)
     if args.chunk_size is not None or args.chunk_overlap is not None:
         print(f"    (chunk_size={args.chunk_size or 'config'}, "
               f"chunk_overlap={args.chunk_overlap or 'config'} — timpaan dari argumen)")
+    print(f"    (satuan_panjang={args.satuan_panjang}, "
+          f"pemisah_kalimat={args.pemisah_kalimat})")
 
     # Fragmen ekor halaman: pemecahan per halaman menghasilkan potongan pendek
     # yang dulu tersembunyi oleh penggabungan antar halaman.

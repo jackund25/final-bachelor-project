@@ -805,5 +805,93 @@
     },
     "waktu": "2026-08-11 17:50:41",
     "catatan": "T3.2 — sasaran dipakukan +60 mnt, set penyetelan ['ohio_584', 'ohio_588'], pemenang dapat dicapai=pred_h12. oracle_h12 = langit-langit, tidak dapat diadopsi."
+  },
+  {
+    "parameter": "strategi_chunking",
+    "nilai": "V0",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 26.2,
+      "hit@3(%)": 67.9,
+      "hit@5(%)": 80.8,
+      "mrr": 0.495,
+      "n_chunk": 2061,
+      "token_rerata": 227.6,
+      "token_maks": 443,
+      "n_melewati_batas": 766,
+      "persen_melewati_batas": 37.17,
+      "persen_token_terbuang": 8.23,
+      "persen_akhir_kalimat_utuh": 19.7,
+      "persen_awal_kalimat_utuh": 47.4
+    },
+    "waktu": "2026-08-16 18:28:12",
+    "catatan": "900 karakter, pemisah_kalimat=False, kontrol — pemisah lama, perilaku produksi, korpus=kb12_sym"
+  },
+  {
+    "parameter": "strategi_chunking",
+    "nilai": "V1",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 32.5,
+      "hit@3(%)": 69.2,
+      "hit@5(%)": 72.5,
+      "mrr": 0.5,
+      "n_chunk": 2248,
+      "token_rerata": 202.3,
+      "token_maks": 452,
+      "n_melewati_batas": 731,
+      "persen_melewati_batas": 32.52,
+      "persen_token_terbuang": 6.14,
+      "persen_akhir_kalimat_utuh": 83.5,
+      "persen_awal_kalimat_utuh": 93.2
+    },
+    "waktu": "2026-08-16 18:30:36",
+    "catatan": "900 karakter, pemisah_kalimat=True, pemisah kalimat saja (cacat B), korpus=kb12_sym"
+  },
+  {
+    "parameter": "strategi_chunking",
+    "nilai": "V2",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 40.4,
+      "hit@3(%)": 72.9,
+      "hit@5(%)": 84.6,
+      "mrr": 0.578,
+      "n_chunk": 4063,
+      "token_rerata": 112.2,
+      "token_maks": 261,
+      "n_melewati_batas": 3,
+      "persen_melewati_batas": 0.07,
+      "persen_token_terbuang": 0.0,
+      "persen_akhir_kalimat_utuh": 85.3,
+      "persen_awal_kalimat_utuh": 90.1
+    },
+    "waktu": "2026-08-16 18:33:23",
+    "catatan": "500 karakter, pemisah_kalimat=True, potongan kecil + kalimat (B; A kebetulan), korpus=kb12_sym"
+  },
+  {
+    "parameter": "strategi_chunking",
+    "nilai": "V3",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 5.0,
+      "hit@3(%)": 27.1,
+      "hit@5(%)": 44.6,
+      "mrr": 0.174,
+      "n_chunk": 2587,
+      "token_rerata": 175.3,
+      "token_maks": 253,
+      "n_melewati_batas": 0,
+      "persen_melewati_batas": 0.0,
+      "persen_token_terbuang": 0.0,
+      "persen_akhir_kalimat_utuh": 80.4,
+      "persen_awal_kalimat_utuh": 87.3
+    },
+    "waktu": "2026-08-16 18:36:12",
+    "catatan": "256 token, pemisah_kalimat=True, sadar-token (A dan B, konstruktif), korpus=kb12_sym"
   }
 ]

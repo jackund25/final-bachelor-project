@@ -52,6 +52,96 @@ def _build_embeddings(
     return OllamaEmbeddings(model=embed_model, base_url=ollama_base_url)
 
 
+# --------------------------------------------------------------------------
+# Strategi pemecahan dokumen
+#
+# WHAT  : dua himpunan pemisah dan satu penakar panjang berbasis tokenizer.
+# WHO   : dipakai MedicalKnowledgeBase.chunk_documents() di berkas ini, yang
+#         menjadi satu-satunya jalur pemecahan korpus pedoman maupun manual_kb.
+# WHERE : src/rag/knowledge_base.py; dipilih lewat argumen chunk_documents()
+#         dan diteruskan scripts/reingest_kb.py dari baris perintah.
+# WHEN   : hanya saat INDEXING (reingest), bukan saat kueri. Karena itu setiap
+#         perubahan di sini menuntut indeks dibangun ulang; indeks lama tidak
+#         ikut berubah dan akan diam-diam bercampur bila tidak dihapus dulu.
+# WHY   : Gao dkk. (2023) §V.A.1 hal. 8 menyatakan pemecahan berukuran tetap
+#         "leads to truncation within sentences". PEMISAH_KARAKTER di bawah
+#         adalah persis kasus itu: setelah "\n" gagal ia langsung jatuh ke
+#         spasi, sehingga batas potongan mendarat di sembarang kata.
+#         PEMISAH_KALIMAT menyisipkan tanda akhir kalimat sebelum spasi,
+#         sehingga spasi hanya dipakai bila satu kalimat memang lebih panjang
+#         daripada satu potongan.
+# HOW   : diserahkan ke RecursiveCharacterTextSplitter sebagai daftar
+#         berprioritas. keep_separator="end" WAJIB — lihat catatan di bawah.
+# --------------------------------------------------------------------------
+
+# Perilaku lama (dipertahankan sebagai pembanding, bukan sebagai anjuran).
+PEMISAH_KARAKTER = ["\n## ", "\n### ", "\n\n", "\n", " ", ""]
+
+# URUTANNYA menentukan, dan urutan yang tampak wajar justru hampir tidak
+# berpengaruh. Menyisipkan tanda akhir kalimat SESUDAH "\n" (yaitu
+# [..., "\n\n", "\n", ". ", ...]) praktis tidak mengubah apa pun, karena "\n"
+# selalu berhasil lebih dulu sehingga ". " tidak pernah sempat dipertimbangkan.
+#
+# Dasarnya: pada teks hasil ekstraksi PDF, "\n" TUNGGAL adalah pembungkusan
+# baris — artefak tata letak halaman, bukan batas makna. "\n\n" (batas
+# paragraf) dan judul tetap batas makna dan karena itu tetap didahulukan,
+# tetapi akhir kalimat harus mengungguli pembungkusan baris.
+#
+# Diukur pada 531 halaman korpus, potongan 256 token:
+#   kalimat SESUDAH "\n"  -> berakhir kalimat utuh 37,4% | bermula utuh 62,9%
+#   kalimat SEBELUM "\n"  -> berakhir kalimat utuh 79,6% | bermula utuh 86,7%
+#
+# Varian ".\n" diperlukan terpisah: kalimat yang berakhir tepat di ujung baris
+# menghasilkan ".\n" tanpa spasi, sehingga ". " saja tidak mengenainya.
+PEMISAH_KALIMAT = [
+    "\n## ", "\n### ", "\n\n",
+    ". ", ".\n", "! ", "!\n", "? ", "?\n",
+    "\n", "; ", " ", "",
+]
+
+# CATATAN YANG MENENTUKAN BENAR/SALAHNYA PERUBAHAN INI.
+# Default RecursiveCharacterTextSplitter adalah keep_separator=True, yang
+# menempelkan pemisah ke AWAL potongan berikutnya. Dengan pemisah ". " hasilnya
+# menjadi potongan yang dibuka tanda titik ("​. Titrasi dilakukan ...") dan
+# potongan sebelumnya kehilangan titiknya sendiri — yaitu memindahkan cacat,
+# bukan memperbaikinya. Diverifikasi langsung pada versi terpasang:
+#   keep_separator=True  -> ['... per kgBB', '. Titrasi tiap tiga hari', ...]
+#   keep_separator="end" -> ['... per kgBB.', 'Titrasi tiap tiga hari.', ...]
+KEEP_SEPARATOR_AKHIR = "end"
+
+# Batas token model embedding produksi (all-MiniLM-L6-v2). Token ke-257 dan
+# seterusnya DIBUANG tanpa peringatan apa pun. Diukur pada T5.1: 35,04% potongan
+# produksi melewatinya dan 8,23% token korpus tidak pernah masuk vektor
+# (results/eval_rag/distribusi_token.json).
+BATAS_TOKEN_MINILM = 256
+
+
+def _penakar_token(nama_model: str):
+    """Kembalikan fungsi panjang yang menghitung TOKEN, bukan karakter.
+
+    WHY: menakar panjang dengan len() berarti batas potongan diukur dengan satuan
+    yang berbeda dari satuan yang dipakai model embedding. Selama dua satuan itu
+    berbeda, TIDAK ADA nilai chunk_size karakter yang dapat menjamin potongan muat
+    di jendela model — chunk_size 900 menghasilkan potongan 9 sampai 443 token.
+    Menakar dengan tokenizer model itu sendiri membuat jaminannya bersifat
+    konstruktif, bukan statistik.
+
+    HOW: memakai tokenizer HuggingFace milik model embedding yang sama dengan yang
+    dipakai saat kueri, sehingga tidak mungkin menyimpang.
+    """
+    from transformers import AutoTokenizer
+
+    nama = nama_model if "/" in nama_model else f"sentence-transformers/{nama_model}"
+    tok = AutoTokenizer.from_pretrained(nama)
+
+    def panjang_token(teks: str) -> int:
+        # add_special_tokens=True: [CLS] dan [SEP] ikut memakan jatah 256,
+        # jadi mengabaikannya akan membuat potongan meleset dua token.
+        return len(tok.encode(teks, add_special_tokens=True))
+
+    return panjang_token
+
+
 def _sanitize_metadata(metadata: Dict[str, Any]) -> Dict[str, Any]:
     """Ubah metadata agar kompatibel ChromaDB (hanya skalar str/int/float/bool).
 
@@ -177,8 +267,25 @@ class MedicalKnowledgeBase:
         documents: Optional[List[Dict[str, Any]]] = None,
         chunk_size: Optional[int] = None,
         chunk_overlap: Optional[int] = None,
+        pemisah_kalimat: bool = False,
+        satuan_panjang: str = "karakter",
     ) -> List[Dict[str, Any]]:
-        """Chunk documents using LangChain splitter with a safe fallback splitter."""
+        """Pecah dokumen menjadi potongan siap-indeks.
+
+        pemisah_kalimat
+            False (default) mempertahankan perilaku lama: setelah baris baru,
+            pemisah berikutnya adalah spasi, sehingga potongan berhenti di
+            sembarang kata. True memakai PEMISAH_KALIMAT.
+        satuan_panjang
+            "karakter" (default) menakar chunk_size dengan len(). "token"
+            menakarnya dengan tokenizer model embedding, sehingga chunk_size
+            berarti JUMLAH TOKEN dan pemotongan senyap 256 token menjadi
+            mustahil secara konstruktif.
+
+        Keduanya sengaja default ke perilaku lama: mengubah default akan
+        membuat indeks yang sudah dilaporkan angkanya berubah diam-diam.
+        Pemilihan dilakukan eksplisit oleh scripts/reingest_kb.py.
+        """
         chunk_size = chunk_size if chunk_size is not None else self.cfg.chunk_size
         chunk_overlap = chunk_overlap if chunk_overlap is not None else self.cfg.chunk_overlap
         docs = documents if documents is not None else self.documents
@@ -190,10 +297,21 @@ class MedicalKnowledgeBase:
         try:
             from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-            splitter = RecursiveCharacterTextSplitter(
-                chunk_size=chunk_size,
-                chunk_overlap=chunk_overlap,
-                separators=["\n## ", "\n### ", "\n\n", "\n", " ", ""],
+            opsi: Dict[str, Any] = {
+                "chunk_size": chunk_size,
+                "chunk_overlap": chunk_overlap,
+                "separators": PEMISAH_KALIMAT if pemisah_kalimat else PEMISAH_KARAKTER,
+            }
+            if pemisah_kalimat:
+                # Hanya bermakna bila pemisahnya tanda baca; lihat KEEP_SEPARATOR_AKHIR.
+                opsi["keep_separator"] = KEEP_SEPARATOR_AKHIR
+            if satuan_panjang == "token":
+                opsi["length_function"] = _penakar_token(self.cfg.embedding_model)
+
+            splitter = RecursiveCharacterTextSplitter(**opsi)
+            logger.info(
+                "Chunker: satuan=%s ukuran=%d overlap=%d pemisah_kalimat=%s",
+                satuan_panjang, chunk_size, chunk_overlap, pemisah_kalimat,
             )
 
             chunk_rows: List[Dict[str, Any]] = []
