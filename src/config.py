@@ -131,6 +131,10 @@ class RagConfig:
     top_k: int
     fetch_k: int
     lambda_mult: float
+    # vektor | bm25 | hibrida. Lihat catatan panjang pada config.yaml.
+    retrieval_mode: str
+    rrf_pool: int
+    rrf_k: int
     llm_provider: str
     llm_model: str
     ollama_llm_model: str
@@ -201,6 +205,15 @@ def _load_rag_config_cached(path_str: Optional[str]) -> RagConfig:
             "fetch_k", None, None, "rag.fetch_k", 12, cast=int, path=path),
         lambda_mult=resolve(
             "lambda_mult", None, None, "rag.lambda_mult", 0.5, cast=float, path=path),
+        # Default "vektor" = perilaku sebelum T13, sehingga config lama yang belum
+        # memuat kunci ini tidak diam-diam berganti cara menelusur.
+        retrieval_mode=resolve(
+            "retrieval_mode", None, "RETRIEVAL_MODE", "rag.retrieval_mode",
+            "vektor", cast=str, path=path),
+        rrf_pool=resolve(
+            "rrf_pool", None, None, "rag.rrf_pool", 50, cast=int, path=path),
+        rrf_k=resolve(
+            "rrf_k", None, None, "rag.rrf_k", 60, cast=int, path=path),
         llm_provider=resolve(
             "llm_provider", None, "LLM_PROVIDER", "rag.llm.provider",
             "gemini", cast=str, path=path),

@@ -82,6 +82,7 @@ class MMRRetriever:
         fetch_k: Optional[int] = None,
         lambda_mult: Optional[float] = None,
         config: Optional[Any] = None,
+        retrieval_mode: Optional[str] = None,
     ):
         from src.config import load_rag_config
 
@@ -97,8 +98,19 @@ class MMRRetriever:
         self.fetch_k = fetch_k if fetch_k is not None else cfg.fetch_k
         self.lambda_mult = lambda_mult if lambda_mult is not None else cfg.lambda_mult
 
+        # T13/T14 — cara menelusur. Lihat catatan panjang pada config.yaml.
+        self.retrieval_mode = (retrieval_mode
+                               or getattr(cfg, "retrieval_mode", "vektor")).lower()
+        self.rrf_pool = int(getattr(cfg, "rrf_pool", 50))
+        self.rrf_k = int(getattr(cfg, "rrf_k", 60))
+
         self._vector_store = None
         self._embeddings = None
+        self._bm25 = None
+        self._bm25_teks: List[str] = []
+        self._bm25_peta: Dict[str, int] = {}
+        self._bm25_error: Optional[str] = None
+        self.mode_diminta = self.retrieval_mode
         self._init_error: Optional[str] = None
 
         try:
@@ -115,10 +127,13 @@ class MMRRetriever:
                 persist_directory=self.persist_dir,
             )
             logger.info(
-                "MMRRetriever connected — collection=%s embed=%s",
+                "MMRRetriever connected — collection=%s embed=%s mode=%s",
                 self.collection_name,
                 embed_provider,
+                self.retrieval_mode,
             )
+            if self.retrieval_mode in ("bm25", "hibrida"):
+                self._bangun_bm25()
         except Exception as exc:
             self._init_error = str(exc)
             logger.warning(
@@ -126,6 +141,94 @@ class MMRRetriever:
                 embed_provider,
                 exc,
             )
+
+    def _bangun_bm25(self) -> None:
+        """Bangun indeks BM25 atas korpus yang SAMA dengan indeks vektor.
+
+        Dokumen diambil dari koleksi ChromaDB, BUKAN dibaca ulang dari PDF. Bila
+        keduanya dibangun dari sumber berbeda, selisih hasil dapat berasal dari
+        perbedaan korpus alih-alih dari cara menelusurinya — dan itu tidak akan
+        terlihat dari angka mana pun.
+
+        Memakai _tokenize() yang sama dengan SimpleKeywordRetriever: angka
+        dipertahankan, karena ambang seperti "70" dan "180" justru sinyal yang
+        diharapkan ditangkap pencocokan leksikal.
+
+        KETERBATASAN yang diketahui: belum ada pemenggalan imbuhan bahasa
+        Indonesia, sehingga "pemberian", "diberikan", dan "berikan" dihitung
+        sebagai tiga token berbeda. Lee dkk. (2024) menunjukkan pilihan tokenizer
+        berpengaruh pada pedoman diabetes berbahasa Korea; padanan Indonesianya
+        belum diuji.
+        """
+        try:
+            import chromadb
+            from rank_bm25 import BM25Okapi
+
+            col = chromadb.PersistentClient(path=self.persist_dir).get_collection(
+                self.collection_name)
+            self._bm25_teks = col.get(include=["documents"])["documents"]
+            self._bm25_peta = {t: i for i, t in enumerate(self._bm25_teks)}
+            self._bm25 = BM25Okapi([_tokenize(t) for t in self._bm25_teks])
+            logger.info("Indeks BM25 dibangun atas %d potongan (mode=%s)",
+                        len(self._bm25_teks), self.retrieval_mode)
+        except Exception as exc:  # noqa: BLE001
+            # Gagal membangun BM25 TIDAK boleh mematikan retriever: jalur vektor
+            # tetap sah. Tetapi mode diturunkan secara EKSPLISIT dan dicatat, supaya
+            # sistem tidak diam-diam menelusur dengan cara yang berbeda dari yang
+            # dinyatakan config — persis jenis penyimpangan senyap yang menjadi
+            # pokok penyelidikan T7-T14.
+            logger.warning("Indeks BM25 gagal dibangun (%s); mode %s -> vektor",
+                           exc, self.retrieval_mode)
+            # Sebabnya DISIMPAN, bukan hanya dicatat ke log. Log mudah terlewat,
+            # sedangkan penurunan mode mengubah cara sistem menelusur — operator
+            # dan tes harus dapat menanyakannya langsung.
+            self._bm25_error = f"{type(exc).__name__}: {exc}"
+            self.mode_diminta = self.retrieval_mode
+            self.retrieval_mode = "vektor"
+            self._bm25 = None
+
+    def _peringkat_bm25(self, query: str, n: int) -> List[int]:
+        """Indeks korpus terurut menurun menurut skor BM25."""
+        import numpy as np
+        skor = self._bm25.get_scores(_tokenize(query))
+        return list(np.argsort(-skor)[:n])
+
+    def _gabung_rrf(self, daftar: List[List[int]]) -> List[int]:
+        """Reciprocal Rank Fusion atas beberapa daftar indeks terurut.
+
+        RRF dipilih karena bekerja pada PERINGKAT, bukan skor mentah: skor kosinus
+        dan skor BM25 berada pada skala yang sama sekali berbeda dan tidak dapat
+        dijumlahkan. Menormalkannya lebih dulu akan menambah satu parameter bebas
+        yang harus disetel. Xiong dkk. (2024) memakai RRF untuk alasan yang sama
+        pada benchmark MedRAG.
+        """
+        skor: Dict[int, float] = {}
+        for satu in daftar:
+            for pos, idx in enumerate(satu, start=1):
+                skor[idx] = skor.get(idx, 0.0) + 1.0 / (self.rrf_k + pos)
+        return [i for i, _ in sorted(skor.items(), key=lambda kv: -kv[1])]
+
+    def _hasil_dari_indeks(self, indeks: List[int]) -> List[Dict[str, Any]]:
+        """Susun baris hasil dari indeks korpus, lengkap dengan metadatanya."""
+        import chromadb
+        col = chromadb.PersistentClient(path=self.persist_dir).get_collection(
+            self.collection_name)
+        r = col.get(include=["documents", "metadatas"])
+        docs, metas = r["documents"], r["metadatas"]
+        keluar: List[Dict[str, Any]] = []
+        for peringkat, i in enumerate(indeks, start=1):
+            meta = dict(metas[i] or {})
+            keluar.append({
+                "rank": peringkat,
+                "text": docs[i],
+                "source": meta.get("source", "manual_kb"),
+                # Skor kemiripan SENGAJA None pada jalur leksikal dan hibrida:
+                # peringkat RRF bukan kemiripan kosinus, dan menampilkannya sebagai
+                # "kemiripan" kepada dokter akan menyesatkan.
+                "similarity": None,
+                "metadata": meta,
+            })
+        return keluar
 
     @property
     def is_ready(self) -> bool:
@@ -163,6 +266,26 @@ class MMRRetriever:
         top_k = top_k if top_k is not None else self.top_k
         fetch_k = self.fetch_k
         lambda_mult = self.lambda_mult
+
+        # ── T13/T14: jalur leksikal dan hibrida ──────────────────────────────
+        # Ditempatkan SEBELUM jalur vektor dan keluar lebih awal, supaya kode jalur
+        # vektor di bawahnya tidak berubah satu baris pun dan angka era-vektor tetap
+        # dapat direproduksi persis.
+        if self._bm25 is not None and self.retrieval_mode in ("bm25", "hibrida"):
+            urut_bm = self._peringkat_bm25(query, self.rrf_pool)
+            if self.retrieval_mode == "bm25":
+                return self._hasil_dari_indeks(urut_bm[:top_k])
+            # Hibrida: kolam vektor diambil sebesar rrf_pool. MMR menghasilkan lima
+            # teratas yang BERBEDA bergantung ukuran kolamnya, sehingga kolam ini
+            # sengaja tidak dipakai ulang untuk melayani mode vektor.
+            docs_v = self._vector_store.max_marginal_relevance_search(
+                query, k=self.rrf_pool, fetch_k=max(self.rrf_pool, fetch_k),
+                lambda_mult=lambda_mult, filter=metadata_filter,
+            )
+            urut_v = [self._bm25_peta[d.page_content] for d in docs_v
+                      if d.page_content in self._bm25_peta]
+            return self._hasil_dari_indeks(
+                self._gabung_rrf([urut_v, urut_bm])[:top_k])
 
         kwargs: Dict[str, Any] = {"k": top_k, "fetch_k": fetch_k, "lambda_mult": lambda_mult}
         if metadata_filter:

@@ -48,9 +48,11 @@ pyyaml==6.0.1
 python-dotenv==1.0.0
 tqdm==4.65.0
 
-# Evaluasi Bagian B — TIDAK dipakai jalur produksi.
-# rank_bm25 hanya dibutuhkan scripts/eval_hybrid_bm25.py (pengukuran B3). Belum diadopsi:
-# angka B3 terkena sirkularitas antara BM25 dan pelabel relevansi berbasis kata kunci.
+# rank_bm25 DIPAKAI JALUR PRODUKSI sejak T13/T14. config.yaml menyetel
+# rag.retrieval_mode=hibrida, yang menggabungkan penelusuran vektor dan BM25
+# dengan Reciprocal Rank Fusion. Tanpa paket ini src/rag/retriever.py menurunkan
+# mode ke vektor dan mencatat sebabnya pada _bm25_error.
+# Catatan lama 'TIDAK dipakai jalur produksi' sudah TIDAK BERLAKU.
 rank_bm25==0.2.2
 
 # Testing

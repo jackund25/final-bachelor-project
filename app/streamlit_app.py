@@ -495,11 +495,24 @@ with tab_rec:
                 "**Sumber Rujukan** di bawah. Keputusan akhir berada pada dokter."
             )
             with st.expander(f"📚 Sumber Rujukan ({len(sources)} dokumen)", expanded=False):
-                st.caption(
-                    "Skor kemiripan mengukur kedekatan kueri dengan potongan dokumen. "
-                    "Karena urutan dipilih dengan MMR (yang juga menghindari pengulangan "
-                    "isi), peringkat tidak selalu urut menurun terhadap skor."
-                )
+                # Keterangan MENGIKUTI cara menelusur yang benar-benar dipakai.
+                # Sebelumnya ia selalu menjelaskan skor kemiripan, padahal pada jalur
+                # hibrida skor itu tidak ada sama sekali — dokter akan mencari angka
+                # yang tidak pernah muncul.
+                if any(s["similarity"] is not None for s in sources):
+                    st.caption(
+                        "Skor kemiripan mengukur kedekatan kueri dengan potongan dokumen. "
+                        "Karena urutan dipilih dengan MMR (yang juga menghindari pengulangan "
+                        "isi), peringkat tidak selalu urut menurun terhadap skor."
+                    )
+                else:
+                    st.caption(
+                        "Rujukan diurutkan dengan penelusuran gabungan: kemiripan makna "
+                        "(vektor) digabung dengan kecocokan istilah persis (BM25) memakai "
+                        "Reciprocal Rank Fusion. Karena kedua skornya berbeda skala dan "
+                        "digabung menurut PERINGKAT, tidak ada satu angka kemiripan yang "
+                        "dapat ditampilkan."
+                    )
                 # Kutipan panjang dipakai untuk MENCOCOKKAN hasil penelusuran dengan
                 # halaman dokumen aslinya. Pilihan "utuh" disediakan karena potongan
                 # yang dikirim ke LLM adalah potongan penuh, bukan versi terpotongnya.

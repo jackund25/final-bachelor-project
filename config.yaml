@@ -176,6 +176,41 @@ rag:
   # seluruh angka retrieval, dan menampilkan lima rujukan tidak lebih buruk bagi dokter.
   top_k_retrieval: 5    # jumlah dokumen yang dikembalikan
   fetch_k: 12           # ukuran kolam kandidat sebelum diversifikasi MMR
+
+  # T13/T14. Cara menelusuri: vektor | bm25 | hibrida.
+  #
+  # Diubah dari vektor ke HIBRIDA setelah dua pengukuran yang saling bebas.
+  #
+  # 1. Crossfold enam fold, korpus produksi (T13). Selisih kontribusi terkondisi
+  #    lawan standard pada kasus divergen, seluruhnya positif 6/6 fold:
+  #        vektor  pc_rag +0,0832 | pengklasifikasi +0,1423
+  #        hibrida pc_rag +0,1087 | pengklasifikasi +0,1895
+  #    Hibrida lolos kelima dugaan prapendaftaran; BM25 sendirian gagal tiga.
+  #
+  # 2. RAGAS berbasis rujukan, 10 kasus ber-jawaban acuan terverifikasi (T14).
+  #    Diperlukan karena T13 diukur dengan classify_chunk yang berbasis kata kunci,
+  #    sama seperti BM25, sehingga keunggulannya bisa saja artefak keselarasan:
+  #        context_precision  vektor 0,025 -> hibrida 0,545
+  #        context_recall     vektor 0,100 -> hibrida 0,800
+  #    Lengan vektor gagal total pada 9 dari 10 kasus dan TIDAK PERNAH menang.
+  #
+  # Dasar literatur medis, keduanya ada di koleksi rujukan:
+  #   Xiong dkk. (2024) benchmark MedRAG — fusi RRF BM25+padat optimal untuk medis
+  #   Lee dkk. (2024) RAG pedoman diabetes — ensemble dense+sparse, domain sama
+  #
+  # Sebabnya dapat diterangkan: model embedding produksi berbahasa INGGRIS sedangkan
+  # korpusnya INDONESIA, dan T9 sudah menutup jalan mengganti model (multibahasa
+  # merusak pembedaan kondisi). Pencocokan leksikal tidak bergantung pada ruang
+  # semantik sama sekali, sehingga bekerja tepat di titik model paling lemah.
+  #
+  # Nilai "vektor" DIPERTAHANKAN agar angka era-vektor dapat direproduksi.
+  retrieval_mode: "hibrida"
+  # Ukuran kolam tiap lengan sebelum digabung RRF. Bukan fetch_k, yang mengatur
+  # kolam MMR di dalam lengan vektor.
+  rrf_pool: 50
+  # Tetapan RRF. TIDAK disetel, sengaja dibiarkan pada nilai baku Cormack dkk.
+  # supaya tidak menambah parameter bebas yang menuntut protokol penyetelan.
+  rrf_k: 60
   # 1,0 = relevansi murni; 0,0 = keragaman maksimum.
   # Diubah dari 0,5 ke 0,0 pada Tahap 0 (adopsi B5), berdasarkan sapuan 5 nilai yang
   # mengikuti protokol Bagian C: set penyetelan dan set pelaporan tidak beririsan, dan
