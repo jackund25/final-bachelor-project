@@ -122,6 +122,37 @@ def jalankan_satu(df, feats, cfg_penuh, horizon, cal_p, test_p, train_p, seq_len
     return hasil
 
 
+def analisis(putaran) -> dict:
+    """Mengapa cakupannya berayun — diuji, bukan ditafsirkan begitu saja.
+
+    Dugaannya: `q` sepenuhnya ditentukan oleh sebaran residual PASIEN PENGKALIBRASI.
+    Pasien yang glukosanya bergejolak menghasilkan q besar sehingga terlalu banyak
+    menutup pasien lain; pasien yang stabil menghasilkan q kecil sehingga kurang
+    menutup. Bila benar, q dan cakupan akan berkorelasi positif kuat — dan itu
+    berarti asumsi EXCHANGEABILITY conformal tertekan oleh keragaman antar-pasien,
+    bukan sekadar derau sampel kecil.
+    """
+    from scipy.stats import pearsonr
+
+    q = [x["95"]["q"] for x in putaran]
+    c = [x["95"]["cakupan_%"] for x in putaran]
+    r, pv = pearsonr(q, c)
+    return {
+        "korelasi_q_dengan_cakupan_r": round(float(r), 3),
+        "korelasi_p": round(float(pv), 5),
+        "n_putaran_di_bawah_nominal_95": int(sum(1 for x in c if x < 95)),
+        "n_putaran": len(c),
+        "q_min": round(float(min(q)), 3),
+        "q_maks": round(float(max(q)), 3),
+        "tafsir": (
+            "Korelasi positif kuat antara q dan cakupan menunjukkan cakupan yang "
+            "terwujud ditentukan oleh SIAPA yang mengkalibrasi, bukan oleh mutu "
+            "modelnya. Itu tanda asumsi exchangeability conformal tertekan oleh "
+            "keragaman antar-pasien: residual satu pasien tidak dapat dipertukarkan "
+            "dengan residual pasien lain."),
+    }
+
+
 def main() -> None:
     cfg = yaml.safe_load(open(ROOT / "config.yaml", encoding="utf-8"))
     m = cfg["model"]
@@ -196,6 +227,7 @@ def main() -> None:
         hasil["horizon"][str(horizon)] = {
             "menit": horizon * int(cadence_min),
             "ringkasan": ringkas,
+            "analisis_sebaran": analisis(putaran),
             "per_putaran": putaran,
             "durasi_detik": round(time.time() - t0, 1),
         }
