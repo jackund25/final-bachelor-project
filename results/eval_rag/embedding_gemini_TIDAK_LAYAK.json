@@ -68,6 +68,27 @@
     "kesimpulan_yang_sah_setelah_koreksi": "Yang benar-benar terbukti hanyalah: indexing 2.061 potongan lewat endpoint SINKRON pada model gemini-embedding-2 melampaui batas harian free tier, dan Batch API menuntut tier berbayar. TIDAK terbukti bahwa seluruh jalur Gemini tidak layak. gemini-embedding-001 berjatah harian sendiri dan berjendela 2048 yang sudah cukup (potongan terpanjang 443 token), dan BELUM diuji."
   },
 
+  "KONFIRMASI_SESUDAH_KOREKSI": {
+    "catatan": "Dijalankan justru untuk menguji koreksi di atas. Kesimpulan awal ternyata BENAR, tetapi kini berdiri di atas bukti dua model, bukan generalisasi dari satu.",
+    "T10b_model_kedua": {
+      "model": "models/gemini-embedding-001 (nama internal gemini-embedding-1.0)",
+      "hasil": "GAGAL dengan quota_id yang SAMA: EmbedContentRequestsPerDayPerUserPerProjectPerModel-FreeTier, quota_value 1000",
+      "arti": "Batas 1.000/hari terkonfirmasi pada DUA bucket yang saling bebas, bukan keanehan satu model."
+    },
+    "bucket_ternyata_DUA_bukan_TIGA": {
+      "bukti": "Permintaan ke models/gemini-embedding-2-preview ditolak dengan pelanggaran yang melaporkan model: gemini-embedding-2.",
+      "arti": "gemini-embedding-2 dan -2-preview BERBAGI satu jatah. Jatah yang benar-benar terpisah hanya dua: gemini-embedding-2 dan gemini-embedding-001."
+    },
+    "KUOTA_MENGHITUNG_KONTEN_BUKAN_PERMINTAAN": {
+      "mengapa_ini_penting": "Menentukan apakah batching dapat mengakali kuota. Jawabannya TIDAK.",
+      "bukti_1_ukuran_batch": "langchain_google_genai._DEFAULT_BATCH_SIZE = 100 dan memakai batch_embed_contents, sehingga 2.061 potongan dikirim sebagai HANYA ~21 panggilan batch.",
+      "bukti_2_kegagalan_pertama": "21 panggilan itu tetap menabrak batas 100 PER MENIT. Bila kuota menghitung permintaan, 21 mustahil melampaui 100.",
+      "bukti_3_aritmetika_waktu": "Pada T10b, pembatas laju memacu 90 konten/menit dan indexing berhenti pada menit ke-11, yakni sekitar 990 konten — berimpit dengan batas 1.000.",
+      "kesimpulan": "Batching memangkas waktu dan overhead HTTP, TETAPI setiap teks yang di-embed tetap memakan satu jatah kuota. Saran 'batching untuk mengakali kuota harian' KELIRU."
+    },
+    "batch_api_asinkron": "asyncBatchEmbedContent didukung ketiga model tetapi menolak dengan FAILED_PRECONDITION pada kunci free tier; dokumentasi resmi hanya mencantumkan batas Batch API untuk Tier 1/2/3 berbayar (free tier N/A)."
+  },
+
   "jalan_yang_masih_terbuka": [
     "Menanti reset kuota dan mengindeks bertahap selama 3 hari — menuntut kemampuan melanjutkan indexing yang belum ada.",
     "HuggingFace Inference API (mis. BAAI/bge-m3) — batas kuotanya belum diperiksa, memerlukan token gratis.",
