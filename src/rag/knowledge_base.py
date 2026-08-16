@@ -18,6 +18,7 @@ def _build_embeddings(
     embed_model: Optional[str] = None,
     hf_model: Optional[str] = None,
     google_model: Optional[str] = None,
+    max_seq_length: Optional[int] = None,
 ) -> Any:
     """Return a LangChain-compatible embedding object for the requested provider.
 
@@ -34,11 +35,33 @@ def _build_embeddings(
     if embed_provider == "sentence-transformers":
         from langchain_community.embeddings import HuggingFaceEmbeddings
 
-        return HuggingFaceEmbeddings(
+        emb = HuggingFaceEmbeddings(
             model_name=hf_model or cfg.embedding_model,
             model_kwargs={"device": "cpu"},
             encode_kwargs={"normalize_embeddings": True},
         )
+        # WHAT : menimpa jendela token model embedding.
+        # WHY  : max_seq_length 256 pada all-MiniLM-L6-v2 berasal dari
+        #        sentence_bert_config.json — sebuah PILIHAN penulis model, bukan
+        #        batas arsitektur. BERT di bawahnya ber-max_position_embeddings
+        #        512, sehingga 257..512 adalah posisi yang bobotnya ADA.
+        # WHEN : dipakai baik saat indexing maupun saat kueri. Menaikkannya hanya
+        #        di salah satu sisi membuat dokumen dan kueri diwakili dengan dua
+        #        aturan berbeda, dan retrieval merosot TANPA error apa pun.
+        # HOW  : disetel pada objek SentenceTransformer di bawah LangChain.
+        #        Default None = ikut bawaan model, sehingga perilaku lama utuh.
+        batas = max_seq_length if max_seq_length is not None else cfg.embedding_max_seq_length
+        if batas:
+            klien = getattr(emb, "client", None)
+            if klien is None or not hasattr(klien, "max_seq_length"):
+                raise RuntimeError(
+                    "max_seq_length diminta tetapi objek SentenceTransformer tidak "
+                    "dapat dijangkau — menaikkannya diam-diam akan gagal tanpa jejak."
+                )
+            bawaan = klien.max_seq_length
+            klien.max_seq_length = int(batas)
+            logger.info("max_seq_length embedding: %s -> %s", bawaan, batas)
+        return emb
     if embed_provider == "google":
         from langchain_google_genai import GoogleGenerativeAIEmbeddings
 

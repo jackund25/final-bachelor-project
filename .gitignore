@@ -45,6 +45,9 @@ models/_chunk_sweep/
 # Indeks sementara empat varian strategi chunking (T7) — dibangun ulang oleh
 # scripts/eval_strategi_chunking.py, tidak perlu masuk repo.
 models/_chunk_strategi/
+# Indeks sementara uji jendela token (T8) — dibangun ulang oleh
+# scripts/eval_jendela_token.py, tidak perlu masuk repo.
+models/_jendela_token/
 # Koleksi evaluasi RAGAS (dibangun ulang via scripts/build_eval_kb.py)
 models/chroma_db_eval/
 

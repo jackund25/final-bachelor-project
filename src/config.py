@@ -120,6 +120,8 @@ class RagConfig:
     manual_chunk_overlap: int
     embedding_provider: str
     embedding_model: str
+    # 0 = pakai bawaan model (256 untuk all-MiniLM-L6-v2). Lihat _build_embeddings.
+    embedding_max_seq_length: int
     google_embedding_model: str
     ollama_embed_model: str
     ollama_base_url: str
@@ -163,6 +165,11 @@ def _load_rag_config_cached(path_str: Optional[str]) -> RagConfig:
         embedding_model=resolve(
             "embedding_model", None, "HF_EMBED_MODEL", "rag.embedding_model",
             "all-MiniLM-L6-v2", cast=str, path=path),
+        # 0 = ikut bawaan model. Menaikkannya HARUS diikuti indeks ulang: vektor
+        # lama dibuat dengan jendela lain dan tidak sebanding.
+        embedding_max_seq_length=resolve(
+            "embedding_max_seq_length", None, "EMBED_MAX_SEQ_LENGTH",
+            "rag.embedding_max_seq_length", 0, cast=int, path=path),
         google_embedding_model=resolve(
             "google_embedding_model", None, None, "rag.google_embedding_model",
             "models/embedding-001", cast=str, path=path),

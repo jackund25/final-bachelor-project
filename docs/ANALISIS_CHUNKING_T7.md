@@ -299,7 +299,76 @@ Tidak ada nilai-p yang sah dihitung atasnya.
   manusia).
 - **`config.yaml` TIDAK diubah.** Keputusan indeks ulang produksi menunggu pembimbing.
 
-## 8. Berkas yang disentuh
+## 8. T8 — apakah pemotongan senyap itu sendiri merugikan retrieval?
+
+Sumber: `results/eval_rag/jendela_token.json`, skrip `scripts/eval_jendela_token.py`.
+
+**Mengapa percobaan ini SAH sedangkan T7 tidak bisa memutuskan.** W256 dan W512
+memakai `chunk_size`, `chunk_overlap`, dan daftar pemisah yang **persis sama**,
+sehingga potongannya identik teks demi teks dan label `classify_chunk()` tidak
+bergeser. Konfound yang membatalkan perbandingan V3 **tidak berlaku di sini**.
+Satu-satunya yang berubah adalah jendela token. Inilah uji yang diminta kesimpulan
+T5.1 dan belum pernah dijalankan.
+
+**Dasar angka 256.** Berasal dari `sentence_bert_config.json` milik
+`all-MiniLM-L6-v2` (`"max_seq_length": 256`) — **pilihan penulis model, bukan batas
+arsitektur**. BERT di bawahnya ber-`max_position_embeddings` 512, sehingga posisi
+257–512 bobotnya ada. Potongan terpanjang korpus 443 token, jadi 512 menghapus
+pemotongan seluruhnya tanpa menyentuh satu pun batas potongan.
+
+| Varian | Jendela | n chunk | MRR | Hit@1 | Token terbuang |
+|---|---:|---:|---:|---:|---:|
+| **W256** kontrol | 256 | 2.061 | **0,492** | 29,2% | **8,23%** |
+| **W512** satu faktor | 512 | 2.061 | 0,469 | 29,2% | **0,00%** |
+| W512K + pemisah kalimat | 512 | 2.248 | 0,438 | 29,2% | 0,00% |
+
+**Validasi alat (wajib, karena setelan yang diabaikan diam-diam adalah persis
+jenis cacat yang sedang diteliti):**
+
+- **H1 LOLOS** — nol potongan melewati jendela pada 512.
+- **H2 LOLOS** — vektor potongan yang tadinya terpotong berubah, kemiripan rerata
+  **0,964**.
+- **H3 LOLOS** — kontrol negatif: potongan ≤256 token bervektor **identik tepat
+  1,0**. Jendela hanya menyentuh yang memang terpotong, sesuai harapan.
+
+> **Koreksi kriteria yang dicatat terbuka.** Rumusan awal H2 memakai kemiripan
+> **maks** < 0,9999, yaitu menuntut *setiap* potongan terpotong berubah. Itu salah
+> rancang dan menghasilkan GAGAL palsu: potongan 257 token hanya kehilangan satu
+> token sehingga vektornya wajar nyaris tidak bergerak (0,999966). Dinilai ulang
+> dengan **rerata**. Koreksi ini menyangkut **validasi alat, bukan arah hasil**;
+> kedua rumusan tetap tercatat di berkas keluaran.
+
+### Temuan: menghapus pemotongan TIDAK menaikkan MRR
+
+Selisih **W512 − W256 = −0,023**. Menghapus pemotongan justru **sedikit
+menurunkan** MRR, bukan menaikkannya.
+
+Penjelasan yang paling sesuai: `all-MiniLM-L6-v2` **disetel** (fine-tuned) pada
+jendela 256. Posisi 257–512 memang ada pada BERT di bawahnya, tetapi tidak pernah
+ikut dalam penyetelan *sentence embedding*. Memakainya menghasilkan representasi
+yang kurang terkalibrasi, dan kerugian itu sedikit melebihi keuntungan dari
+memulihkan 8,23% token.
+
+Perhatikan pula **Hit@1 identik 29,2% pada ketiga varian** — pengaruhnya ada di
+peringkat 2–5, bukan di peringkat teratas.
+
+### Akibat bagi naskah — ini yang penting
+
+Temuan ini **memisahkan dua hal yang selama ini tercampur**:
+
+1. **Integritas korpus** — 8,23% korpus tidak tervektor. Ini cacat nyata dan
+   berdiri sendiri: isi yang tidak pernah dapat terambil tetap tidak dapat
+   terambil, betapa pun relevannya.
+2. **Kinerja retrieval** — ternyata **bukan** disebabkan pemotongan itu. Menaikkan
+   jendela pada model yang sama tidak memperbaikinya.
+
+Artinya langit-langit MRR ~0,5 punya sebab lain, dan mengejar pemotongan tidak
+akan menembusnya. Menaikkan `max_seq_length` pada model yang sama **tidak
+diadopsi**. Bila integritas korpus hendak diperbaiki, jalannya adalah model dengan
+jendela yang memang **dilatih** untuk teks panjang — bukan menarik paksa jendela
+model yang disetel pada 256.
+
+## 9. Berkas yang disentuh
 
 | Berkas | Perubahan |
 |---|---|

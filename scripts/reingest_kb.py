@@ -363,7 +363,19 @@ def main() -> int:
                         help="Satuan pengukur chunk_size. 'token' menakar dengan "
                              "tokenizer model embedding sehingga pemotongan senyap "
                              "256 token menjadi mustahil")
+    parser.add_argument("--max-seq-length", type=int, default=None,
+                        help="Timpa jendela token model embedding (bawaan MiniLM 256, "
+                             "sedangkan BERT di bawahnya mendukung 512). Menaikkannya "
+                             "menghapus pemotongan senyap TANPA mengubah batas potongan")
     args = parser.parse_args()
+
+    # Disetel SEBELUM src.rag diimpor: RagConfig di-cache lru_cache pada pembacaan
+    # pertama, sehingga menyetelnya belakangan tidak akan terbaca dan jendelanya
+    # diam-diam kembali ke 256. Lewat environment agar proses ini DAN retriever
+    # mana pun yang dijalankan dengan env sama memakai jendela yang sama — dokumen
+    # dan kueri wajib diwakili dengan aturan yang sama.
+    if args.max_seq_length:
+        os.environ["EMBED_MAX_SEQ_LENGTH"] = str(args.max_seq_length)
 
     from src.rag.knowledge_base import MedicalKnowledgeBase
 

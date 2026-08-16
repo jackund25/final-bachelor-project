@@ -893,5 +893,59 @@
     },
     "waktu": "2026-08-16 18:36:12",
     "catatan": "256 token, pemisah_kalimat=True, sadar-token (A dan B, konstruktif), korpus=kb12_sym"
+  },
+  {
+    "parameter": "jendela_token",
+    "nilai": "W256",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 26.2,
+      "hit@5(%)": 80.8,
+      "mrr": 0.495,
+      "n_chunk": 2061,
+      "token_maks": 443,
+      "jendela": 256,
+      "n_melewati_jendela": 766,
+      "persen_token_terbuang": 8.23
+    },
+    "waktu": "2026-08-16 19:06:40",
+    "catatan": "kontrol — jendela bawaan model, korpus=kb12_sym"
+  },
+  {
+    "parameter": "jendela_token",
+    "nilai": "W512",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 26.2,
+      "hit@5(%)": 67.9,
+      "mrr": 0.467,
+      "n_chunk": 2061,
+      "token_maks": 443,
+      "jendela": 512,
+      "n_melewati_jendela": 0,
+      "persen_token_terbuang": 0.0
+    },
+    "waktu": "2026-08-16 19:10:07",
+    "catatan": "SATU faktor: jendela dinaikkan, potongan identik, korpus=kb12_sym"
+  },
+  {
+    "parameter": "jendela_token",
+    "nilai": "W512K",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 32.5,
+      "hit@5(%)": 67.9,
+      "mrr": 0.479,
+      "n_chunk": 2248,
+      "token_maks": 452,
+      "jendela": 512,
+      "n_melewati_jendela": 0,
+      "persen_token_terbuang": 0.0
+    },
+    "waktu": "2026-08-16 19:13:29",
+    "catatan": "kandidat produksi: jendela 512 + pemisah kalimat, korpus=kb12_sym"
   }
 ]
