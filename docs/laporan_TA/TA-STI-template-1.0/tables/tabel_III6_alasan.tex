@@ -1,0 +1,47 @@
+% =====================================================================
+% BARIS "Model prediksi" TERTAHAN.
+%
+% Dua alasan lama - keterjelasan kontribusi fitur dan kebutuhan
+% komputasi rendah - SUDAH DICABUT oleh KEPUTUSAN #5:
+%   - keterjelasan  : digugurkan J7. Yang dimiliki RF secara bawaan
+%                     adalah MDI, dan MDI tidak boleh dilaporkan karena
+%                     bias kardinalitas. Angka yang dilaporkan adalah
+%                     permutation importance, yang MODEL-AGNOSTIK.
+%   - komputasi     : terbalik secara faktual (RF paling mahal).
+%
+% Isi baris tersebut setelah keputusan Random Forest atau Gradient
+% Boosting ditetapkan. Rujukan: docs/KEPUTUSAN_DIAMBIL.md,
+% docs/ALUR_SISTEM_FINAL.md, docs/REVISI_BAB_II_4_1.md.
+% =====================================================================
+\begin{longtable}{@{}p{2.9cm}p{3.1cm}p{4.6cm}p{4.2cm}@{}}
+\caption{Alasan pemilihan dan kelemahan yang diakui.}
+\label{tab:penentuan-solusi} \\
+\toprule
+\textbf{Keputusan} & \textbf{Alternatif terpilih} & \textbf{Alasan pemilihan} & \textbf{Kelemahan yang diakui} \\
+\midrule
+\endfirsthead
+
+\multicolumn{4}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Keputusan} & \textbf{Alternatif terpilih} & \textbf{Alasan pemilihan} & \textbf{Kelemahan yang diakui} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Model prediksi & \textsc{[tertahan]} & \textsc{[tertahan --- lihat catatan pada berkas sumber tabel ini]} & \textsc{[tertahan]} \\[2pt]
+
+Model bahasa & Layanan awan & Tidak membebani perangkat lokal dan tersedia berjenjang gratis & Memerlukan konektivitas jaringan sebagaimana Batasan~5 \\[2pt]
+
+Model \emph{embedding} & \emph{sentence-transformers} lokal & Berjalan tanpa akselerator grafis dan tanpa biaya per permintaan & Keterbatasan pada penelusuran lintas bahasa sebagaimana Subbab~\ref{subsec:arsitektur-rag} \\[2pt]
+
+Kerangka antarmuka & Streamlit & Pengembangan cepat untuk purwarupa dan integrasi langsung dengan ekosistem Python & Keterbatasan penyesuaian tata letak untuk kebutuhan lanjutan \\[2pt]
+
+Skema pengambilan pengetahuan & RAG di atas korpus tak terstruktur & Tidak menuntut pembangunan ontologi maupun integrasi rekam medis & Mutu bergantung pada cakupan korpus \\[2pt]
+
+Pengklasifikasi kondisi & Pengklasifikasi terpisah & Terbukti menangkap kejadian hipoglikemia jauh lebih baik daripada penetapan ambang atas nilai regresi & Menambah satu model yang perlu dilatih dan dipelihara, serta menurunkan nilai duga positif \\[2pt]
+
+Orkestrasi alur & Penulisan sebagai kode program & Memenuhi pemisahan logika domain (KNF-07) dan berjalan tanpa server khusus (KNF-09) & Menuntut penulisan kode yang lebih banyak dibandingkan perkakas visual \\
+
+\end{longtable}

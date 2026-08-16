@@ -1,0 +1,34 @@
+\begin{longtable}{@{}p{2.6cm}p{3.1cm}p{2.5cm}p{3.0cm}p{3.0cm}@{}}
+\caption{Ringkasan penelitian terkait dan posisi penelitian ini.}
+\label{tab:penelitian-terkait} \\
+\toprule
+\textbf{Peneliti} & \textbf{Fokus atau pendekatan} & \textbf{Jenis data} & \textbf{Temuan} & \textbf{Keterbatasan} \\
+\midrule
+\endfirsthead
+
+\multicolumn{5}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Peneliti} & \textbf{Fokus atau pendekatan} & \textbf{Jenis data} & \textbf{Temuan} & \textbf{Keterbatasan} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+\textcite{woldaregay2019} & Tinjauan pemodelan berbasis data untuk prediksi dinamika glukosa pada DMT1 & Pemantauan kontinu dan data multimoda & Pemodelan berbasis data layak untuk memprediksi dinamika glukosa & Keluaran berhenti pada nilai prediksi tanpa panduan tindakan \\[2pt]
+
+\textcite{ghimire2024} & Pengujian generalisasi model \emph{deep learning} antar-dataset & Beberapa dataset pemantauan kontinu & Kinerja menurun ketika diterapkan pada data yang berbeda dari data pelatihan & Tidak menghasilkan rekomendasi dalam bahasa alami \\[2pt]
+
+\textcite{rad2024} & Pengelolaan diabetes berbasis \emph{personal health knowledge graph} dengan penelusuran SPARQL & Rekam medis terintegrasi dan pemantauan kontinu & Mampu menghasilkan berbagai layanan personal di atas graf pengetahuan & Menuntut ontologi formal, integrasi rekam medis, dan pemantauan kontinu. Penelusuran ditujukan pada data pasien, bukan pada dokumen pedoman \\[2pt]
+
+\textcite{kresevic2024} & RAG untuk meningkatkan penafsiran pedoman klinis pada sistem pendukung keputusan & Dokumen pedoman klinis & Penelusuran pedoman meningkatkan akurasi dibandingkan model dasar & Kueri dibangun dari kondisi yang sedang berlaku \\[2pt]
+
+\textcite{lee2024} & Sistem RAG ganda yang dibumikan pada pedoman diabetes & Dokumen pedoman diabetes & Halusinasi pada keluaran model bahasa berkurang & Kueri bersumber dari pertanyaan pengguna \\[2pt]
+
+\textcite{wang2024} & RAG untuk edukasi diabetes & Dokumen pedoman diabetes & Akurasi, kelengkapan, dan keterpahaman jawaban meningkat & Kueri bersumber dari pertanyaan pengguna \\[2pt]
+
+\textcite{jiang2023} & Penelusuran aktif yang bersifat antisipatif & Dokumen umum & Penelusuran dipicu ketika model bahasa kurang yakin atas kalimat yang akan ditulisnya & Pengondisian bersumber dari prediksi model bahasa atas teksnya sendiri, bukan dari prediktor eksternal \\[2pt]
+
+\textbf{Penelitian ini} & CDSS yang memadukan modul prediksi glukosa dengan RAG pedoman klinis melalui \emph{query transformation} terkondisi-prediksi & Data \emph{logbook} periodik dan korpus dua belas dokumen pedoman & Kueri penelusuran dibangun dari kadar glukosa terprediksi, sehingga panduan yang diperoleh bersifat antisipatif & Bersifat \emph{proof-of-concept} tanpa uji klinis, dan mutu penelusuran bergantung pada cakupan korpus \\
+
+\end{longtable}

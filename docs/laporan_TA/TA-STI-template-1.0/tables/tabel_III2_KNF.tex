@@ -1,20 +1,38 @@
-\begin{table}[htbp]
-\centering
+\begin{longtable}{@{}p{1.6cm}p{3.2cm}p{9.2cm}@{}}
 \caption{Kebutuhan nonfungsional sistem.}
-\label{tab:kebutuhan-nonfungsional}
-\small
-\begin{tabular}{@{}p{1.3cm}p{3cm}p{9cm}@{}}
+\label{tab:kebutuhan-nonfungsional} \\
 \toprule
 \textbf{Kode} & \textbf{Atribut} & \textbf{Kebutuhan Nonfungsional} \\
 \midrule
-KNF-01 & \emph{Deployability} & Sistem berjalan pada laptop standar tanpa GPU. \\[2pt]
-KNF-02 & \emph{Interpretability} & Prediksi dapat dijelaskan (\emph{feature importance}) dan rekomendasi tertelusur ke dokumen sumber. \\[2pt]
-KNF-03 & Keamanan konten & Rekomendasi \emph{grounded} pada dokumen; parameter generatif konservatif untuk menekan halusinasi angka dosis/ambang. \\[2pt]
-KNF-04 & \emph{Robustness} & Tersedia \emph{graceful fallback} pada tiap lapisan (data, \emph{retrieval}, generasi). \\[2pt]
-KNF-05 & Bahasa & Keluaran menggunakan Bahasa Indonesia. \\[2pt]
-KNF-06 & Keamanan klinis & \emph{Human-in-the-loop}; sistem berperan sebagai pendukung keputusan, bukan pengganti penilaian klinis. \\[2pt]
-KNF-07 & \emph{Maintainability} & Pemisahan \emph{domain logic} dari antarmuka. \\[2pt]
-KNF-08 & Biaya/portabilitas & Memanfaatkan komponen gratis/\emph{free-tier} dan \emph{open-source}, tanpa \emph{server} khusus untuk \emph{embedding}. \\
+\endfirsthead
+
+\multicolumn{3}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Kode} & \textbf{Atribut} & \textbf{Kebutuhan Nonfungsional} \\
+\midrule
+\endhead
+
 \bottomrule
-\end{tabular}
-\end{table}
+\endlastfoot
+
+KNF-01 & Keterterapan & Sistem berjalan pada laptop kelas konsumen tanpa akselerator grafis. \\[2pt]
+
+KNF-02 & Keterjelasan & Prediksi dapat dijelaskan melalui kontribusi fitur, dan rekomendasi dapat ditelusuri ke dokumen sumbernya. \\[2pt]
+
+KNF-03 & Keamanan konten & Rekomendasi dibumikan pada dokumen, dengan parameter pembangkitan yang konservatif untuk menekan pemunculan angka dosis atau ambang yang tidak berdasar. \\[2pt]
+
+KNF-04 & Ketahanan & Tersedia mekanisme cadangan yang terkendali pada setiap lapisan, mencakup lapisan data, penelusuran, dan pembangkitan. \\[2pt]
+
+KNF-05 & Bahasa & Keluaran sistem menggunakan bahasa Indonesia. \\[2pt]
+
+KNF-06 & Keamanan klinis & Sistem berperan sebagai pendukung keputusan dengan dokter sebagai penentu akhir, dan bukan sebagai pengganti penilaian klinis. \\[2pt]
+
+KNF-07 & Keterpeliharaan & Terdapat pemisahan antara logika domain dan antarmuka pengguna. \\[2pt]
+
+KNF-08 & Keterlacakan sitasi & Setiap potongan dokumen menyimpan metadata identitas dokumen, nomor halaman berkas, dan nomor halaman cetak, sehingga rekomendasi dapat diverifikasi sampai ke halaman sumbernya. \\[2pt]
+
+KNF-09 & Biaya dan keterpindahan & Sistem memanfaatkan komponen bersumber terbuka atau berjenjang gratis, tanpa memerlukan server khusus. \\[2pt]
+
+KNF-10 & Waktu tanggap & Sistem menyajikan prediksi dan rekomendasi dalam rentang waktu yang memungkinkan penggunaannya pada saat konsultasi berlangsung. Nilai acuan ditetapkan berdasarkan pengukuran pada Bab~\ref{chap:evaluasi}. \\
+
+\end{longtable}

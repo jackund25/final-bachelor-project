@@ -1,0 +1,51 @@
+% =====================================================================
+% BARIS TERAKHIR ("Kesesuaian dengan konteks penelitian") TERTAHAN.
+%
+% Dua alasan lama pemilihan Random Forest sudah DICABUT (KEPUTUSAN #5):
+%   - keterjelasan kontribusi fitur : digugurkan J7. Yang dimiliki RF secara
+%     bawaan adalah MDI, dan MDI tidak boleh dilaporkan karena bias
+%     kardinalitas; angka yang dilaporkan adalah permutation importance
+%     yang MODEL-AGNOSTIK sehingga bukan keunggulan RF.
+%   - kebutuhan komputasi rendah    : terbalik secara faktual.
+%
+% Isi baris tersebut setelah keputusan Random Forest / Gradient Boosting
+% ditetapkan. Rujukan: docs/ALUR_SISTEM_FINAL.md, docs/KEPUTUSAN_DIAMBIL.md
+% =====================================================================
+\begin{longtable}{@{}p{2.5cm}p{3.9cm}p{3.9cm}p{3.9cm}@{}}
+\caption{Perbandingan karakteristik \emph{Random Forest}, \emph{Gradient Boosting Machine}, dan LSTM.}
+\label{tab:perbandingan-model} \\
+\toprule
+\textbf{Aspek} & \textbf{Random Forest} & \textbf{Gradient Boosting} & \textbf{LSTM} \\
+\midrule
+\endfirsthead
+
+\multicolumn{4}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Aspek} & \textbf{Random Forest} & \textbf{Gradient Boosting} & \textbf{LSTM} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Mekanisme penggabungan & \emph{Bagging}: pohon dilatih paralel dan saling bebas, prediksinya dirata-ratakan untuk menekan varians & \emph{Boosting}: pohon dilatih berurutan, tiap pohon mengoreksi galat sisa pendahulunya untuk menekan bias & Pemrosesan berurutan melalui \emph{memory cell} dan mekanisme gerbang \\[2pt]
+
+Kedalaman pohon & Dalam, agar bias tiap pohon rendah & Dangkal, karena kekuatan berasal dari rangkaian koreksi & Tidak berlaku \\[2pt]
+
+Penanganan deret waktu & Ketergantungan temporal harus dinyatakan eksplisit melalui rekayasa fitur & Ketergantungan temporal harus dinyatakan eksplisit melalui rekayasa fitur & Ketergantungan temporal dimodelkan secara langsung \\[2pt]
+
+Ketidakpastian per sampel & Tersedia bawaan dari sebaran prediksi antarpohon yang saling bebas & Tidak tersedia bawaan; pohon saling bergantung sehingga sebarannya tidak bermakna & Tidak tersedia bawaan \\[2pt]
+
+Kebutuhan volume data & Dapat dilatih pada data berukuran sedang & Dapat dilatih pada data berukuran sedang & Umumnya menuntut volume data lebih besar untuk kinerja yang stabil \\[2pt]
+
+Kebutuhan komputasi & Bergantung pada jumlah dan kedalaman pohon & Bergantung pada jumlah pohon dan jumlah \emph{bin} histogram & Bergantung pada ukuran jaringan dan panjang jendela masukan \\[2pt]
+
+Generalisasi antar-dataset & Bergantung pada kesamaan sebaran fitur antara data latih dan uji & Bergantung pada kesamaan sebaran fitur antara data latih dan uji & Kinerja menurun pada data yang berbeda dari data pelatihan \\[2pt]
+
+Keterbatasan bersama & \multicolumn{2}{p{7.9cm}}{Keduanya meminimalkan galat kuadrat, sehingga penaksirnya menyusut ke arah nilai tengah dan jarang melewati ambang pada kelas yang jarang muncul} & Bergantung pada fungsi kerugian yang dipilih \\[2pt]
+
+Kesesuaian dengan konteks penelitian & \textsc{[tertahan]} & \textsc{[tertahan]} & \textsc{[tertahan]} \\
+
+\end{longtable}
+
+\noindent\footnotesize Disusun berdasarkan \textcite{breiman2001}, \textcite{friedman2001}, \textcite{ke2017}, \textcite{hochreiter1997}, dan \textcite{ghimire2024}. Baris kebutuhan komputasi dan baris ketidakpastian menyatakan sifat mekanisme, bukan hasil pengukuran; nilai terukur pada penelitian ini disajikan pada Bab~\ref{chap:evaluasi}.\normalsize

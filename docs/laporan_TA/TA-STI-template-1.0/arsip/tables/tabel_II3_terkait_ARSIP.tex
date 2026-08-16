@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Ringkasan penelitian terkait dan posisi penelitian ini.}
+\label{tab:penelitian-terkait}
+\small
+\begin{tabular}{@{}p{2.8cm}p{2.9cm}p{2cm}p{4.6cm}@{}}
+\toprule
+\textbf{Peneliti (Tahun)} & \textbf{Fokus / Pendekatan} & \textbf{Data} & \textbf{Temuan / Keterbatasan} \\
+\midrule
+\textcite{woldaregay2019} & Prediksi glukosa berbasis \emph{ML} (\emph{data-driven}) & CGM, T1D & Menegaskan kelayakan prediksi \emph{data-driven}; fokus prediksi, tanpa rekomendasi natural. \\[2pt]
+\textcite{cappon2024} & Tinjauan sistematis DT untuk T1DM & CGM & Arsitektur bertahap; bergantung infrastruktur mahal. \\[2pt]
+\textcite{rad2024} & DT berbasis PHKG (HL7 FHIR, GLAV, CRF, SPARQL) & EHR + \emph{wearable} & RMSE 19,83~mg/dL + rekomendasi personal; mensyaratkan infrastruktur kompleks \& ontologi formal. \\[2pt]
+\textcite{zhang2024} & DT + \emph{multi-omics} untuk T2DM & \emph{Multi-omics} & Prediksi progresi T2DM; bergantung infrastruktur besar. \\[2pt]
+\textcite{shamanna2020}; \textcite{thamotharan2023} & DT \emph{data-driven} T2DM (nutrisi presisi) & \emph{Logbook} + \emph{wearable} komersial & Menunjukkan DT \emph{monitoring} T2DM layak; fokus intervensi gaya hidup, bukan \emph{retrieval} dokumen. \\[2pt]
+\textcite{ghimire2024} & \emph{Deep learning} prediksi glukosa & Multi-\emph{dataset} & Menyoroti tantangan generalisasi antar-\emph{dataset}. \\[2pt]
+\textbf{Penelitian ini} & \textbf{\emph{Prediction-Conditioned RAG}} + \emph{simplified data-driven} DT & OhioT1DM (\emph{surrogate}) + dokumen klinis & Mengganti kueri SPARQL di atas KG terstruktur dengan RAG \emph{natural language} yang dikondisikan pada nilai prediksi; \emph{feasible} di \emph{setting resource-constrained}. \\
+\bottomrule
+\end{tabular}
+\end{table}

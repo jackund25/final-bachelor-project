@@ -1,21 +1,36 @@
-\begin{table}[htbp]
-\centering
+\begin{longtable}{@{}p{1.3cm}p{9.6cm}p{1.6cm}p{1.5cm}@{}}
 \caption{Kebutuhan fungsional sistem.}
-\label{tab:kebutuhan-fungsional}
-\small
-\begin{tabular}{@{}p{1.4cm}p{12.5cm}@{}}
+\label{tab:kebutuhan-fungsional} \\
 \toprule
-\textbf{Kode} & \textbf{Kebutuhan Fungsional} \\
+\textbf{Kode} & \textbf{Kebutuhan Fungsional} & \textbf{Asal} & \textbf{Tujuan} \\
 \midrule
-KF-01 & Sistem menerima masukan data \emph{logbook} harian terstruktur (glukosa, karbohidrat, insulin, aktivitas, stres). \\[2pt]
-KF-02 & Sistem memprediksi kadar glukosa jangka pendek ($+30$ dan $+60$ menit) dari data \emph{logbook}. \\[2pt]
-KF-03 & Sistem membangun kueri \emph{retrieval} yang dikondisikan pada nilai glukosa terprediksi (\emph{Prediction-Conditioned RAG}). \\[2pt]
-KF-04 & Sistem menghasilkan rekomendasi klinis berbahasa natural (Bahasa Indonesia) berbasis dokumen klinis terpercaya. \\[2pt]
-KF-05 & Sistem menyediakan simulasi \emph{what-if} atas efek perubahan insulin/karbohidrat berbasis model farmakologis. \\[2pt]
-KF-06 & Sistem menampilkan \emph{state digital twin}: tingkat risiko, arah tren, dan tingkat urgensi. \\[2pt]
-KF-07 & Sistem memberikan peringatan dini hipoglikemia serta peringatan divergensi (saat prediksi menyimpang signifikan dari kondisi terkini). \\[2pt]
-KF-08 & Sistem menyajikan estimasi ketidakpastian prediksi (interval). \\[2pt]
-KF-09 & Sistem mendukung alur \emph{doctor-mediated}: dokter memvalidasi rekomendasi sebelum diteruskan dan dapat mencatat keputusan. \\
+\endfirsthead
+
+\multicolumn{4}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Kode} & \textbf{Kebutuhan Fungsional} & \textbf{Asal} & \textbf{Tujuan} \\
+\midrule
+\endhead
+
 \bottomrule
-\end{tabular}
-\end{table}
+\endlastfoot
+
+KF-01 & Sistem menerima masukan catatan \emph{logbook} terstruktur yang mencakup kadar glukosa, asupan karbohidrat, pemberian insulin, aktivitas fisik, dan tingkat stres. & P2 & T1 \\[2pt]
+
+KF-02 & Sistem menghitung besaran turunan berbasis fisiologi dari catatan mentah, mencakup \emph{insulin on board}, \emph{carbohydrate on board}, laju perubahan glukosa, dan penyandian siklis waktu. & P2 & T1 \\[2pt]
+
+KF-03 & Sistem memprediksi kadar glukosa pada horizon 30 menit dan 60 menit beserta selang ketidakpastiannya. & P1, P2 & T1 \\[2pt]
+
+KF-04 & Sistem menyusun kueri penelusuran yang dikondisikan pada kadar glukosa terprediksi, bukan pada kadar glukosa yang sedang berlaku. & P3 & T2 \\[2pt]
+
+KF-05 & Sistem menelusuri korpus pedoman klinis dan mengembalikan potongan dokumen yang relevan beserta penunjuk dokumen dan nomor halaman sumbernya. & P3 & T2 \\[2pt]
+
+KF-06 & Sistem menyusun rekomendasi klinis berbahasa Indonesia yang dibumikan pada potongan dokumen hasil penelusuran. & P2, P3 & T2 \\[2pt]
+
+KF-07 & Sistem menyajikan kondisi klinis terstruktur berupa tingkat risiko, arah perubahan, dan tingkat kegentingan, serta memberikan peringatan dini hipoglikemia dan peringatan divergensi. Peringatan divergensi diberikan ketika kondisi terprediksi berbeda kategori dari kondisi yang sedang berlaku, misalnya kadar glukosa terkini berada dalam rentang sasaran sedangkan kondisi terprediksi tergolong hipoglikemia. & P1, P2 & T1, T2 \\[2pt]
+
+KF-08 & Sistem mendukung alur \emph{doctor-mediated}, yaitu dokter memvalidasi rekomendasi sebelum diteruskan dan dapat mencatat keputusannya. & P4 & T3 \\
+
+\end{longtable}
+
+\noindent\footnotesize Kolom asal mengacu pada persoalan yang diuraikan pada Subbab~\ref{subsec:identifikasi-persoalan}, yaitu P1 pengelolaan bersifat reaktif, P2 penafsiran manual dan tidak antisipatif, P3 prediksi terputus dari rekomendasi, dan P4 solusi berinfrastruktur berat tidak dapat diterapkan. Kolom tujuan mengacu pada tujuan penelitian pada Subbab~\ref{sec:tujuan-penelitian}, yaitu T1 modul prediksi, T2 strategi \emph{query transformation} terkondisi-prediksi, dan T3 evaluasi menyeluruh beserta keamanan klinis.\normalsize
