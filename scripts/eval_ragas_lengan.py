@@ -23,8 +23,15 @@ DUA PENGHEMATAN YANG DISENGAJA
    itu sendiri mencatat porsi_koleksi_terambil_per_kueri_persen = 29,4, sehingga
    setiap retriever mengambil hampir sepertiga koleksi yang sama.
 
-   Tujuan arahan tetap dipatuhi: 120 panggilan dari 500 per hari, dan tahap
+   Tujuan arahan tetap dipatuhi: 180 panggilan dari 500 per hari, dan tahap
    pembangkitan dilewati seluruhnya.
+
+TIGA LENGAN, BUKAN DUA (17 Agustus 2026). Lengan `bm25` ditambahkan karena crossfold
+atas kode produksi menunjukkan BM25 sendirian meraih selisih kontribusi TERBESAR
+(+0,1742 lawan hibrida +0,1583). Aturan 4 prapendaftaran T13 menyatakan bila itu terjadi
+maka BM25 yang diadopsi, tetapi angka itu diukur dengan classify_chunk yang berbagi
+sinyal dengan BM25. Aturan itu karena itu diadjudikasi DI SINI, atas alat ukur berbasis
+rujukan. Lihat `hasil["aturan4_bm25_mengungguli_hibrida"]`.
 
 Keluaran: results/ragas/lengan_penelusuran.json
 """
@@ -45,7 +52,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 DATASET = ROOT / "evaluation/ragas_dataset.json"
 OUT = ROOT / "results/ragas/lengan_penelusuran.json"
 CACHE = ROOT / "results/ragas/cache/lengan"
-LENGAN = ["vektor", "hibrida"]
+LENGAN = ["vektor", "bm25", "hibrida"]
 METRIK = ["context_precision", "context_recall"]
 TOP_K = 5
 
@@ -61,32 +68,35 @@ def muat_kunci_api() -> str | None:
 
 
 def konteks_per_lengan(kasus: list) -> dict:
-    """Ambil konteks top-k untuk tiap lengan, SEBELUM satu pun panggilan LLM.
+    """Ambil konteks top-k tiap lengan lewat KODE PRODUKSI, sebelum satu pun panggilan LLM.
 
-    Dipisahkan dari tahap penilaian supaya kegagalan kuota tidak menghanguskan
-    pekerjaan penelusuran, dan supaya konteksnya dapat diperiksa manual.
+    KOREKSI PENTING (17 Agustus 2026). Versi pertama skrip ini mengimplementasikan
+    ULANG fusi RRF di sini, dan implementasi itu CACAT: ia memanggil
+    r.retrieve(query, top_k=50), padahal retrieve() memakai self.fetch_k=12 sehingga
+    MMR hanya mengembalikan 12 dokumen, bukan 50. Yang diuji karena itu adalah fusi
+    12-lawan-50 yang berat sebelah ke BM25, BUKAN penelusuran hibrida yang dijalankan
+    produksi (50 lawan 50). Diukur langsung: cara lama 12 dokumen, cara produksi 50.
+
+    Kini setiap lengan memakai MMRRetriever dengan mode DIPATOK, sehingga yang dinilai
+    benar-benar jalur yang dipakai dokter.
+
+    Tahap penelusuran sengaja dipisah dari tahap penilaian supaya kegagalan kuota tidak
+    menghanguskan pekerjaan penelusuran, dan supaya konteksnya dapat diperiksa manual.
     """
-    from eval_retrieval_crossfold import bangun_bm25, _rrf, tokenisasi
     from src.rag.retriever import MMRRetriever
-    import numpy as np
 
-    r = MMRRetriever(persist_dir="models/chroma_db", collection_name="diabetes_kb",
-                     embed_provider="sentence-transformers")
-    bm25, teks = bangun_bm25("models/chroma_db", "diabetes_kb")
-    peta = {t: i for i, t in enumerate(teks)}
-    print(f"Korpus produksi: {len(teks)} potongan (BUKAN koleksi terkontrol 17).")
-
-    hasil = {l: [] for l in LENGAN}
-    for c in kasus:
-        q = c["pertanyaan"]
-        docs_v = r.retrieve(q, top_k=TOP_K)
-        hasil["vektor"].append([d["text"] for d in docs_v])
-
-        skor = bm25.get_scores(tokenisasi(q))
-        urut_bm = list(np.argsort(-skor)[:50])
-        docs_v50 = r.retrieve(q, top_k=50)
-        urut_v = [peta[d["text"]] for d in docs_v50 if d["text"] in peta]
-        hasil["hibrida"].append([teks[i] for i in _rrf([urut_v, urut_bm])[:TOP_K]])
+    hasil = {}
+    for l in LENGAN:
+        r = MMRRetriever(persist_dir="models/chroma_db", collection_name="diabetes_kb",
+                         embed_provider="sentence-transformers", retrieval_mode=l)
+        if r.retrieval_mode != l:
+            raise RuntimeError(
+                f"lengan {l} turun ke {r.retrieval_mode} ({r._bm25_error}); "
+                "hasilnya tidak akan menggambarkan lengan yang dimaksud")
+        print(f"  lengan {l:8} mode aktif={r.retrieval_mode} "
+              f"bm25={len(r._bm25_teks) if r._bm25 else 0} potongan")
+        hasil[l] = [[d["text"] for d in r.retrieve(c["pertanyaan"], top_k=TOP_K)]
+                    for c in kasus]
     return hasil
 
 
@@ -193,10 +203,21 @@ def main() -> int:
                 "dilaporkan sebagai hasil lengkap.")
 
     if all(isinstance(v, dict) and "rerata" in v for v in hasil["lengan"].values()):
-        v, h = hasil["lengan"]["vektor"]["rerata"], hasil["lengan"]["hibrida"]["rerata"]
-        hasil["selisih_hibrida_minus_vektor"] = {
-            m: round(h.get(m, 0) - v.get(m, 0), 4) for m in METRIK}
-        d = hasil["selisih_hibrida_minus_vektor"]
+        v = hasil["lengan"]["vektor"]["rerata"]
+        hasil["selisih_terhadap_vektor"] = {
+            l: {m: round(hasil["lengan"][l]["rerata"].get(m, 0) - v.get(m, 0), 4)
+                for m in METRIK}
+            for l in LENGAN if l != "vektor"}
+        # Aturan 4 prapendaftaran T13: bila BM25 sendirian mengungguli hibrida, BM25 yang
+        # diadopsi. Aturan itu ditetapkan di muka atas T13, tetapi T13 diukur dengan
+        # classify_chunk yang berbagi sinyal dengan BM25. Di sini aturan yang sama
+        # diadjudikasi atas alat ukur berbasis RUJUKAN, bukan kata kunci.
+        rec = {l: hasil["lengan"][l]["rerata"].get("context_recall", 0) for l in LENGAN}
+        hasil["context_recall_per_lengan"] = rec
+        hasil["lengan_terbaik_context_recall"] = max(rec, key=rec.get)
+        hasil["aturan4_bm25_mengungguli_hibrida"] = bool(
+            rec.get("bm25", 0) > rec.get("hibrida", 0))
+        d = hasil["selisih_terhadap_vektor"].get("hibrida", {})
         hasil["putusan"] = (
             "D1 didukung: context_recall naik di atas ambang 0,05."
             if d.get("context_recall", 0) > 0.05 else
@@ -208,7 +229,10 @@ def main() -> int:
     OUT.write_text(json.dumps(hasil, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\nDisimpan ke {OUT}")
     if "putusan" in hasil:
-        print(f"\nSelisih (hibrida - vektor): {hasil['selisih_hibrida_minus_vektor']}")
+        print(f"\nSelisih terhadap vektor: {hasil['selisih_terhadap_vektor']}")
+        print(f"context_recall per lengan: {hasil['context_recall_per_lengan']}")
+        print(f"Aturan 4 T13 (BM25 > hibrida): "
+              f"{hasil['aturan4_bm25_mengungguli_hibrida']}")
         print(hasil["putusan"])
     return 0
 
