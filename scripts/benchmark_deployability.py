@@ -5,10 +5,10 @@ klaim itu tidak pernah diukur. Skrip ini mengukurnya: waktu setiap tahap satu si
 rekomendasi, jejak memori, ukuran artefak, dan spesifikasi perangkat yang dipakai.
 
 Tahap yang diukur (masing-masing diulang N_REPEAT kali, dilaporkan median dan p95):
-  1. Muat artefak     : model RF, pengklasifikasi kondisi, indeks ChromaDB, model embedding
+  1. Muat artefak     : bundel produksi (keluarga mengikuti aplikasi), pengklasifikasi kondisi, indeks ChromaDB, model embedding
   2. Rekayasa fitur   : jendela logbook -> vektor fitur
   3. Prediksi         : regresi RF + pengklasifikasi kondisi + interval antar-pohon
-  4. Retrieval        : embedding kueri + pencarian MMR pada 2.585 chunk
+  4. Retrieval        : embedding kueri + pencarian MMR pada korpus terindeks
   5. Generasi (LLM)   : panggilan Gemini (opsional; butuh GOOGLE_API_KEY dan kuota)
 
 Pemuatan artefak hanya terjadi sekali saat aplikasi dinyalakan (di-cache Streamlit), sehingga
@@ -94,11 +94,44 @@ def artifact_sizes() -> dict:
             return round(total / 1024**2, 1)
         return None
 
+    # Nama artefak dan jumlah potongan DIBACA dari keadaan sebenarnya, tidak lagi
+    # ditulis tetap. Versi sebelumnya menuliskan "rf_inference_bundle_h6.pkl" dan
+    # "chroma_db (2.585 chunk)" secara tetap, sehingga keluarannya tetap melaporkan
+    # artefak Random Forest dan korpus lama meskipun produksi sudah berpindah ke
+    # Gradient Boosting dan korpusnya 2.248 potongan.
+    nama_bundel, _ = _bundel_produksi()
+    n_chunk = _jumlah_chunk()
     return {
-        "rf_inference_bundle_h6.pkl": size_mb(ROOT / "models/rf_inference_bundle_h6.pkl"),
-        "rf_condition_classifier_h6.pkl": size_mb(ROOT / "models/rf_condition_classifier_h6.pkl"),
-        "chroma_db (2.585 chunk)": size_mb(ROOT / "models/chroma_db"),
+        Path(nama_bundel).name: size_mb(ROOT / nama_bundel),
+        f"chroma_db ({n_chunk} chunk)": size_mb(ROOT / "models/chroma_db"),
     }
+
+
+def _bundel_produksi():
+    """Pilih bundel dengan urutan keluarga yang SAMA dengan aplikasi.
+
+    app/streamlit_app.py:110 memakai KELUARGA_BUNDLE = [GBM, RF] dan mengambil
+    keluarga pertama yang berkasnya ada. Benchmark ini WAJIB mengikuti urutan itu;
+    bila tidak, ia mengukur model yang berbeda dari yang dijalankan pengguna —
+    padahal angkanya dipakai untuk mengklaim batasan desain terpenuhi.
+    """
+    for keluarga in ("gbm", "rf"):
+        p = ROOT / f"models/{keluarga}_inference_bundle_h{HORIZON}.pkl"
+        if p.exists():
+            return f"models/{keluarga}_inference_bundle_h{HORIZON}.pkl", keluarga
+    raise FileNotFoundError("tidak ada bundel inference untuk horizon ini")
+
+
+def _jumlah_chunk() -> int:
+    import sqlite3
+    db = ROOT / "models/chroma_db/chroma.sqlite3"
+    if not db.exists():
+        return 0
+    con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+    try:
+        return int(con.execute("SELECT COUNT(*) FROM embeddings").fetchone()[0])
+    finally:
+        con.close()
 
 
 def main() -> None:
@@ -118,13 +151,18 @@ def main() -> None:
     }
 
     # ── 1. Muat artefak (sekali saat aplikasi dinyalakan) ──────────────────
+    jalur_bundel, keluarga = _bundel_produksi()
+    result["keluarga_model_diukur"] = keluarga
     t0 = time.perf_counter()
-    with open(ROOT / f"models/rf_inference_bundle_h{HORIZON}.pkl", "rb") as f:
+    with open(ROOT / jalur_bundel, "rb") as f:
         bundle = pickle.load(f)
     t_rf = (time.perf_counter() - t0) * 1000
 
     t0 = time.perf_counter()
-    with open(ROOT / f"models/rf_condition_classifier_h{HORIZON}.pkl", "rb") as f:
+    jalur_clf = ROOT / f"models/{keluarga}_condition_classifier_h{HORIZON}.pkl"
+    if not jalur_clf.exists():  # keluarga ini belum punya pengklasifikasi
+        jalur_clf = ROOT / f"models/rf_condition_classifier_h{HORIZON}.pkl"
+    with open(jalur_clf, "rb") as f:
         clf = pickle.load(f)
     t_clf = (time.perf_counter() - t0) * 1000
 
@@ -158,16 +196,30 @@ def main() -> None:
     Xs = bundle["scaler"].transform(X).reshape(1, -1)
 
     # ── 3. Prediksi (regresi + kondisi + interval antar-pohon) ────────────
+    # Sumber sigma mengikuti bundel, bukan diandaikan. RF memakai sebaran antar-pohon
+    # (estimators_), sedangkan HistGradientBoostingRegressor TIDAK punya estimators_
+    # sehingga memakai sebaran kuantil yang disimpan bundel sebagai std_models.
+    # Versi sebelumnya memanggil estimators_ tanpa syarat, sehingga benchmark ini
+    # HANYA dapat berjalan pada Random Forest dan diam-diam mengukur model yang
+    # bukan produksi.
+    std_models = bundle.get("std_models")
+    lebar_gauss = 3.92  # (q0,975 - q0,025) pada normal baku; sama dengan gbm_model.py
+
     def do_predict():
         pred = bundle["model"].predict(Xs)[0] + float(window["glucose"].iloc[-1])
         cond = clf["model"].predict(Xs)[0]
-        sigma = np.std([t.predict(Xs)[0] for t in bundle["model"].estimators_])
+        if std_models:
+            sigma = (std_models["high"].predict(Xs)[0]
+                     - std_models["low"].predict(Xs)[0]) / lebar_gauss
+        else:
+            sigma = np.std([t.predict(Xs)[0] for t in bundle["model"].estimators_])
         return pred, cond, sigma
 
     result["tahap"]["3_prediksi"] = timed(do_predict)
     pred, cond, sigma = do_predict()
     result["tahap"]["3_prediksi"]["keterangan"] = (
-        "Mencakup regresi, pengklasifikasi kondisi, dan interval dari 200 pohon."
+        "Mencakup regresi, pengklasifikasi kondisi, dan interval ketidakpastian "
+        f"({bundle.get('std_method', 'sebaran antar-pohon')})."
     )
 
     # ── 4. Retrieval (embedding kueri + MMR atas 2.585 chunk) ─────────────
@@ -178,7 +230,7 @@ def main() -> None:
         return retriever.retrieve(query, top_k=cfg["rag"]["top_k_retrieval"])
 
     result["tahap"]["4_retrieval"] = timed(do_retrieve, n=20)
-    result["tahap"]["4_retrieval"]["keterangan"] = "Embedding kueri + pencarian MMR pada 2.585 chunk."
+    result["tahap"]["4_retrieval"]["keterangan"] = f"Embedding kueri + pencarian MMR pada {_jumlah_chunk()} chunk."
 
     # ── 5. Generasi LLM (opsional; butuh API key + kuota) ─────────────────
     try:
