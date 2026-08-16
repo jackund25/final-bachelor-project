@@ -48,6 +48,9 @@ models/_chunk_strategi/
 # Indeks sementara uji jendela token (T8) — dibangun ulang oleh
 # scripts/eval_jendela_token.py, tidak perlu masuk repo.
 models/_jendela_token/
+# Indeks sementara uji model embedding (T9) dan embedding terkelola (T10).
+models/_model_embedding/
+models/_embedding_gemini/
 # Koleksi evaluasi RAGAS (dibangun ulang via scripts/build_eval_kb.py)
 models/chroma_db_eval/
 
