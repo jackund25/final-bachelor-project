@@ -51,6 +51,12 @@ models/_jendela_token/
 # Indeks sementara uji model embedding (T9) dan embedding terkelola (T10).
 models/_model_embedding/
 models/_embedding_gemini/
+# Koleksi PDF paper rujukan (~69 MB). SENGAJA tidak masuk repo: isinya makalah
+# berhak cipta milik penerbit, dan catatan rujukan yang sah sudah ada pada
+# docs/laporan_TA/TA-STI-template-1.0/daftar-pustaka.bib. Berkasnya tetap
+# diperlukan secara lokal untuk memverifikasi kutipan sebelum dipakai.
+docs/sumber referensi/
+
 # Koleksi evaluasi RAGAS (dibangun ulang via scripts/build_eval_kb.py)
 models/chroma_db_eval/
 

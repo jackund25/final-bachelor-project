@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "streamlit-konsultasi",
+      "runtimeExecutable": "C:\\Users\\Asus\\anaconda3\\envs\\diabetes-ta\\python.exe",
+      "runtimeArgs": ["run_app.py"],
+      "port": 8501
+    }
+  ]
+}
