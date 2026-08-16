@@ -1,7 +1,5 @@
 {
   "catatan": "Masukan hanya finger_stick + event logbook; CGM dipakai hanya sebagai ground truth.",
-  "keluarga_prediktor": "HistGradientBoostingRegressor",
-  "seq_len": 6,
   "n_smbg_readings": 4566,
   "test_patients": [
     "ohio_591",
@@ -25,11 +23,11 @@
         ],
         "n_train": 1886,
         "n_test": 354,
-        "RMSE": 28.56,
-        "MAE": 21.68,
-        "MAPE": 18.04,
-        "Clarke_A": 71.19,
-        "Clarke_A+B": 90.68
+        "RMSE": 27.09,
+        "MAE": 20.33,
+        "MAPE": 17.07,
+        "Clarke_A": 74.86,
+        "Clarke_A+B": 92.09
       },
       "persistence": {
         "RMSE": 27.33,
@@ -49,11 +47,11 @@
         ],
         "n_train": 1886,
         "n_test": 354,
-        "RMSE": 28.54,
-        "MAE": 21.51,
-        "MAPE": 18.04,
-        "Clarke_A": 73.73,
-        "Clarke_A+B": 92.37
+        "RMSE": 27.2,
+        "MAE": 20.46,
+        "MAPE": 17.15,
+        "Clarke_A": 74.01,
+        "Clarke_A+B": 92.09
       }
     },
     "+60": {
@@ -69,11 +67,11 @@
         ],
         "n_train": 1870,
         "n_test": 356,
-        "RMSE": 46.53,
-        "MAE": 36.81,
-        "MAPE": 30.59,
-        "Clarke_A": 50.28,
-        "Clarke_A+B": 76.97
+        "RMSE": 42.86,
+        "MAE": 34.36,
+        "MAPE": 28.56,
+        "Clarke_A": 51.97,
+        "Clarke_A+B": 80.34
       },
       "persistence": {
         "RMSE": 47.87,
@@ -93,11 +91,11 @@
         ],
         "n_train": 1870,
         "n_test": 356,
-        "RMSE": 45.74,
-        "MAE": 36.38,
-        "MAPE": 30.27,
-        "Clarke_A": 49.72,
-        "Clarke_A+B": 76.97
+        "RMSE": 42.94,
+        "MAE": 34.48,
+        "MAPE": 28.8,
+        "Clarke_A": 52.81,
+        "Clarke_A+B": 81.74
       }
     }
   }

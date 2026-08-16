@@ -35,11 +35,11 @@ GPU, CGM *real-time*, maupun rekam medis elektronik.
   atas ChromaDB, dan generator berbasis Google Gemini. Tersedia mode RAG standar sebagai
   pembanding untuk membuktikan kontribusi.
 - **Basis pengetahuan** — pedoman klinis PERKENI dan ADA yang di-*ingest* ke ChromaDB.
-- **Digital twin sederhana** — proyeksi *state* metabolik dan simulasi *what-if* berbasis
-  formula farmakokinetik mekanistik (bukan model prediktif, agar arah kausal intervensi
-  tetap benar).
+- **Representasi kondisi pasien** — vektor fitur ringkas yang dihitung dari catatan *logbook*,
+  mencakup *insulin-on-board* dan *carbs-on-board* berbasis peluruhan eksponensial, tren
+  glukosa, dan penyandian siklis waktu.
 - **Aplikasi Streamlit** — antarmuka konsultasi klinis: status pasien, prediksi dan risiko,
-  rekomendasi tertelusur, simulasi *what-if*, serta pencatatan keputusan dokter.
+  rekomendasi tertelusur sampai nomor halaman, serta pencatatan keputusan dokter.
 
 ## Hasil Utama
 

@@ -2,41 +2,53 @@
   "horizon_steps": 12,
   "horizon_min": 60,
   "max_gap_steps": 6,
+  "model_family": "HistGradientBoostingRegressor",
+  "sigma_source": "quantile_spread",
+  "predict_delta": true,
+  "features": [
+    "glucose",
+    "glucose_delta",
+    "iob",
+    "cob",
+    "activity",
+    "hour_sin",
+    "hour_cos"
+  ],
   "n_cal": 28900,
   "n_test": 26169,
   "levels": {
     "90": {
       "baseline_z_std": {
-        "coverage%": 82.7,
-        "mean_width": 85.7
+        "coverage%": 88.1,
+        "mean_width": 90.7
       },
       "conformal_absolute": {
-        "coverage%": 92.3,
-        "mean_width": 117.1,
-        "q": 58.53
+        "coverage%": 92.4,
+        "mean_width": 116.6,
+        "q": 58.32
       },
       "conformal_normalized": {
-        "coverage%": 92.2,
-        "mean_width": 119.2,
-        "q": 2.29
+        "coverage%": 91.8,
+        "mean_width": 104.9,
+        "q": 1.9
       }
     },
     "95": {
       "baseline_z_std": {
-        "coverage%": 88.4,
-        "mean_width": 102.1
+        "coverage%": 92.5,
+        "mean_width": 108.1
       },
       "conformal_absolute": {
-        "coverage%": 96.5,
-        "mean_width": 152.2,
-        "q": 76.08
+        "coverage%": 96.7,
+        "mean_width": 151.7,
+        "q": 75.85
       },
       "conformal_normalized": {
-        "coverage%": 96.5,
-        "mean_width": 154.1,
-        "q": 2.96
+        "coverage%": 96.1,
+        "mean_width": 133.2,
+        "q": 2.42
       }
     }
   },
-  "durasi_detik": 509.0
+  "durasi_detik": 17.7
 }

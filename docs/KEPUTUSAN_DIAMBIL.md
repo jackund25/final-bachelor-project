@@ -131,6 +131,38 @@ setelah #8, bukan yang diselesaikannya.
 
 ## #5 — Pemilihan model: PILIHAN D, Random Forest tetap produksi
 
+> ## ⚠ KEPUTUSAN INI SUDAH DILAMPAUI — 13 Agustus 2026
+>
+> **Prediktor produksi kini Gradient Boosting**, bukan Random Forest. `config.yaml`
+> berbunyi `model.name: "GradientBoosting"`, dan `app/streamlit_app.py` memuat bundle GBM
+> lebih dulu lewat `KELUARGA_BUNDLE`.
+>
+> Perubahan itu **dikerjakan pembimbing setelah** bagian di bawah ditulis, sehingga bagian
+> ini menggambarkan keputusan **pada saat diambil**, bukan keadaan sistem sekarang.
+>
+> **Yang menjadi tidak berlaku:**
+> - kalimat *"Random Forest **tetap** menjadi prediktor produksi"*
+> - kalimat *"`config.yaml` tidak disentuh"* pada bagian "Apa yang TIDAK dikerjakan"
+> - *"GBM masuk saran pengembangan"* — ia kini produksi, bukan saran
+>
+> **Yang TETAP berlaku, dan justru menjadi lebih penting:**
+> - ketiga alasan di bawah tetap menggambarkan pertimbangannya
+> - **batas yang wajib dinyatakan:** pada h12 GBM **KALAH** dari RF pada sensitivitas
+>   hipoglikemia (2,42% lawan 4,36%; hipo berat terlewat 957 lawan 933). Klaim *"unggul di
+>   setiap dimensi"* **hanya berlaku pada h6** — dan catatan itu kini sudah ada di
+>   `config.yaml` sendiri
+> - konsekuensi terhadap Bab II subbab II.4.1 **tidak berubah**: kedua alasan lama tetap
+>   harus dibuang. Naskah pengganti di `docs/REVISI_BAB_II_4_1.md` perlu **disesuaikan**,
+>   karena ia menulis prediktor tidak diganti — padahal akhirnya diganti
+>
+> **Yang belum diperiksa dan tidak boleh diasumsikan:** apakah seluruh angka hilir sudah
+> dihitung ulang pada prediktor baru. Migrasi ini menyentuh crossfold retrieval, realcases,
+> T3.1–T3.3, kalibrasi konformal, dan RAGAS. Sebagian artefak RF sudah diarsipkan
+> (`*_RF_arsip.json`) dan ada `docs/PRAPENDAFTARAN_T6_GBM_RETRIEVAL.md` yang belum selesai,
+> tetapi kelengkapannya **belum diverifikasi**.
+>
+> Alur sistem sebagaimana berjalan sekarang: `docs/METHODOLOGY.md` bagian 7.
+
 ### Yang diputuskan
 
 Random Forest **tetap** menjadi prediktor produksi. GBM dan LSTM dilaporkan sebagai

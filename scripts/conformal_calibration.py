@@ -1,6 +1,21 @@
-"""Kalibrasi interval prediksi RF via SPLIT CONFORMAL PREDICTION.
+"""Kalibrasi interval prediksi via SPLIT CONFORMAL PREDICTION.
 
-Interval baseline (pred +/- 1.96*std antar-pohon) hanya ~84% cakupan (underconfident).
+Mendukung DUA keluarga model lewat --model:
+  - gbm (bawaan, prediktor produksi sejak 13 Agustus 2026)
+  - rf  (dipertahankan untuk mereproduksi angka pembanding T1.3)
+
+SUMBER SIGMA BERBEDA ANTARKELUARGA, dan itu perlu dinyatakan:
+  - RF  : sebaran antar-pohon (``estimators_``)
+  - GBM : rentang dua model kuantil (0,025 dan 0,975) dibagi 3,92,
+          karena HistGradientBoostingRegressor tidak punya ``estimators_``
+
+Keduanya HEURISTIK dengan status yang sama. Jaminan cakupan konformal bersifat
+distribution-free dan TIDAK bergantung pada bagaimana sigma dipilih — kuantil
+konformal yang dihitung pada himpunan kalibrasi menyerap skalanya. Yang berubah
+hanya seberapa baik sigma menebak lokasi ketidakpastian, dan itu terbaca pada
+selisih cakupan antara varian absolut dan ternormalisasi.
+
+Interval baseline (pred +/- 1.96*std) hanya ~84% cakupan (underconfident).
 Conformal memberi jaminan cakupan distribution-free: kuantil residual kalibrasi menentukan
 lebar interval sehingga cakupan test mendekati target (mis. 95%).
 
@@ -33,7 +48,7 @@ import time
 from pathlib import Path
 import numpy as np
 import yaml
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor, RandomForestRegressor
 
 from src.data.loader import DiabetesDataLoader
 from src.data.preprocessor import DataPreprocessor
@@ -59,6 +74,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--horizon", type=int, default=m.get("default_horizon", 6),
                     help="horizon dalam LANGKAH (6 = 30 menit, 12 = 60 menit)")
+    ap.add_argument("--model", choices=["gbm", "rf"],
+                    default=("rf" if m.get("name") == "RandomForest" else "gbm"),
+                    help="keluarga model; bawaan mengikuti config.model.name")
     args = ap.parse_args()
 
     seq_len = m.get("sequence_length", 12); horizon = args.horizon
@@ -100,16 +118,40 @@ def main():
     Xte_s = p2.scaler.transform(Xte.reshape(-1, Xte.shape[2])).reshape(Xte.shape)
     Xtr_f = Xtr_s.reshape(len(ytr), -1); Xca_f = Xca_s.reshape(len(yca), -1); Xte_f = Xte_s.reshape(len(yte), -1)
 
-    model = RandomForestRegressor(n_estimators=rf.get("n_estimators", 200), max_depth=rf.get("max_depth", 20),
-                                  min_samples_split=rf.get("min_samples_split", 5), random_state=seed, n_jobs=-1)
-    model.fit(Xtr_f, (ytr - atr) if predict_delta else ytr)
+    ytr_fit = (ytr - atr) if predict_delta else ytr
+
+    if args.model == "rf":
+        model = RandomForestRegressor(
+            n_estimators=rf.get("n_estimators", 200), max_depth=rf.get("max_depth", 20),
+            min_samples_split=rf.get("min_samples_split", 5), random_state=seed, n_jobs=-1)
+        model.fit(Xtr_f, ytr_fit)
+        sigma = lambda Xf: rf_std(model, Xf)  # noqa: E731
+        keluarga, sumber_sigma = "RandomForestRegressor", "tree_variance"
+    else:
+        from src.models.gbm_model import GAUSS_95_WIDTH, QUANTILE_HIGH, QUANTILE_LOW
+
+        gb = m.get("gradient_boosting", {})
+        gseed = gb.get("random_state", seed)
+        model = HistGradientBoostingRegressor(random_state=gseed)
+        model.fit(Xtr_f, ytr_fit)
+        # Model kuantil dilatih pada TARGET YANG SAMA dengan model titik (delta bila
+        # predict_delta). Melatihnya pada target absolut akan menghasilkan sigma pada
+        # skala yang berbeda dari residual kalibrasi, dan kuantil konformalnya menjadi
+        # tidak sebanding.
+        q_lo = HistGradientBoostingRegressor(loss="quantile", quantile=QUANTILE_LOW,
+                                             random_state=gseed).fit(Xtr_f, ytr_fit)
+        q_hi = HistGradientBoostingRegressor(loss="quantile", quantile=QUANTILE_HIGH,
+                                             random_state=gseed).fit(Xtr_f, ytr_fit)
+        # Dipangkas pada nol: kuantil terpisah tidak dijamin berurutan.
+        sigma = lambda Xf: np.maximum(q_hi.predict(Xf) - q_lo.predict(Xf), 0.0) / GAUSS_95_WIDTH  # noqa: E731
+        keluarga, sumber_sigma = "HistGradientBoostingRegressor", "quantile_spread"
 
     def predict(Xf, anc):
         out = model.predict(Xf)
         return (out + anc) if predict_delta else out
 
     yca_p, yte_p = predict(Xca_f, aca), predict(Xte_f, ate)
-    std_ca, std_te = rf_std(model, Xca_f), rf_std(model, Xte_f)
+    std_ca, std_te = sigma(Xca_f), sigma(Xte_f)
     res_ca = np.abs(yca - yca_p)  # residual kalibrasi
 
     def coverage(lo, hi):
@@ -118,10 +160,17 @@ def main():
     def width(lo, hi):
         return float(np.mean(hi - lo))
 
+    # PROVENANS ditulis ke berkas hasil, bukan hanya tersirat dari nama direktori.
+    # Pelajaran dari crossfold.json, yang hanya merekam top_k sehingga satu-satunya
+    # bukti konfigurasi lambda-nya adalah nama foldernya sendiri.
     out = {
         "horizon_steps": int(horizon),
         "horizon_min": int(horizon * cadence_min),
         "max_gap_steps": max_gap_steps,
+        "model_family": keluarga,
+        "sigma_source": sumber_sigma,
+        "predict_delta": bool(predict_delta),
+        "features": list(feats),
         "n_cal": int(len(yca)), "n_test": int(len(yte)),
         "levels": {},
     }

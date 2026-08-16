@@ -33,7 +33,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import yaml
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor, RandomForestRegressor
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -126,6 +126,11 @@ def make_windows(df: pd.DataFrame, horizon: int, features: list[str] = FEATURES)
 def main() -> None:
     cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
     rf_cfg = cfg["model"]["random_forest"]
+    # Keluarga mengikuti config.model.name. Baseline `persistence` TIDAK menyentuh model
+    # sama sekali, sehingga ia berfungsi sebagai kontrol: angkanya wajib tereproduksi.
+    keluarga = "rf" if cfg["model"].get("name") == "RandomForest" else "gbm"
+    gseed = cfg["model"].get("gradient_boosting", {}).get("random_state", SEED)
+    print(f"Keluarga prediktor: {keluarga} (config.model.name = {cfg['model'].get('name')})")
 
     cgm = pd.read_csv(ROOT / "data/raw/ohio_t1dm_merged.csv", parse_dates=["timestamp"])
     smbg = pd.read_csv(ROOT / "data/raw/ohio_t1dm_smbg.csv", parse_dates=["timestamp"])
@@ -138,6 +143,9 @@ def main() -> None:
     gap = df["gap_min"].dropna()
     out = {
         "catatan": "Masukan hanya finger_stick + event logbook; CGM dipakai hanya sebagai ground truth.",
+        "keluarga_prediktor": ("HistGradientBoostingRegressor" if keluarga == "gbm"
+                               else "RandomForestRegressor"),
+        "seq_len": SEQ_LEN,
         "n_smbg_readings": int(len(df)),
         "test_patients": test_patients,
         "smbg_gap_min": {
@@ -153,13 +161,16 @@ def main() -> None:
             X, y, anchor, pid = make_windows(df, h, feats)
             tr = ~np.isin(pid, test_patients)
             te = ~tr
-            model = RandomForestRegressor(
-                n_estimators=rf_cfg["n_estimators"],
-                max_depth=rf_cfg["max_depth"],
-                min_samples_split=rf_cfg["min_samples_split"],
-                random_state=SEED,
-                n_jobs=-1,
-            )
+            if keluarga == "gbm":
+                model = HistGradientBoostingRegressor(random_state=gseed)
+            else:
+                model = RandomForestRegressor(
+                    n_estimators=rf_cfg["n_estimators"],
+                    max_depth=rf_cfg["max_depth"],
+                    min_samples_split=rf_cfg["min_samples_split"],
+                    random_state=SEED,
+                    n_jobs=-1,
+                )
             model.fit(X[tr], y[tr])
 
             pred = anchor[te] + model.predict(X[te])   # rekonstruksi nilai absolut

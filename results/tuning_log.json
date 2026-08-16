@@ -1004,5 +1004,50 @@
     },
     "waktu": "2026-08-16 19:32:28",
     "catatan": "paraphrase-multilingual-MiniLM-L12-v2 @ 256, multibahasa, jendela disamakan dengan kontrol, korpus=kb12_sym"
+  },
+  {
+    "parameter": "embedding_gemini",
+    "nilai": "EN256",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 26.2,
+      "hit@5(%)": 80.8,
+      "mrr": 0.495,
+      "n_chunk": 2061,
+      "dim": 384
+    },
+    "waktu": "2026-08-16 19:35:51",
+    "catatan": "sentence-transformers/all-MiniLM-L6-v2, jendela 256, kontrol — lokal, luring, korpus=kb12_sym"
+  },
+  {
+    "parameter": "embedding_gemini",
+    "nilai": "EN256",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 26.2,
+      "hit@5(%)": 80.8,
+      "mrr": 0.495,
+      "n_chunk": 2061,
+      "dim": 384
+    },
+    "waktu": "2026-08-16 19:41:58",
+    "catatan": "sentence-transformers/all-MiniLM-L6-v2, jendela 256, kontrol — lokal, luring, korpus=kb12_sym"
+  },
+  {
+    "parameter": "embedding_gemini",
+    "nilai": "EN256",
+    "kriteria": "mrr",
+    "metrik_set_penyetelan": {
+      "n": 240,
+      "hit@1(%)": 26.2,
+      "hit@5(%)": 80.8,
+      "mrr": 0.495,
+      "n_chunk": 2061,
+      "dim": 384
+    },
+    "waktu": "2026-08-16 20:15:43",
+    "catatan": "sentence-transformers/all-MiniLM-L6-v2, jendela 256, kontrol — lokal, luring, korpus=kb12_sym"
   }
 ]

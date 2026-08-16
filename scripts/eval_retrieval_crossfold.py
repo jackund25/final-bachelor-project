@@ -23,7 +23,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import yaml
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.ensemble import (HistGradientBoostingClassifier, HistGradientBoostingRegressor,
+                              RandomForestClassifier, RandomForestRegressor)
 from sklearn.preprocessing import StandardScaler
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -126,6 +127,12 @@ def main() -> None:
     cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
     mc = cfg["model"]
     rf_cfg = mc["random_forest"]
+    # Keluarga model mengikuti config.model.name. Mode `standard` dan `oracle` TIDAK
+    # menyentuh model sama sekali (lihat docs/PRAPENDAFTARAN_T6_GBM_RETRIEVAL.md), jadi
+    # keduanya berfungsi sebagai kontrol: keduanya wajib tereproduksi persis.
+    keluarga = "rf" if mc.get("name") == "RandomForest" else "gbm"
+    gseed = mc.get("gradient_boosting", {}).get("random_state", SEED)
+    print(f"Keluarga prediktor: {keluarga} (config.model.name = {mc.get('name')})")
     df, pre = build_frame(cfg)
 
     patients = sorted(df["patient_id"].unique())
@@ -149,16 +156,26 @@ def main() -> None:
 
         Xtr_s, Xte_s = sc(Xtr), sc(Xte)
 
-        reg = RandomForestRegressor(n_estimators=rf_cfg["n_estimators"], max_depth=rf_cfg["max_depth"],
-                                    min_samples_split=rf_cfg["min_samples_split"],
-                                    random_state=SEED, n_jobs=-1)
+        # class_weight="balanced" tetap dipakai pada kedua keluarga: tanpanya kelas
+        # hipoglikemia (3,3% sampel) tenggelam dan pengondisian kueri kehilangan
+        # justru kasus yang paling perlu diantisipasi.
+        if keluarga == "gbm":
+            reg = HistGradientBoostingRegressor(random_state=gseed)
+            clf = HistGradientBoostingClassifier(class_weight="balanced", random_state=gseed)
+        else:
+            reg = RandomForestRegressor(n_estimators=rf_cfg["n_estimators"],
+                                        max_depth=rf_cfg["max_depth"],
+                                        min_samples_split=rf_cfg["min_samples_split"],
+                                        random_state=SEED, n_jobs=-1)
+            clf = RandomForestClassifier(n_estimators=rf_cfg["n_estimators"],
+                                         max_depth=rf_cfg["max_depth"],
+                                         min_samples_split=rf_cfg["min_samples_split"],
+                                         class_weight="balanced", random_state=SEED, n_jobs=-1)
+
         reg.fit(Xtr_s, ytr - atr)
         pred = reg.predict(Xte_s) + ate
 
         lbl_tr = np.array([classify_glucose(v) for v in ytr])
-        clf = RandomForestClassifier(n_estimators=rf_cfg["n_estimators"], max_depth=rf_cfg["max_depth"],
-                                     min_samples_split=rf_cfg["min_samples_split"],
-                                     class_weight="balanced", random_state=SEED, n_jobs=-1)
         clf.fit(Xtr_s, lbl_tr)
         cond_clf = clf.predict(Xte_s)
 
@@ -227,10 +244,38 @@ def main() -> None:
                 "hit@1_sd": round(float(h1.std(ddof=1)), 3),
             }
 
+    # KONFIGURASI EFEKTIF ditulis ke berkas hasil. Sebelumnya hanya `top_k` yang
+    # tercatat, sehingga satu-satunya bukti bahwa suatu berkas berasal dari
+    # lambda_mult 0,0 adalah NAMA DIREKTORINYA — dan itu sudah pernah menyesatkan:
+    # tabel HANDOFF sempat memuat angka lambda 0,5 sebagai hasil produksi.
+    from src.config import load_rag_config
+    rag_cfg = load_rag_config()
     out = {
         "catatan": ("Enam fold lintas-pasien. Pada tiap fold, model regresi dan pengklasifikasi "
                     "dilatih ulang dari nol pada 10 pasien; retrieval dievaluasi pada 2 pasien "
                     "yang tak pernah dilihat. Ground truth = kondisi glukosa yang benar-benar terjadi."),
+        "konfigurasi_efektif": {
+            "keluarga_prediktor": type(reg).__name__,
+            "keluarga_pengklasifikasi": type(clf).__name__,
+            "class_weight": "balanced",
+            "lambda_mult": rag_cfg.lambda_mult,
+            "fetch_k": rag_cfg.fetch_k,
+            "top_k": rag_cfg.top_k,
+            "chunk_size": rag_cfg.chunk_size,
+            "chunk_overlap": rag_cfg.chunk_overlap,
+            "embedding_model": rag_cfg.embedding_model,
+            "collection_name": rag_cfg.collection_name,
+            "max_gap_steps": mc.get("max_gap_steps"),
+            "horizon_steps": HORIZON,
+            "seed": SEED,
+            "corpus_tag": CORPUS_TAG,
+        },
+        "kontrol_tak_bergantung_prediktor": (
+            "Mode `standard` dan `oracle`, serta pemilihan kasus divergen, TIDAK menyentuh "
+            "model sama sekali. Ketiganya wajib tereproduksi persis terhadap jalan sebelumnya; "
+            "bila tidak, yang berubah adalah jalur pengukurannya. Lihat "
+            "docs/PRAPENDAFTARAN_T6_GBM_RETRIEVAL.md dugaan D1."
+        ),
         "n_fold": len(folds), "top_k": TOP_K, "n_kasus_per_himpunan_per_fold": N_PER_SET,
         "ringkasan_lintas_fold": ringkas,
         "per_fold": per_fold,

@@ -17,12 +17,27 @@ Model ini melengkapi --- bukan menggantikan --- model regresi: regresi tetap dip
 menampilkan nilai prediksi dan intervalnya kepada dokter, sedangkan pengklasifikasi dipakai
 untuk (a) peringatan dini hipoglikemia dan (b) pengondisian kueri PC-RAG.
 
+KELUARGA MODEL mengikuti config.model.name, dapat ditimpa lewat --model.
+Sejak 13 Agustus 2026 produksi memakai Gradient Boosting. Mekanisme intinya TIDAK
+berubah: ``class_weight="balanced"`` tetap dipakai, dan HistGradientBoostingClassifier
+mendukungnya sejak scikit-learn 1.2. Yang berubah hanya keluarga pohonnya.
+
+Alasan ikut berganti: pengklasifikasi RF berukuran 195,69 MB, yaitu 98,5% dari seluruh
+jejak penyimpanan produksi setelah regresor berpindah ke GBM (1,45 MB per horizon).
+Membiarkannya sebagai RF akan membatalkan sebagian besar klaim efisiensi yang menjadi
+alasan penggantian model pada Rumusan Masalah 1.
+
+BASELINE PEMBANDING ikut mengikuti keluarga yang sama. Baris "regresi lalu ambang"
+harus berasal dari regresor yang BENAR-BENAR dipakai produksi; membandingkan
+pengklasifikasi GBM terhadap regresi RF akan mencampur dua perubahan sekaligus.
+
 Keluaran:
-  models/rf_condition_classifier_h6.pkl
+  models/{gbm,rf}_condition_classifier_h6.pkl
   results/eval_prediksi/condition_classifier.json
 """
 from __future__ import annotations
 
+import argparse
 import json
 import pickle
 import sys
@@ -31,7 +46,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import yaml
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.metrics import confusion_matrix
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -99,6 +114,14 @@ def metrics_for(y_true_lbl: np.ndarray, y_pred_lbl: np.ndarray) -> dict:
 
 def main() -> None:
     cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
+
+    ap = argparse.ArgumentParser(description="Latih pengklasifikasi kondisi masa depan")
+    ap.add_argument("--model", choices=["gbm", "rf"],
+                    default=("rf" if cfg["model"].get("name") == "RandomForest" else "gbm"),
+                    help="keluarga model; bawaan mengikuti config.model.name")
+    args = ap.parse_args()
+    prefix = args.model
+
     (Xtr, ytr, atr), (Xte, yte, ate), mc = build(cfg)
 
     lbl_tr = np.array([classify_glucose(v) for v in ytr])
@@ -110,7 +133,17 @@ def main() -> None:
     print("Distribusi kelas (uji):", {c: int((lbl_te == c).sum()) for c in CLASSES})
 
     # --- Baseline: kondisi diturunkan dari REGRESI (pendekatan laporan saat ini)
-    with open(ROOT / f"models/rf_inference_bundle_h{HORIZON}.pkl", "rb") as f:
+    # Regresor pembanding WAJIB sekeluarga dengan pengklasifikasinya, kalau tidak
+    # selisih yang terukur mencampur "pengklasifikasi lebih baik daripada regresi"
+    # dengan "GBM lebih baik daripada RF".
+    bundle_path = ROOT / f"models/{prefix}_inference_bundle_h{HORIZON}.pkl"
+    if not bundle_path.exists():
+        raise SystemExit(
+            f"Bundle regresi tidak ditemukan: {bundle_path.name}\n"
+            f"Latih dulu: PYTHONPATH=. python -m src.models."
+            f"{'gbm_model' if prefix == 'gbm' else 'rf_model'} --horizon {HORIZON}"
+        )
+    with open(bundle_path, "rb") as f:
         bundle = pickle.load(f)
     n_feat = len(mc["engineered_features"])
     Xte_s = bundle["scaler"].transform(Xte.reshape(-1, n_feat)).reshape(len(Xte), -1)
@@ -120,21 +153,34 @@ def main() -> None:
     # --- Usulan: pengklasifikasi kondisi sadar-biaya
     scaler = bundle["scaler"]
     Xtr_s = scaler.transform(Xtr.reshape(-1, n_feat)).reshape(len(Xtr), -1)
-    clf = RandomForestClassifier(
-        n_estimators=mc["random_forest"]["n_estimators"],
-        max_depth=mc["random_forest"]["max_depth"],
-        min_samples_split=mc["random_forest"]["min_samples_split"],
-        class_weight="balanced",       # inti: kelas hipoglikemia tidak tenggelam
-        random_state=SEED, n_jobs=-1,
-    )
+    # class_weight="balanced" adalah INTI percobaan ini pada kedua keluarga: tanpanya
+    # kelas hipoglikemia (3,3% sampel) tenggelam dan sensitivitasnya kembali runtuh.
+    if prefix == "gbm":
+        clf = HistGradientBoostingClassifier(
+            class_weight="balanced",
+            random_state=mc.get("gradient_boosting", {}).get("random_state", SEED),
+        )
+    else:
+        clf = RandomForestClassifier(
+            n_estimators=mc["random_forest"]["n_estimators"],
+            max_depth=mc["random_forest"]["max_depth"],
+            min_samples_split=mc["random_forest"]["min_samples_split"],
+            class_weight="balanced",
+            random_state=SEED, n_jobs=-1,
+        )
     clf.fit(Xtr_s, lbl_tr)
     lbl_clf = clf.predict(Xte_s)
 
     res = {
         "horizon_menit": HORIZON * 5,
+        # Provenans ditulis ke berkas hasil, bukan hanya tersirat dari nama berkas.
+        "keluarga_model": type(clf).__name__,
+        "regresor_pembanding": type(bundle["model"]).__name__,
+        "class_weight": "balanced",
         "catatan": (
             "Kondisi masa depan diprediksi langsung oleh pengklasifikasi tiga kelas "
-            "(class_weight=balanced), dibandingkan terhadap kondisi yang diturunkan dari regresi."
+            "(class_weight=balanced), dibandingkan terhadap kondisi yang diturunkan dari regresi "
+            "pada keluarga model yang SAMA."
         ),
         "n_uji": int(len(yte)),
         "n_divergen": int(divergent.sum()),
@@ -162,11 +208,14 @@ def main() -> None:
     print(f"  regresi        : {res['pada_kasus_divergen']['akurasi_kondisi_regresi_%']}%")
     print(f"  pengklasifikasi: {res['pada_kasus_divergen']['akurasi_kondisi_pengklasifikasi_%']}%")
 
-    with open(ROOT / f"models/rf_condition_classifier_h{HORIZON}.pkl", "wb") as f:
+    clf_path = ROOT / f"models/{prefix}_condition_classifier_h{HORIZON}.pkl"
+    with open(clf_path, "wb") as f:
         pickle.dump({"model": clf, "scaler": scaler, "classes": CLASSES,
                      "features": mc["engineered_features"],
                      "sequence_length": mc["sequence_length"],
-                     "prediction_horizon": HORIZON}, f)
+                     "prediction_horizon": HORIZON,
+                     "model_family": type(clf).__name__}, f)
+    print(f"\nPengklasifikasi -> {clf_path.name} ({clf_path.stat().st_size / 1e6:.2f} MB)")
 
     dest = ROOT / "results/eval_prediksi/condition_classifier.json"
     dest.write_text(json.dumps(res, indent=2), encoding="utf-8")
