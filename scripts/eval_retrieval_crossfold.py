@@ -100,6 +100,84 @@ def score(r, query: str, expected: str) -> dict:
             "ndcg": ndcg_at_k(rels, TOP_K)}
 
 
+# ── T13: lengan penelusuran leksikal dan hibrida ─────────────────────────────
+#
+# WHY  Model embedding produksi berbahasa INGGRIS sedangkan korpusnya INDONESIA.
+#      T9 menutup jalan mengganti model (multibahasa merusak pembedaan kondisi),
+#      sehingga jalan yang tersisa adalah pencocokan LEKSIKAL, yang tidak
+#      bergantung pada ruang semantik sama sekali.
+# HOW  Digabung dengan Reciprocal Rank Fusion karena RRF bekerja pada PERINGKAT,
+#      bukan skor mentah: skor kosinus dan skor BM25 berskala berbeda dan tidak
+#      dapat dijumlahkan. k_rrf=60 dipertahankan pada nilai bakunya dan TIDAK
+#      disetel, agar tidak menambah parameter bebas.
+# Lihat docs/PRAPENDAFTARAN_T13_HIBRIDA.md.
+K_RRF = 60
+LENGAN = ["vektor", "bm25", "hibrida"]
+
+
+def tokenisasi(teks: str) -> list:
+    """Angka ambang ("70", "180") justru sinyal yang diharapkan ditangkap BM25,
+    sehingga angka TIDAK dibuang. Identik dengan scripts/eval_hybrid_bm25.py."""
+    import re
+    return re.findall(r"[a-z0-9]+", teks.lower())
+
+
+def bangun_bm25(persist_dir: str, collection: str):
+    """Indeks BM25 atas korpus yang SAMA dengan indeks vektor.
+
+    Dokumen diambil dari ChromaDB, bukan dibaca ulang dari PDF, supaya kedua
+    lengan benar-benar menelusuri korpus yang identik — bila tidak, selisihnya
+    dapat berasal dari perbedaan korpus dan bukan dari cara menelusurinya.
+    """
+    import chromadb
+    from rank_bm25 import BM25Okapi
+
+    col = chromadb.PersistentClient(path=persist_dir).get_collection(collection)
+    teks = col.get(include=["documents"])["documents"]
+    return BM25Okapi([tokenisasi(t) for t in teks]), teks
+
+
+def _rrf(daftar_peringkat: list, k_rrf: int = K_RRF) -> list:
+    skor = {}
+    for daftar in daftar_peringkat:
+        for pos, idx in enumerate(daftar, start=1):
+            skor[idx] = skor.get(idx, 0.0) + 1.0 / (k_rrf + pos)
+    return [i for i, _ in sorted(skor.items(), key=lambda kv: -kv[1])]
+
+
+def _metrik_dari_topik(topics: list, expected: str) -> dict:
+    rank = (topics.index(expected) + 1) if expected in topics else 0
+    rels = [1 if t == expected else 0 for t in topics]
+    return {"hit@1": int(bool(topics) and topics[0] == expected),
+            "mrr": (1.0 / rank) if rank else 0.0,
+            "ndcg": ndcg_at_k(rels, TOP_K)}
+
+
+def score_lengan(r, bm25, teks_korpus, query: str, expected: str, n_kandidat: int = 50) -> dict:
+    """Skor ketiga lengan atas SATU kueri, memakai kolam kandidat yang sebanding."""
+    import numpy as _np
+
+    hasil = {}
+
+    # Lengan vektor: jalur produksi, tidak diubah sedikit pun agar D1 dapat diperiksa.
+    hasil["vektor"] = score(r, query, expected)
+
+    # Lengan BM25.
+    skor_bm = bm25.get_scores(tokenisasi(query))
+    urut_bm = list(_np.argsort(-skor_bm)[:n_kandidat])
+    hasil["bm25"] = _metrik_dari_topik(
+        [classify_chunk(teks_korpus[i]) for i in urut_bm[:TOP_K]], expected)
+
+    # Lengan hibrida: peringkat vektor dipetakan ke indeks korpus lewat teksnya.
+    docs_v = r.retrieve(query, top_k=n_kandidat)
+    peta = {t: i for i, t in enumerate(teks_korpus)}
+    urut_v = [peta[d["text"]] for d in docs_v if d["text"] in peta]
+    gabung = _rrf([urut_v, urut_bm])[:TOP_K]
+    hasil["hibrida"] = _metrik_dari_topik(
+        [classify_chunk(teks_korpus[i]) for i in gabung], expected)
+    return hasil
+
+
 def pick(cases: pd.DataFrame, divergent: bool, rng) -> pd.DataFrame:
     sub = cases[cases["divergent"]] if divergent else cases
     if divergent:
@@ -139,6 +217,9 @@ def main() -> None:
     folds = [patients[i:i + 2] for i in range(0, len(patients), 2)]
     r = MMRRetriever(persist_dir="models/chroma_db", collection_name="diabetes_kb",
                      embed_provider="sentence-transformers")
+    bm25, teks_korpus = bangun_bm25("models/chroma_db", "diabetes_kb")
+    print(f"Indeks BM25 dibangun atas {len(teks_korpus)} potongan yang SAMA "
+          f"dengan indeks vektor (T13).")
 
     per_fold = []
     for fi, test_p in enumerate(folds):
@@ -194,6 +275,8 @@ def main() -> None:
         for label, divergent in (("divergen", True), ("natural", False)):
             sub = pick(cases, divergent, rng)
             agg = {m: {"hit@1": [], "mrr": []} for m in MODES}
+            # T13: lengan tambahan diakumulasi terpisah agar struktur lama utuh.
+            agg_l = {l: {m: {"hit@1": [], "mrr": []} for m in MODES} for l in LENGAN}
             for _, c in sub.iterrows():
                 exp = c["cond_actual"]
                 for m in MODES:
@@ -205,12 +288,20 @@ def main() -> None:
                         q = build_query(float(c["predicted"]), True, cond=str(c["cond_clf"]))
                     else:
                         q = build_query(float(c["actual_future"]), True)
-                    s = score(r, q, exp)
+                    sl = score_lengan(r, bm25, teks_korpus, q, exp)
+                    s = sl["vektor"]  # lengan produksi; nilainya identik score()
                     agg[m]["hit@1"].append(s["hit@1"])
                     agg[m]["mrr"].append(s["mrr"])
+                    for l in LENGAN:
+                        agg_l[l][m]["hit@1"].append(sl[l]["hit@1"])
+                        agg_l[l][m]["mrr"].append(sl[l]["mrr"])
             fold_res[label] = {"n": int(len(sub)),
                                **{m: {"hit@1": round(float(np.mean(agg[m]["hit@1"])), 3),
                                       "mrr": round(float(np.mean(agg[m]["mrr"])), 3)} for m in MODES}}
+            fold_res[f"{label}_lengan"] = {
+                l: {m: {"hit@1": round(float(np.mean(agg_l[l][m]["hit@1"])), 3),
+                        "mrr": round(float(np.mean(agg_l[l][m]["mrr"])), 3)} for m in MODES}
+                for l in LENGAN}
 
         per_fold.append(fold_res)
         d, n = fold_res["divergen"], fold_res["natural"]
