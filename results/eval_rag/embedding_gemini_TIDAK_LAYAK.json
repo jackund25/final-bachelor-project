@@ -1,0 +1,58 @@
+{
+  "percobaan": "T10 — embedding Gemini terkelola lawan MiniLM lokal",
+  "STATUS": "TIDAK DAPAT DIJALANKAN pada free tier. Bukan kegagalan kode, melainkan batas layanan yang terukur.",
+  "tanggal": "2026-08-16",
+  "skrip": "scripts/eval_embedding_gemini.py",
+  "model_yang_dicoba": "models/gemini-embedding-2",
+
+  "dua_batas_yang_ditemui_berurutan": {
+    "1_per_menit": {
+      "quota_id": "EmbedContentRequestsPerMinutePerUserPerProjectPerModel-FreeTier",
+      "batas": 100,
+      "akibat": "Jalan pertama gagal seketika saat mengindeks 2.061 potongan sekaligus.",
+      "penyelesaian": "Ditangani dengan _EmbeddingsBerlaju (kelompok 30, laju 90/menit, coba-ulang 429). Batas ini TERATASI."
+    },
+    "2_per_hari": {
+      "quota_id": "EmbedContentRequestsPerDayPerUserPerProjectPerModel-FreeTier",
+      "batas": 1000,
+      "akibat": "Jalan kedua berjalan sampai jatah harian habis, lalu berhenti.",
+      "penyelesaian": "TIDAK ADA pada free tier. Batas ini bersifat menghalangi."
+    }
+  },
+
+  "aritmetika_yang_menentukan": {
+    "n_potongan_korpus": 2061,
+    "permintaan_untuk_sekali_indeks": 2061,
+    "batas_harian_per_model": 1000,
+    "hari_minimum_untuk_SEKALI_indeks": 3,
+    "permintaan_tambahan_per_sekali_evaluasi": 480,
+    "catatan_kuota_per_model": "quota_id memuat PerModel, sehingga gemini-embedding-001 punya jatah 1.000/hari SENDIRI. Tetap di bawah 2.061, jadi berpindah model tidak menyelesaikannya.",
+    "catatan_satuan": "Batas menghitung KONTEN, bukan permintaan batch. Membatch lewat batchEmbedContents mempercepat, tetapi TIDAK mengurangi konsumsi kuota."
+  },
+
+  "mengapa_ini_menghalangi_penelitian_bukan_sekadar_merepotkan": [
+    "Sekali indeks butuh 3 hari, sedangkan setiap varian chunking menuntut indeks ulang.",
+    "Perbandingan antarvarian karena itu memerlukan berhari-hari per lengan, membuat protokol Bagian C (semua varian diukur, termasuk yang kalah) tidak dapat dijalankan.",
+    "Indexing menjadi tidak dapat diulang sesuka waktu, sehingga reprodusibilitas hasil bergantung pada kuota pihak ketiga."
+  ],
+
+  "keadaan_setelah_gagal_diperiksa": {
+    "indeks_gem2": "0 potongan — Chroma menolak batch secara utuh, TIDAK ada indeks separuh terisi",
+    "indeks_kontrol_en256": "2061 potongan, terbangun normal",
+    "berkas_hasil": "tidak ditulis, sehingga tidak ada angka setengah jadi yang dapat salah dikutip"
+  },
+
+  "NILAI_BAGI_NASKAH": [
+    "Ini temuan KELAYAKAN PENERAPAN, bukan sekadar kendala teknis, dan sejalan dengan konteks penelitian: sistem ditujukan bagi layanan kesehatan bersumber daya terbatas.",
+    "Embedding terkelola berjendela besar memang menghapus pemotongan, tetapi menukarnya dengan ketergantungan kuota pihak ketiga yang membuat korpus tidak dapat diindeks ulang secara mandiri.",
+    "Layak masuk Bab keterbatasan/kelayakan sebagai alasan terukur memilih embedding LOKAL, bukan sebagai kegagalan percobaan."
+  ],
+
+  "yang_TIDAK_boleh_disimpulkan": "Tidak ada satu pun angka mutu retrieval gemini-embedding-2 yang dihasilkan. Perbandingan mutunya dengan MiniLM TETAP TIDAK DIKETAHUI. Yang terukur hanyalah kelayakan penerapannya pada free tier.",
+
+  "jalan_yang_masih_terbuka": [
+    "Menanti reset kuota dan mengindeks bertahap selama 3 hari — menuntut kemampuan melanjutkan indexing yang belum ada.",
+    "HuggingFace Inference API (mis. BAAI/bge-m3) — batas kuotanya belum diperiksa, memerlukan token gratis.",
+    "Tetap memakai embedding LOKAL. paraphrase-multilingual-MiniLM-L12-v2 pada jendela 256 (T9) sudah menurunkan token terbuang 8,23% -> 2,30% dengan MRR 0,506 lawan 0,492, luring dan tanpa kuota."
+  ]
+}

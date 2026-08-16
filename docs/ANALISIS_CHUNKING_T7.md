@@ -433,7 +433,60 @@ sekali**. Kandidat yang tersisa, berurut menurut kekuatan bukti:
 Ia **tidak boleh** dinarasikan sebagai perbaikan kinerja retrieval, karena tiga
 percobaan menunjukkan kinerja tidak bergerak di sana.
 
-## 11. Berkas yang disentuh
+## 11. T10 — embedding terkelola TIDAK LAYAK pada free tier
+
+Sumber: `results/eval_rag/embedding_gemini_TIDAK_LAYAK.json`,
+skrip `scripts/eval_embedding_gemini.py`.
+
+Percobaan ini **tidak menghasilkan satu pun angka mutu retrieval**, dan itu
+sendiri temuannya. Dua batas kuota ditemui berurutan:
+
+| Batas | Nilai | Hasil |
+|---|---:|---|
+| Per menit | 100 | **Teratasi** dengan pembatas laju sisi klien (`_EmbeddingsBerlaju`) |
+| **Per hari** | **1.000** | **Menghalangi** — tidak ada penyelesaian pada free tier |
+
+**Aritmetika yang menentukan:** korpus 2.061 potongan menuntut 2.061 permintaan
+untuk **sekali** indeks, sedangkan jatahnya 1.000 per hari per model. Sekali
+indeks karena itu memerlukan **tiga hari**, ditambah 480 permintaan per sekali
+evaluasi. Kuota bersifat per-model, sehingga berpindah ke `gemini-embedding-001`
+memberi jatah 1.000/hari tersendiri — tetap di bawah 2.061, jadi **tidak
+menyelesaikannya**. Batas menghitung **konten**, bukan permintaan batch, sehingga
+`batchEmbedContents` mempercepat tetapi tidak menghemat kuota.
+
+**Mengapa ini menghalangi penelitian, bukan sekadar merepotkan.** Setiap varian
+chunking menuntut indeks ulang. Dengan tiga hari per lengan, protokol Bagian C
+— yang mensyaratkan seluruh varian diukur termasuk yang kalah — tidak dapat
+dijalankan sama sekali.
+
+**Nilai bagi naskah.** Ini temuan **kelayakan penerapan**, dan sejalan dengan
+konteks penelitian ini: sistem ditujukan bagi layanan kesehatan bersumber daya
+terbatas. Embedding terkelola berjendela besar memang menghapus pemotongan, tetapi
+menukarnya dengan ketergantungan kuota pihak ketiga yang membuat korpus **tidak
+dapat diindeks ulang secara mandiri**. Layak masuk Bab keterbatasan sebagai
+**alasan terukur memilih embedding lokal**, bukan sebagai kegagalan percobaan.
+
+**Yang TIDAK boleh disimpulkan.** Mutu retrieval `gemini-embedding-2` **tetap
+tidak diketahui**. Yang terukur hanya kelayakan penerapannya.
+
+## 12. Ringkasan keputusan seluruh T7–T10
+
+| Perubahan | Status | Dasar |
+|---|---|---|
+| Kutipan UI berhenti di batas kalimat | **Diadopsi** | Gao dkk. §V.A.1; tidak bergantung indeks maupun MRR |
+| Pemisah kalimat saat indexing | **Layak diadopsi** | 19,7% → 83,5% berakhir utuh; MRR tak bergerak nyata |
+| Penakar token (V3) | **Ditangguhkan** | Metrik terkonfound, tidak dapat memutuskan |
+| Menaikkan `max_seq_length` ke 512 | **Tidak diadopsi** | T8: MRR −0,023; model disetel pada 256 |
+| Pindah ke model multibahasa (ML256) | **Kandidat kuat** | T9: MRR 0,506 vs 0,492 dan token terbuang 8,23% → 2,30%, luring, tanpa kuota |
+| Embedding terkelola Gemini | **Tidak layak** | T10: 1.000/hari lawan kebutuhan 2.061 |
+
+Catatan atas ML256: dugaan bahasa **tidak didukung** menurut ambang yang
+ditetapkan di muka (+0,014 < 0,02). Namun sebagai **pilihan produksi** ia
+mengungguli EN256 pada integritas korpus tanpa merugikan MRR — bentuk penalaran
+yang sama dengan Aturan 3 prapendaftaran T7, dan harus dinyatakan sebagai alasan
+integritas, **bukan** sebagai kemenangan hipotesis bahasa.
+
+## 13. Berkas yang disentuh
 
 | Berkas | Perubahan |
 |---|---|
