@@ -1,0 +1,136 @@
+{
+  "percobaan": "T14 — validasi lengan penelusuran dengan RAGAS",
+  "prapendaftaran": "docs/PRAPENDAFTARAN_T14_RAGAS_LENGAN.md",
+  "korpus": "produksi (models/chroma_db)",
+  "n_kasus": 10,
+  "top_k": 5,
+  "penilai": "gemini-3.5-flash-lite",
+  "metrik": [
+    "context_precision",
+    "context_recall"
+  ],
+  "catatan_pembangkitan": "Tahap pembangkitan jawaban DILEWATI; context_precision dan context_recall tidak memakai medan `response`.",
+  "lengan": {
+    "vektor": {
+      "rerata": {
+        "context_precision": 0.025,
+        "context_recall": 0.1
+      },
+      "per_kasus": [
+        {
+          "id": "E01",
+          "context_precision": 0.0,
+          "context_recall": 0.0
+        },
+        {
+          "id": "E02",
+          "context_precision": 0.0,
+          "context_recall": 0.0
+        },
+        {
+          "id": "E03",
+          "context_precision": 0.0,
+          "context_recall": 0.0
+        },
+        {
+          "id": "E04",
+          "context_precision": 0.0,
+          "context_recall": 0.0
+        },
+        {
+          "id": "E05",
+          "context_precision": 0.0,
+          "context_recall": 0.0
+        },
+        {
+          "id": "E06",
+          "context_precision": 0.249999999975,
+          "context_recall": 1.0
+        },
+        {
+          "id": "E07",
+          "context_precision": 0.0,
+          "context_recall": 0.0
+        },
+        {
+          "id": "E08",
+          "context_precision": 0.0,
+          "context_recall": 0.0
+        },
+        {
+          "id": "E09",
+          "context_precision": 0.0,
+          "context_recall": 0.0
+        },
+        {
+          "id": "E10",
+          "context_precision": 0.0,
+          "context_recall": 0.0
+        }
+      ]
+    },
+    "hibrida": {
+      "rerata": {
+        "context_precision": 0.545,
+        "context_recall": 0.8
+      },
+      "per_kasus": [
+        {
+          "id": "E01",
+          "context_precision": 0.0,
+          "context_recall": 0.0
+        },
+        {
+          "id": "E02",
+          "context_precision": 0.0,
+          "context_recall": 0.0
+        },
+        {
+          "id": "E03",
+          "context_precision": 0.9999999999,
+          "context_recall": 1.0
+        },
+        {
+          "id": "E04",
+          "context_precision": 0.3333333333,
+          "context_recall": 1.0
+        },
+        {
+          "id": "E05",
+          "context_precision": 0.19999999998,
+          "context_recall": 1.0
+        },
+        {
+          "id": "E06",
+          "context_precision": 0.9999999999,
+          "context_recall": 1.0
+        },
+        {
+          "id": "E07",
+          "context_precision": 0.9999999999,
+          "context_recall": 1.0
+        },
+        {
+          "id": "E08",
+          "context_precision": 0.4166666666458333,
+          "context_recall": 1.0
+        },
+        {
+          "id": "E09",
+          "context_precision": 0.49999999995,
+          "context_recall": 1.0
+        },
+        {
+          "id": "E10",
+          "context_precision": 0.9999999999,
+          "context_recall": 1.0
+        }
+      ]
+    }
+  },
+  "selisih_hibrida_minus_vektor": {
+    "context_precision": 0.52,
+    "context_recall": 0.7
+  },
+  "putusan": "D1 didukung: context_recall naik di atas ambang 0,05."
+}
