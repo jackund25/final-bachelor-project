@@ -50,6 +50,24 @@
 
   "yang_TIDAK_boleh_disimpulkan": "Tidak ada satu pun angka mutu retrieval gemini-embedding-2 yang dihasilkan. Perbandingan mutunya dengan MiniLM TETAP TIDAK DIKETAHUI. Yang terukur hanyalah kelayakan penerapannya pada free tier.",
 
+  "KOREKSI_ATAS_KESIMPULAN_AWAL": {
+    "tanggal_koreksi": "2026-08-16, beberapa jam sesudah catatan ini pertama ditulis",
+    "apa_yang_saya_simpulkan_terlalu_cepat": "Kesimpulan 'TIDAK LAYAK' ditarik dari SATU model lewat SATU endpoint (embedContent sinkron), lalu digeneralisasi ke seluruh jalur Gemini. Itu melampaui bukti yang ada.",
+    "temuan_yang_membantah": {
+      "1_tiga_model_bukan_satu": "Tersedia gemini-embedding-001 (jendela 2048), gemini-embedding-2 (8192), dan gemini-embedding-2-preview (8192). Ketiganya berdimensi 3072. Hanya gemini-embedding-2 yang diuji.",
+      "2_kuota_per_model_terpisah": "quota_id memuat PerModel, sehingga gemini-embedding-001 memiliki jatah harian SENDIRI yang belum tersentuh sama sekali.",
+      "3_bukan_penguncian_permanen": "Diperiksa ulang ~30 menit sesudah kegagalan: KETIGA model menjawab permintaan tunggal dengan normal. Jadi yang terjadi adalah batas pada beban BERKELANJUTAN, bukan pemblokiran.",
+      "4_ada_endpoint_borongan_yang_terlewat": "Ketiga model mendukung asyncBatchEmbedContent, endpoint yang justru dirancang untuk pekerjaan borongan seperti indexing. Endpoint ini TIDAK dicoba sebelum kesimpulan awal ditarik."
+    },
+    "yang_kemudian_diverifikasi_tentang_batch_api": {
+      "skema_diterima": "Payload dengan pembungkus {'request': {...}} lolos validasi skema.",
+      "hasil": "FAILED_PRECONDITION tanpa rincian pada kunci free tier.",
+      "dasar_dokumentasi": "ai.google.dev/gemini-api/docs/rate-limits mencantumkan batas token Batch API HANYA untuk Tier 1/2/3 berbayar; free tier tertulis N/A. Konsisten dengan FAILED_PRECONDITION.",
+      "kesimpulan": "Batch API tertutup tanpa billing — ini TERVERIFIKASI, bukan dugaan."
+    },
+    "kesimpulan_yang_sah_setelah_koreksi": "Yang benar-benar terbukti hanyalah: indexing 2.061 potongan lewat endpoint SINKRON pada model gemini-embedding-2 melampaui batas harian free tier, dan Batch API menuntut tier berbayar. TIDAK terbukti bahwa seluruh jalur Gemini tidak layak. gemini-embedding-001 berjatah harian sendiri dan berjendela 2048 yang sudah cukup (potongan terpanjang 443 token), dan BELUM diuji."
+  },
+
   "jalan_yang_masih_terbuka": [
     "Menanti reset kuota dan mengindeks bertahap selama 3 hari — menuntut kemampuan melanjutkan indexing yang belum ada.",
     "HuggingFace Inference API (mis. BAAI/bge-m3) — batas kuotanya belum diperiksa, memerlukan token gratis.",
