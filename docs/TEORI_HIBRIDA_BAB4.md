@@ -66,7 +66,7 @@ penyetelan tersendiri.
 
 \textbf{Dasar pemilihan.} Keputusan ini bukan penyetelan umum, melainkan jawaban atas
 keadaan yang khas pada penelitian ini. Model penelusuran padat yang tersedia dan
-memenuhi Batasan~4 (berjalan tanpa akselerator grafis) adalah model
+memenuhi Batasan~5 (komputasi inti berjalan lokal pada perangkat kelas konsumen) adalah model
 \textbf{berbahasa Inggris}, sedangkan korpus pedomannya \textbf{berbahasa Indonesia}.
 Jalan yang paling langsung, yaitu mengganti ke model multibahasa, telah ditempuh dan
 \textbf{ditolak berdasarkan pengukuran}: kemampuan sistem membedakan kelas kondisi
