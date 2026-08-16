@@ -131,25 +131,34 @@ rag:
   # Embedding
   embedding_provider: "sentence-transformers"  # sentence-transformers | google | ollama
 
-  # T9. Diubah dari all-MiniLM-L6-v2 (Inggris) ke model MULTIBAHASA.
-  # Keduanya 384 dimensi dan sama-sama berjalan di CPU tanpa jaringan.
+  # TETAP all-MiniLM-L6-v2. Pergantian ke paraphrase-multilingual-MiniLM-L12-v2
+  # sempat diterapkan pada 16 Agustus 2026 lalu DICABUT pada hari yang sama.
   #
-  # ALASANNYA INTEGRITAS KORPUS, BUKAN KEMENANGAN MRR. Dinyatakan terang supaya
-  # tidak terbaca sebagai klaim yang lebih besar daripada buktinya:
-  #   token korpus terbuang : 8,23% -> 2,30%
-  #   MRR set pelaporan     : 0,492 -> 0,506  (+0,014, DI BAWAH ambang 0,02 yang
-  #                           ditetapkan di muka, sehingga dugaan ketidakcocokan
-  #                           bahasa TIDAK didukung — lihat results/eval_rag/
-  #                           model_embedding.json)
+  # Alasan pencabutan — dua sinyal yang saling bebas:
+  #   1. Kontrol crossfold RUSAK. Mode `oracle` (memakai glukosa yang benar-benar
+  #      terjadi) turun ke 0,516, DI BAWAH `standard` 0,537. Oracle adalah batas
+  #      atas menurut rancangan; ia mustahil kalah dari standard bila pengukurannya
+  #      sehat. Rentang antarmode ikut runtuh dari 0,382..0,829 menjadi 0,52..0,56.
+  #   2. Sapuan kondisi seimbang (120 kueri, 40 per kondisi) pada satu korpus yang
+  #      sama, hanya modelnya berbeda:
+  #        EN + pemisah lama     hit@5 100%   MRR 0,831   normal 100%
+  #        EN + pemisah kalimat  hit@5 100%   MRR 0,790   normal 100%
+  #        ML + pemisah lama     hit@5  98%   MRR 0,586   normal  95%
+  #        ML + pemisah kalimat  hit@5  79%   MRR 0,530   normal  38%
+  #      Kemampuan membedakan KONDISI — yang menjadi tumpuan seluruh kontribusi —
+  #      merosot, dan kelas `normal` nyaris hilang.
   #
-  # Model diuji pula pada jendela bawaannya 128: MRR 0,463 dengan 39,89% token
-  # terbuang. Menjalankannya di 256 lebih baik pada KEDUA sumbu, dan XLM-RoBERTa
-  # di bawahnya mendukung 512 posisi.
-  embedding_model: "paraphrase-multilingual-MiniLM-L12-v2"
+  # T9 sempat menyimpulkan sebaliknya (+0,014 bagi model multibahasa). Kesimpulan
+  # itu diukur dengan classify_chunk, alat yang sudah terbukti berbias panjang dan
+  # salah melabeli isi yang benar (lihat results/eval_rag/diagnosis_metrik_chunking.json),
+  # di atas set pelaporan yang komposisinya menyembunyikan keruntuhan kelas `normal`.
+  # Bukti lemah itu tidak sepadan untuk mengubah produksi.
+  embedding_model: "all-MiniLM-L6-v2"          # 384 dimensi, CPU
 
-  # 0 = ikut bawaan model. Disetel 256 karena bawaan model ini 128, sedangkan
-  # potongan 900 karakter mencapai ~190 token XLM-R. Lihat catatan di atas.
-  embedding_max_seq_length: 256
+  # 0 = ikut bawaan model (256 untuk all-MiniLM-L6-v2). Menaikkannya ke 512 DIUJI
+  # pada T8 dan TIDAK diadopsi: pemotongan senyap memang hilang seluruhnya, tetapi
+  # MRR justru turun 0,023 karena model disetel pada jendela 256.
+  embedding_max_seq_length: 0
 
   # models/embedding-001 SUDAH TIDAK ADA pada API Google per 16 Agustus 2026
   # (diperiksa lewat models.list, tidak muncul di antara 53 model). Diarahkan ke
