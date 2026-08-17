@@ -1,0 +1,91 @@
+<mxfile host="app.diagrams.net" version="24.7.7">
+  <diagram name="Diagram Kelas" id="kelas-1">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="lbl1" value="Lapisan Data &amp; Prakiraan" style="text;html=1;fontSize=15;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="300" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl2" value="Kontrak Data &amp; Kondisi Klinis" style="text;html=1;fontSize=15;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="460" y="20" width="320" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl3" value="Lapisan RAG Terkondisi-Prediksi" style="text;html=1;fontSize=15;fontStyle=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="900" y="20" width="340" height="24" as="geometry" />
+        </mxCell>
+
+        <mxCell id="parser" value="OhioParser&#10;&#10;+ process_ohio_dataset(): DataFrame&#10;+ parse_ohio_fingerstick(): DataFrame" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="330" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="prep" value="DataPreprocessor&#10;&#10;+ handle_missing_values(df): DataFrame&#10;+ engineer_features(df): DataFrame&#10;+ create_sequences(df, w, h): X, y, anchor&#10;+ split_by_patient(df, uji): latih, uji&#10;+ normalize_data(Xtr, Xte)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="170" width="330" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="base" value="&lt;i&gt;BaseGlucoseModel&lt;/i&gt;  «antarmuka»&#10;&#10;+ train(X, y)&#10;+ predict(X): ndarray&#10;+ save(path) / load(path)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f5e4;strokeColor=#82b366;dashed=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="320" width="330" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="gbm" value="&lt;b&gt;GBMGlucoseModel&lt;/b&gt;  «produksi»&#10;&#10;- model: HistGradientBoostingRegressor&#10;- model_q025, model_q975  (kuantil)&#10;+ train(X, y): dict&#10;+ predict(X): ndarray&#10;+ predict_std(X): ndarray&#10;&#10;σ = (q₀.₉₇₅ − q₀.₀₂₅) / 3,92" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#b1dfa8;strokeColor=#2d7a2d;strokeWidth=2;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="450" width="330" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="rf" value="RandomForestGlucoseModel  «pembanding»" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eef7ec;strokeColor=#82b366;dashed=1;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="630" width="330" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lstm" value="LSTMGlucoseModel  «pembanding»" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eef7ec;strokeColor=#82b366;dashed=1;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="682" width="330" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="state" value="&lt;b&gt;PatientState&lt;/b&gt;  «kontrak data»&#10;&#10;+ current_glucose, predicted_glucose&#10;+ insulin_on_board, carbs_on_board&#10;+ activity_level, stress_level&#10;— diturunkan dari nilai TERPREDIKSI —&#10;+ risk_level: hipo | normal | hiper&#10;+ trend_direction, trend_rate&#10;+ urgency: critical | high | medium | low&#10;+ to_rag_context(): dict&#10;+ from_model_output(...): PatientState" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6a0;strokeColor=#d6b656;strokeWidth=2;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="60" width="340" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="alerts" value="alerts  «modul»&#10;&#10;+ evaluate_divergence(kini, prediksi, menit)&#10;  → peringatan saat kondisi kini aman&#10;     tetapi kondisi terprediksi tidak" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="290" width="340" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="log" value="ClinicalDecisionLog&#10;&#10;+ record(StateRecord)&#10;+ load() / save()  → JSON, jejak audit&#10;&#10;StateRecord: state + keputusan dokter" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="420" width="340" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="qb" value="PredictionConditionedQueryBuilder&#10;&#10;+ build(state): query&#10;  kueri disusun dari kondisi TERPREDIKSI,&#10;  bukan dari kondisi yang sedang berlaku" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="60" width="360" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="pipe" value="RAGPipeline&#10;&#10;+ _build_query(state, prediksi): query&#10;+ _retrieve(query, top_k=5): docs&#10;+ answer(...): {query, risk_level,&#10;    retrieved_docs, advisory}&#10;+ _ensure_disclaimer(teks)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="200" width="360" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="retr" value="&lt;b&gt;MMRRetriever&lt;/b&gt;&#10;&#10;- retrieval_mode: vektor | &lt;b&gt;bm25&lt;/b&gt; | hibrida&#10;+ retrieve(query, top_k): docs&#10;- _peringkat_bm25(query, n)&#10;- _gabung_rrf(daftar peringkat)&#10;&#10;bm25 = jalur produksi; ketiganya berjalan&#10;atas potongan yang sama" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#c9b3d6;strokeColor=#6b4c85;strokeWidth=2;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="370" width="360" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="fallback" value="SimpleKeywordRetriever  «cadangan, KNF-04»" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f3eef7;strokeColor=#9673a6;dashed=1;align=left;verticalAlign=middle;spacingLeft=8;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="548" width="360" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="kb" value="MedicalKnowledgeBase&#10;&#10;+ chunk_documents(): potongan 900/120,&#10;   dipotong pada BATAS KALIMAT&#10;+ save_to_chroma()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="610" width="360" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="chroma" value="ChromaDB — 2.248 potongan&#10;all-MiniLM-L6-v2 (384 dim)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="985" y="740" width="190" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="gen" value="RAGGenerator&#10;&#10;gemini-3.5-flash-lite&#10;temperature 0,2 · max_tokens 700&#10;+ generate(context, query): advisory&#10;+ _template_answer()  «cadangan»" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="200" width="320" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="cit" value="citations  «modul»&#10;&#10;+ potong_batas_kalimat(teks, batas)&#10;  kutipan berhenti di akhir kalimat,&#10;  bukan di tengah kata (KNF-08)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="370" width="320" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="parser" target="prep"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="prep" target="base"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=0;dashed=1;" edge="1" parent="1" source="gbm" target="base"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=0;dashed=1;" edge="1" parent="1" source="rf" target="base"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=0;dashed=1;" edge="1" parent="1" source="lstm" target="base"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" value="prediksi + σ" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;fontSize=11;" edge="1" parent="1" source="gbm" target="state"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;dashed=1;" edge="1" parent="1" source="state" target="alerts"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;dashed=1;" edge="1" parent="1" source="state" target="log"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" value="kontrak data" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;fontSize=11;" edge="1" parent="1" source="state" target="qb"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=diamondThin;endFill=1;" edge="1" parent="1" source="pipe" target="qb"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=diamondThin;endFill=1;" edge="1" parent="1" source="pipe" target="retr"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=diamondThin;endFill=1;" edge="1" parent="1" source="pipe" target="gen"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e13" value="bila indeks gagal" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;dashed=1;fontSize=11;" edge="1" parent="1" source="retr" target="fallback"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="kb" target="chroma"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e15" value="baca potongan" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;fontSize=11;" edge="1" parent="1" source="retr" target="chroma"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;dashed=1;" edge="1" parent="1" source="retr" target="cit"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

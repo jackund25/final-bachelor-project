@@ -133,3 +133,19 @@ docs/SUS_kuesioner.md
 LEARN.md
 LEARN.html
 *.bbl-SAVE-ERROR
+
+# ---------------------------------------------------------------------------
+# ARSIP — dokumen kerja internal yang TIDAK boleh ikut ke repositori publik.
+#
+# Isinya: protokol percobaan, catatan metodologi, konteks sesi, prompt kerja,
+# dokumen pembelajaran, serta gambar dan hasil yang sudah digantikan.
+#
+# PERINGATAN YANG HARUS DIBACA. Baris ini hanya menghentikan pelacakan BARU.
+# Berkas yang sudah pernah di-commit TETAP ADA pada riwayat git, dan tetap
+# terbaca oleh siapa pun yang mengambil repositori ini. Mengabaikannya saja
+# TIDAK menghapusnya. Untuk mengeluarkannya dari commit berikutnya:
+#     git rm -r --cached arsip/
+# dan untuk benar-benar melenyapkannya dari riwayat diperlukan penulisan ulang
+# riwayat (git filter-repo), yang harus dilakukan SEBELUM repositori dipublikasikan.
+# ---------------------------------------------------------------------------
+arsip/

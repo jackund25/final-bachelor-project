@@ -1,16 +1,16 @@
-% Tanggal diambil dari riwayat repositori (git log, commit pertama tiap berkas).
-% Nama pada kolom pertama adalah sebutan yang dipakai di badan laporan; kode kerja
-% internal sengaja TIDAK dipakai sebagai istilah, hanya muncul pada lintasan berkas.
-\begin{longtable}{@{}p{5.2cm}p{2.1cm}p{6.4cm}@{}}
-\caption{Protokol percobaan yang ditulis sebelum hasilnya dilihat.}
+% Tabel MANDIRI: memuat ringkasan dugaan dan ambang, bukan lintasan berkas kerja.
+% Berkas protokolnya sendiri adalah dokumen kerja internal dan tidak dipublikasikan.
+% Tanggal diambil dari riwayat berkas (commit pertama tiap protokol).
+\begin{longtable}{@{}p{4.8cm}p{1.9cm}p{6.9cm}@{}}
+\caption{Protokol percobaan yang ditulis sebelum hasilnya dilihat, beserta ambang keputusan yang ditetapkan di muka.}
 \label{tab:protokol} \\
 \toprule
-\textbf{Percobaan} & \textbf{Tanggal} & \textbf{Berkas protokol} \\
+\textbf{Percobaan} & \textbf{Tanggal} & \textbf{Dugaan dan ambang yang ditetapkan di muka} \\
 \midrule
 \endfirsthead
 \multicolumn{3}{@{}l}{\footnotesize\textit{Tabel~\ref{tab:protokol} (lanjutan)}} \\
 \toprule
-\textbf{Percobaan} & \textbf{Tanggal} & \textbf{Berkas protokol} \\
+\textbf{Percobaan} & \textbf{Tanggal} & \textbf{Dugaan dan ambang yang ditetapkan di muka} \\
 \midrule
 \endhead
 \midrule
@@ -19,16 +19,16 @@
 \bottomrule
 \endlastfoot
 
-Sensitivitas konstanta peluruhan IOB dan COB & 11-08-2026 & \path{docs/PRAPENDAFTARAN_T1.4.md} \\[2pt]
-Varian kueri berurutan kondisi & 11-08-2026 & \path{docs/PRAPENDAFTARAN_T3.1.md} \\[2pt]
-Jangkauan varian kueri dan bentuk kueri aplikasi & 11-08-2026 & \path{docs/PRAPENDAFTARAN_T3.3.md} \\[2pt]
-\emph{Gradient boosting} sebagai pembanding ketiga & 11-08-2026 & \path{docs/PRAPENDAFTARAN_T4.1.md} \\[2pt]
-Perbaikan instrumen evaluasi, putaran kedua & 13-08-2026 & \path{docs/PRAPENDAFTARAN_T2.2_PUTARAN_2.md} \\[2pt]
-Kestabilan tiga metrik RAGAS & 13-08-2026 & \path{docs/PRAPENDAFTARAN_T_RAGAS_STABIL.md} \\[2pt]
-Penghitungan ulang penelusuran dan SMBG dengan prediktor produksi & 16-08-2026 & \path{docs/PRAPENDAFTARAN_T6_GBM_RETRIEVAL.md} \\[2pt]
-Strategi pemecahan dokumen sadar-kalimat & 16-08-2026 & \path{docs/PRAPENDAFTARAN_T7_CHUNKING.md} \\[2pt]
-Penyelarasan model kalibrasi konformal dengan model produksi & 16-08-2026 & \path{docs/PRAPENDAFTARAN_T12_CONFORMAL.md} \\[2pt]
-Uji lengan penelusuran pada validasi silang & 17-08-2026 & \path{docs/PRAPENDAFTARAN_T13_HIBRIDA.md} \\[2pt]
-Validasi lengan penelusuran dengan alat ukur bebas kata kunci & 17-08-2026 & \path{docs/PRAPENDAFTARAN_T14_RAGAS_LENGAN.md} \\
+Sensitivitas konstanta peluruhan IOB dan COB & 11-08-2026 & Mutu prediksi tidak berubah nyata terhadap variasi $\tau$; bila berubah, konstanta harus disetel dan bukan diambil dari pustaka \\[3pt]
+Varian kueri berurutan kondisi & 11-08-2026 & Urutan penyebutan kondisi pada kueri tidak mengubah peringkat dokumen \\[3pt]
+Jangkauan varian kueri dan bentuk kueri aplikasi & 11-08-2026 & Bentuk kueri yang dipakai aplikasi setara dengan bentuk yang dipakai evaluasi \\[3pt]
+\emph{Gradient boosting} sebagai pembanding ketiga & 11-08-2026 & Selisih yang lebih kecil daripada simpangan baku antar-\emph{fold} tidak boleh dinarasikan sebagai keunggulan \\[3pt]
+Perbaikan instrumen evaluasi, putaran kedua & 13-08-2026 & Perbaikan alat ukur dijalankan tanpa melihat pengaruhnya terhadap hasil yang sudah ada \\[3pt]
+Kestabilan tiga metrik RAGAS & 13-08-2026 & Metrik yang reratanya bergeser antar-jalan identik tidak dipakai untuk menyimpulkan \\[3pt]
+Penghitungan ulang penelusuran dan SMBG dengan prediktor produksi & 16-08-2026 & Mode \emph{standard} dan \emph{oracle} wajib tereproduksi persis; bila tidak, yang berubah adalah jalur pengukurannya \\[3pt]
+Strategi pemecahan dokumen sadar-kalimat & 16-08-2026 & Pemisah kalimat diadopsi atas dasar integritas korpus, tanpa menunggu MRR; MRR hanya dilaporkan \\[3pt]
+Penyelarasan model kalibrasi konformal dengan model produksi & 16-08-2026 & Angka cakupan akan berubah; arah perubahannya tidak boleh ditetapkan sesudah hasil dilihat \\[3pt]
+Uji lengan penelusuran pada validasi silang & 17-08-2026 & Bila penelusuran leksikal sendirian mengungguli penggabungan hibrida, maka leksikal yang diadopsi \\[3pt]
+Validasi lengan penelusuran dengan alat ukur bebas kata kunci & 17-08-2026 & Keputusan diambil dari \emph{context recall}; selisih di bawah 0,05 dihitung setara; aturan berlaku meski mencabut komponen yang sudah dipasang \\
 
 \end{longtable}
