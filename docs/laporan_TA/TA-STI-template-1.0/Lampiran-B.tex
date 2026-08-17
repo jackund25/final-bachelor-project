@@ -1,8 +1,27 @@
 \cleardoublepage
-\chapter{HASIL SURVEI LAPANGAN}
-\section{Foto Survei Lokasi 1}
-Teks survei lokasi 1.
-\section{Foto Survei Lokasi 2}
-Teks survei lokasi 2.
-\section{Transkrip Wawancara dengan Narasumber}
-Teks transkrip wawancara.
+\chapter{HASIL UJI STATISTIK DAN PROTOKOL PERCOBAAN}
+\label{lamp:statistik}
+
+Lampiran ini memuat dua hal yang dirujuk Bab~\ref{chap:evaluasi} tetapi terlalu rinci untuk badan laporan: hasil uji statistik per-\emph{fold} beserta ukuran efeknya, dan daftar protokol percobaan yang ditulis sebelum hasilnya dilihat.
+
+\section{Hasil Uji Statistik Lengkap}
+\label{lamp:uji-statistik}
+
+Seluruh uji dijalankan atas enam \emph{fold} validasi silang lintas-pasien, dengan \emph{fold} sebagai satuan analisis, mengikuti prosedur pada Subbab~\ref{sec:prosedur-statistik}. Nilai yang dibandingkan adalah MRR pada lengan penelusuran produksi. Ukuran efek yang dilaporkan adalah Cohen's $d_z$ untuk rancangan berpasangan (Persamaan~\ref{eq:cohen}).
+
+\input{tables/tabel_B1_ujistatistik.tex}
+
+Tiga hal perlu dibaca bersama tabel di atas.
+
+\textbf{Nilai $p=0{,}031$ adalah batas bawah rancangan ini}, bukan hasil yang nyaris tidak lolos. Pada uji Wilcoxon dua sisi dengan enam pasangan, keadaan paling ekstrem yang mungkin terjadi, yakni keenam selisih searah, menghasilkan tepat $2/2^{6}=0{,}031$. Kedua baris pada himpunan divergen sudah berada pada batas itu.
+
+\textbf{Nilai $d_z$ yang besar mencerminkan keajekan, bukan besar manfaat klinis.} Penyebutnya adalah simpangan baku selisih antar-\emph{fold}, sehingga efek yang sederhana besarannya tetap menghasilkan $d_z$ besar apabila ia bekerja pada tiap \emph{fold} tanpa kecuali. Besar manfaatnya dibaca dari kolom selisih mutlak.
+
+\textbf{Himpunan natural tidak menunjukkan keunggulan yang dapat diandalkan}, dan hal itu dilaporkan apa adanya. Pada jalur pengklasifikasi, arahnya bahkan negatif. Ini konsisten dengan penjelasan pada Bab~\ref{chap:evaluasi}: pada mayoritas jendela, kondisi terkini dan kondisi masa depan sama, sehingga tidak ada yang dapat diperbaiki oleh pengondisian.
+
+\section{Daftar Protokol Percobaan}
+\label{lamp:protokol}
+
+Tiap protokol ditulis sebelum hasil percobaannya dilihat, memuat dugaan, ambang keputusan, dan aturan penafsiran. Kolom tanggal diambil dari riwayat repositori, yakni saat berkas protokol pertama kali dicatatkan, sehingga urutannya terhadap hasil percobaan dapat diperiksa ulang. Lintasan berkas disertakan agar pemeriksa dapat menelusurinya langsung; penamaan berkas mengikuti kode kerja internal dan tidak dipakai sebagai istilah di dalam laporan.
+
+\input{tables/tabel_B2_protokol.tex}

@@ -1,14 +1,20 @@
-"""T4: Evaluasi komparatif RF vs LSTM — RMSE, MAE, Clarke Error Grid.
+"""Evaluasi komparatif model prakiraan — RMSE, MAE, Clarke Error Grid.
+
+Tiga model dilatih pada pembagian yang sama lalu dinilai dengan metrik yang sama:
+*gradient boosting* sebagai model produksi, serta hutan acak dan LSTM sebagai pembanding
+yang dilaporkan pada Bab VI. Melatih ketiganya dalam satu jalan membuat seluruh angka
+perbandingan berasal dari satu prosedur, bukan dirangkai dari catatan hasil yang berbeda.
 
 Jalankan:
     python scripts/eval_rf_lstm.py                  # pakai ohio_t1dm (default)
     python scripts/eval_rf_lstm.py --smbg           # downsample ke SMBG cadence dulu
 
-Output:
-    results/eval_prediksi/comparison_metrics.csv
-    results/eval_prediksi/clarke_grid_rf.png
-    results/eval_prediksi/clarke_grid_lstm.png
-    results/eval_prediksi/clarke_grid_comparison.png
+Output per horizon, di results/eval_prediksi/h<langkah>/:
+    comparison_metrics.csv
+    clarke_grid_gbm.png     <- model produksi
+    clarke_grid_rf.png
+    clarke_grid_lstm.png
+    comparison_bar.png
 """
 
 from __future__ import annotations
@@ -108,25 +114,32 @@ def plot_clarke_grid(
     print(f"  Clarke grid saved: {out_path}")
 
 
-def plot_comparison_bar(rf_metrics: dict, lstm_metrics: dict, out_path: Path) -> None:
-    """Side-by-side bar chart: RMSE, MAE, Clarke-A for RF vs LSTM."""
+def plot_comparison_bar(hasil: "list[tuple[str, dict]]", out_path: Path,
+                        judul: str = "Perbandingan Metrik Antar-Model") -> None:
+    """Grafik batang berdampingan untuk N model.
+
+    Sebelumnya fungsi ini menerima tepat dua model (RF dan LSTM). Ia digeneralkan
+    menjadi daftar ``(nama, metrik)`` supaya model produksi *gradient boosting* dapat
+    ikut ditampilkan tanpa menulis fungsi kedua yang isinya nyaris sama.
+    """
     keys = ["RMSE", "MAE", "Clarke_A", "Clarke_A+B"]
     labels = ["RMSE (mg/dL)", "MAE (mg/dL)", "Clarke A (%)", "Clarke A+B (%)"]
-    rf_vals = [rf_metrics[k] for k in keys]
-    lstm_vals = [lstm_metrics[k] for k in keys]
+    warna = ["#2ecc71", "#3498db", "#e74c3c", "#9b59b6"]
 
     x = np.arange(len(keys))
-    width = 0.35
-    fig, ax = plt.subplots(figsize=(9, 5))
-    bars_rf = ax.bar(x - width / 2, rf_vals, width, label="Random Forest", color="#3498db", alpha=0.85)
-    bars_lstm = ax.bar(x + width / 2, lstm_vals, width, label="LSTM", color="#e74c3c", alpha=0.85)
+    n = len(hasil)
+    width = 0.8 / n
+    fig, ax = plt.subplots(figsize=(10, 5))
+    for i, (nama, m) in enumerate(hasil):
+        offset = (i - (n - 1) / 2) * width
+        bars = ax.bar(x + offset, [m[k] for k in keys], width,
+                      label=nama, color=warna[i % len(warna)], alpha=0.85)
+        ax.bar_label(bars, fmt="%.2f", padding=2, fontsize=7)
 
     ax.set_xticks(x)
     ax.set_xticklabels(labels, fontsize=10)
-    ax.set_title("RF vs LSTM — Metric Comparison", fontsize=13, fontweight="bold")
+    ax.set_title(judul, fontsize=13, fontweight="bold")
     ax.legend(fontsize=10)
-    ax.bar_label(bars_rf, fmt="%.2f", padding=2, fontsize=8)
-    ax.bar_label(bars_lstm, fmt="%.2f", padding=2, fontsize=8)
     plt.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=150)
@@ -139,8 +152,22 @@ def plot_comparison_bar(rf_metrics: dict, lstm_metrics: dict, out_path: Path) ->
 # ---------------------------------------------------------------------------
 
 def _evaluate_one_horizon(config, df_clean, seq_len, horizon, out_root, feature_list, predict_delta):
-    """Latih & evaluasi RF vs LSTM pada satu horizon. Return (rf_metrics, lstm_metrics)."""
+    """Latih & evaluasi GBM, RF, dan LSTM pada satu horizon.
+
+    Return daftar ``(nama, metrik)`` berurutan mulai dari model produksi.
+
+    MENGAPA GBM ditambahkan (17 Agustus 2026). Sebelumnya fungsi ini hanya melatih
+    RandomForestGlucoseModel dan LSTMGlucoseModel, sehingga Gambar VI.1--VI.3 pada
+    laporan memperlihatkan Clarke Error Grid milik model yang BUKAN model produksi:
+    jalur produksi sudah berpindah ke HistGradientBoostingRegressor
+    (config.model.name = GradientBoosting).
+
+    RF dan LSTM SENGAJA tetap dilatih di sini. Keduanya pembanding yang dilaporkan pada
+    Bab VI, dan mempertahankannya berarti seluruh angka perbandingan dapat dihitung ulang
+    dari satu jalan yang sama, bukan dirangkai dari catatan hasil yang berbeda-beda.
+    """
     from src.data.preprocessor import DataPreprocessor
+    from src.models.gbm_model import GBMGlucoseModel
     from src.models.rf_model import RandomForestGlucoseModel
     from src.models.lstm_model import LSTMGlucoseModel
     from src.utils.metrics import calculate_all_metrics
@@ -166,7 +193,22 @@ def _evaluate_one_horizon(config, df_clean, seq_len, horizon, out_root, feature_
     out_dir = out_root / f"h{horizon}"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    print("[1/2] Random Forest...")
+    print("[1/3] Gradient Boosting (model produksi)...")
+    # with_uncertainty=False: dua model kuantil hanya diperlukan untuk interval, sedangkan
+    # di sini yang dinilai prediksi titik. Mematikannya memangkas waktu latih tiga kali
+    # lipat tanpa mengubah satu pun angka pada gambar maupun tabel yang dihasilkan.
+    gbm = GBMGlucoseModel(config, with_uncertainty=False)
+    gbm.train(X_train_s, y_train_fit)
+    gbm_pred = gbm.predict(X_test_s)
+    if predict_delta:
+        gbm_pred = gbm_pred + anc_test
+    gbm_m = calculate_all_metrics(y_test, gbm_pred)
+    print(f"  GBM  RMSE={gbm_m['RMSE']:.3f}  MAE={gbm_m['MAE']:.3f}  Clarke-A+B={gbm_m['Clarke_A+B']:.2f}%")
+    plot_clarke_grid(y_test, gbm_pred, gbm_m,
+                     f"Clarke Error Grid — Gradient Boosting (+{minutes} mnt)",
+                     out_dir / "clarke_grid_gbm.png")
+
+    print("[2/3] Random Forest (pembanding)...")
     rf = RandomForestGlucoseModel(config)
     rf.train(X_train_s, y_train_fit)
     rf_pred = rf.predict(X_test_s)
@@ -174,10 +216,10 @@ def _evaluate_one_horizon(config, df_clean, seq_len, horizon, out_root, feature_
         rf_pred = rf_pred + anc_test
     rf_m = calculate_all_metrics(y_test, rf_pred)
     print(f"  RF   RMSE={rf_m['RMSE']:.3f}  MAE={rf_m['MAE']:.3f}  Clarke-A+B={rf_m['Clarke_A+B']:.2f}%")
-    plot_clarke_grid(y_test, rf_pred, rf_m, f"Clarke Error Grid — RF (+{minutes} mnt)",
+    plot_clarke_grid(y_test, rf_pred, rf_m, f"Clarke Error Grid — Random Forest (+{minutes} mnt)",
                      out_dir / "clarke_grid_rf.png")
 
-    print("[2/2] LSTM...")
+    print("[3/3] LSTM (pembanding)...")
     lstm = LSTMGlucoseModel(config)
     lstm.train(X_train_s, y_train_fit, X_test_s, y_test_fit)
     lstm_pred = lstm.predict(X_test_s)
@@ -188,12 +230,14 @@ def _evaluate_one_horizon(config, df_clean, seq_len, horizon, out_root, feature_
     plot_clarke_grid(y_test, lstm_pred, lstm_m, f"Clarke Error Grid — LSTM (+{minutes} mnt)",
                      out_dir / "clarke_grid_lstm.png")
 
-    plot_comparison_bar(rf_m, lstm_m, out_dir / "comparison_bar.png")
+    hasil = [("Gradient Boosting", gbm_m), ("Random Forest", rf_m), ("LSTM", lstm_m)]
+    plot_comparison_bar(hasil, out_dir / "comparison_bar.png",
+                        judul=f"Perbandingan Metrik Antar-Model (+{minutes} mnt)")
 
-    rows = [{"metric": k, "RF": rf_m[k], "LSTM": lstm_m[k]}
+    rows = [{"metric": k, "GBM": gbm_m[k], "RF": rf_m[k], "LSTM": lstm_m[k]}
             for k in ["RMSE", "MAE", "MAPE", "Clarke_A", "Clarke_B", "Clarke_C", "Clarke_D", "Clarke_E", "Clarke_A+B"]]
     pd.DataFrame(rows).to_csv(out_dir / "comparison_metrics.csv", index=False, float_format="%.4f")
-    return rf_m, lstm_m
+    return hasil
 
 
 def evaluate_both_models(config_path: str = "config.yaml") -> None:
@@ -231,8 +275,8 @@ def evaluate_both_models(config_path: str = "config.yaml") -> None:
 
     summary = []
     for h in horizons:
-        rf_m, lstm_m = _evaluate_one_horizon(config, df_clean, seq_len, h, out_root, feature_list, predict_delta)
-        for model_name, m in [("RF", rf_m), ("LSTM", lstm_m)]:
+        hasil = _evaluate_one_horizon(config, df_clean, seq_len, h, out_root, feature_list, predict_delta)
+        for model_name, m in hasil:
             summary.append({
                 "horizon_steps": h, "horizon_min": h * 5, "model": model_name,
                 "RMSE": round(m["RMSE"], 3), "MAE": round(m["MAE"], 3), "MAPE": round(m["MAPE"], 3),
@@ -252,7 +296,8 @@ def evaluate_both_models(config_path: str = "config.yaml") -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="T4: Evaluate RF vs LSTM across horizons")
+    parser = argparse.ArgumentParser(
+        description="Evaluasi komparatif GBM, RF, dan LSTM lintas horizon")
     parser.add_argument("--config", default="config.yaml")
     args = parser.parse_args()
     evaluate_both_models(args.config)
