@@ -40,16 +40,10 @@ def _build_embeddings(
             model_kwargs={"device": "cpu"},
             encode_kwargs={"normalize_embeddings": True},
         )
-        # WHAT : menimpa jendela token model embedding.
-        # WHY  : max_seq_length 256 pada all-MiniLM-L6-v2 berasal dari
-        #        sentence_bert_config.json — sebuah PILIHAN penulis model, bukan
-        #        batas arsitektur. BERT di bawahnya ber-max_position_embeddings
-        #        512, sehingga 257..512 adalah posisi yang bobotnya ADA.
-        # WHEN : dipakai baik saat indexing maupun saat kueri. Menaikkannya hanya
-        #        di salah satu sisi membuat dokumen dan kueri diwakili dengan dua
-        #        aturan berbeda, dan retrieval merosot TANPA error apa pun.
-        # HOW  : disetel pada objek SentenceTransformer di bawah LangChain.
-        #        Default None = ikut bawaan model, sehingga perilaku lama utuh.
+        # Jendela token model embedding. Bawaan 256 pada all-MiniLM-L6-v2 adalah
+        # pilihan penulis model, bukan batas arsitektur (BERT di bawahnya 512).
+        # Berlaku saat pengindeksan DAN kueri; menaikkannya hanya di satu sisi
+        # membuat dokumen dan kueri diwakili dua aturan berbeda tanpa galat apa pun.
         batas = max_seq_length if max_seq_length is not None else cfg.embedding_max_seq_length
         if batas:
             klien = getattr(emb, "client", None)
@@ -75,61 +69,26 @@ def _build_embeddings(
     return OllamaEmbeddings(model=embed_model, base_url=ollama_base_url)
 
 
-# --------------------------------------------------------------------------
-# Strategi pemecahan dokumen
-#
-# WHAT  : dua himpunan pemisah dan satu penakar panjang berbasis tokenizer.
-# WHO   : dipakai MedicalKnowledgeBase.chunk_documents() di berkas ini, yang
-#         menjadi satu-satunya jalur pemecahan korpus pedoman maupun manual_kb.
-# WHERE : src/rag/knowledge_base.py; dipilih lewat argumen chunk_documents()
-#         dan diteruskan scripts/reingest_kb.py dari baris perintah.
-# WHEN   : hanya saat INDEXING (reingest), bukan saat kueri. Karena itu setiap
-#         perubahan di sini menuntut indeks dibangun ulang; indeks lama tidak
-#         ikut berubah dan akan diam-diam bercampur bila tidak dihapus dulu.
-# WHY   : Gao dkk. (2023) §V.A.1 hal. 8 menyatakan pemecahan berukuran tetap
-#         "leads to truncation within sentences". PEMISAH_KARAKTER di bawah
-#         adalah persis kasus itu: setelah "\n" gagal ia langsung jatuh ke
-#         spasi, sehingga batas potongan mendarat di sembarang kata.
-#         PEMISAH_KALIMAT menyisipkan tanda akhir kalimat sebelum spasi,
-#         sehingga spasi hanya dipakai bila satu kalimat memang lebih panjang
-#         daripada satu potongan.
-# HOW   : diserahkan ke RecursiveCharacterTextSplitter sebagai daftar
-#         berprioritas. keep_separator="end" WAJIB — lihat catatan di bawah.
-# --------------------------------------------------------------------------
+# Pemisah untuk RecursiveCharacterTextSplitter, berlaku hanya saat pengindeksan.
+# Mengubahnya menuntut indeks dibangun ulang; indeks lama tidak ikut berubah.
 
-# Perilaku lama (dipertahankan sebagai pembanding, bukan sebagai anjuran).
+# Perilaku lama, dipertahankan sebagai pembanding.
 PEMISAH_KARAKTER = ["\n## ", "\n### ", "\n\n", "\n", " ", ""]
 
-# URUTANNYA menentukan, dan urutan yang tampak wajar justru hampir tidak
-# berpengaruh. Menyisipkan tanda akhir kalimat SESUDAH "\n" (yaitu
-# [..., "\n\n", "\n", ". ", ...]) praktis tidak mengubah apa pun, karena "\n"
-# selalu berhasil lebih dulu sehingga ". " tidak pernah sempat dipertimbangkan.
-#
-# Dasarnya: pada teks hasil ekstraksi PDF, "\n" TUNGGAL adalah pembungkusan
-# baris — artefak tata letak halaman, bukan batas makna. "\n\n" (batas
-# paragraf) dan judul tetap batas makna dan karena itu tetap didahulukan,
-# tetapi akhir kalimat harus mengungguli pembungkusan baris.
-#
-# Diukur pada 531 halaman korpus, potongan 256 token:
-#   kalimat SESUDAH "\n"  -> berakhir kalimat utuh 37,4% | bermula utuh 62,9%
-#   kalimat SEBELUM "\n"  -> berakhir kalimat utuh 79,6% | bermula utuh 86,7%
-#
-# Varian ".\n" diperlukan terpisah: kalimat yang berakhir tepat di ujung baris
-# menghasilkan ".\n" tanpa spasi, sehingga ". " saja tidak mengenainya.
+# URUTANNYA yang menentukan, bukan sekadar keberadaan pemisah kalimatnya.
+# Tanda akhir kalimat harus mendahului "\n" tunggal, sebab pada teks hasil
+# ekstraksi PDF "\n" tunggal adalah pembungkusan baris, bukan batas makna.
+# Menempatkannya sesudah "\n" praktis tidak berpengaruh (37,4% lawan 79,6%
+# potongan berakhir kalimat utuh, diukur pada 531 halaman korpus).
 PEMISAH_KALIMAT = [
     "\n## ", "\n### ", "\n\n",
     ". ", ".\n", "! ", "!\n", "? ", "?\n",
     "\n", "; ", " ", "",
 ]
 
-# CATATAN YANG MENENTUKAN BENAR/SALAHNYA PERUBAHAN INI.
-# Default RecursiveCharacterTextSplitter adalah keep_separator=True, yang
-# menempelkan pemisah ke AWAL potongan berikutnya. Dengan pemisah ". " hasilnya
-# menjadi potongan yang dibuka tanda titik ("​. Titrasi dilakukan ...") dan
-# potongan sebelumnya kehilangan titiknya sendiri — yaitu memindahkan cacat,
-# bukan memperbaikinya. Diverifikasi langsung pada versi terpasang:
-#   keep_separator=True  -> ['... per kgBB', '. Titrasi tiap tiga hari', ...]
-#   keep_separator="end" -> ['... per kgBB.', 'Titrasi tiap tiga hari.', ...]
+# Wajib "end". Bawaan True menempelkan pemisah ke AWAL potongan berikutnya,
+# sehingga potongan dibuka tanda titik dan potongan sebelumnya kehilangan titiknya
+# sendiri — memindahkan cacat, bukan memperbaikinya.
 KEEP_SEPARATOR_AKHIR = "end"
 
 # Batas token model embedding produksi (all-MiniLM-L6-v2). Token ke-257 dan
@@ -319,12 +278,9 @@ class MedicalKnowledgeBase:
         Mengembalikan daftar kosong bila berkasnya belum ada; pemanggilnya yang menentukan
         apakah itu keadaan yang dapat ditoleransi.
         """
-        # HANYA kb_dir yang dibaca, tanpa jatuh ke lintasan bawaan repositori.
-        #
-        # Metode lama menyimpan cadangan tersembunyi ke "data/knowledge_base" bila berkas
-        # tidak ada di kb_dir. Akibatnya kb_dir yang diberikan pemanggil DIABAIKAN diam-diam,
-        # dan pemanggil memperoleh potongan dari korpus produksi tanpa menyadarinya —
-        # persis jenis perilaku senyap yang berulang kali menyesatkan pada penelitian ini.
+        # Hanya kb_dir yang dibaca. Versi lama jatuh ke "data/knowledge_base" bila
+        # berkas tidak ada di sini, sehingga kb_dir yang diberikan pemanggil diabaikan
+        # diam-diam dan ia memperoleh potongan korpus produksi tanpa menyadarinya.
         jalur = self.kb_dir / file_name
         if not jalur.exists():
             logger.warning(
@@ -579,12 +535,10 @@ class MedicalKnowledgeBase:
                 Document(page_content=row["text"], metadata=_sanitize_metadata(raw_meta))
             )
 
-        # ChromaDB menolak batch di atas batas internalnya (5.461 pada versi ini) dengan
-        # InternalError, BUKAN dengan pesan yang menyarankan pemecahan. Korpus produksi
-        # sekarang 2.061 chunk sehingga belum pernah menyentuhnya, tetapi ukuran potongan
-        # yang lebih kecil langsung melewatinya: chunk_size=300 menghasilkan 5.896 chunk
-        # dan seluruh ingest gagal. Memecah di sini membuat batasnya tidak lagi menjadi
-        # batas korpus.
+        # ChromaDB menolak batch di atas batas internalnya (5.461) dengan InternalError,
+        # bukan dengan pesan yang menyarankan pemecahan. Korpus produksi belum
+        # menyentuhnya, tetapi potongan yang lebih kecil langsung melewatinya:
+        # chunk_size=300 menghasilkan 5.896 potongan dan seluruh ingest gagal.
         BATCH = 4000
         for mulai in range(0, len(documents), BATCH):
             vector_store.add_documents(documents[mulai:mulai + BATCH])
