@@ -50,7 +50,38 @@ angka lain, dan jangan menambah angka yang tidak ada di daftar ini.
 | Waktu model bahasa | ± 8,3 detik |
 | Jejak memori | 632 MB |
 
-### 0.3 Konvensi visual
+### 0.3 Nama berkas: ada satu tabrakan nama, dan tidak ada Gambar IV.2
+
+**Nomor gambar pada PDF dihasilkan LaTeX secara berurutan, bukan dari nama berkas.** Bab IV
+memuat tepat lima gambar, sehingga pada naskah tercetak keduanya bernomor
+**Gambar IV.1 sampai Gambar IV.5, tanpa lompatan.** Yang melompat hanyalah *nama berkasnya*,
+dan itu tidak terlihat pembaca.
+
+| Nama berkas | Nomor pada PDF | Bagian spesifikasi |
+|---|---|---|
+| `Gambar_IV1_Arsitektur.png` | Gambar IV.1 | §1 |
+| `Gambar_IV3_PipelinePCRAG.png` | Gambar IV.2 | §2 |
+| `Gambar_IV4_ClassDiagram.png` | Gambar IV.3 | §3 |
+| `Gambar_IV5_SequencePCRAG.png` | Gambar IV.4 | §4 |
+| `Gambar_IV6_Wireframe.png` | Gambar IV.5 | §5 |
+
+**Mengapa tidak ada berkas `Gambar_IV2_*`.** Berkas itu dahulu bernama
+`Gambar_IV2_DuaMesin.png` dan memerikan rancangan dua mesin, yakni satu model untuk
+prakiraan dan formula farmakokinetik untuk simulasi pengandaian. Rancangan itu **dicabut**
+bersama seluruh komponen *what-if*, dan gambarnya dipindahkan ke `docs/arsip/gambar/`.
+Penomoran berkas sengaja **tidak** dirapikan, supaya nama berkas tetap cocok dengan riwayat
+dan dengan hasil evaluasi lama yang menyebutnya.
+
+**Tabrakan nama yang perlu diwaspadai.** Ada dua berkas yang keduanya berawalan
+`Gambar_IV1`:
+
+- `Gambar_IV1_Arsitektur.png` — **dirujuk naskah**, arsitektur berlapis lima lapis (§1)
+- `Gambar_IV1_AlurRinciSistem.png` — **tidak dirujuk naskah**, peta alur luring dan daring (§6)
+
+Keduanya gambar yang **berbeda bentuk dan berbeda tujuan**. Bila hanya menyebut "Gambar
+IV.1", yang dimaksud adalah yang pertama.
+
+### 0.4 Konvensi visual
 
 - **Bahasa Indonesia** untuk seluruh label, kecuali nama kelas, nama berkas, nama pustaka,
   dan nama model — keempatnya ditulis apa adanya.
@@ -64,7 +95,9 @@ angka lain, dan jangan menambah angka yang tidak ada di daftar ini.
 
 ---
 
-## 1. Gambar IV.1 — Arsitektur Berlapis
+## 1. `Gambar_IV1_Arsitektur.png` — Arsitektur Berlapis
+
+*Tercetak sebagai **Gambar IV.1**.*
 
 **Label naskah:** `fig:arsitektur`
 
@@ -92,14 +125,16 @@ adalah nilai terprediksi**, bukan nilai terkini. Beri label pada panah lapis 2 �
 
 ---
 
-## 2. Gambar IV.3 — Pipeline RAG Terkondisi-Prediksi
+## 2. `Gambar_IV3_PipelinePCRAG.png` — Pipeline RAG Terkondisi-Prediksi
+
+*Tercetak sebagai **Gambar IV.2**.*
 
 **Label naskah:** `fig:pipeline-pcrag`
 
 **Status gambar lama: BASI.** Terverifikasi memuat "Random Forest — predict()",
 "MMR Retriever … top_k 4", dan `gemini-2.5-flash-lite`. Ketiganya salah.
 
-**Bentuk:** alur tegak satu jalur, sembilan kotak.
+**Bentuk:** alur tegak satu jalur, **sebelas kotak** sesuai tabel di bawah.
 
 | # | Kotak | Isi label |
 |---|---|---|
@@ -127,13 +162,22 @@ adalah nilai terprediksi**, bukan nilai terkini. Beri label pada panah lapis 2 �
    - Penelusuran: BM25 → jalur padat, **disertai pernyataan penurunan**
    - Pembangkitan: model bahasa → templat berbasis potongan
 
-**Yang harus terbaca:** kotak 4 (interval) **tidak** memberi masukan ke kotak 7. Interval
-dipakai sebagai peringatan klinis, bukan sebagai bahan kueri. Gambarkan panah dari kotak 4
-langsung ke kotak 11, berlabel *"peringatan klinis"*.
+**Yang harus terbaca:** kotak 4 (interval) **tidak** memberi masukan ke kotak 7. Gambarkan
+panah dari kotak 4 langsung ke kotak 11, berlabel *"peringatan klinis"*.
+
+Klaim ini **sudah diverifikasi pada kode**, bukan disimpulkan dari rancangan.
+`PatientState` dan `_primary_query` memang *mampu* memperluas kueri dengan kondisi yang
+tercakup interval, tetapi `app/streamlit_app.py` **tidak meneruskan** `predicted_lower`
+maupun `predicted_upper`, sehingga keduanya `None` dan cabang itu dilewati. Kemampuan itu
+hanya diaktifkan lengan `pc_rag_interval` pada evaluasi, yang terbukti terbaik pada kasus
+divergen tetapi runtuh pada distribusi natural — sebab itulah ia tidak diadopsi. Rinciannya
+pada `docs/METHODOLOGY.md` §7.0.
 
 ---
 
-## 3. Gambar IV.4 — Diagram Kelas
+## 3. `Gambar_IV4_ClassDiagram.png` — Diagram Kelas
+
+*Tercetak sebagai **Gambar IV.3**.*
 
 **Label naskah:** `fig:class-diagram`
 
@@ -200,7 +244,9 @@ lapisan prakiraan dengan lapisan RAG. Tidak boleh ada panah langsung dari
 
 ---
 
-## 4. Gambar IV.5 — Diagram Sekuens
+## 4. `Gambar_IV5_SequencePCRAG.png` — Diagram Sekuens
+
+*Tercetak sebagai **Gambar IV.4**.*
 
 **Label naskah:** `fig:sequence-pcrag`
 
@@ -255,7 +301,9 @@ dari permintaan dokter hingga rekomendasi tertelusur."*
 
 ---
 
-## 5. Gambar IV.6 — Wireframe Antarmuka
+## 5. `Gambar_IV6_Wireframe.png` — Wireframe Antarmuka
+
+*Tercetak sebagai **Gambar IV.5**.*
 
 **Label naskah:** `fig:wireframe`
 
@@ -315,7 +363,7 @@ tampil utuh, bukan disingkat.
 
 ---
 
-## 6. Gambar alur rinci sistem *(opsional, belum dirujuk naskah)*
+## 6. `Gambar_IV1_AlurRinciSistem.png` — Alur Rinci Sistem *(opsional, BELUM dirujuk naskah)*
 
 Bahannya **sudah lengkap** pada `docs/METHODOLOGY.md` §7.0, yang memuat diagram alur
 lengkap dari XML mentah sampai layar dokter, ditambah tabel kontrak data 14 tahap beserta

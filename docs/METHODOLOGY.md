@@ -354,7 +354,7 @@ Tabel berikut menyatakannya; kolom terakhir menunjuk tempat memeriksanya di kode
 | 6 | Ingesti korpus | 12 PDF + `manifest.csv` | 2.233 potongan di ChromaDB, tiap potongan membawa `halaman_cetak` | `scripts/reingest_kb.py` |
 | 7 | Prediksi *runtime* | 12 baris terakhir | `pred` (mg/dL), `sigma`, `(lo, hi)` | `app/streamlit_app.py` |
 | 8 | Kondisi | jendela yang sama | `predicted_condition` ∈ {hipo, normal, hiper} | `predict_condition` |
-| 9 | **Perakitan state** | `pred`, `(lo, hi)`, `predicted_condition` | `PatientState` — `risk_level` dari **nilai TERPREDIKSI**; `anticipated_conditions` diperluas oleh batas interval | `src/patient_state.py` |
+| 9 | **Perakitan state** | `pred`, `predicted_condition` | `PatientState` — `risk_level` dari **nilai TERPREDIKSI** | `src/patient_state.py` |
 | 10 | **Transformasi kueri** | `PatientState` | `primary_query` (untuk retriever) + `llm_context` (untuk prompt) | `_primary_query` |
 | 11 | Penelusuran | `primary_query` | 5 potongan + metadata sitasi | `MMRRetriever.retrieve` (mode `bm25`) |
 | 12 | Pembangkitan | potongan + `llm_context` | teks rekomendasi dengan penanda `[S1..Sn]`, **tanpa nomor halaman** | `src/rag/prompts.py` |
@@ -384,6 +384,25 @@ beban di perangkat praktis tidak terasa. **Kedua**, perpindahan ke penelusuran l
 *menaikkan* beban lokal dari 21,2 ms menjadi 161,4 ms, sebab skor BM25 dihitung terhadap
 seluruh potongan pada tiap kueri sedangkan pencarian vektor memakai indeks. Kenaikan itu
 diterima secara sadar sebagai pertukaran dengan mutu penelusuran yang terukur lebih baik.
+
+#### Batas interval TIDAK ikut menyusun kueri pada jalur produksi
+
+`PatientState` **mampu** memperluas `anticipated_conditions` dengan kondisi berisiko yang
+masih tercakup interval prediksi, dan `_primary_query` **mampu** menambahkan penanganannya
+ke kueri. Kedua kemampuan itu **tidak aktif pada jalur produksi**: berkas
+`app/streamlit_app.py` tidak meneruskan `predicted_lower` maupun `predicted_upper` ke dalam
+`patient_state`, sehingga keduanya bernilai `None` dan cabang yang memakainya dilewati.
+
+Pemisahan ini disengaja dan diukur. Lengan `pc_rag_interval` pada
+`scripts/eval_retrieval_realcases.py` mengaktifkannya, dan hasilnya terbelah: **terbaik pada
+kasus divergen** (MRR 0,412, tertinggi di antara lengan yang tidak mengetahui kondisi
+sebenarnya) tetapi **runtuh pada distribusi natural** (Hit@1 0,033). Pada himpunan yang
+mayoritasnya normal, memperluas kueri dengan seluruh kondisi yang tercakup interval hampir
+selalu menyeret kondisi yang salah.
+
+Karena itu interval tetap dihitung dan tetap ditampilkan, tetapi perannya **peringatan
+klinis kepada dokter**, bukan bahan kueri. Setiap gambar yang memuat panah dari interval ke
+pembentuk kueri karena itu salah bagi jalur produksi.
 
 **Tiga sifat yang harus terbaca dari tabel kontrak data di atas**, karena ketiganya adalah
 klaim penelitian:
