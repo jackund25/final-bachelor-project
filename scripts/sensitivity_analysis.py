@@ -96,12 +96,16 @@ def eval_ablation(retriever, top_k):
 
 
 def load_docs(kb):
-    """Dokumen kurasi + satu dokumen PER HALAMAN dari korpus KB-01..KB-12.
+    """Satu dokumen PER HALAMAN dari korpus KB-01..KB-12.
 
     Memakai jalur yang sama dengan reingest_kb.py agar sweep chunk_size mengukur
     korpus yang identik dengan produksi (termasuk penyaringan front matter).
+
+    Dokumen kurasi manual DICABUT pada 17 Agustus 2026: isinya tidak berasal dari pedoman
+    terbitan resmi dan tidak membawa nomor halaman, sehingga tidak lagi menjadi bagian
+    korpus mana pun.
     """
-    docs = list(kb.load_manual_kb("manual_kb.json") or [])
+    docs = []
     # Abort bila manifest/korpus tidak cocok — Path.glob pada direktori yang tidak
     # ada mengembalikan [] tanpa error, sehingga tanpa penjagaan ini skrip akan
     # menghasilkan angka sensitivitas dari korpus KOSONG tanpa peringatan apa pun.
@@ -110,7 +114,7 @@ def load_docs(kb):
     for pdf_path, entry in pasangan:
         page_docs, _, _, _ = _build_page_docs(pdf_path, entry, min_page_chars=100)
         docs.extend(page_docs)
-    if len(docs) <= len(kb.documents or []):
+    if not docs:
         raise SystemExit(f"Korpus kosong di {PDF_DIR} — tidak ada yang dapat dievaluasi.")
     return docs
 

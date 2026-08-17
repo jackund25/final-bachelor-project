@@ -40,10 +40,11 @@ os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 import argparse
 import csv
+import json
 import re
 import shutil
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -334,6 +335,10 @@ def main() -> int:
         description="Re-ingest KB ke ChromaDB dengan metadata halaman (idempoten)"
     )
     parser.add_argument("--kb-dir", default="data/knowledge_base")
+    parser.add_argument(
+        "--n-cadangan-per-dokumen", type=int, default=3,
+        help=("Jumlah potongan terpanjang per dokumen yang diekspor ke "
+              "fallback_chunks.json sebagai cadangan penelusuran KNF-04."))
     parser.add_argument("--pdf-dir", default="data/knowledge_base/books")
     parser.add_argument("--manifest", default="data/knowledge_base/manifest.csv")
     parser.add_argument("--persist", default="models/chroma_db")
@@ -399,10 +404,21 @@ def main() -> int:
     print(f"[1] Manifest      : {len(manifest)} dokumen terdaftar ({manifest_path})")
     print(f"    Korpus        : {pdf_dir} — cocok, jumlah halaman terverifikasi")
 
-    # 2) Dokumen kurasi (manual_kb.json)
-    manual_docs = kb.load_manual_kb("manual_kb.json") or []
-    docs: List[Dict[str, Any]] = list(manual_docs)
-    print(f"[2] manual_kb.json: {len(manual_docs)} dokumen")
+    # 2) TIDAK ADA lagi dokumen kurasi manual.
+    #
+    # MENGAPA DICABUT (17 Agustus 2026). manual_kb.json berisi prosa yang disusun sendiri
+    # oleh peneliti, bukan kutipan dari pedoman klinis terbitan resmi. Ia menyumbang 15
+    # potongan ke indeks, dan potongan-potongan itu TIDAK memiliki nomor halaman sumber,
+    # sehingga citations.py menampilkannya sebagai "Hal. tidak tercatat".
+    #
+    # Akibatnya klaim KNF-08 pada laporan — bahwa tiap potongan menyimpan identitas dokumen
+    # beserta nomor halamannya — TIDAK benar selama potongan itu ada di dalam indeks.
+    # Mencabutnya membuat seluruh isi korpus tertelusur ke pedoman terbitan resmi tanpa
+    # kecuali, dan itu memperkuat, bukan mengurangi, dasar sistem ini.
+    #
+    # Berkasnya dipindahkan ke arsip dan TIDAK dipakai lagi oleh jalur mana pun.
+    docs: List[Dict[str, Any]] = []
+    print("[2] Dokumen kurasi manual: DICABUT — korpus murni pedoman terbitan resmi")
 
     # 3) Dokumen pedoman — ekstraksi PER HALAMAN
     print(f"[3] Ekstraksi per halaman:")
@@ -436,7 +452,7 @@ def main() -> int:
 
     print(f"    TOTAL: {total_front} halaman depan tersaring, "
           f"{total_short} halaman terlalu pendek, "
-          f"{len(docs) - len(manual_docs)} halaman diindeks")
+          f"{len(docs)} halaman diindeks")
 
     if not docs:
         print("Tidak ada dokumen untuk di-ingest.", file=sys.stderr)
@@ -485,11 +501,34 @@ def main() -> int:
     for src, n in by_source.most_common():
         print(f"    {src}: {n} chunk")
 
-    # 6) Verifikasi: buka ulang koleksi & hitung
+    # 6) Cadangan penelusuran (KNF-04) — diekspor DARI korpus pedoman.
+    #
+    # MENGAPA ADA. Bila ChromaDB tidak dapat dibuka, pipeline mundur ke
+    # SimpleKeywordRetriever, dan penelusur itu memerlukan potongan dalam memori.
+    # Sebelumnya sumbernya manual_kb.json, yang kini dicabut. Menggantinya dengan ekspor
+    # dari korpus pedoman menjaga DUA klaim sekaligus tetap benar: KNF-04 (cadangan
+    # terkendali tersedia) dan KNF-08 (tiap potongan tertelusur ke dokumen dan halamannya).
+    #
+    # Yang diekspor adalah potongan TERPANJANG per dokumen, sebagai wakil isi yang paling
+    # berinformasi, dengan batas per dokumen supaya berkasnya tetap kecil dan dapat dibaca.
+    per_dokumen: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for c in chunks:
+        per_dokumen[c["source"]].append(c)
+    cadangan: List[Dict[str, Any]] = []
+    for src in sorted(per_dokumen):
+        teratas = sorted(per_dokumen[src], key=lambda c: len(c["text"]), reverse=True)
+        cadangan.extend(teratas[: args.n_cadangan_per_dokumen])
+    jalur_cadangan = Path(args.kb_dir) / "fallback_chunks.json"
+    jalur_cadangan.write_text(
+        json.dumps(cadangan, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"\n[6] Cadangan KNF-04: {len(cadangan)} potongan dari {len(per_dokumen)} dokumen "
+          f"-> {jalur_cadangan}")
+
+    # 7) Verifikasi: buka ulang koleksi & hitung
     import chromadb
     client = chromadb.PersistentClient(path=args.persist)
     col = client.get_collection(args.collection)
-    print(f"\n[6] Verifikasi ChromaDB: koleksi '{args.collection}' berisi {col.count()} chunk.")
+    print(f"\n[7] Verifikasi ChromaDB: koleksi '{args.collection}' berisi {col.count()} chunk.")
     print("    Status: OK" if col.count() == len(chunks) else "    Status: MISMATCH!")
     return 0
 

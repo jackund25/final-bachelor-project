@@ -150,11 +150,23 @@ class RAGPipeline:
     # ------------------------------------------------------------------
 
     def ingest(self, reset_collection: bool = False) -> Dict[str, Any]:
-        """Load manual KB, chunk it, and persist to Chroma."""
-        docs = self.kb.load_manual_kb("manual_kb.json")
+        """Indeks ulang korpus dari potongan cadangan.
+
+        CATATAN CAKUPAN (17 Agustus 2026). Jalur ingesti PRODUKSI adalah
+        ``scripts/reingest_kb.py``, yang membaca PDF pedoman per halaman beserta
+        ``manifest.csv`` sehingga tiap potongan membawa nomor halaman cetaknya. Metode ini
+        hanya jalur ringkas untuk pengujian dan pemulihan, dan kini membaca
+        ``fallback_chunks.json`` yang diekspor skrip tersebut.
+
+        Sebelumnya metode ini membaca ``manual_kb.json``, yakni prosa yang disusun sendiri
+        tanpa nomor halaman. Berkas itu sudah dicabut dari sistem.
+        """
+        docs = self.kb.muat_potongan_cadangan()
         if not docs:
-            self.kb.create_manual_kb()
-            docs = self.kb.documents
+            raise RuntimeError(
+                "fallback_chunks.json tidak ditemukan. Jalankan scripts/reingest_kb.py "
+                "lebih dulu; ia yang membangun indeks produksi sekaligus mengekspor "
+                "potongan cadangan.")
 
         chunks = self.kb.chunk_documents(documents=docs)
         saved = self.kb.save_to_chroma(chunks=chunks, reset_collection=reset_collection)
@@ -183,18 +195,23 @@ class RAGPipeline:
             self.retriever = mmr_retriever
             logger.info("RAGPipeline: using MMR retriever (embed=%s)", self.embed_provider)
         else:
+            # Cadangan KNF-04. Potongan diambil dari fallback_chunks.json, yang diekspor
+            # scripts/reingest_kb.py DARI korpus pedoman, sehingga tiap potongan cadangan
+            # tetap membawa identitas dokumen dan nomor halamannya. Kegagalan penelusuran
+            # vektor karena itu menurunkan JANGKAUAN, bukan keterlacakan.
             if not self.kb.chunks:
-                docs = self.kb.load_manual_kb("manual_kb.json")
-                if docs:
-                    self.kb.chunk_documents(
-                        documents=docs,
-                        chunk_size=self.rag_cfg.manual_chunk_size,
-                        chunk_overlap=self.rag_cfg.manual_chunk_overlap,
-                    )
-                else:
-                    self.kb.create_manual_kb()
+                self.kb.chunks = self.kb.muat_potongan_cadangan()
             self.retriever = SimpleKeywordRetriever(self.kb.chunks)
-            logger.info("RAGPipeline: using keyword retriever (Chroma unavailable)")
+            if self.kb.chunks:
+                logger.warning(
+                    "RAGPipeline: ChromaDB tidak tersedia — mundur ke penelusuran kata "
+                    "kunci atas %d potongan cadangan. Jangkauan JAUH lebih sempit "
+                    "daripada korpus penuh.", len(self.kb.chunks))
+            else:
+                logger.error(
+                    "RAGPipeline: ChromaDB tidak tersedia DAN potongan cadangan tidak "
+                    "ditemukan. Penelusuran tidak dapat dilayani; jalankan "
+                    "scripts/reingest_kb.py.")
 
         self._ready = True
 

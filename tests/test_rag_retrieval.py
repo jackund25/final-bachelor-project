@@ -3,22 +3,53 @@ from src.rag.pipeline import RAGPipeline
 from src.rag.retriever import SimpleKeywordRetriever
 
 
-def _build_chunks_from_manual_kb(tmp_path):
+def _potongan_uji(tmp_path):
+    """Potongan yang menyerupai keluaran ekstraksi halaman pedoman.
+
+    DIUBAH 17 Agustus 2026. Sebelumnya perlengkapan ini memanggil ``create_manual_kb``,
+    yang menuliskan prosa susunan sendiri tanpa nomor halaman. Jalur itu dicabut, sehingga
+    perlengkapan uji kini menyusun potongannya sendiri di dalam berkas tes. Selain
+    menghapus ketergantungan pada berkas yang sudah tidak ada, cara ini juga membuat tes
+    tidak lagi bergantung pada isi korpus yang dapat berubah setiap kali diindeks ulang.
+    """
     kb = MedicalKnowledgeBase(kb_dir=str(tmp_path))
-    kb.create_manual_kb()
-    return kb.chunks
+    return kb.chunk_documents(documents=[
+        {
+            "text": (
+                "Hipoglikemia ditegakkan bila kadar glukosa darah berada di bawah "
+                "70 mg/dL. Penanganan awal mengikuti aturan 15-15, yaitu pemberian "
+                "15 gram karbohidrat kerja cepat lalu pemeriksaan ulang setelah 15 menit."
+            ),
+            "source": "KB-09_ISPAD-2022_Ch12-Hipoglikemia.pdf",
+            "topic": "hipoglikemia",
+            "metadata": {"doc_id": "KB-09", "chunk_id": "KB-09_ch_001",
+                         "domain": "pedoman", "subdomain": "hipoglikemia",
+                         "sumber": "ISPAD 2022", "halaman_cetak": 155},
+        },
+        {
+            "text": (
+                "Aktivitas fisik teratur memperbaiki sensitivitas insulin. Penyesuaian "
+                "dosis sebelum latihan diperlukan agar tidak terjadi penurunan glukosa "
+                "yang berlebihan selama maupun sesudah aktivitas berlangsung."
+            ),
+            "source": "KB-11_ISPAD-2022_Ch14-Aktivitas-Fisik.pdf",
+            "topic": "aktivitas fisik",
+            "metadata": {"doc_id": "KB-11", "chunk_id": "KB-11_ch_001",
+                         "domain": "pedoman", "subdomain": "aktivitas_fisik",
+                         "sumber": "ISPAD 2022", "halaman_cetak": 210},
+        },
+    ])
 
 
-def test_chunk_documents_from_manual_kb_produces_chunks(tmp_path):
-    chunks = _build_chunks_from_manual_kb(tmp_path)
+def test_chunk_documents_menghasilkan_potongan(tmp_path):
+    chunks = _potongan_uji(tmp_path)
 
     assert chunks
-    assert len(chunks) >= 6
     assert all(isinstance(item.get("text"), str) and item["text"].strip() for item in chunks)
 
 
 def test_simple_keyword_retriever_returns_hypoglycemia_content(tmp_path):
-    chunks = _build_chunks_from_manual_kb(tmp_path)
+    chunks = _potongan_uji(tmp_path)
     retriever = SimpleKeywordRetriever(chunks)
 
     results = retriever.retrieve("hipoglikemia gula darah rendah", top_k=1)
@@ -28,7 +59,7 @@ def test_simple_keyword_retriever_returns_hypoglycemia_content(tmp_path):
 
 
 def test_simple_keyword_retriever_metadata_filter_works(tmp_path):
-    chunks = _build_chunks_from_manual_kb(tmp_path)
+    chunks = _potongan_uji(tmp_path)
     retriever = SimpleKeywordRetriever(chunks)
 
     results = retriever.retrieve(

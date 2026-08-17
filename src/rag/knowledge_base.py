@@ -301,43 +301,43 @@ class MedicalKnowledgeBase:
         self.documents: List[Dict[str, Any]] = []
         self.chunks: List[Dict[str, Any]] = []
 
-    def load_manual_kb(self, file_name: str = "manual_kb.json") -> List[Dict[str, Any]]:
-        """Load manual knowledge entries from JSON file in kb directory."""
-        manual_path = self.kb_dir / file_name
-        if not manual_path.exists():
-            # Fallback to repository default path for convenience.
-            repo_default = Path("data/knowledge_base") / file_name
-            if repo_default.exists():
-                manual_path = repo_default
-            else:
-                logger.warning("Manual KB file not found: %s", manual_path)
-                return []
+    def muat_potongan_cadangan(
+        self, file_name: str = "fallback_chunks.json"
+    ) -> List[Dict[str, Any]]:
+        """Muat potongan cadangan KNF-04 yang diekspor dari korpus pedoman.
 
-        with manual_path.open("r", encoding="utf-8") as handle:
+        MENGGANTIKAN ``load_manual_kb`` (dicabut 17 Agustus 2026). Metode lama membaca
+        ``manual_kb.json``, yakni prosa yang disusun sendiri oleh peneliti dan TIDAK
+        memiliki nomor halaman sumber, sehingga potongannya tampil sebagai "Hal. tidak
+        tercatat" pada antarmuka. Selama potongan itu berada di dalam indeks, klaim KNF-08
+        bahwa tiap potongan tertelusur sampai halamannya tidak benar.
+
+        Berkas penggantinya diekspor ``scripts/reingest_kb.py`` DARI korpus pedoman, dan
+        tiap entrinya sudah membawa metadata sitasi yang lengkap. Ia dipakai hanya ketika
+        ChromaDB tidak dapat dibuka, sebagai cadangan berjangkauan sempit.
+
+        Mengembalikan daftar kosong bila berkasnya belum ada; pemanggilnya yang menentukan
+        apakah itu keadaan yang dapat ditoleransi.
+        """
+        # HANYA kb_dir yang dibaca, tanpa jatuh ke lintasan bawaan repositori.
+        #
+        # Metode lama menyimpan cadangan tersembunyi ke "data/knowledge_base" bila berkas
+        # tidak ada di kb_dir. Akibatnya kb_dir yang diberikan pemanggil DIABAIKAN diam-diam,
+        # dan pemanggil memperoleh potongan dari korpus produksi tanpa menyadarinya —
+        # persis jenis perilaku senyap yang berulang kali menyesatkan pada penelitian ini.
+        jalur = self.kb_dir / file_name
+        if not jalur.exists():
+            logger.warning(
+                "Potongan cadangan tidak ditemukan: %s. Jalankan "
+                "scripts/reingest_kb.py untuk membangunnya.", jalur)
+            return []
+
+        with jalur.open("r", encoding="utf-8") as handle:
             payload = json.load(handle)
 
-        docs: List[Dict[str, Any]] = []
-        for idx, item in enumerate(payload):
-            text = str(item.get("text", "")).strip()
-            if not text:
-                continue
-            metadata = self._build_metadata(
-                source=item.get("source", "manual_kb"),
-                topic=item.get("topic", f"topic_{idx}"),
-                doc_id=item.get("doc_id", f"manual_doc_{idx}"),
-                index=idx,
-            )
-            docs.append(
-                {
-                    "text": text,
-                    "source": item.get("source", "manual_kb"),
-                    "topic": item.get("topic", f"topic_{idx}"),
-                    "metadata": metadata,
-                }
-            )
-
+        docs = [p for p in payload if str(p.get("text", "")).strip()]
         self.documents = docs
-        logger.info("Loaded %d manual KB entries from %s", len(docs), manual_path)
+        logger.info("Memuat %d potongan cadangan dari %s", len(docs), jalur)
         return docs
 
     def load_documents(self, file_pattern: str = "*.txt") -> None:
@@ -609,31 +609,14 @@ class MedicalKnowledgeBase:
         """Compatibility wrapper used by existing code paths."""
         self.chunk_documents(documents=self.documents, chunk_size=chunk_size, chunk_overlap=overlap)
 
-    def create_manual_kb(self) -> None:
-        """Compatibility helper expected by existing tests and pipeline calls."""
-        docs = self.load_manual_kb("manual_kb.json")
-        if not docs:
-            docs = [
-                {
-                    "text": "Hiperglikemia adalah kondisi glukosa darah di atas 180 mg/dL dan perlu pemantauan.",
-                    "source": "manual_kb",
-                    "topic": "Hiperglikemia",
-                    "metadata": self._build_metadata("manual_kb", "Hiperglikemia", "manual_doc_0", 0),
-                },
-                {
-                    "text": "Hipoglikemia adalah kondisi glukosa darah di bawah 70 mg/dL dan perlu tatalaksana segera.",
-                    "source": "manual_kb",
-                    "topic": "Hipoglikemia",
-                    "metadata": self._build_metadata("manual_kb", "Hipoglikemia", "manual_doc_1", 1),
-                },
-            ]
-            self.documents = docs
-
-        # manual_kb adalah prosa pendek, bukan halaman buku — potongan lebih kecil
-        # (rag.manual_kb.* di config.yaml), sengaja TIDAK memakai rag.chunk_size.
-        self.chunk_documents(
-            documents=docs,
-            chunk_size=self.cfg.manual_chunk_size,
-            chunk_overlap=self.cfg.manual_chunk_overlap,
-        )
-        self.save_chunks(self.kb_dir / "manual_kb.json")
+    # ``create_manual_kb`` DICABUT pada 17 Agustus 2026.
+    #
+    # Metode itu menuliskan dua potongan contoh berisi definisi hiperglikemia dan
+    # hipoglikemia yang disusun sendiri, lalu menyimpannya sebagai manual_kb.json. Isinya
+    # tidak berasal dari pedoman terbitan resmi dan tidak membawa nomor halaman, sehingga
+    # keberadaannya di dalam indeks membuat klaim keterlacakan sitasi tidak benar.
+    #
+    # Penggantinya bukan metode lain, melainkan jalur yang berbeda sama sekali:
+    # ``scripts/reingest_kb.py`` membangun korpus dari PDF pedoman per halaman beserta
+    # manifest, lalu mengekspor sebagian potongannya sebagai cadangan penelusuran yang
+    # dibaca ``muat_potongan_cadangan``.
