@@ -1,6 +1,9 @@
+% Sumber angka: results/benchmark/deployability.json (17 Agustus 2026), diukur ulang
+% sesudah penelusuran produksi berpindah ke BM25. Median atas ulangan yang dicatat
+% berkas itu: 10 untuk rekayasa fitur, 30 untuk prediksi, 20 untuk penelusuran.
 \begin{table}[htbp]
 \centering
-\caption{Pengukuran kelayakan penerapan (KNF-01) pada perangkat uji: AMD Ryzen 12 \emph{core} logis, RAM 15,4~GB, Windows, \textbf{tanpa GPU sama sekali}. Median atas 30 ulangan (10 ulangan untuk rekayasa fitur, 20 untuk \emph{retrieval}).}
+\caption{Pengukuran kelayakan penerapan (KNF-01 dan KNF-10) pada perangkat uji: AMD Ryzen 12 \emph{core} logis, RAM 15,4~GB, Windows, \textbf{tanpa akselerator grafis sama sekali}.}
 \label{tab:benchmark}
 \small
 \begin{tabular}{@{}llr@{}}
@@ -9,22 +12,22 @@
 \midrule
 \multicolumn{3}{@{}l}{\textit{Sekali saat aplikasi dinyalakan (di-cache, tidak dirasakan per konsultasi)}} \\
 \midrule
-Muat artefak & Model regresi, pengklasifikasi, indeks ChromaDB, model \emph{embedding} & 17,2 s \\
+Muat artefak & Model prakiraan, pengklasifikasi kondisi, indeks ChromaDB, indeks leksikal, model \emph{embedding} & 21,1 s \\
 \midrule
 \multicolumn{3}{@{}l}{\textit{Per siklus konsultasi}} \\
 \midrule
-Rekayasa fitur & Jendela \emph{logbook} $\rightarrow$ vektor fitur (IOB, COB, tren, diurnal) & 26,4 ms \\
-Prediksi & Regresi + pengklasifikasi kondisi + interval dari 200 pohon & 89,6 ms \\
-\emph{Retrieval} & \emph{Embedding} kueri + pencarian MMR atas 2.585 \emph{chunk} & 21,2 ms \\
+Rekayasa fitur & Jendela \emph{logbook} $\rightarrow$ vektor fitur (IOB, COB, tren, diurnal) & 27,8 ms \\
+Prediksi & Regresi, pengklasifikasi kondisi, dan interval dari lebar antar-kuantil & 9,2 ms \\
+Penelusuran & Pembobotan BM25 atas 2.248 potongan & 200,5 ms \\
 \midrule
-\textbf{Subtotal lokal} & \textbf{Seluruh komputasi yang berjalan di perangkat} & \textbf{137,2 ms} \\
+\textbf{Subtotal lokal} & \textbf{Seluruh komputasi yang berjalan di perangkat} & \textbf{237,5 ms} \\
 \midrule
-Generasi (LLM) & Satu panggilan Google Gemini (jaringan + inferensi \emph{cloud}) & 11,3 s \\
+Generasi & Satu panggilan model bahasa (jaringan + inferensi \emph{cloud}) & 8,6 s \\
 \midrule
-\textbf{Total} & \textbf{Satu rekomendasi klinis utuh} & \textbf{$\approx$11,4 s} \\
+\textbf{Total} & \textbf{Satu rekomendasi klinis utuh} & \textbf{$\approx$8,8 s} \\
 \bottomrule
 \end{tabular}
 
 \vspace{0.4em}
-\footnotesize Jejak memori setelah seluruh artefak dimuat: 1,17~GB. Ukuran artefak: bundle regresi dan pengklasifikasi masing-masing di bawah ukuran yang membebani, indeks ChromaDB memuat 2.585 \emph{chunk}. Seluruh angka diukur pada CPU.
+{\footnotesize Jejak memori setelah seluruh artefak dimuat: 631~MB. Ukuran artefak: \emph{bundle} inferensi 1,4~MB dan indeks ChromaDB 39,4~MB. Seluruh angka diukur pada prosesor. Penelusuran leksikal \textbf{lebih lambat} daripada pencarian vektor yang dipakai sebelumnya (200,5 lawan 21,2~ms) karena skor dihitung terhadap seluruh potongan pada tiap kueri; kenaikan itu tetap terserap oleh waktu tunggu model bahasa, yang sekitar 36 kali lebih besar daripada seluruh komputasi lokal digabung.}
 \end{table}

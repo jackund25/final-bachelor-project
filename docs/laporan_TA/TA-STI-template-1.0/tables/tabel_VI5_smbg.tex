@@ -1,20 +1,27 @@
+% Sumber angka: results/eval_prediksi/smbg_deployment.json (keluarga_prediktor =
+% HistGradientBoostingRegressor). Angka pada versi sebelumnya berasal dari keluarga
+% random forest dan sudah tidak berlaku bagi sistem yang berjalan.
 \begin{table}[htbp]
 \centering
-\caption{Kinerja prediksi pada skenario \emph{deployment} SMBG: masukan hanya pembacaan \emph{finger\_stick} nyata dan event \emph{logbook} (tanpa CGM sebagai fitur), dibandingkan terhadap \emph{baseline persistence}. Sebagai pembanding disertakan hasil kanal CGM (Tabel~\ref{tab:kinerja-prediksi}).}
+\caption{Kinerja prediksi pada skenario \emph{deployment} SMBG: masukan hanya pembacaan \emph{finger\_stick} nyata dan \emph{event logbook} (tanpa CGM sebagai fitur), dibandingkan terhadap \emph{baseline persistence}. Sebagai pembanding disertakan hasil kanal CGM (Tabel~\ref{tab:kinerja-prediksi}).}
 \label{tab:smbg-deployment}
 \small
 \begin{tabular}{@{}llrrrr@{}}
 \toprule
 \textbf{Horizon} & \textbf{Skenario / model} & \textbf{RMSE} & \textbf{MAE} & \textbf{Clarke A (\%)} & \textbf{Clarke A+B (\%)} \\
 \midrule
-$+30$ menit & SMBG, RF             & 27,09 & 20,33 & 74,86 & 92,09 \\
-$+30$ menit & SMBG, \emph{persistence} & 27,33 & -- & -- & 90,40 \\
-$+30$ menit & CGM, RF (pembanding) & 22,60 & 15,10 & 84,63 & 94,35 \\
+$+30$ menit & SMBG & 28,56 & 21,68 & 71,19 & 90,68 \\
+$+30$ menit & SMBG, sadar waktu & 28,54 & 21,51 & \textbf{73,73} & \textbf{92,37} \\
+$+30$ menit & SMBG, \emph{persistence} & \textbf{27,33} & -- & -- & 90,40 \\
+$+30$ menit & CGM (pembanding) & 22,25 & 14,72 & 85,35 & 94,70 \\
 \midrule
-$+60$ menit & SMBG, RF             & 42,86 & 34,36 & 51,97 & 80,34 \\
+$+60$ menit & SMBG & 46,53 & 36,81 & \textbf{50,28} & \textbf{76,97} \\
+$+60$ menit & SMBG, sadar waktu & \textbf{45,74} & \textbf{36,38} & 49,72 & \textbf{76,97} \\
 $+60$ menit & SMBG, \emph{persistence} & 47,87 & -- & -- & 73,60 \\
-
-$+60$ menit & CGM, RF (pembanding) & 34,24 & 24,83 & 67,89 & 86,94 \\
+$+60$ menit & CGM (pembanding) & 33,82 & 24,41 & 68,42 & 87,32 \\
 \bottomrule
 \end{tabular}
+
+\vspace{0.4em}
+{\footnotesize Cetak tebal menandai nilai terbaik di antara ketiga varian SMBG pada tiap horizon; baris CGM disertakan sebagai konteks, bukan sebagai pesaing. Pada horizon $+30$ menit, \emph{persistence} \textbf{mengungguli} model pada RMSE, dan model hanya unggul pada zona aman Clarke. ``Sadar waktu'' menambahkan selang waktu sejak pembacaan sebelumnya dan laju perubahan per menit sebagai fitur.}
 \end{table}

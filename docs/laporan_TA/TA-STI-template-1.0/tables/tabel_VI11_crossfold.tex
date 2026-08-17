@@ -1,6 +1,9 @@
+% Sumber angka: results/retrieval_realcases_kb12_gbm_hibrida/crossfold.json, lengan bm25
+% (cara penelusuran produksi). Rerata dan SD dihitung ulang dari per_fold, uji Wilcoxon
+% dua sisi atas keenam fold. Ukuran efek lengkap pada Lampiran B.
 \begin{table}[htbp]
 \centering
-\caption{Validasi silang lintas-pasien untuk lapisan \emph{retrieval} (6 \emph{fold}). Pada tiap \emph{fold}, model regresi dan pengklasifikasi dilatih ulang dari nol pada 10 pasien; \emph{retrieval} dievaluasi pada 2 pasien yang tak pernah dilihat. Nilai $p$ dari uji Wilcoxon berpasangan atas keenam \emph{fold} terhadap RAG standar.}
+\caption{Validasi silang lintas-pasien untuk lapisan penelusuran (6 \emph{fold}). Pada tiap \emph{fold}, model prakiraan dan pengklasifikasi dilatih ulang dari nol pada 10 pasien; penelusuran dievaluasi pada 2 pasien yang tak pernah dilihat. Nilai $p$ dari uji Wilcoxon berpasangan atas keenam \emph{fold} terhadap RAG standar.}
 \label{tab:crossfold-retrieval}
 \small
 \begin{tabular}{@{}lccc@{}}
@@ -9,20 +12,20 @@
 \midrule
 \multicolumn{4}{@{}l}{\textit{(a) Kasus divergen: kondisi terkini $\neq$ kondisi masa depan}} \\
 \midrule
-RAG standar               & 0,160\,$\pm$\,0,008 & --   & -- \\
-RAG terkondisi-prediksi (regresi)          & \textbf{0,318\,$\pm$\,0,054} & \textbf{6/6 \emph{fold}} & \textbf{0,031} \\
-RAG terkondisi-prediksi + pengklasifikasi  & 0,298\,$\pm$\,0,040 & 6/6 \emph{fold} & 0,031 \\
-\emph{Oracle}             & 0,983\,$\pm$\,0,015 & 6/6 \emph{fold} & 0,031 \\
+RAG standar & 0,275\,$\pm$\,0,014 & -- & -- \\
+RAG terkondisi-prediksi (regresi) & 0,369\,$\pm$\,0,024 & 6/6 \emph{fold} & 0,031 \\
+RAG terkondisi-prediksi + pengklasifikasi & \textbf{0,449\,$\pm$\,0,016} & \textbf{6/6 \emph{fold}} & \textbf{0,031} \\
+\emph{Oracle} & 1,000\,$\pm$\,0,000 & 6/6 \emph{fold} & 0,031 \\
 \midrule
 \multicolumn{4}{@{}l}{\textit{(b) Distribusi natural: sampel acak seluruh jendela}} \\
 \midrule
-RAG standar               & 0,875\,$\pm$\,0,048 & --   & -- \\
-RAG terkondisi-prediksi (regresi)          & 0,893\,$\pm$\,0,020 & 5/6 \emph{fold} & 0,44 (t.s.) \\
-RAG terkondisi-prediksi + pengklasifikasi  & 0,892\,$\pm$\,0,040 & 3/6 \emph{fold} & 0,56 (t.s.) \\
-\emph{Oracle}             & 0,998\,$\pm$\,0,004 & 6/6 \emph{fold} & 0,031 \\
+RAG standar & 0,912\,$\pm$\,0,033 & -- & -- \\
+RAG terkondisi-prediksi (regresi) & 0,919\,$\pm$\,0,032 & 4/6 \emph{fold} & 0,078 (t.s.) \\
+RAG terkondisi-prediksi + pengklasifikasi & 0,888\,$\pm$\,0,024 & 1/6 \emph{fold} & 0,156 (t.s.) \\
+\emph{Oracle} & 1,000\,$\pm$\,0,000 & 6/6 \emph{fold} & 0,031 \\
 \bottomrule
 \end{tabular}
 
 \vspace{0.4em}
-\footnotesize t.s. = tidak signifikan. Simpangan baku yang kecil pada RAG standar (0,008) menunjukkan kegagalannya pada kasus divergen bersifat sistematis, bukan kebetulan pada pasien tertentu. Sebaliknya, keunggulan RAG terkondisi-prediksi konsisten pada \emph{seluruh} \emph{fold}, sehingga bukan artefak dua pasien tertentu.
+{\footnotesize t.s. = tidak signifikan. Nilai $p=0{,}031$ adalah yang \textbf{terkecil} yang dapat dicapai enam pasangan pada uji dua sisi, sehingga ia menandakan keunggulan sekuat yang dapat ditunjukkan rancangan ini (Subbab~\ref{sec:prosedur-statistik}). Simpangan baku yang kecil pada RAG standar menunjukkan kegagalannya pada kasus divergen bersifat sistematis, bukan kebetulan pada pasien tertentu. Perhatikan pembalikan arah antar-himpunan: pengklasifikasi kondisi paling unggul pada kasus divergen tetapi justru merugikan pada distribusi natural. Ukuran efek Cohen's $d_z$ untuk tiap baris disajikan pada Lampiran~\ref{lamp:uji-statistik}.}
 \end{table}
