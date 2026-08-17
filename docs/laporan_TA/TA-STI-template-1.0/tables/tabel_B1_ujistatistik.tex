@@ -1,4 +1,4 @@
-% Sumber angka: results/retrieval_realcases_kb12_gbm_hibrida/crossfold.json, lengan bm25.
+% Sumber angka: results/retrieval_realcases_kb12_gbm_bm25_final/crossfold.json, lengan bm25.
 % Dihitung ulang dari per_fold, bukan disalin dari ringkasan. Wilcoxon dua sisi, n=6 fold.
 \begin{table}[htbp]
 \centering
@@ -11,16 +11,16 @@
 \midrule
 \multicolumn{7}{@{}l}{\textit{(a) Himpunan divergen: kondisi terkini $\neq$ kondisi masa depan}} \\
 \midrule
-Terkondisi (regresi) & 0,369 & 0,275 & $+0{,}094$ & 0,026 & 3,55 & 0,031 \\
-Terkondisi (pengklasifikasi) & 0,449 & 0,275 & $+0{,}174$ & 0,023 & 7,65 & 0,031 \\
+Terkondisi (regresi) & 0,284 & 0,190 & $+0{,}095$ & 0,024 & 3,99 & 0,031 \\
+Terkondisi (pengklasifikasi) & 0,312 & 0,190 & $+0{,}122$ & 0,018 & 7,33 & 0,031 \\
 \midrule
 \multicolumn{7}{@{}l}{\textit{(b) Himpunan natural: distribusi jendela apa adanya}} \\
 \midrule
-Terkondisi (regresi) & 0,919 & 0,912 & $+0{,}007$ & 0,008 & 0,87 & 0,078 \\
-Terkondisi (pengklasifikasi) & 0,888 & 0,912 & $-0{,}024$ & 0,032 & $-0{,}77$ & 0,156 \\
+Terkondisi (regresi) & 0,714 & 0,700 & $+0{,}014$ & 0,027 & 0,54 & 0,312 \\
+Terkondisi (pengklasifikasi) & 0,663 & 0,700 & $-0{,}036$ & 0,040 & $-0{,}91$ & 0,156 \\
 \bottomrule
 \end{tabular}
 
 \vspace{2pt}
-{\footnotesize Kendali adalah RAG standar, yang membentuk kueri dari kondisi terkini. Selisih dan SD dihitung atas selisih per-\emph{fold}. Kedua baris pada (a) unggul pada seluruh enam \emph{fold}; $p=0{,}031$ merupakan nilai terkecil yang dapat dicapai enam pasangan.}
+{\footnotesize Kendali adalah RAG standar, yang membentuk kueri dari kondisi terkini. Selisih dan SD dihitung atas selisih per-\emph{fold}. Kedua baris pada (a) unggul pada seluruh enam \emph{fold}; $p=0{,}031$ merupakan nilai terkecil yang dapat dicapai enam pasangan. Pada (b) tidak satu pun perbandingan mencapai signifikansi, dan jalur pengklasifikasi bahkan berarah negatif.}
 \end{table}

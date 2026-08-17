@@ -9,12 +9,12 @@
 \textbf{Cara} & \textbf{Mekanisme pencocokan} & \textbf{Parameter} \\
 \midrule
 Padat & Kemiripan makna pada ruang vektor, ditata ulang dengan \emph{Maximal Marginal Relevance} & \texttt{all-MiniLM-L6-v2}, 384 dimensi; kolam kandidat 12; $\lambda=0{,}0$ (keragaman penuh) \\[3pt]
-\textbf{Leksikal} \newline \textbf{(produksi)} & Pembobotan Okapi BM25 atas token yang cocok persis & Indeks dibangun saat pemuatan dari 2.248 potongan yang tersimpan pada ChromaDB \\[3pt]
+\textbf{Leksikal} \newline \textbf{(produksi)} & Pembobotan Okapi BM25 atas token yang cocok persis & Indeks dibangun saat pemuatan dari 2.233 potongan yang tersimpan pada ChromaDB \\[3pt]
 Hibrida & Penggabungan kedua daftar pada \emph{peringkat}, bukan pada skor & \emph{Reciprocal Rank Fusion}; kolam tiap jalur 50; tetapan peredam 60, \textbf{tidak disetel} \\
 \midrule
 \multicolumn{3}{@{}l}{\textit{Berlaku bagi ketiganya}} \\
 \midrule
-Korpus & \multicolumn{2}{p{10.2cm}@{}}{2.248 potongan; 900 karakter dengan tumpang-tindih 120, dipotong pada batas kalimat} \\[3pt]
+Korpus & \multicolumn{2}{p{10.2cm}@{}}{2.233 potongan; 900 karakter dengan tumpang-tindih 120, dipotong pada batas kalimat} \\[3pt]
 Keluaran & \multicolumn{2}{p{10.2cm}@{}}{Lima potongan teratas, masing-masing beserta identitas dokumen dan nomor halamannya} \\
 \bottomrule
 \end{tabular}

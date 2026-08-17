@@ -1,5 +1,6 @@
-% Sumber angka: results/retrieval_realcases_kb12_gbm_bm25/ (17 Agustus 2026).
-% Konfigurasi produksi: prediktor gradient boosting, penelusuran leksikal BM25, top_k=5.
+% Sumber angka: results/retrieval_realcases_kb12_gbm_bm25_final/ (17 Agustus 2026).
+% Konfigurasi produksi: prediktor gradient boosting, penelusuran leksikal BM25, top_k=5,
+% korpus 2.233 potongan pedoman terbitan resmi.
 % Lengan berderau SENGAJA dilaporkan; hasilnya berlawanan dengan dugaan dan dibahas
 % pada badan subbab sebagai bukti penyusutan regresi ke tengah sebaran.
 \begin{table}[htbp]
@@ -13,27 +14,27 @@
 \midrule
 \multicolumn{5}{@{}l}{\textit{(a) Himpunan divergen: kondisi terkini $\neq$ kondisi masa depan (n=120, kelas diseimbangkan)}} \\
 \midrule
-Acak (kendali kewarasan)          & 24,2\% & 0,242 & 0,385 [0,316--0,456] & $1{,}4\times10^{-3}$ \\
-RAG standar                       & 0,0\%  & 0,000 & 0,240 [0,212--0,269] & -- \\
-RAG terkondisi-prediksi (regresi) & 16,7\% & 0,167 & 0,398 [0,344--0,452] & $2{,}5\times10^{-5}$ \\
-\quad + derau ringan              & 25,0\% & 0,250 & 0,450 [0,390--0,514] & $1{,}7\times10^{-7}$ \\
-\quad + derau menengah            & 29,2\% & 0,292 & 0,485 [0,422--0,547] & $2{,}1\times10^{-8}$ \\
-\quad + derau berat               & 28,3\% & 0,283 & 0,478 [0,415--0,542] & $1{,}4\times10^{-8}$ \\
-RAG terkondisi-prediksi + interval & 74,2\% & 0,217 & \textbf{0,574} [0,531--0,618] & $4{,}3\times10^{-17}$ \\
-RAG terkondisi-prediksi + pengklasifikasi & 12,5\% & 0,125 & 0,347 [0,297--0,396] & $2{,}3\times10^{-4}$ \\
-\emph{Oracle} (prediksi sempurna) & 100\%  & 1,000 & \textbf{1,000} [1,000--1,000] & $8{,}4\times10^{-22}$ \\
+Acak (kendali kewarasan)          & 24,2\% & 0,242 & 0,368 [0,298--0,442] & $5{,}8\times10^{-6}$ \\
+RAG standar                       & 0,0\%  & 0,000 & 0,186 [0,161--0,212] & -- \\
+RAG terkondisi-prediksi (regresi) & 16,7\% & 0,133 & 0,321 [0,268--0,375] & $8{,}6\times10^{-5}$ \\
+\quad + derau ringan              & 25,0\% & 0,200 & 0,382 [0,324--0,444] & $8{,}8\times10^{-7}$ \\
+\quad + derau menengah            & 29,2\% & 0,233 & 0,402 [0,339--0,466] & $2{,}7\times10^{-7}$ \\
+\quad + derau berat               & 28,3\% & 0,192 & 0,360 [0,302--0,421] & $2{,}1\times10^{-6}$ \\
+RAG terkondisi-prediksi + interval & 74,2\% & 0,275 & \textbf{0,412} [0,342--0,486] & $8{,}0\times10^{-10}$ \\
+RAG terkondisi-prediksi + pengklasifikasi & 12,5\% & 0,100 & 0,279 [0,231--0,329] & $9{,}1\times10^{-4}$ \\
+\emph{Oracle} (prediksi sempurna) & 100\%  & 0,667 & \textbf{0,778} [0,722--0,833] & $3{,}1\times10^{-16}$ \\
 \midrule
 \multicolumn{5}{@{}l}{\textit{(b) Himpunan natural: sampel acak seluruh jendela (n=120)}} \\
 \midrule
-Acak (kendali kewarasan)          & 30,8\% & 0,308 & 0,447 [0,375--0,519] & $2{,}3\times10^{-12}$ \\
-\textbf{RAG standar}              & 85,0\% & 0,850 & 0,898 [0,851--0,940] & -- \\
-\textbf{RAG terkondisi-prediksi (regresi)} & 85,8\% & \textbf{0,858} & \textbf{0,906} [0,862--0,946] & 0,28 (t.s.) \\
-RAG terkondisi-prediksi + interval & 91,7\% & 0,700 & 0,841 [0,795--0,884] & $3{,}5\times10^{-3}$ \\
-RAG terkondisi-prediksi + pengklasifikasi & 88,3\% & 0,883 & 0,918 [0,875--0,956] & 0,084 (t.s.) \\
-\emph{Oracle} (prediksi sempurna) & 100\%  & 1,000 & 1,000 [1,000--1,000] & $1{,}5\times10^{-4}$ \\
+Acak (kendali kewarasan)          & 30,8\% & 0,308 & 0,352 [0,273--0,433] & $3{,}3\times10^{-12}$ \\
+\textbf{RAG standar}              & 85,0\% & 0,708 & 0,780 [0,716--0,840] & -- \\
+\textbf{RAG terkondisi-prediksi (regresi)} & 85,8\% & 0,683 & 0,762 [0,697--0,824] & 0,14 (t.s.) \\
+RAG terkondisi-prediksi + interval & 91,7\% & 0,033 & 0,314 [0,270--0,358] & $6{,}7\times10^{-15}$ \\
+RAG terkondisi-prediksi + pengklasifikasi & 88,3\% & 0,708 & 0,787 [0,722--0,846] & 0,55 (t.s.) \\
+\emph{Oracle} (prediksi sempurna) & 100\%  & 0,775 & 0,850 [0,800--0,900] & $3{,}0\times10^{-3}$ \\
 \bottomrule
 \end{tabular}
 
 \vspace{0.4em}
-\footnotesize t.s. = tidak signifikan pada $\alpha=0{,}05$. Konfigurasi bercetak tebal pada bagian (b) adalah yang dipakai aplikasi. Pada bagian (a), kendali acak \textbf{tidak} dapat dipakai sebagai pembanding kesahihan metrik, sebab RAG standar keliru menurut konstruksi himpunan itu (0\% kondisi benar); peran kendali acak dijalankan pada bagian (b). Lengan berderau memperlihatkan hasil yang berlawanan dengan dugaan dan dibahas pada badan subbab.
+\footnotesize t.s. = tidak signifikan pada $\alpha=0{,}05$. Konfigurasi bercetak tebal pada bagian (b) adalah yang dipakai aplikasi. Pada bagian (a), kendali acak \textbf{tidak} dapat dipakai sebagai pembanding kesahihan metrik, sebab RAG standar keliru menurut konstruksi himpunan itu (0\% kondisi benar); peran kendali acak dijalankan pada bagian (b). Lengan berderau dan lengan interval memperlihatkan hasil yang berlawanan dengan dugaan dan dibahas pada badan subbab.
 \end{table}
