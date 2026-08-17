@@ -1,6 +1,10 @@
+% Sumber angka: results/eval_prediksi/condition_classifier.json
+% (keluarga_model = HistGradientBoostingClassifier). Versi tabel sebelumnya memuat angka
+% dari keluarga random forest yang sudah digantikan; pembandingnya tetap dapat dihitung
+% ulang dari condition_classifier_RF_arsip.json.
 \begin{table}[htbp]
 \centering
-\caption{Prediksi kondisi masa depan ($t+30$ menit) pada data uji \emph{hold-out} (n=27.193): kondisi diturunkan dari pengambangan nilai regresi versus kondisi diprediksi langsung oleh pengklasifikasi tiga kelas sadar-biaya (\texttt{class\_weight=balanced}).}
+\caption{Prediksi kondisi masa depan ($t+30$ menit) pada data uji \emph{hold-out}: kondisi diturunkan dari pengambangan nilai regresi versus diprediksi langsung oleh pengklasifikasi sadar-biaya. Keduanya memakai keluarga model yang sama dengan jalur produksi.}
 \label{tab:classifier}
 \small
 \begin{tabular}{@{}lrrrr@{}}
@@ -9,14 +13,15 @@
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
 \textbf{Kondisi} & \textbf{Sensitivitas} & \textbf{PPV} & \textbf{Sensitivitas} & \textbf{PPV} \\
 \midrule
-Hipoglikemia (n=806)     & 14,0\% & 57,1\% & \textbf{44,4\%} & 39,4\% \\
-Normal (n=18.931)        & 93,3\% & 90,9\% & 90,9\% & 91,5\% \\
-Hiperglikemia (n=7.456)  & 85,5\% & 84,2\% & 84,5\% & 84,2\% \\
+Hipoglikemia (n=768) & 17,3\% & 56,6\% & \textbf{67,2\%} & 31,9\% \\
+Normal & 93,7\% & 91,4\% & 85,6\% & 94,0\% \\
+Hiperglikemia & 86,3\% & 85,5\% & \textbf{89,5\%} & 80,7\% \\
 \midrule
-Akurasi keseluruhan      & \multicolumn{2}{c}{88,8\%} & \multicolumn{2}{c}{87,8\%} \\
+Akurasi keseluruhan & \multicolumn{2}{c}{89,4\%} & \multicolumn{2}{c}{86,1\%} \\
+Ketepatan kondisi, kasus divergen & \multicolumn{2}{c}{36,8\%} & \multicolumn{2}{c}{35,4\%} \\
 \bottomrule
 \end{tabular}
 
 \vspace{0.4em}
-\footnotesize Sensitivitas hipoglikemia meningkat lebih dari tiga kali lipat pada ambang klinis standar 70~mg/dL, tanpa menaikkan ambang peringatan, dengan ongkos berupa penurunan PPV dan akurasi keseluruhan yang praktis tidak berubah.
+{\footnotesize Pengklasifikasi menaikkan sensitivitas hipoglikemia hampir empat kali lipat \emph{pada ambang klinis standar}, tanpa menggeser ambang peringatan. Ongkosnya nyata dan dilaporkan: PPV hipoglikemia turun dari 56,6\% ke 31,9\%, sensitivitas kelas normal turun, dan akurasi keseluruhan turun 3,3 poin persen. Pertukaran ini dipilih secara sadar karena pada hipoglikemia, kejadian yang terlewat berakibat jauh lebih berat daripada peringatan yang ternyata tidak terjadi. Perlu dicatat bahwa pada kasus divergen ketepatan kondisi kedua jalur \emph{sama-sama rendah} dan praktis setara, sehingga leher botol yang diuraikan pada Subbab~\ref{sec:eval-realcases} tidak terselesaikan oleh pergantian ini.}
 \end{table}

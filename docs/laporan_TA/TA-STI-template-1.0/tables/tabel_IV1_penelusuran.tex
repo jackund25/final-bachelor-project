@@ -1,0 +1,24 @@
+% Seluruh nilai dibaca langsung dari config.yaml dan indeks produksi, 17 Agustus 2026.
+\begin{table}[htbp]
+\centering
+\caption{Tiga cara penelusuran yang tersedia pada sistem, seluruhnya berjalan atas potongan dokumen yang sama. Cara yang diadopsi ke jalur produksi ditetapkan oleh pengukuran pada Bab~\ref{chap:evaluasi}, bukan ditetapkan di muka.}
+\label{tab:cara-penelusuran}
+\small
+\begin{tabular}{@{}p{2.4cm}p{4.6cm}p{5.4cm}@{}}
+\toprule
+\textbf{Cara} & \textbf{Mekanisme pencocokan} & \textbf{Parameter} \\
+\midrule
+Padat & Kemiripan makna pada ruang vektor, ditata ulang dengan \emph{Maximal Marginal Relevance} & \texttt{all-MiniLM-L6-v2}, 384 dimensi; kolam kandidat 12; $\lambda=0{,}0$ (keragaman penuh) \\[3pt]
+\textbf{Leksikal} \newline \textbf{(produksi)} & Pembobotan Okapi BM25 atas token yang cocok persis & Indeks dibangun saat pemuatan dari 2.248 potongan yang tersimpan pada ChromaDB \\[3pt]
+Hibrida & Penggabungan kedua daftar pada \emph{peringkat}, bukan pada skor & \emph{Reciprocal Rank Fusion}; kolam tiap jalur 50; tetapan peredam 60, \textbf{tidak disetel} \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Berlaku bagi ketiganya}} \\
+\midrule
+Korpus & \multicolumn{2}{p{10.2cm}@{}}{2.248 potongan; 900 karakter dengan tumpang-tindih 120, dipotong pada batas kalimat} \\[3pt]
+Keluaran & \multicolumn{2}{p{10.2cm}@{}}{Lima potongan teratas, masing-masing beserta identitas dokumen dan nomor halamannya} \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.4em}
+{\footnotesize Ketiga cara sengaja dipertahankan di dalam kode agar seluruh angka perbandingan pada Bab~\ref{chap:evaluasi} dapat dihitung ulang, bukan dikutip dari catatan hasil terdahulu. Tetapan peredam \emph{Reciprocal Rank Fusion} dibiarkan pada nilai bakunya supaya penggabungan hibrida tidak memperoleh keuntungan penyetelan yang tidak dimiliki kedua cara lainnya.}
+\end{table}
