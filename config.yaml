@@ -204,7 +204,31 @@ rag:
   # semantik sama sekali, sehingga bekerja tepat di titik model paling lemah.
   #
   # Nilai "vektor" DIPERTAHANKAN agar angka era-vektor dapat direproduksi.
-  retrieval_mode: "hibrida"
+  #
+  # T14 (17 Agustus 2026) MENGUBAH nilai ini dari "hibrida" menjadi "bm25", menjalankan
+  # Aturan 4 prapendaftaran T13 yang ditetapkan SEBELUM angkanya dilihat. Alat ukurnya
+  # RAGAS berbasis rujukan, bukan classify_chunk yang berbagi sinyal dengan BM25.
+  #
+  #   lengan    context_precision   context_recall   recall penuh
+  #   vektor              0,025           0,100         1/10
+  #   bm25                0,803           0,900         9/10
+  #   hibrida             0,542           0,700         7/10
+  #
+  # Perbandingan langsung bm25 lawan hibrida: bm25 unggul 2 kasus, hibrida unggul NOL,
+  # seri 8. Tidak ada satu kasus pun hibrida mengungguli BM25.
+  #
+  # MENGAPA fusi justru merugikan di sini, dan ini yang menentukan. RRF menggabungkan
+  # PERINGKAT, sehingga ia tetap memberi bobot pada posisi teratas daftar padat betapa
+  # pun kelirunya. Lengan padat benar hanya 1 dari 10, sehingga fusi menyuntikkan
+  # dokumen keliru ke lima besar dan MENGGESER KELUAR temuan BM25 yang sudah benar.
+  # Terlihat langsung pada kasus E04 dan E05: bm25 recall 1,0 sedangkan hibrida 0,0.
+  # Fusi hanya menguntungkan bila kedua lengan sama-sama layak; di sini tidak.
+  #
+  # Akar masalahnya tetap sama dengan catatan di atas: model embedding berbahasa
+  # Inggris atas korpus berbahasa Indonesia. T9 sudah menutup jalan menggantinya.
+  #
+  # Nilai "hibrida" DIPERTAHANKAN agar angka T13/T14 dapat direproduksi.
+  retrieval_mode: "bm25"
   # Ukuran kolam tiap lengan sebelum digabung RRF. Bukan fetch_k, yang mengatur
   # kolam MMR di dalam lengan vektor.
   rrf_pool: 50
