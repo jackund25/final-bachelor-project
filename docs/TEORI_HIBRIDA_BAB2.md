@@ -1,5 +1,26 @@
 # Bahan teori penelusuran hibrida untuk Bab II
 
+> ## ⚠ STATUS: HIBRIDA SUDAH DICABUT DARI PRODUKSI (17 Agustus 2026, commit `899d715`)
+>
+> Berkas ini disusun ketika hibrida masih menjadi pilihan produksi. **Ia tidak lagi.**
+> T14 atas kode produksi menunjukkan BM25 sendirian mengungguli hibrida pada
+> `context_recall` (0,900 lawan 0,700) dan `context_precision` (0,803 lawan 0,542),
+> dengan hibrida tidak menang pada satu kasus pun. Aturan 4 prapendaftaran T13
+> dijalankan, dan `retrieval_mode` produksi kini `bm25`.
+>
+> **Teori RRF dan BM25 di bawah tetap SAH dan tetap dipakai** — Bab II tetap perlu
+> menerangkan keduanya, sebab keduanya diuji dan salah satunya diadopsi. Yang **tidak
+> boleh** diambil dari berkas ini adalah setiap kalimat yang menyatakan hibrida sebagai
+> pilihan sistem, atau yang menyiratkan penggabungan selalu menguntungkan.
+>
+> Yang perlu ditambahkan sebagai gantinya: **RRF bekerja pada peringkat, sehingga ia
+> selalu memberi bobot pada posisi teratas kedua daftar tanpa cara menilai apakah suatu
+> daftar layak dipercaya.** Karena itu penggabungan hanya menguntungkan bila kedua
+> lengannya sama-sama layak. Inilah temuan yang dilaporkan penelitian ini.
+>
+> Naskah yang sudah benar ada pada Bab~IV Subbab \emph{Perancangan Penelusuran}
+> (`sec:penelusuran`).
+
 Disusun 17 Agustus 2026, sebagai bahan subbab baru pada Bab II setelah penelusuran
 hibrida diadopsi ke produksi (commit `ca5c919`).
 

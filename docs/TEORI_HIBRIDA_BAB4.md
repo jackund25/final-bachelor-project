@@ -1,5 +1,22 @@
 # Bahan perancangan penelusuran hibrida untuk Bab IV
 
+> ## ⚠ SUDAH DILAKSANAKAN DAN SEBAGIAN SUDAH USANG (17 Agustus 2026)
+>
+> **Bagian 1 dan 2 sudah dikerjakan** — koreksi butir (2)(4)(5) Bab IV sudah masuk naskah.
+>
+> **Bagian 3 SUDAH USANG.** Subbab yang diusulkannya memerikan hibrida sebagai pilihan
+> produksi, padahal hibrida sudah **dicabut** (commit `899d715`) setelah T14 menunjukkan
+> BM25 sendirian mengungguli hibrida dan hibrida tidak menang pada satu kasus pun.
+> Naskah yang berlaku ada pada Bab~IV Subbab *Perancangan Penelusuran* (`sec:penelusuran`),
+> yang memerikan tiga cara, memilih leksikal, dan menerangkan mengapa fusi merugikan.
+>
+> **Bagian 4 sudah diperbarui** ke `tables/tabel_V1_parameter.tex`, dengan dua koreksi:
+> cara penelusuran `bm25` (bukan `hibrida`), dan waktu siklus lokal 237,5 ms setelah
+> diukur ulang — penelusuran leksikal ternyata **lebih lambat** dari MMR (200,5 lawan
+> 24,2 ms), masih jauh di bawah waktu tunggu model bahasa (~8,6 detik).
+>
+> **Bagian 6 sudah selesai** — crossfold produksi sudah dijalankan.
+
 Pendamping `docs/TEORI_HIBRIDA_BAB2.md`. Bab II memuat **teorinya**; berkas ini memuat
 **keputusan perancangannya** — apa yang dipilih pada sistem ini, dan atas dasar apa.
 
