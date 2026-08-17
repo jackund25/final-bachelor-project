@@ -67,34 +67,38 @@ Kinerja prediksi dinilai dengan tiga metrik regresi. RMSE (Persamaan~\ref{eq:rms
   \label{eq:mape}
 \end{equation}
 
-Kinerja prediksi glukosa pada data uji dirangkum pada Tabel~\ref{tab:kinerja-prediksi}. Pada horizon $+30$ menit, RF mencapai RMSE 22,60~mg/dL dengan 94,35\% titik berada pada zona aman Clarke A+B; pada horizon $+60$ menit RMSE meningkat menjadi 34,24~mg/dL dengan 86,94\% titik zona A+B, sesuai ekspektasi bahwa ketidakpastian bertambah untuk horizon lebih jauh. Model LSTM sebagai \emph{baseline} menghasilkan angka yang sangat berdekatan (RMSE 22,04 dan 33,64~mg/dL).
+Kinerja prediksi glukosa pada data uji dirangkum pada Tabel~\ref{tab:kinerja-prediksi}. Ketiga model dilatih dalam satu jalan yang sama, sehingga pembagian pasien, penskalaan, dan himpunan ujinya identik dan selisih yang teramati tidak dapat berasal dari perbedaan prosedur. Pada horizon $+30$ menit, model produksi \emph{gradient boosting} mencapai RMSE 22,25~mg/dL dengan 94,70\% titik berada pada zona aman Clarke A+B; pada horizon $+60$ menit RMSE meningkat menjadi 33,82~mg/dL dengan 87,32\% titik zona A+B, sesuai ekspektasi bahwa ketidakpastian bertambah untuk horizon yang lebih jauh.
+
+\textbf{Ketiganya berdekatan, dan model produksi tidak unggul pada seluruh sumbu.} Pada horizon $+30$ menit, LSTM justru sedikit lebih baik (RMSE 21,98 berbanding 22,25; zona aman 94,72\% berbanding 94,70\%), sedangkan pada horizon $+60$ menit \emph{gradient boosting} unggul pada seluruh metrik. Selisih pada horizon pendek itu, yakni 0,27~mg/dL dan 0,02 poin persen, berada jauh di bawah batas kebermaknaan klinis; \textcite{clarke1987} sendiri merancang pembagian zona justru karena selisih numerik sekecil itu tidak menuntun ke tindakan yang berbeda. Terhadap \emph{random forest}, yang sebelumnya menjadi model utama penelitian ini, \emph{gradient boosting} unggul pada seluruh metrik di kedua horizon.
+
+Kesimpulan yang dapat ditarik dari tabel ini karena itu \textbf{bukan} bahwa satu model mengungguli lainnya pada galat prediksi, melainkan bahwa ketiganya \emph{setara secara klinis}. Dasar pemilihan model produksi tidak terletak di sini; ia bertumpu pada ketepatan \emph{kondisi} yang diprediksi, yang menjadi masukan tahap penelusuran, serta pada biaya komputasi kalibrasi, keduanya dipaparkan pada Subbab~\ref{sec:hipo} dan~\ref{sec:benchmark}.
 
 \input{tables/tabel_VI1_prediksi.tex}
 
-Distribusi keamanan klinis prediksi RF pada \emph{Clarke Error Grid} ditunjukkan pada Gambar~\ref{fig:clarke-rf-h6} (horizon $+30$ menit) dan Gambar~\ref{fig:clarke-rf-h12} (horizon $+60$ menit), sedangkan perbandingan ringkas antar-metrik disajikan pada Gambar~\ref{fig:comparison-bar}.
+Distribusi keamanan klinis prediksi model produksi pada \emph{Clarke Error Grid} ditunjukkan pada Gambar~\ref{fig:clarke-gbm-h6} (horizon $+30$ menit) dan Gambar~\ref{fig:clarke-gbm-h12} (horizon $+60$ menit), sedangkan perbandingan ringkas antar-metrik bagi ketiga model disajikan pada Gambar~\ref{fig:comparison-bar}.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{images/Gambar_VI1_ClarkeRF_h6.png}
-\caption{\emph{Clarke Error Grid} prediksi \emph{Random Forest} pada horizon $+30$ menit; mayoritas titik berada pada zona A dan B (aman secara klinis).}
-\label{fig:clarke-rf-h6}
+\includegraphics[width=0.7\textwidth]{images/Gambar_VI1_ClarkeGBM_h6.png}
+\caption{\emph{Clarke Error Grid} prediksi model produksi \emph{gradient boosting} pada horizon $+30$ menit; 94,70\% titik berada pada zona A dan B, yakni zona yang tidak menuntun ke tindakan klinis yang keliru.}
+\label{fig:clarke-gbm-h6}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{images/Gambar_VI2_ClarkeRF_h12.png}
-\caption{\emph{Clarke Error Grid} prediksi \emph{Random Forest} pada horizon $+60$ menit.}
-\label{fig:clarke-rf-h12}
+\includegraphics[width=0.7\textwidth]{images/Gambar_VI2_ClarkeGBM_h12.png}
+\caption{\emph{Clarke Error Grid} prediksi model produksi \emph{gradient boosting} pada horizon $+60$ menit; 87,32\% titik berada pada zona A dan B.}
+\label{fig:clarke-gbm-h12}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{images/Gambar_VI3_ComparisonBar_h6.png}
-\caption{Perbandingan metrik \emph{Random Forest} vs LSTM pada horizon $+30$ menit.}
+\caption{Perbandingan metrik ketiga model pada horizon $+30$ menit: \emph{gradient boosting} sebagai model produksi, serta \emph{random forest} dan LSTM sebagai pembanding, seluruhnya dilatih pada pembagian data yang sama.}
 \label{fig:comparison-bar}
 \end{figure}
 
-Agar angka tersebut dapat ditempatkan pada konteksnya, Tabel~\ref{tab:literatur} membandingkannya dengan hasil terpublikasi pada dataset yang sama. Perlu ditegaskan bahwa perbandingan ini \emph{tidak setara}: hasil terpublikasi umumnya memakai pembagian temporal per pasien, pasien yang sama muncul pada data latih maupun uji, sedangkan penelitian ini memakai pembagian \emph{per pasien}, sehingga pasien uji tidak pernah dilihat model sama sekali. Uji generalisasi yang ditempuh di sini lebih berat. Dengan catatan itu, RMSE 22,60~mg/dL berada pada kisaran model \emph{deep learning} yang dilaporkan (18,26--22,12~mg/dL), setara dengan jaringan saraf umpan-maju dan tidak jauh dari CNN maupun TCN, meski dicapai oleh model yang jauh lebih ringan dan interpretabel serta berjalan tanpa GPU.
+Agar angka tersebut dapat ditempatkan pada konteksnya, Tabel~\ref{tab:literatur} membandingkannya dengan hasil terpublikasi pada dataset yang sama. Perlu ditegaskan bahwa perbandingan ini \emph{tidak setara}: hasil terpublikasi umumnya memakai pembagian temporal per pasien, pasien yang sama muncul pada data latih maupun uji, sedangkan penelitian ini memakai pembagian \emph{per pasien}, sehingga pasien uji tidak pernah dilihat model sama sekali. Uji generalisasi yang ditempuh di sini lebih berat. Dengan catatan itu, RMSE 22,25~mg/dL berada pada kisaran model \emph{deep learning} yang dilaporkan (18,26--22,12~mg/dL), setara dengan jaringan saraf umpan-maju dan tidak jauh dari CNN maupun TCN, meski dicapai oleh model yang jauh lebih ringan dan interpretabel serta berjalan tanpa GPU.
 
 \input{tables/tabel_VI6_literatur.tex}
 
@@ -114,7 +118,7 @@ Seluruh angka pada Subbab~\ref{sec:eval-prediksi} dan \ref{sec:crossval} dihitun
 
 Dua keputusan desain menjaga validitas evaluasi ini. \emph{Pertama}, timeline \emph{finger\_stick} tidak beraturan (jarak antar-pembacaan bermedian 124,8~menit dan berrata-rata 207,6~menit), sehingga horizon tidak dapat dinyatakan dalam ``langkah'' seperti pada CGM. Horizon karenanya ditetapkan dalam satuan menit ($+30$ dan $+60$), dan nilai kebenaran diambil dari kanal CGM pada waktu $t+h$, yakni kadar glukosa pasien yang sebenarnya pada saat itu. \emph{Kedua}, IOB dan COB memakai peluruhan eksponensial yang mengasumsikan interval seragam, sehingga tidak sah dihitung langsung di atas timeline tak beraturan; keduanya dihitung pada grid 5-menit tempat seluruh \emph{event} insulin dan karbohidrat tercatat beserta waktunya, lalu disampel pada waktu pembacaan \emph{finger\_stick}. Perlu ditegaskan bahwa kanal CGM dipakai \textbf{semata-mata sebagai nilai kebenaran target}, tidak pernah sebagai fitur masukan: model hanya melihat data yang benar-benar dimiliki pasien tanpa CGM.
 
-Hasilnya disajikan pada Tabel~\ref{tab:smbg-deployment}, dengan pembagian per pasien yang sama seperti evaluasi CGM. Pada horizon $+30$ menit, RMSE memburuk dari 22,60 menjadi 27,09~mg/dL dan zona aman Clarke A+B turun dari 94,35\% menjadi 92,09\%. Penurunan ini wajar: dengan masukan yang jauh lebih jarang, model kehilangan informasi tren jangka pendek yang pada kanal CGM tersedia setiap lima menit.
+Hasilnya disajikan pada Tabel~\ref{tab:smbg-deployment}, dengan pembagian per pasien yang sama seperti evaluasi CGM. Pada horizon $+30$ menit, RMSE memburuk dari 22,25 menjadi 27,09~mg/dL dan zona aman Clarke A+B turun dari 94,70\% menjadi 92,09\%. Penurunan ini wajar: dengan masukan yang jauh lebih jarang, model kehilangan informasi tren jangka pendek yang pada kanal CGM tersedia setiap lima menit.
 
 Temuan yang lebih penting, dan dilaporkan apa adanya, adalah perbandingan terhadap \emph{baseline persistence}, yaitu asumsi naif bahwa kadar glukosa tidak berubah dari pembacaan terakhir. Pada horizon $+30$ menit, model praktis \textbf{setara} dengan \emph{persistence} (RMSE 27,09 vs 27,33~mg/dL); keunggulannya hanya tampak pada zona aman Clarke (92,09\% vs 90,40\%). Artinya, pada data \emph{logbook} yang jarang, prediksi $+30$ menit memberi nilai tambah yang kecil di atas asumsi ``glukosa tetap'', konsekuensi langsung dari kenyataan bahwa jarak antar-pembacaan SMBG (median 124,8~menit) jauh lebih panjang daripada horizon prediksinya sendiri. Sebaliknya, pada horizon $+60$ menit model unggul jelas atas \emph{persistence} (RMSE 42,86 vs 47,87~mg/dL; Clarke A+B 80,34\% vs 73,60\%), karena pada rentang waktu yang lebih panjang asumsi ``tidak berubah'' semakin tidak berlaku sementara efek IOB/COB yang dimodelkan justru semakin dominan.
 
@@ -311,7 +315,7 @@ Subbab ini mengumpulkan, pada satu tempat, pertanyaan-pertanyaan validitas yang 
 
 \section{Pembahasan dan Keterbatasan}
 \label{sec:pembahasan}
-Secara keseluruhan, evaluasi mendukung empat klaim utama. \emph{Pertama}, model prediksi RF yang ringan dan interpretabel mencapai keamanan klinis tinggi (94,35\% zona Clarke A+B pada $+30$ menit), setara LSTM secara klinis, dan berada pada kisaran hasil terpublikasi meski diuji pada protokol lintas-pasien yang lebih berat. \emph{Kedua}, mekanisme RAG \emph{terkondisi-prediksi} terbukti sahih: dengan kondisi masa depan yang benar, \emph{retrieval} nyaris sempurna (MRR 0,994). \emph{Ketiga}, dan inilah temuan yang paling menentukan arah, manfaat RAG terkondisi-prediksi di lapangan dibatasi oleh kemampuan prediktor menandai perubahan kondisi, bukan oleh mekanismenya. Keunggulan pada kasus divergen terbukti robust lintas-pasien (unggul pada seluruh enam \emph{fold}; $p=0{,}031$), namun pada distribusi natural tidak ada keunggulan yang dapat diandalkan karena hanya 13,3\% jendela yang divergen. Upaya memperbaiki prediktor melalui pengklasifikasi kondisi sadar-biaya berhasil pada sasarannya yang utama, sensitivitas hipoglikemia naik dari 14,0\% ke 44,4\%, tetapi \emph{tidak} terbukti memperbaiki mutu \emph{retrieval} ketika diuji lintas-\emph{fold}. \emph{Keempat}, sistem berfungsi utuh pada lingkungan \emph{resource-constrained} tanpa GPU: seluruh komputasi lokal selesai dalam 137~ms, dan keluaran model bahasa lolos pemeriksaan keamanan (100\% besaran klinis tertelusur, tanpa tindakan salah arah).
+Secara keseluruhan, evaluasi mendukung empat klaim utama. \emph{Pertama}, model prakiraan \emph{gradient boosting} yang ringan mencapai keamanan klinis tinggi (94,70\% zona Clarke A+B pada $+30$ menit), setara secara klinis dengan kedua pembandingnya, dan berada pada kisaran hasil terpublikasi meski diuji pada protokol lintas-pasien yang lebih berat. \emph{Kedua}, mekanisme RAG \emph{terkondisi-prediksi} terbukti sahih: dengan kondisi masa depan yang benar, penelusuran mencapai peringkat sempurna (MRR 1,000). \emph{Ketiga}, dan inilah temuan yang paling menentukan arah, manfaat RAG terkondisi-prediksi di lapangan dibatasi oleh kemampuan prediktor menandai perubahan kondisi, bukan oleh mekanismenya. Keunggulan pada kasus divergen terbukti robust lintas-pasien (unggul pada seluruh enam \emph{fold}; $p=0{,}031$), namun pada distribusi natural tidak ada keunggulan yang dapat diandalkan karena hanya 13,3\% jendela yang divergen. Upaya memperbaiki prediktor melalui pengklasifikasi kondisi sadar-biaya berhasil pada sasarannya yang utama, sensitivitas hipoglikemia naik dari 14,0\% ke 44,4\%, tetapi \emph{tidak} terbukti memperbaiki mutu \emph{retrieval} ketika diuji lintas-\emph{fold}. \emph{Keempat}, sistem berfungsi utuh pada lingkungan \emph{resource-constrained} tanpa GPU: seluruh komputasi lokal selesai dalam 137~ms, dan keluaran model bahasa lolos pemeriksaan keamanan (100\% besaran klinis tertelusur, tanpa tindakan salah arah).
 
 Perlu ditegaskan secara jujur bahwa besaran manfaat pada demonstrasi terkontrol (MRR 0,225~$\rightarrow$~0,889) \textbf{tidak dapat diharapkan terjadi di lapangan}. Angka itu diperoleh pada kasus terkurasi yang nilai kebenarannya ditentukan oleh prediksi itu sendiri, sehingga bersifat batas atas yang optimistis. Pada evaluasi kasus nyata dengan nilai kebenaran independen, peningkatannya jauh lebih moderat dan terkonsentrasi pada 13,3\% jendela yang benar-benar divergen.
 
