@@ -53,17 +53,18 @@ angka lain, dan jangan menambah angka yang tidak ada di daftar ini.
 ### 0.3 Nama berkas: ada satu tabrakan nama, dan tidak ada Gambar IV.2
 
 **Nomor gambar pada PDF dihasilkan LaTeX secara berurutan, bukan dari nama berkas.** Bab IV
-memuat tepat lima gambar, sehingga pada naskah tercetak keduanya bernomor
-**Gambar IV.1 sampai Gambar IV.5, tanpa lompatan.** Yang melompat hanyalah *nama berkasnya*,
-dan itu tidak terlihat pembaca.
+memuat **enam** gambar, sehingga pada naskah tercetak bernomor **Gambar IV.1 sampai
+Gambar IV.6, tanpa lompatan.** Yang melompat hanyalah *nama berkasnya*, dan itu tidak
+terlihat pembaca.
 
 | Nama berkas | Nomor pada PDF | Bagian spesifikasi |
 |---|---|---|
 | `Gambar_IV1_Arsitektur.png` | Gambar IV.1 | §1 |
 | `Gambar_IV3_PipelinePCRAG.png` | Gambar IV.2 | §2 |
-| `Gambar_IV4_ClassDiagram.png` | Gambar IV.3 | §3 |
-| `Gambar_IV5_SequencePCRAG.png` | Gambar IV.4 | §4 |
-| `Gambar_IV6_Wireframe.png` | Gambar IV.5 | §5 |
+| **`Gambar_IV1_AlurRinciSistem.png`** | **Gambar IV.3** | **§6 — WAJIB, arahan pembimbing** |
+| `Gambar_IV4_ClassDiagram.png` | Gambar IV.4 | §3 |
+| `Gambar_IV5_SequencePCRAG.png` | Gambar IV.5 | §4 |
+| `Gambar_IV6_Wireframe.png` | Gambar IV.6 | §5 |
 
 **Mengapa tidak ada berkas `Gambar_IV2_*`.** Berkas itu dahulu bernama
 `Gambar_IV2_DuaMesin.png` dan memerikan rancangan dua mesin, yakni satu model untuk
@@ -73,13 +74,13 @@ Penomoran berkas sengaja **tidak** dirapikan, supaya nama berkas tetap cocok den
 dan dengan hasil evaluasi lama yang menyebutnya.
 
 **Tabrakan nama yang perlu diwaspadai.** Ada dua berkas yang keduanya berawalan
-`Gambar_IV1`:
+`Gambar_IV1`, dan **keduanya dirujuk naskah**:
 
-- `Gambar_IV1_Arsitektur.png` — **dirujuk naskah**, arsitektur berlapis lima lapis (§1)
-- `Gambar_IV1_AlurRinciSistem.png` — **tidak dirujuk naskah**, peta alur luring dan daring (§6)
+- `Gambar_IV1_Arsitektur.png` → tercetak **Gambar IV.1**, arsitektur berlapis lima lapis (§1)
+- `Gambar_IV1_AlurRinciSistem.png` → tercetak **Gambar IV.3**, alur rinci luring dan daring (§6)
 
-Keduanya gambar yang **berbeda bentuk dan berbeda tujuan**. Bila hanya menyebut "Gambar
-IV.1", yang dimaksud adalah yang pertama.
+Keduanya **berbeda bentuk dan berbeda tujuan**, dan awalan nama yang sama itu warisan
+penamaan lama. Selalu sebut nama berkas lengkapnya, jangan hanya "Gambar IV.1".
 
 ### 0.4 Konvensi visual
 
@@ -363,20 +364,96 @@ tampil utuh, bukan disingkat.
 
 ---
 
-## 6. `Gambar_IV1_AlurRinciSistem.png` — Alur Rinci Sistem *(opsional, BELUM dirujuk naskah)*
+## 6. `Gambar_IV1_AlurRinciSistem.png` — Alur Rinci Sistem
 
-Bahannya **sudah lengkap** pada `docs/METHODOLOGY.md` §7.0, yang memuat diagram alur
-lengkap dari XML mentah sampai layar dokter, ditambah tabel kontrak data 14 tahap beserta
-tempat memeriksanya di kode.
+**Tercetak sebagai Gambar IV.3.** **WAJIB** — arahan pembimbing, dan sudah dirujuk
+`Bab IV - Perancangan.tex` dengan label `fig:alur-rinci`.
 
-Bila gambar ini hendak dipakai, ambil isinya dari sana. Tiga hal yang harus dipertahankan
-dari §7.0, karena ketiganya adalah klaim penelitian:
+**Yang diklaim keterangan gambar:** *"Alur rinci sistem, memisahkan tahap luring yang
+dijalankan sekali di luar aplikasi dari tahap daring yang dijalankan pada tiap konsultasi."*
 
-1. Tahap perakitan `PatientState` memakai **nilai terprediksi**, bukan nilai sekarang.
-2. Tahap pembangkitan **tidak pernah menerima nomor halaman**.
-3. Tahap keluaran menyimpan **sumber yang persis dilihat dokter**.
+**Bentuk:** alur bercabang dengan **dua wadah bertanda** (`subgraph`), luring di atas dan
+daring di bawah. Ini gambar terbesar di Bab IV; format mendatar (*landscape*) boleh dipakai.
 
-Bila dipakai, gambar ini harus dirujuk dari Bab IV; kalau tidak, ia menjadi gambar yatim.
+### 6.1 Wadah LURING — dijalankan sekali, di luar aplikasi
+
+| Kotak | Label | Ke |
+|---|---|---|
+| A | OhioT1DM XML · 12 pasien | B |
+| B | `ohio_parser.py` · selaraskan *event* ±2,5 mnt | C |
+| C | `ohio_t1dm_merged.csv` · CGM 5 menit | D |
+| D | `preprocessor` · `engineer_features` → `create_sequences` | E, E2, E3 |
+| E | Latih **Gradient Boosting** · *bundle* `.pkl` per horizon | — |
+| E2 | Kalibrasi konformal · `conformal_h6/h12.json` | — |
+| E3 | **Pengklasifikasi kondisi** · hipo / normal / hiper *(kuning)* | — |
+| F | 12 PDF pedoman · KB-01…KB-12 + `manifest.csv` | G |
+| G | Pecah 900/120 pada **batas kalimat** · `all-MiniLM-L6-v2` | H |
+| H | **ChromaDB `diabetes_kb` · 2.233 potongan** *(bentuk silinder)* | — |
+
+### 6.2 Wadah DARING — dijalankan tiap konsultasi
+
+| Kotak | Label | Waktu | Ke |
+|---|---|---|---|
+| I | Dokter memilih pasien, memasukkan *logbook* | — | J |
+| J | Bangun jendela 12 baris terakhir · hitung 7 fitur | 25,2 ms | K, M |
+| K | `predict` · Δglukosa lalu rekonstruksi ke nilai absolut | 7,6 ms | L, O |
+| L | σ dari lebar antar-kuantil → **interval konformal 95%** | — | N, U |
+| M | **Pengklasifikasi kondisi** *(kuning)* | — | O |
+| N | `evaluate_divergence` · peringatan bila kondisi kini aman tetapi prediksi tidak | — | U |
+| O | **`PatientState`** *(kuning)* · risiko, tren, kegentingan — dari **nilai TERPREDIKSI** | — | P |
+| P | **Pembentuk kueri terkondisi-prediksi** *(kuning, garis tebal)* | — | Q |
+| Q | **`MMRRetriever` mode `bm25`** · Okapi BM25 → `top_k` 5 | 161,4 ms | R |
+| R | `gemini-3.5-flash-lite` · suhu 0,2 · maks 700 token | ± 8,3 s | S |
+| S | `_ensure_disclaimer` | — | T |
+| T | **`build_source_list`** *(kuning)* · nomor halaman dari **METADATA** | — | U |
+| U | Layar dokter · prediksi, interval, peringatan, rekomendasi, sumber | — | V |
+| V | `ClinicalDecisionLog` · jejak audit | — | — |
+
+### 6.3 Panah antar-wadah
+
+Digambar **putus-putus**, sebab menandai artefak yang dipakai ulang, bukan aliran data
+dalam satu jalan:
+
+- E ⇢ K *(bundle model)* · E2 ⇢ L *(faktor konformal)* · E3 ⇢ M *(pengklasifikasi)*
+- H ⇢ Q *(indeks leksikal dibangun dari potongan ChromaDB)*
+
+### 6.4 Empat kotak kuning, tidak lebih dan tidak kurang
+
+**E3/M** pengklasifikasi kondisi · **O** perakitan `PatientState` · **P** transformasi
+kueri · **T** resolusi sitasi dari metadata.
+
+### 6.5 Kotak keterangan waktu, di sudut gambar
+
+```
+Subtotal lokal (J + K + Q)   : 194,2 ms
+Model bahasa (R)             : ± 8,3 s
+Total satu rekomendasi       : ± 8,5 s
+Jejak memori                 : 632 MB
+Muat artefak, sekali di awal : 18,6 s
+```
+
+### 6.6 Tiga hal yang HARUS terbaca
+
+Ketiganya klaim penelitian; bila hilang, gambar ini kehilangan gunanya.
+
+1. **Kotak O memakai nilai TERPREDIKSI**, bukan nilai terkini. Beri label pada panah K → O:
+   **"nilai terprediksi"**. Bila kotak ini memakai nilai sekarang, seluruh sifat antisipatif
+   sistem batal.
+2. **Kotak R tidak pernah menerima nomor halaman.** Beri catatan di samping: *"konteks
+   bertanda `[S1..Sn]` tanpa nomor halaman; nomor halaman baru muncul pada T dari metadata,
+   sehingga model bahasa tidak dapat mengarangnya"*.
+3. **Kotak V menyimpan sumber yang persis dilihat dokter**, bukan hasil penelusuran mentah,
+   sehingga keputusan dapat diaudit ke halaman dokumen di kemudian hari.
+
+### 6.7 Yang TIDAK boleh digambar
+
+- Panah dari **L (interval)** ke **P (pembentuk kueri)**. Interval hanya menuju N dan U.
+  Alasannya diverifikasi pada kode; lihat §2 dan `docs/METHODOLOGY.md` §7.0.
+- Tahap pelatihan atau pengindeksan di dalam wadah daring. Seluruhnya luring — justru
+  pemisahan itulah yang membuat batasan komputasi dapat dipenuhi.
+
+**Rujukan tambahan:** tabel kontrak data 14 tahap pada `docs/METHODOLOGY.md` §7.0 memerikan
+objek apa yang berpindah antar-tahap beserta tempat memeriksanya di kode.
 
 ---
 
@@ -388,7 +465,8 @@ Bila dipakai, gambar ini harus dirujuk dari Bab IV; kalau tidak, ia menjadi gamb
 - [ ] Label berbahasa Indonesia, kecuali nama kelas, berkas, pustaka, dan model
 - [ ] Nama berkas dan kelas ditulis persis seperti di kode
 - [ ] Diekspor PNG skala 2×, latar putih
-- [ ] Nama berkas keluaran persis sama dengan yang dirujuk naskah:
+- [ ] Nama berkas keluaran persis sama dengan yang dirujuk naskah, **keenamnya**:
       `Gambar_IV1_Arsitektur.png`, `Gambar_IV3_PipelinePCRAG.png`,
-      `Gambar_IV4_ClassDiagram.png`, `Gambar_IV5_SequencePCRAG.png`,
-      `Gambar_IV6_Wireframe.png`
+      **`Gambar_IV1_AlurRinciSistem.png`**, `Gambar_IV4_ClassDiagram.png`,
+      `Gambar_IV5_SequencePCRAG.png`, `Gambar_IV6_Wireframe.png`
+- [ ] Tidak ada panah dari kotak interval ke kotak pembentuk kueri, pada gambar mana pun
