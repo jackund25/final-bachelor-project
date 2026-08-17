@@ -1,16 +1,15 @@
-"""Validasi silang lintas-pasien untuk lapisan RETRIEVAL (bukan hanya prediksi).
+"""Validasi silang lintas-pasien untuk lapisan penelusuran.
 
-Prediksi glukosa sudah divalidasi 6-fold lintas-pasien (crossval_rf_vs_lstm.py), tetapi
-evaluasi retrieval pada kasus nyata (eval_retrieval_realcases.py) hanya memakai dua pasien
-hold-out. Akibatnya belum diketahui apakah manfaat PC-RAG konsisten antar-pasien atau
-kebetulan muncul pada dua pasien tersebut.
+Evaluasi penelusuran pada kasus nyata hanya memakai dua pasien hold-out, sehingga tidak
+dapat menunjukkan apakah manfaat pengondisian konsisten antar-pasien. Skrip ini
+mengulangnya untuk enam fold: pada tiap fold, model regresi dan pengklasifikasi kondisi
+dilatih ulang dari nol pada 10 pasien, lalu penelusuran dievaluasi pada 2 pasien uji yang
+tidak pernah dilihat.
 
-Skrip ini mengulang evaluasi retrieval untuk keenam fold: pada tiap fold, model regresi dan
-pengklasifikasi kondisi dilatih ulang dari nol pada 10 pasien, lalu retrieval dievaluasi pada
-2 pasien uji yang tidak pernah dilihat. Hasilnya dilaporkan sebagai rerata +/- simpangan baku
-lintas fold, sehingga variasi antar-pasien terlihat.
+Hasilnya dilaporkan sebagai rerata dan simpangan baku lintas fold, sehingga variasi
+antar-pasien terlihat. Ketiga lengan penelusuran diukur pada jalan yang sama.
 
-Keluaran: results/retrieval_realcases/crossfold.json
+Keluaran: results/retrieval_realcases_<CORPUS_TAG>/crossfold.json
 """
 from __future__ import annotations
 
@@ -100,17 +99,11 @@ def score(r, query: str, expected: str) -> dict:
             "ndcg": ndcg_at_k(rels, TOP_K)}
 
 
-# ── T13: lengan penelusuran leksikal dan hibrida ─────────────────────────────
-#
-# WHY  Model embedding produksi berbahasa INGGRIS sedangkan korpusnya INDONESIA.
-#      T9 menutup jalan mengganti model (multibahasa merusak pembedaan kondisi),
-#      sehingga jalan yang tersisa adalah pencocokan LEKSIKAL, yang tidak
-#      bergantung pada ruang semantik sama sekali.
-# HOW  Digabung dengan Reciprocal Rank Fusion karena RRF bekerja pada PERINGKAT,
-#      bukan skor mentah: skor kosinus dan skor BM25 berskala berbeda dan tidak
-#      dapat dijumlahkan. k_rrf=60 dipertahankan pada nilai bakunya dan TIDAK
-#      disetel, agar tidak menambah parameter bebas.
-# Lihat docs/PRAPENDAFTARAN_T13_HIBRIDA.md.
+# Tiga lengan penelusuran. Pencocokan leksikal diuji karena model embedding yang memenuhi
+# batasan komputasi berbahasa Inggris sedangkan korpusnya berbahasa Indonesia. Penggabungan
+# memakai Reciprocal Rank Fusion sebab ia bekerja pada PERINGKAT: skor kosinus dan skor
+# BM25 berskala berbeda dan tidak dapat dijumlahkan. Tetapan peredam dibiarkan pada nilai
+# baku, tidak disetel, agar tidak menambah parameter bebas.
 K_RRF = 60
 LENGAN = ["vektor", "bm25", "hibrida"]
 

@@ -163,7 +163,7 @@ def potong_batas_kalimat(text: str, limit: int) -> Dict[str, Any]:
     Mengembalikan dict, bukan string, karena pemanggil perlu tahu BUKAN HANYA
     hasil potongnya melainkan juga apakah pemotongan terjadi dan dengan cara
     apa. Tanpa itu, "potongan memang sependek itu" tidak dapat dibedakan dari
-    "tampilannya yang memotong" — pembedaan yang diperlukan saat sidang.
+    "tampilannya yang memotong" — pembedaan yang diperlukan saat memeriksa keluhan teks terpotong.
     """
     teks = " ".join((text or "").split())
 

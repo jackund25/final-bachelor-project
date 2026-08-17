@@ -97,8 +97,7 @@ def artifact_sizes() -> dict:
     # Nama artefak dan jumlah potongan DIBACA dari keadaan sebenarnya, tidak lagi
     # ditulis tetap. Versi sebelumnya menuliskan "rf_inference_bundle_h6.pkl" dan
     # "chroma_db (2.585 chunk)" secara tetap, sehingga keluarannya tetap melaporkan
-    # artefak Random Forest dan korpus lama meskipun produksi sudah berpindah ke
-    # Gradient Boosting dan korpusnya 2.248 potongan.
+    # artefak dan korpus lama meskipun produksi sudah berpindah.
     nama_bundel, _ = _bundel_produksi()
     n_chunk = _jumlah_chunk()
     return {

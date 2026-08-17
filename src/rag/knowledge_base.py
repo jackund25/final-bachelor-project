@@ -127,24 +127,17 @@ def _penakar_token(nama_model: str):
 class _EmbeddingsBerlaju:
     """Bungkus embedding berbasis API dengan pembatas laju dan coba-ulang 429.
 
-    WHAT  : pembatas laju sisi klien di depan penyedia embedding terkelola.
-    WHO   : dipakai jalur ``google`` pada _build_embeddings(); jalur
-            sentence-transformers lokal tidak memerlukannya.
-    WHERE : src/rag/knowledge_base.py, membungkus GoogleGenerativeAIEmbeddings.
-    WHEN  : setiap pemanggilan embed_documents/embed_query, yakni saat indexing
-            korpus dan saat setiap kueri dokter.
-    WHY   : free-tier Gemini membatasi 100 permintaan embedding per menit per
-            model. Mengindeks 2.061 potongan sekaligus MELAMPAUINYA dan gagal di
-            tengah jalan dengan 429, meninggalkan indeks separuh terisi — keadaan
-            yang lebih berbahaya daripada gagal total karena tampak berhasil.
-            Terverifikasi: percobaan pertama T10 gagal persis begitu.
-    HOW   : permintaan dipecah menjadi kelompok kecil, dijeda agar lajunya di
-            bawah batas, dan 429 dicoba ulang dengan mundur bertahap. Angka
-            bawaan disetel konservatif (90/menit) karena batasnya menghitung
-            KONTEN, bukan permintaan batch.
+    Hanya diperlukan jalur penyedia terkelola; jalur sentence-transformers lokal tidak.
+    Tanpa pembatas ini, mengindeks korpus sekaligus melampaui batas laju dan gagal di
+    tengah jalan, meninggalkan indeks separuh terisi — keadaan yang lebih berbahaya
+    daripada gagal total karena tampak berhasil.
+
+    Permintaan dipecah menjadi kelompok kecil dan 429 dicoba ulang dengan mundur
+    bertahap. Bawaannya konservatif karena batas penyedia menghitung KONTEN, bukan
+    jumlah permintaan.
 
     Sengaja bukan turunan kelas LangChain: antarmuka yang dipakai Chroma hanya
-    embed_documents dan embed_query, dan membungkus jauh lebih tahan terhadap
+    ``embed_documents`` dan ``embed_query``, dan membungkus lebih tahan terhadap
     perubahan versi pustaka daripada mewarisi.
     """
 

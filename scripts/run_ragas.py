@@ -13,21 +13,8 @@ Pengaman kuota:
   cache            sampel yang sudah dinilai tidak dinilai ulang
   konfirmasi       estimasi panggilan dicetak dan meminta persetujuan sebelum jalan
 
-KUOTA gemini-2.5-flash-lite tier gratis, TERUKUR dari galat 429 (7 Agustus 2026):
-
-    quotaId    : GenerateRequestsPerDayPerProjectPerModel-FreeTier
-    quotaValue : 20          <-- DUA PULUH per hari per model
-    batas laju : 10 permintaan/menit
-
-Angka 15 RPM / 1.000 RPD pada catatan Tugas 6 SALAH; itu berasal dari pembacaan
-dokumentasi untuk tier lain, bukan pengukuran. Angka 20/hari sudah tercatat benar pada
-journey L6 (8 Juli) lalu keliru dibatalkan. JANGAN mengulangi: bila dokumentasi vendor
-bertentangan dengan pengukuran proyek ini, yang berlaku adalah pengukuran.
-
-Konsekuensi praktis: 4 metrik x 10 kasus kira-kira 120 panggilan = SEKITAR 6 HARI.
-Jalankan bertahap dan andalkan cache; menurunkan laju TIDAK menambah kuota harian.
-Estimasi 10 kasus x 4 metrik kira-kira 110 panggilan —
-muat dalam satu hari dengan margin lebar.
+Kuota per model dibaca ``kuota_model()``, bukan ditulis di sini, sebab nilainya berbeda
+antar-model dan berubah sewaktu-waktu. Menurunkan laju TIDAK menambah kuota harian.
 
 Jalankan:
     PYTHONPATH=. python scripts/run_ragas.py --dry-run
@@ -73,18 +60,10 @@ CALLS_PER_SAMPLE = {
 }
 DEFAULT_METRICS = ["faithfulness", "answer_relevancy", "context_precision", "context_recall"]
 
-# Pemetaan kondisi_terprediksi -> nilai glukosa (mg/dL) untuk membangun kueri
-# terkondisi-prediksi. DITETAPKAN SEBELUM EKSEKUSI dan tidak boleh disesuaikan setelah
-# melihat hasil, karena nilai inilah yang menentukan kueri yang dihasilkan.
-#
-# Alasan pemilihan nilai:
-#   58  — di bawah GLUCOSE_LOW (70) tetapi di atas GLUCOSE_CRITICAL_LOW (54), sehingga
-#         terklasifikasi hipoglikemia tanpa memicu jalur "kritis" yang mengubah urgensi.
-#   120 — pertengahan rentang target 70-180, jauh dari kedua ambang.
-#   230 — di atas GLUCOSE_HIGH (180) tetapi di bawah GLUCOSE_CRITICAL_HIGH (250), sehingga
-#         terklasifikasi hiperglikemia tanpa memicu jalur "kritis".
-# Ketiganya sengaja diambil di TENGAH kelasnya masing-masing, bukan di dekat ambang,
-# supaya klasifikasinya tidak sensitif terhadap pembulatan.
+# Nilai glukosa wakil tiap kondisi, dipakai membangun kueri terkondisi. Ditetapkan
+# sebelum eksekusi dan tidak disesuaikan setelah melihat hasil. Ketiganya diambil di
+# TENGAH kelasnya, jauh dari ambang kelas maupun ambang "kritis", supaya klasifikasinya
+# tidak sensitif terhadap pembulatan.
 GLUKOSA_PER_KONDISI = {"hipoglikemia": 58.0, "normal": 120.0, "hiperglikemia": 230.0}
 
 # KUOTA BERLAKU PER MODEL, dan selisihnya antargenerasi mencapai 25 KALI LIPAT.
@@ -458,16 +437,11 @@ def main() -> int:
         jawaban_utuh = res["explanation"]
 
         # Kepatuhan disclaimer diperiksa dengan PENCOCOKAN TEKS BIASA — tanpa panggilan
-        # LLM sama sekali — lalu disclaimernya DIBUANG sebelum penilaian RAGAS.
-        # Alasan membuang: faithfulness menilai apakah pernyataan didukung konteks,
-        # sedangkan disclaimer adalah artefak sistem yang tetap dan bukan pernyataan
-        # tentang pasien. Membiarkannya berarti mengukur disclaimer, bukan mutu
-        # pembangkitan. Ini PERLAKUAN yang disengaja dan dicatat, bukan manipulasi skor:
-        # angka kepatuhannya dilaporkan terpisah sebagai bukti KNF-06.
-        # DUA tingkat kepatuhan, diukur terpisah karena maknanya berbeda:
-        #   model  = LLM menulis disclaimer sendiri  -> kepatuhan MODEL
-        #   sistem = frasa wajib ada setelah penegakan -> kepatuhan SISTEM (KNF-06)
-        # Tingkat sistem selalu 100% menurut konstruksi; yang informatif justru
+        # Disclaimer dibuang sebelum penilaian: ia artefak sistem yang tetap, bukan
+        # pernyataan tentang pasien, sehingga membiarkannya berarti mengukur disclaimer
+        # alih-alih mutu pembangkitan. Kepatuhannya dilaporkan terpisah, pada dua
+        # tingkat: model (LLM menulisnya sendiri) dan sistem (frasa wajib ada setelah
+        # penegakan). Tingkat sistem selalu penuh menurut konstruksi; yang informatif
         # tingkat model.
         patuh_model = _tulis_disclaimer_sendiri(jawaban_utuh)
         patuh_sistem = DISCLAIMER_FRASA in jawaban_utuh.lower()
