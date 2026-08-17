@@ -224,7 +224,7 @@ class PatientState:
         predicted_lower: Optional[float] = None,
         predicted_upper: Optional[float] = None,
     ) -> "PatientState":
-        """Create from RF/LSTM model output + last feature window row.
+        """Bentuk dari keluaran model prakiraan dan baris terakhir jendela fitur.
 
         Args:
             patient_id: Patient identifier.

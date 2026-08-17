@@ -55,15 +55,10 @@ class DataPreprocessor:
         Returns:
             df_clean: Cleaned DataFrame
 
-        CATATAN JUJUR TENTANG DAMPAK. Pada ohio_t1dm_merged.csv batas ini TIDAK
-        berpengaruh apa pun: berkas itu tidak memuat satu pun NaN, karena parser
-        sudah mengisi atribut yang hilang dengan 0.0 dan membuang baris glukosa
-        tidak valid. Baris yang "hilang" akibat jeda sensor memang TIDAK ADA di
-        dalam berkas, bukan hadir sebagai NaN — sehingga interpolate() tidak pernah
-        menyentuhnya. Cacat yang sesungguhnya ditangani oleh segmentasi jendela di
-        create_sequences(). Batas ini tetap dipasang sebagai pengaman untuk sumber
-        data lain (mis. data/raw/manual_logbook.csv dari halaman Input Logbook)
-        yang memang dapat memuat NaN.
+        Pada OhioT1DM batas ini tidak berpengaruh, sebab berkasnya tidak memuat NaN;
+        jeda sensor hadir sebagai baris yang hilang, bukan sebagai NaN, dan ditangani
+        segmentasi jendela di ``create_sequences``. Batas ini pengaman bagi sumber lain
+        seperti logbook manual, yang memang dapat memuat NaN.
         """
         logger.info("Handling missing values...")
 
@@ -168,13 +163,9 @@ class DataPreprocessor:
             X: Input sequences (n_samples, sequence_length, n_features)
             y: Target values (n_samples,)
 
-        SEGMENTASI JEDA (Tugas 5). Jendela dibentuk per POSISI BARIS, sedangkan baris
-        pada OhioT1DM tidak berjarak seragam: 0,6% interval melebihi 5 menit dan yang
-        terpanjang mencapai 118 jam. Tanpa penyaringan, 5,3% jendela melompati jeda
-        sensor dan memperlakukan lompatan berjam-jam sebagai satu langkah 5 menit —
-        model belajar dari kesinambungan yang tidak pernah ada. Jendela yang memuat
-        jeda melebihi batas DIBUANG, bukan diinterpolasi: nilai di dalam jeda memang
-        tidak terobservasi, dan mengarangnya berarti melatih model pada data fiktif.
+        Jendela dibentuk per posisi baris, sedangkan baris OhioT1DM tidak berjarak
+        seragam. Jendela yang memuat jeda melebihi ``max_gap_steps`` dibuang, bukan
+        diinterpolasi: nilai di dalam jeda memang tidak terobservasi.
         """
         logger.info(
             f"Creating sequences with length {sequence_length}, horizon {prediction_horizon}..."

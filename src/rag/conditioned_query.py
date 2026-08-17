@@ -1,37 +1,11 @@
-"""Prediction-Conditioned Query Builder for the Diabetes RAG pipeline.
+"""Pembentuk kueri penelusuran yang dikondisikan pada kondisi TERPREDIKSI.
 
-NOVELTY STATEMENT
------------------
-Rad et al. (2024) — "Personalized Diabetes Management with Digital Twins:
-A Patient-Centric Knowledge Graph Approach" (J. Personalized Medicine, MDPI)
-— uses **static SPARQL queries** against a pre-built ontology. Query predicates
-are fixed templates; the knowledge graph cannot reason about a *future* glucose
-value.
+Inti kebaruan sistem: kueri disusun dari kondisi yang diprediksi akan terjadi, bukan
+dari kondisi yang sedang berlaku, sehingga potongan dokumen yang terambil menjawab
+keadaan yang akan dihadapi pasien.
 
-This module implements **prediction-conditioned RAG**: the numeric glucose
-prediction output from the ML model (Random Forest / future LSTM) is used to
-dynamically construct the retrieval query. This means:
-
-1. The retrieved knowledge chunks are selected based on WHERE the patient
-   is GOING (predicted state), not where they currently are.
-2. The LLM prompt includes the quantitative forecast context, enabling
-   temporally-grounded clinical reasoning.
-3. Contributing factors (trend rate, IOB, COB, stress, activity) are
-   prioritised according to their likely influence on the predicted outcome.
-
-Architecture
-------------
-    PatientState  ──►  PredictionConditionedQueryBuilder
-                              │
-                    ┌─────────┴──────────┐
-                    │                    │
-              primary_query        llm_system_context
-             (for ChromaDB)         (for Gemini prompt)
-                    │                    │
-              MMRRetriever          DiabetesAdvisorChain
-                    │                    │
-                    └────────┬───────────┘
-                         RAGPipeline.answer()
+Menerima ``PatientState`` dan menghasilkan dua keluaran: ``primary_query`` untuk
+penelusur, dan ``llm_system_context`` untuk prompt model bahasa.
 """
 
 from __future__ import annotations
