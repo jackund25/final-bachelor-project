@@ -82,21 +82,33 @@ def konteks_per_lengan(kasus: list) -> dict:
 
     Tahap penelusuran sengaja dipisah dari tahap penilaian supaya kegagalan kuota tidak
     menghanguskan pekerjaan penelusuran, dan supaya konteksnya dapat diperiksa manual.
+
+    Ketiga lengan berbagi SATU penelusur, sama seperti pada crossfold. Membuat satu
+    MMRRetriever per lengan memuat model embedding, klien Chroma, dan indeks BM25 sebanyak
+    tiga kali; pada mesin dengan RAM terpakai berat hal itu cukup untuk menumbangkan jalan.
+    Penelusur dibangun pada mode "hibrida" karena mode itu menyiapkan jalur padat DAN
+    indeks leksikal sekaligus, lalu modenya dipatok ulang sebelum tiap lengan ditelusurkan
+    dan diperiksa sesudahnya.
     """
     from src.rag.retriever import MMRRetriever
 
+    r = MMRRetriever(persist_dir="models/chroma_db", collection_name="diabetes_kb",
+                     embed_provider="sentence-transformers", retrieval_mode="hibrida")
+    if r._bm25 is None:
+        raise RuntimeError(
+            f"indeks leksikal gagal dibangun ({r._bm25_error}); lengan bm25 dan hibrida "
+            "tidak dapat diukur")
+    print(f"  penelusur bersama: bm25={len(r._bm25_teks)} potongan")
+
     hasil = {}
     for l in LENGAN:
-        r = MMRRetriever(persist_dir="models/chroma_db", collection_name="diabetes_kb",
-                         embed_provider="sentence-transformers", retrieval_mode=l)
+        r.retrieval_mode = l
+        ctx = [[d["text"] for d in r.retrieve(c["pertanyaan"], top_k=TOP_K)] for c in kasus]
         if r.retrieval_mode != l:
             raise RuntimeError(
-                f"lengan {l} turun ke {r.retrieval_mode} ({r._bm25_error}); "
-                "hasilnya tidak akan menggambarkan lengan yang dimaksud")
-        print(f"  lengan {l:8} mode aktif={r.retrieval_mode} "
-              f"bm25={len(r._bm25_teks) if r._bm25 else 0} potongan")
-        hasil[l] = [[d["text"] for d in r.retrieve(c["pertanyaan"], top_k=TOP_K)]
-                    for c in kasus]
+                f"mode bergeser saat penelusuran lengan {l}: aktif {r.retrieval_mode}")
+        print(f"  lengan {l:8} mode dipatok={l}")
+        hasil[l] = ctx
     return hasil
 
 
