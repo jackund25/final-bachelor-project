@@ -361,7 +361,32 @@ Tabel berikut menyatakannya; kolom terakhir menunjuk tempat memeriksanya di kode
 | 13 | Sitasi | metadata potongan | `page_label` ("Hal. 48"), cuplikan, teks utuh | `src/rag/citations.py` |
 | 14 | Keluaran akhir | seluruh di atas | layar dokter + `ClinicalDecisionLog` berisi **sumber persis yang dilihat** | `src/clinical_state/decision_log.py` |
 
-**Tiga sifat yang harus terbaca dari tabel ini**, karena ketiganya adalah klaim penelitian:
+#### Waktu tiap tahap *runtime*
+
+Diukur `scripts/benchmark_deployability.py` pada perangkat kelas konsumen tanpa akselerator
+grafis; nilainya median atas ulangan yang dicatat `results/benchmark/deployability.json`.
+
+| Tahap | Waktu | Keterangan |
+|---|---:|---|
+| Muat artefak | 18,6 s | sekali saat aplikasi dinyalakan, di-*cache* |
+| Rekayasa fitur | 25,2 ms | per konsultasi |
+| Prediksi | 7,6 ms | regresi, pengklasifikasi, dan interval |
+| Penelusuran | 161,4 ms | pembobotan BM25 atas 2.233 potongan |
+| **Subtotal lokal** | **194,2 ms** | seluruh komputasi di perangkat |
+| Pembangkitan | ± 8,3 s | satu panggilan model bahasa, lewat jaringan |
+| **Total** | **± 8,5 s** | satu rekomendasi utuh |
+
+Jejak memori setelah seluruh artefak dimuat: **632 MB**.
+
+Dua hal yang perlu dibaca bersama tabel ini. **Pertama**, waktu tunggu didominasi panggilan
+model bahasa, yang sekitar 43 kali lebih lama daripada seluruh komputasi lokal digabung;
+beban di perangkat praktis tidak terasa. **Kedua**, perpindahan ke penelusuran leksikal
+*menaikkan* beban lokal dari 21,2 ms menjadi 161,4 ms, sebab skor BM25 dihitung terhadap
+seluruh potongan pada tiap kueri sedangkan pencarian vektor memakai indeks. Kenaikan itu
+diterima secara sadar sebagai pertukaran dengan mutu penelusuran yang terukur lebih baik.
+
+**Tiga sifat yang harus terbaca dari tabel kontrak data di atas**, karena ketiganya adalah
+klaim penelitian:
 
 1. **Tahap 9 memakai nilai terprediksi, bukan nilai sekarang.** Di situlah letak sifat
    antisipatif; bila baris itu memakai `current_glucose`, seluruh kontribusi batal.
