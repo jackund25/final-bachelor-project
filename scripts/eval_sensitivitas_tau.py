@@ -62,7 +62,7 @@ OUT_DIR = ROOT / "results/eval_prediksi"
 CACHE_ROOT = ROOT / ".cache"
 ALPHA = 0.05
 
-# ── DEFINISI SKALA DERAU, DITETAPKAN DI MUKA (docs/PRAPENDAFTARAN_T1.4.md) ───────────
+# ── DEFINISI SKALA DERAU, DITETAPKAN DI MUKA PADA PROTOKOL PERCOBAAN ────────────────
 # T1.4 memakai pembagian pasien TUNGGAL, bukan validasi silang 6 fold seperti T1.1,
 # T2.1, dan T4.1. Karena itu "SD antar-fold" — yang T4.1 temukan punya tiga definisi
 # berbeda — TIDAK TERDEFINISI di sini, dalam ketiga variannya sekalipun.
@@ -371,7 +371,7 @@ def main() -> None:
     verdik = {
         "definisi_skala_derau": (
             f"SD bootstrap RMSE pada set penyetelan, {N_BOOTSTRAP} resample, benih "
-            f"{BENIH_BOOTSTRAP}. DITETAPKAN DI MUKA pada docs/PRAPENDAFTARAN_T1.4.md."),
+            f"{BENIH_BOOTSTRAP}. DITETAPKAN DI MUKA pada protokol percobaan."),
         "mengapa_bukan_sd_antar_fold": (
             "T1.4 memakai pembagian pasien TUNGGAL, bukan validasi silang 6 fold. "
             "'SD antar-fold' — yang T4.1 temukan punya tiga definisi berbeda dan dapat "

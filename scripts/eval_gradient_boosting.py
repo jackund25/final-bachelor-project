@@ -406,7 +406,7 @@ def main() -> int:
     gb_f = np.array([b["GBM"]["RMSE"] for b in baris])
     e_rf, e_gb = np.concatenate(err_rf), np.concatenate(err_gb)
     d_f = rf_f - gb_f
-    # KEPUTUSAN #8 (11 Agustus 2026, docs/KEPUTUSAN_DIAMBIL.md): dua pertanyaan DIPISAH.
+    # Dua pertanyaan DIPISAH.
     #   konsistensi  -> SD selisih berpasangan std(A-B) + Wilcoxon tingkat fold
     #   kebermaknaan -> ambang orde besaran ISO 15197:2013, +-15 mg/dL untuk glukosa
     #                   < 100 mg/dL (KB-02_PERKENI-2021 hal. 25)
@@ -442,7 +442,7 @@ def main() -> int:
                     else ("tidak konsisten" if not lewat_tiga["selisih_berpasangan"]
                           else "konsisten dan bermakna")),
                 "keputusan_8": (
-                    "docs/KEPUTUSAN_DIAMBIL.md. Konsistensi diukur SD selisih berpasangan; "
+                    "Konsistensi diukur SD selisih berpasangan; "
                     "kebermaknaan diukur ambang ORDE BESARAN dari ISO 15197:2013 (+-15 mg/dL "
                     "untuk glukosa < 100 mg/dL, KB-02_PERKENI-2021 hal. 25). Ambang itu "
                     "ANALOGI BERDASAR LITERATUR, bukan penerapan ISO pada perbandingan "
@@ -514,7 +514,7 @@ def main() -> int:
             "rerata_lintas_fold": hipo_rerata,
             "uji_berpasangan_tingkat_fold": uji_hipo,
             "aturan_pelaporan": (
-                "KEPUTUSAN #8, 11 Agustus 2026 (docs/KEPUTUSAN_DIAMBIL.md). Dua pertanyaan "
+                "Dua pertanyaan "
                 "DIPISAH. Konsistensi: SD selisih berpasangan std(A-B) + Wilcoxon tingkat "
                 "fold. Kebermaknaan: ambang ORDE BESARAN dari ISO 15197:2013, +-15 mg/dL "
                 "untuk glukosa < 100 mg/dL. Ketiga definisi SD tetap dilaporkan. Ambang "

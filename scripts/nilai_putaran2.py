@@ -1,6 +1,6 @@
 """T2.2 putaran 2 — kesepakatan tiap penilai terhadap pelabel otomatis DAN antar-penilai.
 
-Prapendaftaran: docs/PRAPENDAFTARAN_T2.2_PUTARAN_2.md, ditulis sebelum lembar dibagikan.
+Ditetapkan pada protokol yang ditulis sebelum lembar penilaian dibagikan.
 
 APA YANG DIHITUNG
 -----------------
@@ -204,7 +204,7 @@ def main() -> int:
 
     out = {
         "percobaan": "T2.2 putaran 2 — verifikasi pelabel relevansi, dua penilai",
-        "prapendaftaran": "docs/PRAPENDAFTARAN_T2.2_PUTARAN_2.md",
+        "protokol": "penilaian putaran kedua — ditulis di muka",
         "waktu": datetime.now().isoformat(timespec="seconds"),
         "penilai": {
             "penilai1": "mahasiswa kedokteran; putaran KEDUA, BUKAN penilaian independen "

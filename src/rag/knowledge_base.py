@@ -91,25 +91,18 @@ PEMISAH_KALIMAT = [
 # sendiri — memindahkan cacat, bukan memperbaikinya.
 KEEP_SEPARATOR_AKHIR = "end"
 
-# Batas token model embedding produksi (all-MiniLM-L6-v2). Token ke-257 dan
-# seterusnya DIBUANG tanpa peringatan apa pun. Diukur pada T5.1: 35,04% potongan
-# produksi melewatinya dan 8,23% token korpus tidak pernah masuk vektor
-# (results/eval_rag/distribusi_token.json).
+# Batas token model embedding produksi. Token sesudahnya DIBUANG tanpa peringatan apa pun;
+# porsi korpus yang terbuang diukur pada results/eval_rag/distribusi_token.json.
 BATAS_TOKEN_MINILM = 256
 
 
 def _penakar_token(nama_model: str):
     """Kembalikan fungsi panjang yang menghitung TOKEN, bukan karakter.
 
-    WHY: menakar panjang dengan len() berarti batas potongan diukur dengan satuan
-    yang berbeda dari satuan yang dipakai model embedding. Selama dua satuan itu
-    berbeda, TIDAK ADA nilai chunk_size karakter yang dapat menjamin potongan muat
-    di jendela model — chunk_size 900 menghasilkan potongan 9 sampai 443 token.
-    Menakar dengan tokenizer model itu sendiri membuat jaminannya bersifat
-    konstruktif, bukan statistik.
-
-    HOW: memakai tokenizer HuggingFace milik model embedding yang sama dengan yang
-    dipakai saat kueri, sehingga tidak mungkin menyimpang.
+    Menakar dengan ``len()`` berarti batas potongan diukur dengan satuan yang berbeda dari
+    satuan model embedding, sehingga tidak ada nilai ``chunk_size`` karakter yang dapat
+    menjamin potongan muat di jendela model. Memakai tokenizer model itu sendiri membuat
+    jaminannya konstruktif, bukan statistik.
     """
     from transformers import AutoTokenizer
 
@@ -258,11 +251,9 @@ class MedicalKnowledgeBase:
     ) -> List[Dict[str, Any]]:
         """Muat potongan cadangan KNF-04 yang diekspor dari korpus pedoman.
 
-        MENGGANTIKAN ``load_manual_kb`` (dicabut 17 Agustus 2026). Metode lama membaca
-        ``manual_kb.json``, yakni prosa yang disusun sendiri oleh peneliti dan TIDAK
-        memiliki nomor halaman sumber, sehingga potongannya tampil sebagai "Hal. tidak
-        tercatat" pada antarmuka. Selama potongan itu berada di dalam indeks, klaim KNF-08
-        bahwa tiap potongan tertelusur sampai halamannya tidak benar.
+        Menggantikan pemuat basis pengetahuan manual, yang membaca prosa disusun sendiri
+        tanpa nomor halaman sumber sehingga potongannya tampil sebagai "Hal. tidak
+        tercatat" pada antarmuka.
 
         Berkas penggantinya diekspor ``scripts/reingest_kb.py`` DARI korpus pedoman, dan
         tiap entrinya sudah membawa metadata sitasi yang lengkap. Ia dipakai hanya ketika

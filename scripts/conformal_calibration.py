@@ -125,7 +125,7 @@ def main():
     # sekaligus mengkalibrasi, tetapi ditolak: intervalnya dibangun dari model-model
     # fold sehingga aplikasi harus menjalankan 10 model tiap prediksi, jaminannya
     # 1-2a bukan 1-a, dan intervalnya tidak berpusat pada prediksi yang ditampilkan.
-    # Lihat docs/PRAPENDAFTARAN_T12_CONFORMAL.md Bagian 2b.
+    # Ditetapkan di muka pada protokol percobaan.
     pids = sorted(df["patient_id"].unique().tolist())
     train_p, cal_p = pids[:-2], pids[-2:]
     test_p = cal_p  # sengaja sama; lihat "KONSEKUENSI YANG DITERIMA" di atas

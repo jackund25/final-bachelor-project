@@ -300,7 +300,7 @@ def main() -> None:
           f"LSTM {out['terlewat_ke_rentang_target']['LSTM']:,}")
     print(f"hipo BERAT terlewat        : RF {out['hipo_berat_terlewat']['RF']:,} | "
           f"LSTM {out['hipo_berat_terlewat']['LSTM']:,}")
-    # KEPUTUSAN #8 (docs/KEPUTUSAN_DIAMBIL.md): definisi SD yang dipakai WAJIB disebut.
+    # Definisi SD yang dipakai WAJIB disebut pada keluaran.
     # Skrip ini memakai SD GABUNGAN, np.std atas nilai kedua model disatukan. Itu BUKAN
     # definisi yang ditetapkan #8 (SD selisih berpasangan), dan keduanya dapat memberi
     # verdik berlawanan — pada h12 sensitivitas, gabungan 5,862 meloloskan selisih 6,203

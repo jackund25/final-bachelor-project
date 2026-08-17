@@ -1,6 +1,6 @@
 """Kestabilan tiga metrik RAGAS yang belum pernah diuji (keputusan #7).
 
-Prapendaftaran: docs/PRAPENDAFTARAN_T_RAGAS_STABIL.md, ditulis sebelum skrip ini ada.
+Dugaan dan ambangnya ditetapkan pada protokol yang ditulis sebelum skrip ini ada.
 
 APA YANG DIKERJAKAN, DAN APA YANG TIDAK
 ---------------------------------------
@@ -185,8 +185,8 @@ def main() -> int:
 
     out = {
         "percobaan": "Kestabilan answer_relevancy, context_precision, context_recall",
-        "keputusan": "#7 pada docs/KEPUTUSAN_DIAMBIL.md",
-        "prapendaftaran": "docs/PRAPENDAFTARAN_T_RAGAS_STABIL.md",
+        "keputusan": "metrik labil tidak dipakai menyimpulkan",
+        "protokol": "kestabilan metrik RAGAS — ditulis di muka",
         "waktu": datetime.now().isoformat(timespec="seconds"),
         "sifat": ("DIAGNOSTIK. Tidak satu pun angka RAGAS yang sudah ada diubah atau "
                   "diganti. Yang dihasilkan adalah pernyataan kestabilan yang menyertai "

@@ -45,8 +45,8 @@ OUT = ROOT / f"results/baseline_ablation_fullkb_{CORPUS_TAG}/embedding_alternati
 def ingest_with(model_name: str, persist_dir: str) -> int:
     """Indeks ulang korpus yang sama memakai model embedding tertentu.
 
-    Memanggil scripts/reingest_kb.py — jalur ingest produksi — agar korpus (manual_kb.json
-    + PDF pedoman) dan parameter chunking benar-benar identik; yang berbeda hanya embedding.
+    Memanggil scripts/reingest_kb.py — jalur ingest produksi — agar korpus pedoman
+    dan parameter chunking benar-benar identik; yang berbeda hanya embedding.
     """
     import subprocess
 

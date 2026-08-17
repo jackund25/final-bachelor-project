@@ -66,9 +66,8 @@ DEFAULT_METRICS = ["faithfulness", "answer_relevancy", "context_precision", "con
 # tidak sensitif terhadap pembulatan.
 GLUKOSA_PER_KONDISI = {"hipoglikemia": 58.0, "normal": 120.0, "hiperglikemia": 230.0}
 
-# KUOTA BERLAKU PER MODEL, dan selisihnya antargenerasi mencapai 25 KALI LIPAT.
-# Sumber: dasbor Google AI Studio, diperiksa 7 Agustus 2026. Sebelumnya skrip ini memakai
-# SATU angka RPD untuk semua model — sebagian penyebab kesalahan estimasi Tugas 6.
+# Kuota berlaku PER MODEL, dan selisihnya antargenerasi mencapai 25 kali lipat; memakai
+# satu angka untuk semua model membuat estimasi panggilan salah besar.
 # Format: nama_model -> (RPM, RPD)
 KUOTA_PER_MODEL = {
     "gemini-3.5-flash-lite": (15, 500),
@@ -103,18 +102,14 @@ def _patient_state(pred: float) -> Dict[str, Any]:
 # Kalimat yang ditambahkan RAGPipeline._ensure_disclaimer() bila LLM tidak menulisnya.
 _SUFIKS_SISTEM = "Catatan: Keputusan medis final tetap pada dokter."
 
-# Penanda disclaimer yang ditulis LLM SENDIRI. Versi pertama penghapus ini hanya menyasar
-# sufiks sistem, sehingga paragraf disclaimer buatan LLM tetap ikut dinilai faithfulness —
-# persis artefak yang seharusnya dibuang.
-# Ditulis longgar dengan sengaja. Versi sebelumnya menyasar heading persis
-# "**Disclaimer:**" dan lolos ketika LLM menulis "**Disclaimer Dokter:**" — variasi kata
-# di antara "Disclaimer" dan titik dua. Karena teks disclaimer selalu berada di AKHIR
-# jawaban, pola pertama menyapu dari kemunculan kata "Disclaimer" sampai habis.
+# Penanda disclaimer yang ditulis LLM sendiri, bukan yang ditambahkan sistem. Ditulis
+# longgar dengan sengaja: pola yang menyasar heading persis lolos ketika model menulis
+# variasi seperti "Disclaimer Dokter:". Karena teks disclaimer selalu berada di AKHIR
+# jawaban, pola pertama menyapu dari kemunculan kata itu sampai habis.
 _POLA_DISCLAIMER_LLM = [
-    # 'Disclaimer' sebagai JUDUL BLOK: di awal baris, boleh diawali **, ##, atau -.
-    # Sengaja TIDAK menyapu kata 'disclaimer' di tengah kalimat — pola longgar
-    # sebelumnya memotong kalimat sah seperti "Jawab tanpa disclaimer sama sekali"
-    # menjadi "Jawab tanpa", yaitu merusak data tanpa tanda.
+    # Hanya 'Disclaimer' sebagai JUDUL BLOK di awal baris. Sengaja TIDAK menyapu kata itu
+    # di tengah kalimat: pola yang terlalu longgar memotong kalimat sah seperti "Jawab
+    # tanpa disclaimer sama sekali" menjadi "Jawab tanpa", yakni merusak data tanpa tanda.
     r"(?ms)^[ \t]*(?:\*{1,2}|#{1,4}|-)?\s*Disclaimer\b.*",
     r"(?mi)^\s*(Catatan|Penting|Perhatian)\s*:\s*[^\n]*tidak menggantikan[^\n]*$",
     r"[^.!?\n]*tidak menggantikan penilaian klinis[^.!?]*[.!?]",
@@ -478,7 +473,7 @@ def main() -> int:
         print(f"  Verifikasi: 0/{len(cases)} jawaban menyisakan disclaimer setelah "
               f"pembersihan — perlakuan terlaksana.")
     print("Disclaimer DIBUANG sebelum penilaian RAGAS — perlakuan disengaja dan dicatat, "
-          "lihat docs/journey/.")
+          "periksa urutan impor torch.")
 
     result = evaluate(
         dataset=EvaluationDataset(samples=samples),

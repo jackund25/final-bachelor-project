@@ -110,7 +110,7 @@ LENGAN = ["vektor", "bm25", "hibrida"]
 
 def tokenisasi(teks: str) -> list:
     """Angka ambang ("70", "180") justru sinyal yang diharapkan ditangkap BM25,
-    sehingga angka TIDAK dibuang. Identik dengan scripts/eval_hybrid_bm25.py."""
+    sehingga angka TIDAK dibuang."""
     import re
     return re.findall(r"[a-z0-9]+", teks.lower())
 
@@ -236,7 +236,7 @@ def main() -> None:
     mc = cfg["model"]
     rf_cfg = mc["random_forest"]
     # Keluarga model mengikuti config.model.name. Mode `standard` dan `oracle` TIDAK
-    # menyentuh model sama sekali (lihat docs/PRAPENDAFTARAN_T6_GBM_RETRIEVAL.md), jadi
+    # menyentuh model sama sekali, jadi
     # keduanya berfungsi sebagai kontrol: keduanya wajib tereproduksi persis.
     keluarga = "rf" if mc.get("name") == "RandomForest" else "gbm"
     gseed = mc.get("gradient_boosting", {}).get("random_state", SEED)
@@ -400,7 +400,7 @@ def main() -> None:
             "Mode `standard` dan `oracle`, serta pemilihan kasus divergen, TIDAK menyentuh "
             "model sama sekali. Ketiganya wajib tereproduksi persis terhadap jalan sebelumnya; "
             "bila tidak, yang berubah adalah jalur pengukurannya. Lihat "
-            "docs/PRAPENDAFTARAN_T6_GBM_RETRIEVAL.md dugaan D1."
+            "Dugaan ini ditetapkan di muka pada protokol percobaan."
         ),
         "n_fold": len(folds), "top_k": TOP_K, "n_kasus_per_himpunan_per_fold": N_PER_SET,
         "ringkasan_lintas_fold": ringkas,

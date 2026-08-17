@@ -1,6 +1,6 @@
 """T14 — validasi lengan penelusuran dengan alat ukur yang TIDAK berbasis kata kunci.
 
-Prapendaftaran: docs/PRAPENDAFTARAN_T14_RAGAS_LENGAN.md (ditulis lebih dulu).
+Dugaan, ambang, dan aturan penafsirannya ditetapkan pada protokol yang ditulis lebih dulu.
 
 MENGAPA ADA. T13 menemukan hibrida RRF mengungguli vektor, tetapi temuan itu
 terkonfound: classify_chunk melabeli menurut KATA KUNCI, dan build_ablation_query
@@ -15,7 +15,7 @@ DUA PENGHEMATAN YANG DISENGAJA
    pertanyaan penelusuran.
 2. KORPUS PRODUKSI dipakai. Ini PENYIMPANGAN dari arahan pembimbing yang meminta
    koleksi RAGAS khusus 2-4 halaman demi menjaga kuota, dan penyimpangan itu
-   dinyatakan terbuka di docs/PRAPENDAFTARAN_T14_RAGAS_LENGAN.md.
+   dinyatakan terbuka pada protokol percobaan dan pada Bab VI laporan.
 
    Koleksi terkontrol BUKAN kelemahan — ia instrumen yang tepat untuk pertanyaan
    "seberapa baik mutu RAG ini", dengan ground truth terverifikasi sampai kalimat.
@@ -26,12 +26,12 @@ DUA PENGHEMATAN YANG DISENGAJA
    Tujuan arahan tetap dipatuhi: 180 panggilan dari 500 per hari, dan tahap
    pembangkitan dilewati seluruhnya.
 
-TIGA LENGAN, BUKAN DUA (17 Agustus 2026). Lengan `bm25` ditambahkan karena crossfold
-atas kode produksi menunjukkan BM25 sendirian meraih selisih kontribusi TERBESAR
-(+0,1742 lawan hibrida +0,1583). Aturan 4 prapendaftaran T13 menyatakan bila itu terjadi
-maka BM25 yang diadopsi, tetapi angka itu diukur dengan classify_chunk yang berbagi
-sinyal dengan BM25. Aturan itu karena itu diadjudikasi DI SINI, atas alat ukur berbasis
-rujukan. Lihat `hasil["aturan4_bm25_mengungguli_hibrida"]`.
+TIGA LENGAN, BUKAN DUA. Lengan `bm25` ditambahkan karena crossfold atas kode produksi
+menunjukkan BM25 sendirian meraih selisih kontribusi terbesar. Aturan keputusan yang
+ditetapkan di muka menyatakan bila itu terjadi maka BM25 yang diadopsi, tetapi angka itu
+diukur dengan classify_chunk yang berbagi sinyal dengan BM25. Aturan itu karena itu
+diadjudikasi DI SINI, atas alat ukur berbasis rujukan.
+Lihat `hasil["aturan4_bm25_mengungguli_hibrida"]`.
 
 Keluaran: results/ragas/lengan_penelusuran.json
 """
@@ -176,7 +176,7 @@ def main() -> int:
 
     CACHE.mkdir(parents=True, exist_ok=True)
     hasil = {"percobaan": "T14 — validasi lengan penelusuran dengan RAGAS",
-             "prapendaftaran": "docs/PRAPENDAFTARAN_T14_RAGAS_LENGAN.md",
+             "protokol": "validasi lengan penelusuran — ditulis di muka",
              "korpus": "produksi (models/chroma_db)",
              "n_kasus": len(kasus), "top_k": TOP_K,
              "penilai": judge_model, "metrik": METRIK,

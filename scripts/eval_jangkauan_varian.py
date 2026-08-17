@@ -1,6 +1,6 @@
 """T3.3 — jangkauan varian kueri, dan bentuk kueri yang BENAR-BENAR dipakai aplikasi.
 
-Prapendaftaran: docs/PRAPENDAFTARAN_T3.3.md, ditulis sebelum skrip ini ada.
+Dugaan dan ambangnya ditetapkan pada protokol yang ditulis sebelum skrip ini ada.
 
 DUA PERTANYAAN, SATU SKRIP
 --------------------------
@@ -177,7 +177,7 @@ def main() -> int:
           f"lambda_mult {cfg_rag.lambda_mult} | chunk_size {cfg_rag.chunk_size}")
     print(f"grid glukosa   : {GRID[0]}-{GRID[-1]} mg/dL langkah 5 ({len(GRID)} nilai)")
     print(f"bentuk diuji   : {len(bentuk)} (tujuh varian T3.1 + bentuk aplikasi)")
-    print("Prapendaftaran : docs/PRAPENDAFTARAN_T3.3.md\n")
+    print("Protokol       : ditulis di muka, sebelum skrip ini ada\n")
 
     # ── BAGIAN C lebih dulu: tanpa retrieval, dan menentukan cara Bagian B dibaca ────
     print("BAGIAN C — bobot kata kunci pelabel (tumpang tindih dengan classify_chunk)")
@@ -363,7 +363,7 @@ def main() -> int:
     out = {
         "percobaan": "T3.3 — jangkauan varian kueri dan bentuk kueri aplikasi",
         "waktu": datetime.now().isoformat(timespec="seconds"),
-        "prapendaftaran": "docs/PRAPENDAFTARAN_T3.3.md",
+        "protokol": "jangkauan varian kueri — ditulis di muka",
         "n_chunk_korpus": n_korpus,
         "konfigurasi": {"top_k": cfg_rag.top_k, "fetch_k": cfg_rag.fetch_k,
                         "lambda_mult": cfg_rag.lambda_mult,

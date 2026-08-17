@@ -1,6 +1,6 @@
 """T7 — bandingkan empat strategi pemecahan dokumen menurut protokol Bagian C.
 
-Prapendaftaran: docs/PRAPENDAFTARAN_T7_CHUNKING.md (ditulis lebih dulu).
+Dugaan dan ambangnya ditetapkan pada protokol yang ditulis lebih dulu.
 
 Dua cacat yang dipisahkan di sini:
   A. Pemotongan SENYAP — all-MiniLM-L6-v2 membuang token ke-257 dst. tanpa
@@ -223,7 +223,7 @@ def main() -> None:
 
     hasil = {
         "percobaan": "T7 — strategi pemecahan dokumen sadar-kalimat dan sadar-token",
-        "prapendaftaran": "docs/PRAPENDAFTARAN_T7_CHUNKING.md",
+        "protokol": "strategi pemecahan dokumen — ditulis di muka",
         "protokol": ("Bagian C: set penyetelan dan pelaporan tidak beririsan, dibagi "
                      "dengan benih tetap sebelum hasil dilihat. Seluruh varian "
                      "tercatat di results/tuning_log.json, termasuk yang kalah."),
