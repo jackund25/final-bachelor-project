@@ -1,27 +1,15 @@
 #!/usr/bin/env python3
-"""Re-ingest knowledge base ke ChromaDB dengan metadata halaman yang dapat ditelusuri.
+"""Membangun indeks ChromaDB dari korpus pedoman, dengan sitasi sampai nomor halaman.
 
-Meng-ingest KB kurasi (manual_kb.json) DAN dokumen pedoman (KB-01..KB-12 di
-data/knowledge_base/books/) ke ChromaDB.
+Ekstraksi PDF dilakukan PER HALAMAN, sehingga tidak ada potongan yang melintasi batas
+halaman dan tiap potongan membawa nomor halaman cetaknya. Metadata dokumen dibaca dari
+``data/knowledge_base/manifest.csv``; PDF yang tidak terdaftar di sana menghentikan
+proses alih-alih dilewati diam-diam.
 
-PERUBAHAN PENTING (Tugas 1, 4 Agt 2026)
----------------------------------------
-Versi sebelumnya menggabungkan seluruh halaman PDF dengan "\\n\\n".join(pages)
-SEBELUM chunking, sehingga batas halaman hilang permanen dan setiap sitasi
-tampil sebagai "Hal. N/A". Versi ini:
+Halaman depan (sampul, daftar isi) tidak diindeks: isinya padat kata kunci topik tanpa
+isi yang berguna, sehingga mencemari hasil penelusuran.
 
-- Ekstraksi PDF dilakukan PER HALAMAN; setiap halaman menjadi satu "dokumen"
-  bagi chunk_documents(), sehingga tidak ada chunk yang melintasi batas halaman.
-- Metadata dokumen dibaca dari data/knowledge_base/manifest.csv.
-- halaman_cetak = halaman_pdf + offset (offset bisa negatif untuk dokumen yang
-  memulai penomoran ulang setelah front matter, atau besar untuk artikel jurnal
-  dengan penomoran berkelanjutan).
-- Halaman dengan halaman_cetak < 1 (front matter: sampul, daftar isi) TIDAK
-  diindeks: isinya padat kata kunci topik tanpa isi berguna sehingga mencemari
-  hasil retrieval.
-- PDF yang tidak terdaftar di manifest MENGHENTIKAN proses; tidak ada skip diam.
-
-Idempoten: koleksi Chroma dibangun ulang dari nol setiap run.
+Idempoten — koleksi Chroma dibangun ulang dari nol setiap jalan.
 
 Jalankan:
     python scripts/reingest_kb.py
@@ -404,19 +392,8 @@ def main() -> int:
     print(f"[1] Manifest      : {len(manifest)} dokumen terdaftar ({manifest_path})")
     print(f"    Korpus        : {pdf_dir} — cocok, jumlah halaman terverifikasi")
 
-    # 2) TIDAK ADA lagi dokumen kurasi manual.
-    #
-    # MENGAPA DICABUT (17 Agustus 2026). manual_kb.json berisi prosa yang disusun sendiri
-    # oleh peneliti, bukan kutipan dari pedoman klinis terbitan resmi. Ia menyumbang 15
-    # potongan ke indeks, dan potongan-potongan itu TIDAK memiliki nomor halaman sumber,
-    # sehingga citations.py menampilkannya sebagai "Hal. tidak tercatat".
-    #
-    # Akibatnya klaim KNF-08 pada laporan — bahwa tiap potongan menyimpan identitas dokumen
-    # beserta nomor halamannya — TIDAK benar selama potongan itu ada di dalam indeks.
-    # Mencabutnya membuat seluruh isi korpus tertelusur ke pedoman terbitan resmi tanpa
-    # kecuali, dan itu memperkuat, bukan mengurangi, dasar sistem ini.
-    #
-    # Berkasnya dipindahkan ke arsip dan TIDAK dipakai lagi oleh jalur mana pun.
+    # 2) Tidak ada dokumen kurasi manual. Korpus seluruhnya pedoman terbitan resmi, supaya
+    # tiap potongan tertelusur ke dokumen dan nomor halamannya tanpa kecuali.
     docs: List[Dict[str, Any]] = []
     print("[2] Dokumen kurasi manual: DICABUT — korpus murni pedoman terbitan resmi")
 
@@ -501,16 +478,9 @@ def main() -> int:
     for src, n in by_source.most_common():
         print(f"    {src}: {n} chunk")
 
-    # 6) Cadangan penelusuran (KNF-04) — diekspor DARI korpus pedoman.
-    #
-    # MENGAPA ADA. Bila ChromaDB tidak dapat dibuka, pipeline mundur ke
-    # SimpleKeywordRetriever, dan penelusur itu memerlukan potongan dalam memori.
-    # Sebelumnya sumbernya manual_kb.json, yang kini dicabut. Menggantinya dengan ekspor
-    # dari korpus pedoman menjaga DUA klaim sekaligus tetap benar: KNF-04 (cadangan
-    # terkendali tersedia) dan KNF-08 (tiap potongan tertelusur ke dokumen dan halamannya).
-    #
-    # Yang diekspor adalah potongan TERPANJANG per dokumen, sebagai wakil isi yang paling
-    # berinformasi, dengan batas per dokumen supaya berkasnya tetap kecil dan dapat dibaca.
+    # 6) Cadangan penelusuran, dipakai bila ChromaDB tidak dapat dibuka. Diekspor dari
+    # korpus pedoman, bukan dari sumber terpisah, supaya potongan cadangan pun tetap
+    # membawa nomor halaman. Yang diambil potongan terpanjang per dokumen.
     per_dokumen: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for c in chunks:
         per_dokumen[c["source"]].append(c)

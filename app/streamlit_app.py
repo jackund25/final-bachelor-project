@@ -100,13 +100,9 @@ def load_artifacts(path: str = "models/gbm_inference_bundle_h6.pkl"):
             "model_family": str(b.get("model_family", type(b["model"]).__name__))}
 
 
-# Bundle per horizon, menurut PRIORITAS keluarga model. GBM adalah prediktor produksi
-# sejak 13 Agustus 2026 (lihat catatan pada config.yaml); bundle RF dipertahankan agar
-# instalasi lama dan skrip pembanding tetap berjalan.
-#
-# Prioritas diberlakukan per KELUARGA, bukan per berkas: mencampur h6 dari GBM dengan
-# h12 dari RF akan menghasilkan dua horizon dari dua model berbeda pada satu halaman,
-# dan dokter tidak punya cara mengetahuinya.
+# Prioritas diberlakukan per KELUARGA model, bukan per berkas: mencampur h6 dari GBM
+# dengan h12 dari RF menghasilkan dua horizon dari dua model berbeda pada satu halaman,
+# tanpa cara bagi dokter untuk mengetahuinya.
 KELUARGA_BUNDLE = [
     ("GBM", ["models/gbm_inference_bundle_h6.pkl", "models/gbm_inference_bundle_h12.pkl"]),
     ("RF", ["models/rf_inference_bundle_h6.pkl", "models/rf_inference_bundle_h12.pkl"]),
@@ -162,26 +158,18 @@ def predict_next(window_df, art):
 
 
 def predict_uncertainty(window_df, art):
-    """Sigma prediksi per sampel (skala absolut; anchor konstan per sampel).
+    """Sigma prediksi per sampel, dari dua sumber bergantung keluarga model.
 
-    Mengkomunikasikan keyakinan model ke dokter — relevan karena deteksi hipoglikemia
-    lemah pada kedua keluarga model.
+    ``tree_variance`` memakai sebaran antar-pohon hutan acak; ``quantile_spread``
+    memakai rentang dua model kuantil GBM dibagi 3,92, sebab
+    HistGradientBoostingRegressor tidak punya ``estimators_``.
 
-    DUA SUMBER, bergantung keluarga model:
+    Keduanya heuristik dengan status yang sama: jaminan cakupan konformal tidak
+    bergantung pada cara sigma dipilih, karena kuantil konformal menyerap skalanya
+    (Angelopoulos & Bates, 2021).
 
-    - ``tree_variance``   — sebaran antar-pohon Random Forest (``estimators_``).
-    - ``quantile_spread`` — rentang dua model kuantil GBM dibagi 3,92.
-      HistGradientBoostingRegressor TIDAK punya ``estimators_``, sehingga tanpa jalur
-      ini interval prediksi hilang sama sekali — padahal Tujuan 3 menyebut kalibrasi
-      ketidakpastian secara eksplisit.
-
-    Keduanya HEURISTIK dengan status yang sama. Jaminan cakupan konformal tidak
-    bergantung pada bagaimana sigma dipilih; kuantil konformal yang dihitung pada
-    himpunan kalibrasi menyerap skalanya (Angelopoulos & Bates, 2021). Mengganti
-    sumber sigma karena itu tidak menurunkan mutu jaminannya.
-
-    Mengembalikan ``None`` bila sumbernya tidak tersedia — pemanggil WAJIB menyatakan
-    intervalnya belum terkalibrasi, bukan menampilkan interval dengan sigma tebakan.
+    Mengembalikan ``None`` bila sumbernya tidak tersedia; pemanggil wajib menyatakan
+    intervalnya belum terkalibrasi alih-alih menampilkan sigma tebakan.
     """
     import numpy as np
     X = window_df[art["features"]].values.astype(float)
@@ -383,14 +371,9 @@ with c2:
         f'Skor aktivitas: {int(float(window_df["activity"].iloc[-1]))}</p></div>',
         unsafe_allow_html=True)
 
-# Peringatan divergen — nilai jual sistem.
-# Logikanya ada di src/alerts.py, bukan di sini: keputusan klinis harus dapat diuji
-# tanpa menjalankan Streamlit. Versi lama hanya menyala bila kondisi kini "Dalam
-# Target", sehingga ayunan hipo<->hiper tidak pernah tertangkap.
-#
-# Dievaluasi pada SETIAP horizon dan disebutkan horizon mana yang memicunya. Divergensi
-# bisa muncul hanya di +60 menit sementara +30 menit masih terlihat aman; kalau hanya
-# horizon pendek yang diperiksa, justru peringatan paling awal yang hilang.
+# Peringatan divergensi. Logikanya di src/alerts.py, bukan di sini, supaya keputusan
+# klinis dapat diuji tanpa menjalankan Streamlit. Dievaluasi pada SETIAP horizon:
+# divergensi dapat muncul hanya di +60 menit sementara +30 menit masih tampak aman.
 for r in ramalan:
     d = evaluate_divergence(current, r["pred"], r["menit"])
     if d is not None:
@@ -430,17 +413,13 @@ with tab_rec:
             "carbs_on_board": float(window_df["carbs"].iloc[-1]),
             "activity_level": int(float(window_df["activity"].iloc[-1])),
             "stress_level": int(float(window_df["stress"].iloc[-1])) if "stress" in window_df else 5,
-            # Kueri dikondisikan pada KONDISI hasil pengklasifikasi. Pada validasi silang
-            # lintas-fold, varian ini setara dengan pengondisian pada nilai regresi untuk mutu
-            # retrieval (0,892 vs 0,893; p=0,31) — jadi bukan itu alasannya dipakai. Alasannya:
-            # pengklasifikasi menangkap hipoglikemia jauh lebih baik (14% -> 44%), sehingga kueri
-            # untuk kasus paling berbahaya lebih sering menargetkan kondisi yang benar.
+            # Kueri dikondisikan pada kondisi hasil pengklasifikasi, bukan pada nilai
+            # regresi, karena pengklasifikasi jauh lebih sering menangkap hipoglikemia.
             #
-            # Batas interval SENGAJA tidak diteruskan ke kueri. Memperluas kueri dengan semua
-            # kondisi yang tercakup interval memang menaikkan cakupan kondisi sebenarnya
-            # (94,2%), tetapi mengencerkan sinyal sehingga MRR justru turun ke 0,753 — lihat
-            # scripts/eval_retrieval_realcases.py. Interval tetap dipakai, namun sebagai
-            # PERINGATAN klinis kepada dokter (lihat blok peringatan di atas).
+            # Batas interval SENGAJA tidak diteruskan ke kueri: memperluas kueri dengan
+            # seluruh kondisi yang tercakup interval menaikkan cakupan kondisi sebenarnya
+            # tetapi mengencerkan sinyal sehingga mutu penelusuran turun. Interval tetap
+            # dipakai, sebagai peringatan klinis kepada dokter.
             "predicted_condition": pred_condition,
         }
         with st.spinner("Menyusun rekomendasi..."):
@@ -550,14 +529,10 @@ with tab_rec:
                         f'{html.escape(teks)}</div>',
                         unsafe_allow_html=True,
                     )
-                    # Dua keterangan di bawah SENGAJA dipisah karena menjelaskan dua
-                    # pemotongan yang berbeda dan kerap tertukar:
-                    #   (1) pemotongan TAMPILAN — dilakukan di sini, dapat dibatalkan
-                    #       dengan mencentang "utuh";
-                    #   (2) pemotongan INDEXING — sudah terjadi saat korpus dipecah,
-                    #       tidak dapat dibatalkan dari UI. Menandainya penting supaya
-                    #       dokter tahu kalimat di tepi kutipan bersambung ke potongan
-                    #       tetangga, bukan kalimat yang rusak.
+                    # Dua keterangan berikut sengaja dipisah, sebab menjelaskan dua
+                    # pemotongan yang berbeda: pemotongan TAMPILAN yang dapat dibatalkan
+                    # di sini, dan pemotongan INDEKS yang sudah terjadi saat korpus
+                    # dipecah dan tidak dapat dibatalkan dari antarmuka.
                     if s["snippet_terpotong"] and not utuh:
                         cara = {
                             "batas_kalimat": "berhenti di akhir kalimat",
