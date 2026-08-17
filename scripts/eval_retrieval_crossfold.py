@@ -154,25 +154,60 @@ def _metrik_dari_topik(topics: list, expected: str) -> dict:
 
 
 def bangun_retriever_per_lengan() -> dict:
-    """Satu MMRRetriever per lengan, modenya DIPATOK eksplisit.
+    """Penelusur per lengan, modenya DIPATOK eksplisit.
 
-    Dua alasan, keduanya pernah menjadi sumber kesalahan di proyek ini:
+    Tiga alasan, ketiganya pernah menjadi sumber kesalahan di proyek ini:
 
-    1. Sejak T13 diadopsi, config.yaml menyetel rag.retrieval_mode=hibrida.
+    1. Sejak penelusuran hibrida diadopsi, config.yaml menyetel rag.retrieval_mode.
        Membuat MMRRetriever tanpa menyebut mode akan membuat lengan "vektor"
-       diam-diam berjalan hibrida, dan seluruh perbandingan menjadi tidak sah
+       diam-diam berjalan pada mode config, dan seluruh perbandingan menjadi tidak sah
        TANPA satu pun galat.
     2. Versi sebelumnya mengimplementasikan ULANG fusi RRF di dalam skrip ini,
        terpisah dari src/rag/retriever.py. Yang diukur karena itu bukan jalur yang
        benar-benar dijalankan sistem. Kini ketiga lengan memanggil kode produksi
        yang sama, sehingga angkanya menggambarkan apa yang dipakai dokter.
+    3. Ketiga lengan berbagi SATU penelusur, bukan tiga.
+
+       Versi sebelumnya membuat satu MMRRetriever per lengan. Tiap objek memuat model
+       embedding, klien Chroma, dan indeks BM25 sendiri, sehingga model yang identik
+       berada di memori sebanyak TIGA kali. Pada mesin dengan RAM terpakai berat, hal itu
+       membuat crossfold tumbang saat melatih model fold pertama — bukan karena datanya
+       besar, melainkan karena penelusurnya berlipat.
+
+       Kini satu penelusur dibangun pada mode "hibrida", sebab mode itulah yang menyiapkan
+       jalur padat DAN indeks leksikal sekaligus. Tiap lengan membungkusnya dan mematok
+       modenya pada tiap panggilan, sehingga sifat "mode dipatok" pada butir 1 tetap
+       berlaku: modenya ditegaskan ulang persis sebelum tiap penelusuran, lalu diperiksa.
     """
     from src.rag.retriever import MMRRetriever
-    return {l: MMRRetriever(persist_dir="models/chroma_db",
-                            collection_name="diabetes_kb",
-                            embed_provider="sentence-transformers",
-                            retrieval_mode=l)
-            for l in LENGAN}
+
+    bersama = MMRRetriever(persist_dir="models/chroma_db",
+                           collection_name="diabetes_kb",
+                           embed_provider="sentence-transformers",
+                           retrieval_mode="hibrida")
+
+    class _LenganTerpatok:
+        """Membungkus penelusur bersama dengan satu mode yang dipatok."""
+
+        def __init__(self, inner, mode: str):
+            self._inner = inner
+            self.mode = mode
+
+        def retrieve(self, query: str, top_k: int = None, **kw):
+            # Dipatok ulang tiap panggilan. Bila suatu saat kode lain menggeser mode
+            # penelusur bersama, pergeseran itu tidak dapat merembes ke lengan ini.
+            self._inner.retrieval_mode = self.mode
+            hasil = self._inner.retrieve(query, top_k=top_k, **kw)
+            if self._inner.retrieval_mode != self.mode:
+                raise RuntimeError(
+                    f"mode bergeser saat penelusuran: diminta {self.mode}, "
+                    f"aktif {self._inner.retrieval_mode}")
+            return hasil
+
+        def __getattr__(self, nama):
+            return getattr(self._inner, nama)
+
+    return {l: _LenganTerpatok(bersama, l) for l in LENGAN}
 
 
 def score_lengan(retrievers: dict, query: str, expected: str) -> dict:
@@ -219,8 +254,13 @@ def main() -> None:
     folds = [patients[i:i + 2] for i in range(0, len(patients), 2)]
     retrievers = bangun_retriever_per_lengan()
     r = retrievers["vektor"]  # lengan kontrol, dipakai pula oleh medan lama
+    # Yang dicetak adalah mode YANG DIPATOK lengan, bukan rr.retrieval_mode. Sejak ketiga
+    # lengan berbagi satu penelusur, medan itu berisi mode konstruksi penelusur bersama
+    # ("hibrida") bagi ketiganya, sehingga mencetaknya akan melaporkan seluruh lengan
+    # berjalan hibrida padahal tidak — persis jenis laporan menyesatkan yang berulang kali
+    # menjadi masalah di proyek ini.
     for l, rr in retrievers.items():
-        print(f"  lengan {l:8} mode aktif={rr.retrieval_mode}"
+        print(f"  lengan {l:8} mode dipatok={rr.mode:8}"
               f" bm25={len(rr._bm25_teks) if rr._bm25 else 0} potongan")
 
     per_fold = []
