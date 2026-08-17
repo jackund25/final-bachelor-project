@@ -38,9 +38,10 @@ for p in docs/PRAPENDAFTARAN_*.md; do
 done
 
 echo "== 5/5  Memindahkan dokumen kerja dan pembelajaran"
+# docs/METHODOLOGY.md SENGAJA TIDAK dipindahkan: ia dokumen metodologi publik repositori ini.
 for d in ALUR_SISTEM_FINAL.md ANALISIS_CHUNKING_T7.md ARGUMEN_GBM.md AUDIT_KEBUTUHAN.md \
          DAFTAR_KETERBATASAN.md HANDOFF.md KEPUTUSAN_DIAMBIL.md KONTEKS_SESI_2026-08-16.md \
-         METHODOLOGY.md NASKAH_PENUTUP_BAB_VI.md PANDUAN_PENILAI_v2.md PELAJARAN_TA_REKAN.md \
+         NASKAH_PENUTUP_BAB_VI.md PANDUAN_PENILAI_v2.md PELAJARAN_TA_REKAN.md \
          PROMPT_PERBAIKAN_DAN_REKAYASA.md PROMPT_UJI_COBA_LANJUTAN.md REVISI_BAB_II_4_1.md \
          RINGKASAN_KEPUTUSAN_PEMBIMBING.md SPEC_BAB4.md TEORI_HIBRIDA_BAB2.md \
          TEORI_HIBRIDA_BAB4.md SUS_kuesioner.md doc.md; do
