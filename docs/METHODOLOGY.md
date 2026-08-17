@@ -306,7 +306,7 @@ flowchart TD
         D --> E2["Kalibrasi konformal<br/>conformal_h6/h12.json"]
         D --> E3["Pengklasifikasi kondisi<br/>hipo/normal/hiper"]
         F["12 PDF pedoman<br/>KB-01..KB-12"] --> G["chunk 900/120<br/>all-MiniLM-L6-v2"]
-        G --> H[("ChromaDB diabetes_kb<br/>2.248 potongan")]
+        G --> H[("ChromaDB diabetes_kb<br/>2.233 potongan")]
     end
 
     subgraph RUNTIME["RUNTIME - halaman Streamlit"]
@@ -351,7 +351,7 @@ Tabel berikut menyatakannya; kolom terakhir menunjuk tempat memeriksanya di kode
 | 3 | Pembentukan jendela | tabel berfitur | `X` (n, 12, 7), `y`, `anchor` — jendela berjeda > 30 mnt **dibuang** | `preprocessor.create_sequences` |
 | 4 | Pelatihan | `X`, `y − anchor` | bundle `.pkl`: model titik + 2 model kuantil + scaler + daftar fitur | `src/models/gbm_model.py` |
 | 5 | Kalibrasi | model + 2 pasien kalibrasi | `conformal_h{6,12}.json` berisi faktor `q` per tingkat | `scripts/conformal_calibration.py` |
-| 6 | Ingesti korpus | 12 PDF + `manifest.csv` | 2.248 potongan di ChromaDB, tiap potongan membawa `halaman_cetak` | `scripts/reingest_kb.py` |
+| 6 | Ingesti korpus | 12 PDF + `manifest.csv` | 2.233 potongan di ChromaDB, tiap potongan membawa `halaman_cetak` | `scripts/reingest_kb.py` |
 | 7 | Prediksi *runtime* | 12 baris terakhir | `pred` (mg/dL), `sigma`, `(lo, hi)` | `app/streamlit_app.py` |
 | 8 | Kondisi | jendela yang sama | `predicted_condition` ∈ {hipo, normal, hiper} | `predict_condition` |
 | 9 | **Perakitan state** | `pred`, `(lo, hi)`, `predicted_condition` | `PatientState` — `risk_level` dari **nilai TERPREDIKSI**; `anticipated_conditions` diperluas oleh batas interval | `src/patient_state.py` |
@@ -390,7 +390,7 @@ benar-benar terisi. Tanpa itu, klaim "multimodal" tidak berdiri.
 |---|---|
 | masukan | 12 PDF pedoman klinis, `KB-01` … `KB-12` (PERKENI, ADA, IDAI) |
 | pengerjaan | `scripts/reingest_kb.py` → `src/rag/knowledge_base.py` |
-| keluaran | ChromaDB `models/chroma_db`, koleksi `diabetes_kb`, **2.248 potongan** |
+| keluaran | ChromaDB `models/chroma_db`, koleksi `diabetes_kb`, **2.233 potongan** |
 
 `chunk_size` **900** karakter, `chunk_overlap` **120**, *embedding* **`all-MiniLM-L6-v2`**
 (384 dimensi, CPU). Nomor halaman cetak disimpan sebagai **metadata tiap chunk** — inilah
@@ -537,7 +537,7 @@ yang dipilih lewat `rag.retrieval_mode`, seluruhnya berjalan atas potongan yang 
 | `retrieval_mode` | mekanisme | status |
 |---|---|---|
 | `vektor` | kemiripan makna + penataan ulang MMR (`fetch_k` 12, `lambda_mult` 0,0) | dipertahankan sebagai pembanding |
-| **`bm25`** | **pembobotan Okapi BM25 atas 2.248 potongan** | **jalur produksi** |
+| **`bm25`** | **pembobotan Okapi BM25 atas 2.233 potongan** | **jalur produksi** |
 | `hibrida` | penggabungan kedua daftar pada peringkat (RRF, kolam 50, peredam 60) | dipertahankan sebagai pembanding |
 
 `top_k` = **5** potongan diteruskan ke model bahasa pada ketiga cara.
