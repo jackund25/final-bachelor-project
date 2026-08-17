@@ -72,8 +72,8 @@ def test_simple_keyword_retriever_metadata_filter_works(tmp_path):
     assert all(item["metadata"].get("subdomain") == "aktivitas_fisik" for item in results)
 
 
-def test_pipeline_builds_retriever_and_returns_docs(tmp_path):
-    pipeline = RAGPipeline(kb_dir=str(tmp_path), llm_provider="template")
+def test_pipeline_builds_retriever_and_returns_docs(kb_dir_uji):
+    pipeline = RAGPipeline(kb_dir=kb_dir_uji, llm_provider="template")
     pipeline.build()
 
     result = pipeline.answer(
@@ -169,9 +169,9 @@ class _SpyRetriever:
         return self.retrieve(query, top_k, metadata_filter)
 
 
-def test_pipeline_meneruskan_prediksi_sebagai_sumber_kondisi(tmp_path):
+def test_pipeline_meneruskan_prediksi_sebagai_sumber_kondisi(kb_dir_uji):
     """Jalur produksi harus mengirim glukosa TERPREDIKSI ke retriever, bukan yang sekarang."""
-    pipeline = RAGPipeline(kb_dir=str(tmp_path), llm_provider="template")
+    pipeline = RAGPipeline(kb_dir=kb_dir_uji, llm_provider="template")
     pipeline.build()
 
     spy = _SpyRetriever()

@@ -1,18 +1,8 @@
-"""Pembentukan sitasi dari metadata chunk — satu sumber kebenaran.
+"""Pembentukan sitasi dari metadata potongan — satu sumber kebenaran.
 
-PRINSIP: nomor halaman yang ditampilkan kepada dokter HARUS berasal dari metadata
-chunk, tidak pernah dari teks yang dihasilkan LLM. Model bahasa tidak boleh menjadi
-sumber nomor halaman karena nilainya tidak dapat dijamin.
-
-Modul ini dipakai tiga konsumen — expander "Sumber Rujukan" di Streamlit, log
-keputusan dokter, dan ringkasan sumber di advisor_chain. Menaruh aturan halaman
-di masing-masing konsumen menjamin ketiganya menyimpang seiring waktu.
-
-Skema metadata halaman dihasilkan oleh scripts/reingest_kb.py:
-    kb_id, source_id, nama_dokumen, lembaga, tahun, judul_lengkap,
-    halaman_pdf (int), halaman_cetak (int; 0 = tidak valid), halaman_cetak_valid (bool)
-
-Chunk manual_kb.json tidak punya medan tersebut dan ditangani lewat fallback.
+Nomor halaman yang ditampilkan kepada dokter selalu berasal dari metadata potongan,
+tidak pernah dari teks yang dihasilkan model bahasa. Dipusatkan di sini karena tiga
+konsumen memakainya: panel Sumber Rujukan, log keputusan, dan advisor_chain.
 """
 
 from __future__ import annotations
@@ -26,15 +16,8 @@ PAGE_UNKNOWN = "Hal. tidak tercatat"
 # (mis. KB-05: "... Diabetologia 64(12):2609-2652"), dipotong agar UI terbaca.
 _TITLE_MAX_CHARS = 90
 
-# Panjang kutipan yang ditampilkan pada daftar Sumber Rujukan.
-#
-# Dinaikkan dari 200 ke 700 karakter (kira-kira 4-5 baris pada lebar UI). Alasannya
-# bukan estetika: kutipan sepanjang satu baris tidak cukup untuk MENCOCOKKAN hasil
-# penelusuran dengan halaman dokumen aslinya, padahal justru kemampuan itu yang
-# menjadi bukti KNF-08 (keterlacakan sitasi) saat sidang.
-#
-# Batas atasnya sendiri adalah rag.chunk_size (900), sehingga sebagian besar potongan
-# kini tampil hampir utuh. Sisanya tetap dapat dibuka lewat teks_lengkap.
+# Panjang kutipan pada daftar Sumber Rujukan. Cukup panjang agar potongan dapat
+# dicocokkan ke halaman dokumen aslinya, yang menjadi bukti keterlacakan sitasi.
 SNIPPET_CHARS_DEFAULT = 700
 
 
@@ -72,11 +55,10 @@ def format_page_label(meta: Mapping[str, Any]) -> str:
 
 
 def _truncate(text: str, limit: int) -> str:
-    """Potong pada BATAS KATA terdekat, bukan di tengah kata.
+    """Potong pada batas kata terdekat.
 
-    Kutipan pada UI dipakai untuk mencocokkan hasil penelusuran dengan dokumen
-    aslinya. Potongan di tengah kata ("hipoglikem") menyulitkan pencarian teks pada
-    PDF sumber, sehingga batas kata bukan sekadar soal kerapian.
+    Potongan di tengah kata menyulitkan pencarian teks pada PDF sumber, sehingga
+    ini bukan sekadar soal kerapian.
     """
     text = " ".join((text or "").split())
     if len(text) <= limit:
@@ -90,32 +72,11 @@ def _truncate(text: str, limit: int) -> str:
     return potong.rstrip(" ,;:.") + "…"
 
 
-# --------------------------------------------------------------------------
-# Pemotongan pada BATAS KALIMAT (Masalah B)
-#
-# WHAT  : penentu batas kalimat untuk prosa klinis berbahasa Indonesia.
-# WHO   : dipakai potong_batas_kalimat() di modul ini; konsumennya daftar
-#         "Sumber Rujukan" pada Streamlit dan log keputusan dokter.
-# WHERE : src/rag/citations.py, hulu dari build_source_list().
-# WHEN  : setiap kali satu baris rujukan dibentuk, yaitu tiap kali dokter
-#         menjalankan satu konsultasi.
-# WHY   : Gao dkk. (2023) §V.A.1 hal. 8 menyebut kelemahan pemotongan
-#         berukuran tetap sebagai "truncation within sentences" — potongan
-#         yang berhenti di tengah kalimat. Batas KATA (_truncate di atas)
-#         tidak menyelesaikannya: ia hanya menjamin kata terakhir utuh,
-#         bukan kalimatnya. Manning dkk. (2009) hal. 217 menegaskan bahwa
-#         satuan yang dikembalikan kepada pembaca dalam passage retrieval
-#         adalah "passage" dengan batas yang bermakna, bukan potongan
-#         sembarang.
-# HOW   : kandidat batas dicari dengan regex, lalu DISARING oleh tiga
-#         penjaga di bawah supaya titik yang bukan akhir kalimat tidak
-#         dianggap batas. Tanpa penyaringan itu "PERKENI 2021 hal. 12"
-#         akan terpotong menjadi "PERKENI 2021 hal." — lebih buruk
-#         daripada batas kata.
-# --------------------------------------------------------------------------
+# Pemotongan pada batas kalimat. Batas kata saja tidak cukup: ia menjamin kata
+# terakhir utuh, bukan kalimatnya (Gao dkk. 2023). Kandidat batas disaring empat
+# penjaga di bawah supaya "PERKENI 2021 hal. 12" tidak terpotong jadi "... hal.".
 
-# Penjaga 1 — kata yang berakhir titik tetapi BUKAN akhir kalimat.
-# Dikumpulkan dari prosa pedoman PERKENI/IDAI/ADA yang menjadi korpus.
+# Penjaga 1 — kata berakhir titik yang bukan akhir kalimat, dikumpulkan dari korpus.
 _SINGKATAN_BUKAN_AKHIR = {
     # gelar dan sapaan
     "dr", "drg", "prof", "sp", "ns", "yth",
@@ -126,27 +87,20 @@ _SINGKATAN_BUKAN_AKHIR = {
     "mg", "ml", "dl", "kg", "mmol", "mm", "cm", "jam", "thn", "min", "maks",
 }
 
-# Penjaga 2 — huruf tunggal berakhir titik hampir selalu inisial nama
-# ("Reimers, N.") atau penanda enumerasi ("a."), bukan akhir kalimat.
+# Penjaga 2 — huruf tunggal berakhir titik: inisial nama atau penanda enumerasi.
 _MAKS_HURUF_INISIAL = 1
 
-# Penjaga 3 — angka pendek berakhir titik adalah penanda daftar bernomor
-# ("1. Terapi insulin"), bukan akhir kalimat.
+# Penjaga 3 — angka pendek berakhir titik: penanda daftar bernomor.
 _MAKS_DIGIT_ENUMERASI = 2
 
-# Kandidat batas: tanda akhir kalimat, boleh diikuti kutip/kurung penutup,
-# lalu WAJIB diikuti spasi. Lookahead spasi ini sekaligus menyelamatkan
-# bilangan desimal ("7.5", "10.000") tanpa penjaga tambahan.
+# Wajib diikuti spasi; lookahead ini sekaligus menyelamatkan bilangan desimal.
 _POLA_KANDIDAT = re.compile(r'[.!?]["\'\)\]]?(?=\s)')
 
-# Setelah batas kalimat, huruf berikutnya lazim kapital atau angka. Bila
-# huruf kecil, hampir pasti titiknya milik singkatan yang lolos penjaga 1.
+# Penjaga 4 — yang menyusul harus tampak seperti awal kalimat.
 _POLA_LANJUTAN_SAH = re.compile(r'["\'\(\[]?[A-Z0-9•\-–]')
 
-# Ambang bawah: bila batas kalimat terdekat memangkas lebih dari 40% jatah
-# tampilan, kutipannya jadi terlalu pendek untuk dicocokkan ke PDF sumber —
-# padahal itulah gunanya (bukti KNF-08). Pada kasus itu jatuh kembali ke
-# batas kata.
+# Bila batas kalimat memangkas lebih dari 40% jatah tampilan, kutipannya terlalu
+# pendek untuk dicocokkan ke PDF sumber; pada kasus itu jatuh ke batas kata.
 _RASIO_MIN_BATAS_KALIMAT = 0.6
 
 
@@ -180,9 +134,7 @@ def _kandidat_batas_kalimat(text: str) -> List[int]:
 def berakhir_di_batas_kalimat(text: str) -> bool:
     """True bila teks berhenti pada tanda akhir kalimat.
 
-    Dipakai untuk menandai potongan yang SUDAH terpotong sejak proses
-    indexing, bukan oleh tampilan — dua sebab yang tidak boleh tertukar
-    saat mendiagnosis keluhan "teksnya terpotong".
+    Menandai potongan yang sudah terpotong sejak pengindeksan, bukan oleh tampilan.
     """
     ekor = (text or "").rstrip()
     return bool(ekor) and ekor[-1] in '.!?"\')]' and bool(
@@ -261,16 +213,11 @@ def build_source_list(
     retrieved_docs: Sequence[Mapping[str, Any]],
     snippet_chars: int = SNIPPET_CHARS_DEFAULT,
 ) -> List[Dict[str, Any]]:
-    """Ratakan retrieved_docs pipeline menjadi baris siap tampil / siap audit.
+    """Ratakan hasil penelusuran menjadi baris siap tampil dan siap audit.
 
-    Nilai kembalian sengaja berupa dict datar berisi nilai yang SUDAH diresolusi
-    (termasuk page_label), supaya baris yang sama dapat disimpan ke log keputusan
-    dan merekam persis apa yang dilihat dokter saat mengambil keputusan.
-
-    Selain ``snippet`` yang dipotong untuk tampilan, setiap baris membawa
-    ``teks_lengkap`` berisi potongan dokumen UTUH sebagaimana dikirim ke LLM.
-    Keduanya diperlukan: yang pertama agar UI terbaca, yang kedua agar penelusuran
-    ke dokumen sumber dapat diverifikasi tanpa menebak bagian yang terpotong.
+    Nilainya sudah diresolusi (termasuk ``page_label``) supaya baris yang sama dapat
+    disimpan ke log keputusan dan merekam persis apa yang dilihat dokter. Tiap baris
+    membawa ``snippet`` untuk tampilan dan ``teks_lengkap`` untuk verifikasi.
     """
     rows: List[Dict[str, Any]] = []
 

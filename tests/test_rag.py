@@ -1,8 +1,8 @@
 from src.rag import RAGPipeline
 
 
-def test_rag_pipeline_builds_and_answers_with_template_fallback(tmp_path):
-	pipeline = RAGPipeline(kb_dir=str(tmp_path), llm_provider="template")
+def test_rag_pipeline_builds_and_answers_with_template_fallback(kb_dir_uji):
+	pipeline = RAGPipeline(kb_dir=kb_dir_uji, llm_provider="template")
 	result = pipeline.answer(
 		patient_state={
 			"current_glucose": 205.0,
@@ -24,8 +24,8 @@ def test_rag_pipeline_builds_and_answers_with_template_fallback(tmp_path):
 	assert "keputusan medis final tetap pada dokter" in result["explanation"].lower()
 
 
-def test_rag_pipeline_keyword_retrieval_prioritizes_relevant_chunk(tmp_path):
-	pipeline = RAGPipeline(kb_dir=str(tmp_path), llm_provider="template")
+def test_rag_pipeline_keyword_retrieval_prioritizes_relevant_chunk(kb_dir_uji):
+	pipeline = RAGPipeline(kb_dir=kb_dir_uji, llm_provider="template")
 	pipeline.build()
 
 	results = pipeline.retriever.retrieve("hipoglikemia gula darah rendah", top_k=1)

@@ -28,8 +28,8 @@ def test_generate_advisory_returns_answer_and_sources_structure():
     assert "sources" in payload
 
 
-def test_pipeline_answer_contains_advisory_and_citations(tmp_path):
-    pipeline = RAGPipeline(kb_dir=str(tmp_path), llm_provider="template")
+def test_pipeline_answer_contains_advisory_and_citations(kb_dir_uji):
+    pipeline = RAGPipeline(kb_dir=kb_dir_uji, llm_provider="template")
 
     result = pipeline.answer(
         patient_state={
@@ -47,8 +47,8 @@ def test_pipeline_answer_contains_advisory_and_citations(tmp_path):
     assert "citations" in result
 
 
-def test_pipeline_risk_levels_are_classified_correctly(tmp_path):
-    pipeline = RAGPipeline(kb_dir=str(tmp_path), llm_provider="template")
+def test_pipeline_risk_levels_are_classified_correctly(kb_dir_uji):
+    pipeline = RAGPipeline(kb_dir=kb_dir_uji, llm_provider="template")
 
     low = pipeline.answer(
         patient_state={"current_glucose": 90.0, "stress_level": 4, "activity_level": 25},
