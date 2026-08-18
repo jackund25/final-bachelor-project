@@ -11,7 +11,7 @@
 % Isi baris tersebut setelah keputusan Random Forest / Gradient Boosting
 % ditetapkan. Rujukan: docs/ALUR_SISTEM_FINAL.md, docs/KEPUTUSAN_DIAMBIL.md
 % =====================================================================
-\begin{longtable}{@{}p{2.5cm}p{3.9cm}p{3.9cm}p{3.9cm}@{}}
+\begin{longtable}{@{}p{2.2cm}p{3.5cm}p{3.45cm}p{3.45cm}@{}}
 \caption{Perbandingan karakteristik \emph{Random Forest}, \emph{Gradient Boosting Machine}, dan LSTM.}
 \label{tab:perbandingan-model} \\
 \toprule
@@ -42,7 +42,7 @@ Kebutuhan komputasi & Bergantung pada jumlah dan kedalaman pohon & Bergantung pa
 
 Generalisasi antar-dataset & Bergantung pada kesamaan sebaran fitur antara data latih dan uji & Bergantung pada kesamaan sebaran fitur antara data latih dan uji & Kinerja menurun pada data yang berbeda dari data pelatihan \\[2pt]
 
-Keterbatasan bersama & \multicolumn{2}{p{7.9cm}}{Keduanya meminimalkan galat kuadrat, sehingga penaksirnya menyusut ke arah nilai tengah dan jarang melewati ambang pada kelas yang jarang muncul} & Bergantung pada fungsi kerugian yang dipilih \\[2pt]
+Keterbatasan bersama & \multicolumn{2}{p{7.35cm}}{Keduanya meminimalkan galat kuadrat, sehingga penaksirnya menyusut ke arah nilai tengah dan jarang melewati ambang pada kelas yang jarang muncul} & Bergantung pada fungsi kerugian yang dipilih \\[2pt]
 
 Kesesuaian dengan konteks penelitian & Memenuhi batasan tanpa akselerator grafis, tetapi ukuran artefaknya besar sehingga membebani penyimpanan dan waktu muat & \textbf{Dipilih.} Memenuhi batasan tanpa akselerator grafis dengan artefak dan waktu pelatihan yang jauh lebih kecil, serta menyediakan jalur regresi dan jalur klasifikasi pada satu keluarga model & Menuntut akselerator grafis untuk pelatihan yang praktis, sehingga bertentangan dengan Batasan~4 \\
 
