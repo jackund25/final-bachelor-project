@@ -1,4 +1,4 @@
-% Sumber angka: results/retrieval_realcases_kb12_gbm_bm25_final/crossfold.json, lengan bm25.
+% Sumber angka: results/retrieval_realcases_kb12_gbm_bm25_v2/crossfold.json, lengan bm25 (korpus V2).
 % Dihitung ulang dari per_fold, bukan disalin dari ringkasan. Wilcoxon dua sisi, n=6 fold.
 \begin{table}[htbp]
 \centering
@@ -11,16 +11,16 @@
 \midrule
 \multicolumn{7}{@{}l}{\textit{(a) Himpunan divergen: kondisi terkini $\neq$ kondisi masa depan}} \\
 \midrule
-Terkondisi (regresi) & 0,284 & 0,190 & $+0{,}095$ & 0,024 & 3,99 & 0,031 \\
-Terkondisi (pengklasifikasi) & 0,312 & 0,190 & $+0{,}122$ & 0,018 & 7,33 & 0,031 \\
+Terkondisi (regresi) & 0,168 & 0,065 & $+0{,}102$ & 0,027 & 3,81 & 0,031 \\
+Terkondisi (pengklasifikasi) & 0,225 & 0,065 & $+0{,}160$ & 0,023 & 6,86 & 0,031 \\
 \midrule
 \multicolumn{7}{@{}l}{\textit{(b) Himpunan natural: distribusi jendela apa adanya}} \\
 \midrule
-Terkondisi (regresi) & 0,714 & 0,700 & $+0{,}014$ & 0,027 & 0,54 & 0,312 \\
-Terkondisi (pengklasifikasi) & 0,663 & 0,700 & $-0{,}036$ & 0,040 & $-0{,}91$ & 0,156 \\
+Terkondisi (regresi) & 0,742 & 0,731 & $+0{,}011$ & 0,021 & 0,50 & 0,225 \\
+Terkondisi (pengklasifikasi) & 0,698 & 0,731 & $-0{,}033$ & 0,039 & $-0{,}84$ & 0,094 \\
 \bottomrule
 \end{tabular}
 
 \vspace{2pt}
-{\footnotesize Kendali adalah RAG standar, yang membentuk kueri dari kondisi terkini. Selisih dan SD dihitung atas selisih per-\emph{fold}. Kedua baris pada (a) unggul pada seluruh enam \emph{fold}; $p=0{,}031$ merupakan nilai terkecil yang dapat dicapai enam pasangan. Pada (b) tidak satu pun perbandingan mencapai signifikansi, sementara jalur pengklasifikasi bahkan berarah negatif.}
+{\footnotesize Kendali adalah RAG standar, yang membentuk kueri dari kondisi terkini. Selisih dan SD dihitung atas selisih per-\emph{fold}. Kedua baris pada (a) unggul pada seluruh enam \emph{fold}; $p=0{,}031$ merupakan nilai terkecil yang dapat dicapai enam pasangan. Pada (b) tidak satu pun perbandingan mencapai signifikansi, sementara jalur pengklasifikasi bahkan berarah negatif dan hanya unggul pada 1 dari 6 \emph{fold}. Dibandingkan terhadap jalur regresi, dan bukan terhadap RAG standar, kekalahan pengklasifikasi pada himpunan natural terjadi pada 	extbf{seluruh enam \emph{fold}} ($-0{,}044$; $d_z=-1{,}31$; $p=0{,}031$), sehingga ia satu-satunya hasil signifikan pada bagian (b).}
 \end{table}

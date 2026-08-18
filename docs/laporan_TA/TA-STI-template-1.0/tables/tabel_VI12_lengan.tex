@@ -1,7 +1,10 @@
 % Sumber angka:
-%   (a) results/retrieval_realcases_kb12_gbm_bm25_final/crossfold.json -> per_fold[*].divergen_lengan
-%   (b) results/ragas/lengan_penelusuran.json                          -> lengan[*].rerata
-% Keduanya dihitung ulang dari berkas, bukan disalin dari ringkasan.
+%   (a) results/retrieval_realcases_kb12_gbm_bm25_v2/crossfold.json
+%       -> per_fold[*].divergen_lengan.{vektor,bm25,hibrida}
+%       BUKAN dari medan ringkasan_lintas_fold, yang berisi lengan vektor saja
+%       meskipun nama direktorinya menyebut bm25.
+%   (b) results/ragas/lengan_penelusuran.json -> lengan[*].rerata
+% Korpus V2, 4.038 potongan. Keduanya dihitung ulang dari berkas.
 \begin{table}[htbp]
 \centering
 \caption{Perbandingan tiga cara penelusuran atas potongan dokumen yang sama, dinilai dua alat ukur yang tidak berbagi sinyal. Bagian (a) MRR lintas enam \emph{fold} pada kasus divergen; bagian (b) metrik RAGAS berbasis rujukan.}
@@ -13,26 +16,26 @@
 \midrule
 \multicolumn{5}{@{}l}{\textit{(a) MRR pada kasus divergen, rerata $\pm$ SD lintas enam \emph{fold}}} \\
 \midrule
-Padat (vektor) & 0,200 $\pm$ 0,004 & 0,221 $\pm$ 0,008 & 0,316 $\pm$ 0,025 & 0,516 $\pm$ 0,011 \\
-\textbf{Leksikal (BM25)} & 0,190 $\pm$ 0,003 & 0,284 $\pm$ 0,023 & 0,312 $\pm$ 0,017 & 0,778 $\pm$ 0,000 \\
-Hibrida (RRF) & 0,452 $\pm$ 0,024 & 0,481 $\pm$ 0,008 & \textbf{0,533 $\pm$ 0,017} & 0,692 $\pm$ 0,013 \\
+Padat (vektor) & 0,246 $\pm$ 0,016 & 0,264 $\pm$ 0,023 & 0,346 $\pm$ 0,031 & 0,459 $\pm$ 0,003 \\
+\textbf{Leksikal (BM25)} & 0,065 $\pm$ 0,003 & 0,168 $\pm$ 0,027 & \textbf{0,225 $\pm$ 0,024} & \textbf{0,833 $\pm$ 0,000} \\
+Hibrida (RRF) & \textbf{0,465 $\pm$ 0,021} & 0,437 $\pm$ 0,021 & 0,426 $\pm$ 0,023 & 0,336 $\pm$ 0,003 \\
 \midrule
-\multicolumn{5}{@{}l}{\textit{Selisih kontribusi pengondisian terhadap RAG standar}} \\
+\multicolumn{5}{@{}l}{\textit{Selisih kontribusi pengondisian terhadap RAG standar, beserta jumlah \emph{fold} yang unggul}} \\
 \midrule
-Padat (vektor) & -- & $+0{,}021$ & $+0{,}116$ & \\
-\textbf{Leksikal (BM25)} & -- & \textbf{$+0{,}095$} & \textbf{$+0{,}122$} & \\
-Hibrida (RRF) & -- & $+0{,}029$ (t.s.) & $+0{,}081$ & \\
+Padat (vektor) & -- & $+0{,}018$ (4/6, t.s.) & $+0{,}100$ (6/6) & \\
+\textbf{Leksikal (BM25)} & -- & \textbf{$+0{,}102$ (6/6)} & \textbf{$+0{,}160$ (6/6)} & \\
+Hibrida (RRF) & -- & $-0{,}028$ (1/6, t.s.) & $-0{,}039$ (1/6, t.s.) & \\
 \midrule
 \multicolumn{5}{@{}l}{\textit{(b) RAGAS pada sepuluh kasus, korpus produksi, lima potongan teratas}} \\
 \midrule
 & \multicolumn{2}{c}{\textbf{\emph{Context precision}}} & \multicolumn{2}{c}{\textbf{\emph{Context recall}}} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
-Padat (vektor) & \multicolumn{2}{c}{0,025} & \multicolumn{2}{c}{0,100} \\
-\textbf{Leksikal (BM25)} & \multicolumn{2}{c}{\textbf{0,803}} & \multicolumn{2}{c}{\textbf{0,900}} \\
-Hibrida (RRF) & \multicolumn{2}{c}{0,542} & \multicolumn{2}{c}{0,700} \\
+Padat (vektor) & \multicolumn{2}{c}{0,167} & \multicolumn{2}{c}{0,200} \\
+\textbf{Leksikal (BM25)} & \multicolumn{2}{c}{\textbf{0,642}} & \multicolumn{2}{c}{\textbf{0,800}} \\
+Hibrida (RRF) & \multicolumn{2}{c}{0,259} & \multicolumn{2}{c}{0,550} \\
 \bottomrule
 \end{tabular}
 
 \vspace{2pt}
-{\footnotesize Cetak tebal menandai cara yang diadopsi ke jalur produksi, kecuali pada baris yang nilai tertingginya dimiliki cara lain. Penggabungan hibrida memiliki MRR mutlak tertinggi pada bagian (a), tetapi \textbf{selisih kontribusinya terkecil} dan satu-satunya yang tidak signifikan (t.s., 5/6 \emph{fold}, $p=0{,}094$); yang diuji penelitian ini adalah kontribusi pengondisian, bukan mutu penelusuran mutlak. Pada bagian (b), penelusuran leksikal mengembalikan konteks yang memuat jawaban rujukan pada 9 dari 10 kasus, hibrida 7 dari 10, dan padat 1 dari 10; tidak ada satu kasus pun hibrida mengungguli leksikal.}
+{\footnotesize t.s. = tidak signifikan. Cetak tebal menandai cara yang diadopsi ke jalur produksi. Penelusuran leksikal unggul pada \textbf{kedua} alat ukur sekaligus: ia satu-satunya cara yang selisih kontribusinya positif dan signifikan pada keduanya, sekaligus tertinggi pada kedua metrik RAGAS. \textbf{Penggabungan hibrida memiliki MRR mutlak tertinggi pada kolom RAG standar, tetapi kontribusi pengondisiannya justru negatif}, sehingga angka mutlak yang tinggi itu tidak berasal dari mekanisme yang diteliti. Satu keganjilan dilaporkan terbuka: pada lengan hibrida, mode \emph{oracle} justru \textbf{terendah} di lengannya sendiri (0,336), padahal ia menerima kondisi masa depan yang benar. Pemeriksaan kode menutup kemungkinan cacat implementasi, dan sebabnya terletak pada cara kerja penggabungan itu sendiri; uraiannya pada Subbab~\ref{sec:lengan-penelusuran}.}
 \end{table}
