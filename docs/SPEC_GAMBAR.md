@@ -299,6 +299,7 @@ Notasi UML. Tiga kelompok.
 |---|---|
 | `PatientState` «kontrak data» | `+ current_glucose, predicted_glucose`<br>`+ insulin_on_board, carbs_on_board`<br>`+ activity_level, stress_level`<br>*— diturunkan dari nilai TERPREDIKSI —*<br>`+ risk_level`: hipo \| normal \| hiper<br>`+ trend_direction, trend_rate`<br>`+ urgency`: critical \| high \| medium \| low<br>`+ to_rag_context(): dict`<br>`+ from_model_output(...)` |
 | `alerts` «modul» — `src/alerts.py` | `+ evaluate_divergence(current_glucose, predicted_glucose, horizon_minutes)`<br>peringatan saat kondisi kini aman tetapi kondisi terprediksi tidak |
+| `DivergenceAlert` «dataclass» — `src/alerts.py` | `from_class`, `to_class`, `from_label`, `to_label`<br>keluaran `evaluate_divergence()`; `None` bila kedua kategori sama |
 | `ClinicalDecisionLog` — `src/clinical_state/decision_log.py` | `+ update_state(patient_id, updates)`<br>`+ log_intervention(patient_id, jenis, ringkasan)`<br>`+ get_events(patient_id)`<br>`+ save() / load()` → JSON, jejak audit |
 | `StateRecord` «dataclass» | `patient_id`, `state`, `events` — wadah simpanan `ClinicalDecisionLog` |
 
@@ -312,6 +313,8 @@ Notasi UML. Tiga kelompok.
 | `SimpleKeywordRetriever` «cadangan, KNF-04» | — |
 | `MedicalKnowledgeBase` — `src/rag/knowledge_base.py` | `+ chunk_documents()` → 900/120, batas kalimat<br>`+ save_to_chroma()` |
 | `RAGGenerator` — `src/rag/generator.py` | `gemini-3.5-flash-lite`, suhu 0,2, maks 700 token<br>`+ generate_advisory(...)`<br>`+ generate_explanation(...)`<br>`- _template_answer(...)` «cadangan» |
+| `DiabetesAdvisorChain` — `src/rag/advisor_chain.py` | rantai LangChain yang benar-benar memanggil model bahasa<br>dibuat `RAGGenerator` pada `__init__` |
+| `RetrievedDocument` «dataclass» — `src/rag/pipeline.py` | `rank`, `text`, `source`, `similarity`, `metadata`<br>kontrak keluaran penelusuran; **di sinilah metadata sitasi mengalir** |
 | `citations` «modul» — `src/rag/citations.py` | `+ potong_batas_kalimat(teks, batas)`<br>kutipan berhenti di akhir kalimat (KNF-08) |
 | ChromaDB «penyimpan» | 2.233 potongan · `all-MiniLM-L6-v2`, 384 dimensi |
 
@@ -328,17 +331,32 @@ Notasi UML. Tiga kelompok.
 | `PatientState` | `alerts` | kebergantungan | — |
 | `PatientState` | `ClinicalDecisionLog` | kebergantungan | — |
 | `PatientState` | `PredictionConditionedQueryBuilder` | asosiasi | **"kontrak data"** |
-| `RAGPipeline` | `PredictionConditionedQueryBuilder` | komposisi | — |
-| `RAGPipeline` | `MMRRetriever` | komposisi | — |
-| `RAGPipeline` | `RAGGenerator` | komposisi | — |
-| `MMRRetriever` | `SimpleKeywordRetriever` | kebergantungan | **"bila indeks gagal"** |
+| `PatientState` | `DivergenceAlert` | kebergantungan | lewat `evaluate_divergence()` |
+| `RAGPipeline` | `PredictionConditionedQueryBuilder` | **kebergantungan** | builder dibuat lokal di dalam `_build_query()`, **bukan** disimpan sebagai atribut |
+| `RAGPipeline` | `MMRRetriever` | komposisi | disimpan pada `self.retriever` |
+| `RAGPipeline` | `RAGGenerator` | komposisi | disimpan pada `self.generator` |
+| `RAGPipeline` | `SimpleKeywordRetriever` | kebergantungan | **"bila indeks gagal"** — pemilihan cadangan terjadi di `RAGPipeline.build()`, **bukan** di dalam `MMRRetriever` |
+| `RAGPipeline` | `RetrievedDocument` | kebergantungan | keluaran `_retrieve()` |
+| `RAGGenerator` | `DiabetesAdvisorChain` | komposisi | dibuat pada `__init__` |
 | `MMRRetriever` | ChromaDB | asosiasi | **"baca potongan"** |
-| `MMRRetriever` | `citations` | kebergantungan | — |
 | `MedicalKnowledgeBase` | ChromaDB | asosiasi | — |
+| Lapisan antarmuka | `citations` | kebergantungan | `app/streamlit_app.py` memanggil `build_source_list()`; `advisor_chain.py` memanggil `format_page_label()` |
 
 **Yang harus terbaca:** `PatientState` adalah **satu-satunya** penghubung antara kelompok
 prakiraan dan kelompok RAG. **Tidak boleh ada** hubungan langsung dari `GBMGlucoseModel` ke
 `RAGPipeline` maupun ke `MMRRetriever`.
+
+**Tiga panah yang PERNAH salah pada spesifikasi terdahulu, jangan diulang.** Ketiganya sudah
+diperiksa ulang langsung ke kode, bukan dikira-kira:
+
+1. **Tidak ada** panah `MMRRetriever` → `citations`. Berkas `src/rag/retriever.py` tidak pernah
+   mengimpor `citations` sama sekali. Pemakainya adalah lapisan antarmuka dan `advisor_chain`.
+2. **Tidak ada** panah `MMRRetriever` → `SimpleKeywordRetriever`. Pemilihan retriever cadangan
+   terjadi di `RAGPipeline.build()`, sehingga panahnya berasal dari `RAGPipeline`.
+3. Hubungan `RAGPipeline` → `PredictionConditionedQueryBuilder` adalah **kebergantungan**,
+   bukan komposisi. Buildernya dibuat sesaat di dalam `_build_query()` lalu dibuang; ia tidak
+   pernah menjadi atribut `RAGPipeline`. Yang benar-benar komposisi hanya `MMRRetriever` dan
+   `RAGGenerator`, sebab keduanya disimpan pada `self`.
 
 ---
 
