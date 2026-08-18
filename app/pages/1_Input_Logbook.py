@@ -51,7 +51,13 @@ with left:
             carbs = st.number_input("Karbohidrat (g)", 0.0, 200.0, 30.0, 1.0)
             insulin = st.number_input("Insulin (unit)", 0.0, 30.0, 3.0, 0.1)
         with c2:
-            activity = st.number_input("Aktivitas (menit)", 0, 240, 15, 5)
+            # Skala INTENSITAS 0-10, bukan menit. Kolom activity pada data pelatihan berasal
+            # dari atribut "intensity" peristiwa exercise OhioT1DM (src/data/ohio_parser.py),
+            # yang sebarannya 0 sampai 10. Label lama "Aktivitas (menit)" dengan rentang
+            # 0-240 membuat dokter memberi model angka sampai 24 kali di luar sebaran
+            # pelatihan tanpa peringatan apa pun. Bawaannya 0 karena hanya 0,12% baris
+            # pelatihan yang bukan-nol: tidak berolahraga adalah keadaan yang normal.
+            activity = st.number_input("Aktivitas (intensitas 0–10)", 0, 10, 0, 1)
             stress = st.slider("Tingkat Stres", 1, 10, 5)
             sleep = st.checkbox("Tidur", value=False)
         with c3:
@@ -84,6 +90,61 @@ with left:
                 "masih serapat jendela yang dipakai melatih model.")
 
 with right:
+    # Legenda variabel. Sebelum ini tidak ada satu pun keterangan di layar mengenai arti,
+    # rentang, maupun satuan tiap variabel — dan yang paling menyesatkan, tidak ada
+    # keterangan bahwa stres, tidur, kerja, sakit, dan jenis makan TIDAK dibaca model.
+    # Dokter yang mengisi tingkat stres 9 akan mengira prediksinya memperhitungkan stres.
+    st.subheader("Arti dan Rentang Variabel")
+    with st.expander("Masuk ke model dan menggerakkan prediksi", expanded=True):
+        st.markdown(
+            "**Glukosa** — 40 sampai 400 mg/dL  \n"
+            "Kadar hasil pengukuran saat itu. Patokan klinis: di bawah **54** hipoglikemia "
+            "berat, di bawah **70** hipoglikemia, **70–180** rentang sasaran, di atas "
+            "**180** hiperglikemia, di atas **250** hiperglikemia berat.\n\n"
+            "**Karbohidrat** — 0 sampai 200 g  \n"
+            "Jumlah karbohidrat pada **satu asupan**, bukan akumulasi sehari. Patokan: "
+            "sepiring nasi ±40 g, sepotong roti ±15 g, satu pisang ±25 g. Pengaruhnya "
+            "meluruh dengan tetapan waktu **3 jam**.\n\n"
+            "**Insulin** — 0 sampai 30 unit  \n"
+            "Dosis **bolus** yang diberikan saat itu, bukan laju basal. Pengaruhnya meluruh "
+            "dengan tetapan waktu **4 jam**, mengikuti lama kerja insulin analog kerja cepat "
+            "4 sampai 6 jam menurut PERKENI.\n\n"
+            "**Aktivitas** — intensitas 0 sampai 10  \n"
+            "Seberapa **berat** kegiatan fisiknya, **bukan berapa lama**. "
+            "0 tidak beraktivitas; 1–3 ringan seperti jalan santai atau pekerjaan rumah; "
+            "4–6 sedang seperti jalan cepat atau bersepeda santai; 7–8 berat seperti lari "
+            "atau berenang; 9–10 sangat berat seperti lari cepat atau angkat beban."
+        )
+        st.caption(
+            "Keempatnya menjadi tujuh fitur yang dibaca model: glukosa, tren glukosa, "
+            "insulin aktif, karbohidrat aktif, aktivitas, dan dua komponen waktu dalam hari."
+        )
+
+    with st.expander("Dicatat sebagai rekam jejak, TIDAK dibaca model", expanded=False):
+        st.markdown(
+            "**Stres, Tidur, Kerja, Sakit, Jenis Makan, dan Catatan** tersimpan pada berkas "
+            "logbook untuk keperluan rekam jejak klinis, tetapi **tidak menjadi masukan "
+            "model**. Prediksi tidak berubah sedikit pun karena nilainya."
+        )
+        st.caption(
+            "Model produksi dilatih tanpa kolom-kolom itu, sehingga menambahkannya saat "
+            "prediksi akan membuat bentuk masukan tidak cocok dengan penskala. Pada data "
+            "pelatihan pun kolom stres hanya bukan-nol pada 6 dari 166.533 baris, sehingga "
+            "tidak ada pola yang dapat dipelajari darinya."
+        )
+
+    with st.expander("Syarat agar catatan dapat diprediksi", expanded=False):
+        st.markdown(
+            "Prediksi menuntut **12 catatan** dengan jarak antar-catatan **tidak lebih dari "
+            "30 menit**. Bila syarat itu tidak terpenuhi, halaman konsultasi menolak memakai "
+            "logbook dan menyatakan alasannya, bukan menambal jeda dengan nilai karangan."
+        )
+        st.caption(
+            "Perhitungan insulin aktif dan karbohidrat aktif mengandaikan catatan berjarak "
+            "5 menit. Catatan yang lebih renggang membuat kedua nilai aktif itu tampak lebih "
+            "besar daripada semestinya."
+        )
+
     st.subheader("Status Logbook")
     lb = load_logbook()
     total = len(lb)

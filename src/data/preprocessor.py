@@ -125,9 +125,21 @@ class DataPreprocessor:
         parts = []
         for _, g in df.groupby("patient_id", sort=False):
             g = g.copy()
-            insulin_src = g["bolus_dose"] if "bolus_dose" in g.columns else g["insulin"]
-            g["iob"] = _decay_accumulate(insulin_src.to_numpy(dtype=float), insulin_decay)
-            g["cob"] = _decay_accumulate(g["carbs"].to_numpy(dtype=float), carbs_decay)
+            # bolus_dose lebih tepat daripada insulin, sebab kolom insulin memuat basal yang
+            # hampir selalu bukan-nol dan bukan kejadian sesaat. Tetapi pada deret GABUNGAN
+            # dataset + logbook manual, kolom bolus_dose ada (dibawa baris dataset) sementara
+            # baris manual tidak memilikinya sehingga bernilai NaN. Tanpa fillna di bawah,
+            # IOB seluruh baris manual menjadi NaN dan insulin yang diketik dokter TIDAK
+            # PERNAH terpakai — dan karena HistGradientBoosting menerima NaN secara bawaan,
+            # kegagalan itu tidak memunculkan galat maupun peringatan apa pun.
+            if "bolus_dose" in g.columns:
+                insulin_src = g["bolus_dose"].fillna(g["insulin"])
+            else:
+                insulin_src = g["insulin"]
+            g["iob"] = _decay_accumulate(
+                insulin_src.to_numpy(dtype=float), insulin_decay)
+            g["cob"] = _decay_accumulate(
+                g["carbs"].fillna(0.0).to_numpy(dtype=float), carbs_decay)
             g["glucose_delta"] = g["glucose"].diff(trend_steps).fillna(0.0)
             hour = g["timestamp"].dt.hour + g["timestamp"].dt.minute / 60.0
             g["hour_sin"] = np.sin(2 * np.pi * hour / 24.0)
