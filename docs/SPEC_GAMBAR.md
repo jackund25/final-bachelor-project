@@ -31,6 +31,10 @@ bertentangan dengan naskah.
 Dibaca dari `config.yaml` dan ChromaDB, 17 Agustus 2026, dan kecocokannya diverifikasi
 terprogram. Jangan memakai angka lain, jangan menambah angka di luar daftar ini.
 
+**Satu pengecualian:** nilai contoh pada wireframe (§6) — kadar glukosa, interval, nomor
+halaman kutipan — adalah **ilustrasi tata letak**, bukan hasil pengukuran. Ia dipakai persis
+seperti tertulis di §6 dan tidak perlu dicocokkan ke tabel ini.
+
 | Besaran | Nilai |
 |---|---|
 | Panjang jendela masukan | 12 langkah (± 1 jam) untuk CGM; 6 langkah untuk SMBG |
@@ -45,16 +49,18 @@ terprogram. Jangan memakai angka lain, jangan menambah angka di luar daftar ini.
 | Model *embedding* | `all-MiniLM-L6-v2`, 384 dimensi, berjalan pada prosesor |
 | Cara penelusuran produksi | **`bm25`** (Okapi BM25) |
 | Potongan diambil | `top_k` = **5** |
-| Model bahasa | `gemini-3.5-flash-lite`, suhu 0,2, maks 700 token |
+| Model bahasa (konfigurasi) | `gemini-3.5-flash-lite`, suhu 0,2, maks 700 token |
 | Rekayasa fitur | 25,2 ms |
 | Prediksi | 7,6 ms |
 | Penelusuran | 161,4 ms |
 | Subtotal lokal | **194,2 ms** |
-| Model bahasa | ± 8,3 detik |
+| Waktu pembangkitan | ± 8,3 detik |
 | Total satu rekomendasi | ± 8,5 detik |
 | Muat artefak, sekali di awal | 18,6 detik |
 | Jejak memori | 632 MB |
-| Korpus | 12 dokumen pedoman, KB-01…KB-12, 494 halaman diindeks |
+| Korpus | 12 dokumen pedoman, KB-01…KB-12 |
+| Halaman dokumen | 543 |
+| Halaman diindeks | **494** — selisih 49 = 45 halaman depan + 4 halaman terlalu pendek |
 
 ### 0.3 Nama berkas dan nomor tercetak
 
@@ -75,14 +81,26 @@ karena warisan penamaan lama, dan itu tidak terlihat pembaca.
 `Gambar_IV1_AlurRinciSistem.png` (§3) adalah gambar yang berbeda bentuk dan berbeda tujuan.
 Sebut nama berkas lengkapnya, jangan hanya "Gambar IV.1".
 
-### 0.4 Empat tahap yang perlu ditandai sebagai kontribusi
-
-Berlaku pada gambar yang memuatnya (§2 dan §3). Tepat empat, tidak lebih:
+### 0.4 Empat TAHAP yang ditandai sebagai kontribusi
 
 1. Pengklasifikasi kondisi
 2. Perakitan `PatientState`
 3. Transformasi kueri terkondisi-prediksi
 4. Resolusi sitasi dari metadata
+
+**Yang dihitung empat adalah TAHAPnya, bukan kotaknya.** Satu tahap boleh muncul lebih dari
+satu kotak bila memang begitu adanya di sistem, dan kotak-kotak itu semuanya ditandai.
+
+Satu-satunya kasus demikian ada di §3: pengklasifikasi kondisi muncul sebagai **E3** di sisi
+luring (pelatihannya) dan **M** di sisi daring (pemakaiannya). **Keduanya ditandai**, dan
+keterangan gambar menyebutkan keduanya satu komponen. Jadi §3 memuat lima kotak bertanda
+untuk empat tahap, dan itu benar.
+
+**Ditandai hanya pada §2 dan §3.** Gambar arsitektur berlapis (§1) memang memuat keempat
+komponen itu, tetapi penandaannya **tidak dipakai di sana**. Alasannya: §1 berperan sebagai
+orientasi, lapisannya berupa pengelompokan dan bukan tahapan, sehingga menandai komponen di
+dalam lapisan justru memecah pembacaan lapisannya. Yang harus menonjol di §1 hanya satu, yaitu
+label **nilai TERPREDIKSI** pada hubungan lapis 2 → lapis 3.
 
 ### 0.5 Satu larangan yang berlaku di semua gambar
 
@@ -407,7 +425,7 @@ pencatatan keputusan."*
    ```
 
 5. **Panel PERINGATAN DIVERGENSI**
-   > ⚠ Kondisi terkini masih normal (150), tetapi kondisi terprediksi menuju hiperglikemia
+   > ⚠ Kondisi terkini masih normal (142), tetapi kondisi terprediksi menuju hiperglikemia
    > (205) dalam 60 menit.
 
 6. **Panel REKOMENDASI KLINIS** — antisipatif, dibumikan pada dokumen
@@ -441,7 +459,9 @@ disingkat.
 
 - [ ] Tidak ada istilah dari daftar larangan §0.1, kecuali sebagai pembanding yang dilabeli
 - [ ] Seluruh angka cocok dengan tabel §0.2, dan tidak ada angka tambahan
-- [ ] Tepat empat tahap kontribusi ditandai (§0.4), pada gambar yang memuatnya
+- [ ] Empat TAHAP kontribusi ditandai (§0.4), hanya pada §2 dan §3; pada §3 itu berarti
+      lima kotak, karena pengklasifikasi kondisi muncul dua kali (E3 luring, M daring)
+- [ ] Angka ilustrasi wireframe §6 dipakai apa adanya, tidak dicocokkan ke §0.2
 - [ ] Tidak ada hubungan dari kotak interval ke kotak pembentuk kueri (§0.5)
 - [ ] Nama kelas, berkas, pustaka, dan model ditulis persis seperti di kode
 - [ ] Nama berkas keluaran persis seperti tabel §0.3, keenamnya
