@@ -1,5 +1,5 @@
 % Sumber angka: results/benchmark/deployability.json (17 Agustus 2026), diukur ulang
-% atas korpus 2.233 potongan. Median atas ulangan yang dicatat berkas itu:
+% atas korpus 4.038 potongan (varian V2, 500/67). Median atas ulangan yang dicatat berkas itu:
 % 10 untuk rekayasa fitur, 30 untuk prediksi, 20 untuk penelusuran.
 \begin{table}[htbp]
 \centering
@@ -12,22 +12,22 @@
 \midrule
 \multicolumn{3}{@{}l}{\textit{Sekali saat aplikasi dinyalakan (di-cache, tidak dirasakan per konsultasi)}} \\
 \midrule
-Muat artefak & Model prakiraan, pengklasifikasi kondisi, indeks ChromaDB, indeks leksikal, model \emph{embedding} & 18,6 s \\
+Muat artefak & Model prakiraan, pengklasifikasi kondisi, indeks ChromaDB, indeks leksikal, model \emph{embedding} & 16,5 s \\
 \midrule
 \multicolumn{3}{@{}l}{\textit{Per siklus konsultasi}} \\
 \midrule
-Rekayasa fitur & Jendela \emph{logbook} $\rightarrow$ vektor fitur (IOB, COB, tren, diurnal) & 25,2 ms \\
-Prediksi & Regresi, pengklasifikasi kondisi, dan interval dari lebar antar-kuantil & 7,6 ms \\
-Penelusuran & Pembobotan BM25 atas 2.233 potongan & 161,4 ms \\
+Rekayasa fitur & Jendela \emph{logbook} $\rightarrow$ vektor fitur (IOB, COB, tren, diurnal) & 23,0 ms \\
+Prediksi & Regresi, pengklasifikasi kondisi, dan interval dari lebar antar-kuantil & 7,5 ms \\
+Penelusuran & Pembobotan BM25 atas 4.038 potongan & 284,3 ms \\
 \midrule
-\textbf{Subtotal lokal} & \textbf{Seluruh komputasi yang berjalan di perangkat} & \textbf{194,2 ms} \\
+\textbf{Subtotal lokal} & \textbf{Seluruh komputasi yang berjalan di perangkat} & \textbf{314,8 ms} \\
 \midrule
-Generasi & Satu panggilan model bahasa (jaringan + inferensi \emph{cloud}) & 8,3 s \\
+Generasi & Satu panggilan model bahasa (jaringan + inferensi \emph{cloud}) & 9,3 s \\
 \midrule
-\textbf{Total} & \textbf{Satu rekomendasi klinis utuh} & \textbf{$\approx$8,5 s} \\
+\textbf{Total} & \textbf{Satu rekomendasi klinis utuh} & \textbf{$\approx$9,6 s} \\
 \bottomrule
 \end{tabular}
 
 \vspace{0.4em}
-{\footnotesize Jejak memori setelah seluruh artefak dimuat: 631,8~MB. Seluruh angka diukur pada prosesor. Penelusuran leksikal \textbf{lebih lambat} daripada pencarian vektor yang dipakai sebelumnya, karena skor dihitung terhadap seluruh potongan pada tiap kueri; kenaikan itu tetap terserap oleh waktu tunggu model bahasa, yang sekitar 43 kali lebih besar daripada seluruh komputasi lokal digabung.}
+{\footnotesize Jejak memori setelah seluruh artefak dimuat: 641,2~MB. Seluruh angka diukur pada prosesor. Penelusuran leksikal \textbf{lebih lambat} daripada pencarian vektor yang dipakai sebelumnya, karena skor dihitung terhadap seluruh potongan pada tiap kueri; kenaikan itu tetap terserap oleh waktu tunggu model bahasa, yang sekitar 30 kali lebih besar daripada seluruh komputasi lokal digabung.}
 \end{table}

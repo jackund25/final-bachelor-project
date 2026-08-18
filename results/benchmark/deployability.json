@@ -11,46 +11,46 @@
   },
   "ukuran_artefak_mb": {
     "gbm_inference_bundle_h6.pkl": 1.4,
-    "chroma_db (2233 chunk)": 39.3
+    "chroma_db (4038 chunk)": 65.4
   },
   "tahap": {
     "1_muat_artefak_sekali": {
-      "model_regresi_ms": 245.4,
-      "pengklasifikasi_kondisi_ms": 26.4,
-      "retriever_dan_embedding_ms": 18317.2,
-      "total_ms": 18589.0,
+      "model_regresi_ms": 175.7,
+      "pengklasifikasi_kondisi_ms": 24.4,
+      "retriever_dan_embedding_ms": 16345.8,
+      "total_ms": 16545.9,
       "keterangan": "Hanya sekali saat aplikasi start (di-cache); tidak dirasakan per konsultasi."
     },
     "2_rekayasa_fitur": {
-      "median_ms": 25.2,
-      "p95_ms": 27.8,
-      "min_ms": 24.1,
+      "median_ms": 23.0,
+      "p95_ms": 25.1,
+      "min_ms": 22.5,
       "n_ulangan": 10
     },
     "3_prediksi": {
-      "median_ms": 7.6,
-      "p95_ms": 9.5,
-      "min_ms": 5.7,
+      "median_ms": 7.5,
+      "p95_ms": 9.6,
+      "min_ms": 6.0,
       "n_ulangan": 30,
       "keterangan": "Mencakup regresi, pengklasifikasi kondisi, dan interval ketidakpastian (quantile_spread)."
     },
     "4_retrieval": {
-      "median_ms": 161.4,
-      "p95_ms": 172.3,
-      "min_ms": 158.3,
+      "median_ms": 284.3,
+      "p95_ms": 303.9,
+      "min_ms": 279.1,
       "n_ulangan": 20,
-      "keterangan": "Embedding kueri + pencarian MMR pada 2233 chunk."
+      "keterangan": "Embedding kueri + pencarian MMR pada 4038 chunk."
     },
     "5_generasi_llm": {
       "dijalankan": true,
-      "sekali_panggil_ms": 8260.6,
+      "sekali_panggil_ms": 9298.3,
       "keterangan": "Satu panggilan Gemini; kuota free-tier 20 request/hari."
     }
   },
   "keluarga_model_diukur": "gbm",
-  "total_siklus_lokal_ms": 194.2,
+  "total_siklus_lokal_ms": 314.8,
   "memori_rss_mb": {
     "sebelum_muat": 275.4,
-    "setelah_muat_semua": 631.8
+    "setelah_muat_semua": 641.2
   }
 }
