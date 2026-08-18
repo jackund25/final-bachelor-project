@@ -71,15 +71,15 @@ karena warisan penamaan lama, dan itu tidak terlihat pembaca.
 | Nama berkas keluaran | Tercetak sebagai | Bagian |
 |---|---|---|
 | `Gambar_IV1_Arsitektur.png` | Gambar IV.1 | §1 |
-| `Gambar_IV3_PipelinePCRAG.png` | Gambar IV.2 | §2 |
-| `Gambar_IV1_AlurRinciSistem.png` | Gambar IV.3 | §3 |
+| `Gambar_IV2_PipelinePCRAG.png` | Gambar IV.2 | §2 |
+| `Gambar_IV3_AlurRinciSistem.png` | Gambar IV.3 | §3 |
 | `Gambar_IV4_ClassDiagram.png` | Gambar IV.4 | §4 |
 | `Gambar_IV5_SequencePCRAG.png` | Gambar IV.5 | §5 |
 | `Gambar_IV6_Wireframe.png` | Gambar IV.6 | §6 |
 
-**Awas dua berkas berawalan `Gambar_IV1`.** `Gambar_IV1_Arsitektur.png` (§1) dan
-`Gambar_IV1_AlurRinciSistem.png` (§3) adalah gambar yang berbeda bentuk dan berbeda tujuan.
-Sebut nama berkas lengkapnya, jangan hanya "Gambar IV.1".
+Nomor pada nama berkas kini **sama** dengan nomor tercetak, jadi tidak ada lagi lompatan
+maupun dua berkas berawalan `Gambar_IV1`. Penamaan lama (`Gambar_IV3_PipelinePCRAG.png` untuk
+Gambar IV.2 dan `Gambar_IV1_AlurRinciSistem.png` untuk Gambar IV.3) sudah tidak dipakai.
 
 ### 0.4 Empat TAHAP yang ditandai sebagai kontribusi
 
@@ -286,10 +286,10 @@ Notasi UML. Tiga kelompok.
 
 | Kelas | Isi |
 |---|---|
-| `OhioParser` — `src/data/ohio_parser.py` | `+ process_ohio_dataset(): DataFrame`<br>`+ parse_ohio_fingerstick(): DataFrame` |
+| `ohio_parser` «modul» — `src/data/ohio_parser.py` | `+ parse_ohio_xml(xml_path): DataFrame`<br>`+ parse_ohio_fingerstick(xml_path): DataFrame`<br>`+ process_ohio_dataset(...)` menulis CSV |
 | `DataPreprocessor` — `src/data/preprocessor.py` | `+ handle_missing_values(df)`<br>`+ engineer_features(df)`<br>`+ create_sequences(df, w, h)`<br>`+ split_by_patient(df, uji)`<br>`+ normalize_data(Xtr, Xte)` |
 | `BaseGlucoseModel` «antarmuka» | `+ train(X, y)`<br>`+ predict(X)`<br>`+ save(path) / load(path)` |
-| `GBMGlucoseModel` «produksi» | `- model: HistGradientBoostingRegressor`<br>`- model_q025, model_q975`<br>`+ train(X, y): dict`<br>`+ predict(X)`<br>`+ predict_std(X)`<br>σ = (q₀,₉₇₅ − q₀,₀₂₅) / 3,92 |
+| `GBMGlucoseModel` «produksi» | `- model: HistGradientBoostingRegressor`<br>`- model_q_low, model_q_high`<br>`+ train(X, y): dict`<br>`+ predict(X)`<br>`+ predict_std(X)`<br>σ = (q₀,₉₇₅ − q₀,₀₂₅) / 3,92 |
 | `RandomForestGlucoseModel` «pembanding» | — |
 | `LSTMGlucoseModel` «pembanding» | — |
 
@@ -298,8 +298,9 @@ Notasi UML. Tiga kelompok.
 | Kelas | Isi |
 |---|---|
 | `PatientState` «kontrak data» | `+ current_glucose, predicted_glucose`<br>`+ insulin_on_board, carbs_on_board`<br>`+ activity_level, stress_level`<br>*— diturunkan dari nilai TERPREDIKSI —*<br>`+ risk_level`: hipo \| normal \| hiper<br>`+ trend_direction, trend_rate`<br>`+ urgency`: critical \| high \| medium \| low<br>`+ to_rag_context(): dict`<br>`+ from_model_output(...)` |
-| `alerts` «modul» — `src/alerts.py` | `+ evaluate_divergence(kini, prediksi, menit)`<br>peringatan saat kondisi kini aman tetapi kondisi terprediksi tidak |
-| `ClinicalDecisionLog` — `src/clinical_state/decision_log.py` | `+ record(StateRecord)`<br>`+ load() / save()` → JSON, jejak audit |
+| `alerts` «modul» — `src/alerts.py` | `+ evaluate_divergence(current_glucose, predicted_glucose, horizon_minutes)`<br>peringatan saat kondisi kini aman tetapi kondisi terprediksi tidak |
+| `ClinicalDecisionLog` — `src/clinical_state/decision_log.py` | `+ update_state(patient_id, updates)`<br>`+ log_intervention(patient_id, jenis, ringkasan)`<br>`+ get_events(patient_id)`<br>`+ save() / load()` → JSON, jejak audit |
+| `StateRecord` «dataclass» | `patient_id`, `state`, `events` — wadah simpanan `ClinicalDecisionLog` |
 
 ### 4.3 Kelompok RAG
 
@@ -310,7 +311,7 @@ Notasi UML. Tiga kelompok.
 | `MMRRetriever` — `src/rag/retriever.py` | `- retrieval_mode`: vektor \| **bm25** \| hibrida<br>`+ retrieve(query, top_k)`<br>`- _peringkat_bm25(query, n)`<br>`- _gabung_rrf(daftar)`<br>**bm25 = jalur produksi** |
 | `SimpleKeywordRetriever` «cadangan, KNF-04» | — |
 | `MedicalKnowledgeBase` — `src/rag/knowledge_base.py` | `+ chunk_documents()` → 900/120, batas kalimat<br>`+ save_to_chroma()` |
-| `RAGGenerator` — `src/rag/generator.py` | `gemini-3.5-flash-lite`, suhu 0,2, maks 700 token<br>`+ generate(context, query)`<br>`+ _template_answer()` «cadangan» |
+| `RAGGenerator` — `src/rag/generator.py` | `gemini-3.5-flash-lite`, suhu 0,2, maks 700 token<br>`+ generate_advisory(...)`<br>`+ generate_explanation(...)`<br>`- _template_answer(...)` «cadangan» |
 | `citations` «modul» — `src/rag/citations.py` | `+ potong_batas_kalimat(teks, batas)`<br>kutipan berhenti di akhir kalimat (KNF-08) |
 | ChromaDB «penyimpan» | 2.233 potongan · `all-MiniLM-L6-v2`, 384 dimensi |
 
@@ -318,7 +319,7 @@ Notasi UML. Tiga kelompok.
 
 | Dari | Ke | Jenis | Label |
 |---|---|---|---|
-| `OhioParser` | `DataPreprocessor` | asosiasi | — |
+| `ohio_parser` | `DataPreprocessor` | kebergantungan | — |
 | `DataPreprocessor` | `BaseGlucoseModel` | asosiasi | — |
 | `GBMGlucoseModel` | `BaseGlucoseModel` | realisasi | — |
 | `RandomForestGlucoseModel` | `BaseGlucoseModel` | realisasi | — |
@@ -375,7 +376,7 @@ Pengklasifikasi kondisi · `PatientState` · `PredictionConditionedQueryBuilder`
 | 17 | Antarmuka → `citations` | `build_source_list(potongan)` |
 | 18 | `citations` → Antarmuka | `page_label` dari metadata, kutipan dipotong batas kalimat |
 | 19 | Antarmuka → Dokter | Prediksi, interval, peringatan, rekomendasi, sumber |
-| 20 | Dokter → `ClinicalDecisionLog` | Setujui / sesuaikan / tolak |
+| 20 | Dokter → `ClinicalDecisionLog` | Setujui / sesuaikan / tolak → `log_intervention(...)` |
 
 **Dua hal yang harus terbaca:**
 
