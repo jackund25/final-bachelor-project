@@ -22,7 +22,11 @@ def test_config_resolved_relative_to_project_not_cwd(tmp_path, monkeypatch):
     clear_cache()
     cfg = load_config()
     assert cfg, "config.yaml harus tetap ditemukan dari cwd mana pun"
-    assert cfg_get("rag.chunk_size") == 900
+    # Nilainya dibaca dari config.yaml, bukan ditulis tetap di sini. Yang diuji adalah
+    # bahwa berkasnya tetap ditemukan dari cwd mana pun, sehingga uji ini tidak boleh
+    # ikut gagal setiap kali sebuah parameter penyetelan diubah.
+    assert cfg_get("rag.chunk_size") == cfg["rag"]["chunk_size"]
+    assert isinstance(cfg_get("rag.chunk_size"), int)
 
 
 def test_default_config_path_points_at_repo_config():
@@ -75,7 +79,9 @@ def test_precedence_ctor_beats_env_beats_config(monkeypatch):
     assert resolve("x", None, "UJI_PRESEDENSI", "rag.chunk_size", "default") == "dari_env"
     # config menang atas default
     monkeypatch.delenv("UJI_PRESEDENSI")
-    assert resolve("x", None, "UJI_PRESEDENSI", "rag.chunk_size", 1, cast=int) == 900
+    dari_berkas = load_config()["rag"]["chunk_size"]
+    assert resolve("x", None, "UJI_PRESEDENSI", "rag.chunk_size", 1, cast=int) == dari_berkas
+    assert dari_berkas != 1, "nilai default tidak boleh sama dengan nilai config"
     # default dipakai bila kunci tidak ada
     assert resolve("x", None, None, "rag.tidak_ada", "default") == "default"
 

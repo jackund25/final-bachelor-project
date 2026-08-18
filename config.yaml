@@ -106,14 +106,29 @@ rag:
   collection_name: "diabetes_kb"
 
   # Chunking dokumen pedoman (per halaman PDF)
-  chunk_size: 900
-  chunk_overlap: 120
+  #
+  # Varian V2 pada T7, diadopsi 18 Agustus 2026 atas keputusan pembimbing.
+  # Sebelumnya V1 (900/120). V2 dipilih karena satu-satunya varian yang menuntaskan
+  # KEDUA cacat pemecahan sekaligus:
+  #   - cacat B, potongan berakhir di tengah kalimat : akhir utuh 19,7% -> 85,3%
+  #   - cacat A, potongan melewati jendela 256 token : token terbuang 8,23% -> 0,00%
+  # V1 hanya menuntaskan cacat B dan menyisakan 6,14% token yang tidak pernah
+  # dapat ditelusur karena ekornya tak pernah masuk vektor.
+  #
+  # Dasar adopsinya INTEGRITAS KORPUS, bukan MRR. Kolom MRR pada Tabel VI.13 tidak
+  # sah dipakai membandingkan antar-varian, sebab label kebenarannya diturunkan dari
+  # teks potongan sehingga ikut bergerak ketika panjang potongan diubah.
+  #
+  # Tumpang-tindih mengikuti rasio 0,1333 yang dipakai seluruh varian T7:
+  # 500 x 0,1333 = 66,7 -> 67.
+  chunk_size: 500
+  chunk_overlap: 67
 
   # T7. Potongan berhenti di batas KALIMAT, bukan di sembarang kata.
   # Dasarnya Gao dkk. (2023) Bagian V.A.1 hal. 8, yang menyebut kelemahan pemecahan
   # berukuran tetap sebagai "truncation within sentences".
-  # Terukur pada 531 halaman korpus: potongan yang berakhir kalimat utuh naik
-  # 19,7% -> 83,5%, dan yang bermula utuh 47,1% -> 92,7%.
+  # Terukur pada korpus yang sama: potongan yang berakhir kalimat utuh naik
+  # 19,7% -> 85,3% pada varian V2 yang kini dipakai (83,5% pada V1 terdahulu).
   #
   # URUTAN pemisahnya yang menentukan, bukan sekadar keberadaannya. Menyisipkan
   # ". " SESUDAH "\n" praktis tidak berpengaruh (37,4%) karena "\n" selalu berhasil

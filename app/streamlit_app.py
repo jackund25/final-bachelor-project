@@ -391,6 +391,21 @@ pred_condition = predict_condition(window_df, cond_clf, art)
 # sini, sehingga dua interval pada halaman yang sama bisa berbeda tanpa error apa pun.
 lo95, hi95 = utama["interval"] if utama["interval"] is not None else (None, None)
 
+# Keandalan kondisi terprediksi DITAMPILKAN, bukan disembunyikan. Kondisi inilah yang
+# menyusun kueri penelusuran, sehingga bila ia keliru, dokter menerima pedoman untuk
+# kondisi yang tidak sedang dihadapinya. Pada sistem ber-alur doctor-mediated, panduan
+# keliru yang TERLIHAT masih dapat ditolak dokter, sedangkan yang menyamar tidak.
+# Angkanya dari results/eval_prediksi/condition_classifier.json.
+if pred_condition is not None:
+    st.caption(
+        f"Kondisi terprediksi **{pred_condition}** berasal dari pengklasifikasi kondisi, "
+        f"dan kondisi inilah yang menyusun kueri penelusuran pedoman. "
+        f"Keandalannya terukur: benar **86,1%** pada keseluruhan kasus, tetapi hanya "
+        f"**35,4%** pada kasus divergen, yakni ketika kondisi terkini dan kondisi "
+        f"terprediksi berbeda. Periksa kesesuaian pedoman yang dirujuk terhadap pasien "
+        f"sebelum menindaklanjutinya."
+    )
+
 if pred_condition == RISK_HYPO and pred >= GLUCOSE_LOW:
     st.warning(f"🔻 **Waspada hipoglikemia:** prediksi titik **{pred:.0f} mg/dL** masih di atas {GLUCOSE_LOW:.0f}, "
                f"namun pengklasifikasi kondisi menandai risiko **hipoglikemia** dalam {horizon_min} menit. "
@@ -474,6 +489,17 @@ with tab_rec:
                 "**Sumber Rujukan** di bawah. Keputusan akhir berada pada dokter."
             )
             with st.expander(f"📚 Sumber Rujukan ({len(sources)} dokumen)", expanded=False):
+                # Kondisi yang MENDASARI penelusuran dinyatakan di sini, bukan hanya di
+                # panel prediksi. Tanpa label ini, potongan pedoman tampak berlaku bagi
+                # keadaan pasien sekarang, padahal ia ditelusur untuk kondisi masa depan
+                # yang belum tentu terjadi.
+                if pred_condition is not None:
+                    st.info(
+                        f"Seluruh potongan di bawah ditelusur untuk **kondisi terprediksi: "
+                        f"{pred_condition}**, bukan untuk kondisi terkini "
+                        f"({current:.0f} mg/dL). Bila kondisi terprediksi keliru, pedoman "
+                        f"yang dirujuk pun keliru sasaran."
+                    )
                 # Keterangan MENGIKUTI cara menelusur yang benar-benar dipakai.
                 # Sebelumnya ia selalu menjelaskan skor kemiripan, padahal pada jalur
                 # hibrida skor itu tidak ada sama sekali — dokter akan mencari angka

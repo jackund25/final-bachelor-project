@@ -257,8 +257,13 @@ def evaluate(cases: pd.DataFrame, r: MMRRetriever, label: str) -> tuple[pd.DataF
                 q = build_ablation_query(g, cond=cond)
                 covered = int(cond == expected)
             elif mode == "pc_rag_combined":
-                # Konfigurasi yang BENAR-BENAR dijalankan aplikasi: kondisi dari pengklasifikasi,
-                # ditambah kondisi berisiko yang masih tercakup interval konformal.
+                # BUKAN konfigurasi produksi. Diperiksa 18 Agustus 2026:
+                # app/streamlit_app.py meneruskan `predicted_condition` saja dan SENGAJA
+                # tidak meneruskan batas interval, sehingga cabang interval pada
+                # conditioned_query.py:119 tidak pernah aktif di produksi. Lengan ini
+                # mengukur seandainya interval ikut diteruskan -- dan hasilnya justru
+                # menjadi alasan mengapa produksi tidak melakukannya: cakupan kondisi
+                # naik ke 94,2% tetapi MRR natural runtuh 0,780 -> 0,319.
                 cond = str(c["cond_classifier"])
                 g, is_pred = float(c["predicted"]), True
                 cov = {cond}
