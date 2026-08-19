@@ -102,6 +102,28 @@ orientasi, lapisannya berupa pengelompokan dan bukan tahapan, sehingga menandai 
 dalam lapisan justru memecah pembacaan lapisannya. Yang harus menonjol di §1 hanya satu, yaitu
 label **nilai TERPREDIKSI** pada hubungan lapis 2 → lapis 3.
 
+### 0.4b Seberapa teknis boleh sebuah gambar — hasil pembandingan ke tiga TA rekan
+
+Pembimbing menolak versi terdahulu Gambar IV.3 karena **terlalu teknis**. Pembandingan ke
+tiga laporan rekan sepembimbing yang sudah lulus memberi aturan yang dapat diterapkan, dan
+aturannya **bergantung pada jenis gambarnya**, bukan seragam.
+
+| Jenis gambar | Boleh menyebut nama teknis? | Bukti dari TA rekan |
+|---|---|---|
+| **Diagram alur / pipeline** | **Tidak.** Label berisi peran, bukan implementasi | Gambar IV.1 Gabriel memuat ±20 kotak berlabel peran (*Semantic Chunker*, *Retrieval Evaluator*) tanpa satu pun nama berkas atau angka. Gambar IV.4–IV.6 Reffy hanya 4–7 kotak (*AI Agent*, *Router*, *Synthesizer*) |
+| **Diagram arsitektur berlapis** | **Boleh**, sebab yang dipetakan memang teknologinya | Gambar IV.3 Reffy menyebut *Website UI*, *n8n Workflow*, *Qdrant*, *Supabase*, tersusun dalam lapisan bernama |
+| **Diagram kelas dan sekuens (UML)** | **Boleh**, sebab nama kelas dan operasi adalah notasinya | Notasi UML baku |
+| **Wireframe** | **Boleh**, sebab yang digambar memang antarmukanya | — |
+
+**Yang tidak pernah boleh masuk gambar apa pun:** angka waktu dan angka jumlah. Keduanya
+sudah dimuat Tabel III.4, IV.1, dan VI.9, dan mengulanginya di gambar menciptakan dua sumber
+kebenaran yang akan berselisih pada revisi berikutnya.
+
+**Pola pendamping yang layak ditiru.** Reffy memindahkan seluruh rincian teknis yang dibuang
+dari gambar ke **tabel berkolom Lapisan, Komponen, dan Peran** (Tabel IV.4 miliknya).
+Rinciannya karena itu tidak hilang, hanya berpindah tempat. Pola yang sama dipakai pada
+Subbab 3.5 di bawah.
+
 ### 0.5 Satu larangan yang berlaku di semua gambar
 
 **Tidak boleh ada panah dari kotak interval ketidakpastian ke kotak pembentuk kueri.**
@@ -126,8 +148,8 @@ yang divalidasi dokter."*
 |---|---|
 | 1. Data | Catatan *logbook*: glukosa, karbohidrat, insulin, aktivitas, stres · Dataset OhioT1DM, 12 pasien |
 | 2. Prakiraan | Rekayasa fitur berbasis fisiologi (IOB, COB, tren, pola diurnal) · Gradient Boosting +30/+60 menit · Interval konformal · Pengklasifikasi kondisi |
-| 3. Kondisi klinis | `PatientState`: tingkat risiko, arah tren, kegentingan · Peringatan divergensi |
-| 4. Penalaran berbasis dokumen | Pembentuk kueri terkondisi-prediksi · Penelusuran BM25 atas 4.038 potongan · Model bahasa · Resolusi sitasi dari metadata |
+| 3. Kondisi klinis | Kondisi klinis terstruktur: tingkat risiko, arah tren, kegentingan · Peringatan divergensi |
+| 4. Penalaran berbasis dokumen | Pembentuk kueri terkondisi-prediksi · Penelusuran leksikal atas basis pengetahuan · Model bahasa · Resolusi sitasi dari metadata |
 | 5. Validasi dokter | Antarmuka konsultasi · Setujui / sesuaikan / tolak · Jejak audit keputusan |
 
 **Hubungan:** satu arah menaik lapis 1 → 5, ditambah satu panah balik dari lapis 5 ke lapis 1
@@ -151,14 +173,14 @@ kondisi.
 | # | Kotak | Isi label |
 |---|---|---|
 | 1 | Masukan | Catatan *logbook*: glukosa, karbohidrat, insulin, aktivitas, stres |
-| 2 | Prapemrosesan | Jendela 12 × 5 menit · 7 fitur: `glucose`, `glucose_delta`, `iob`, `cob`, `activity`, `hour_sin`, `hour_cos` |
-| 3 | Prakiraan | **Gradient Boosting** · target Δglukosa lalu direkonstruksi ke nilai absolut · horizon +30 / +60 menit |
-| 4 | Ketidakpastian | Dua model kuantil (0,025 dan 0,975) → σ → **interval konformal 95%** |
+| 2 | Prapemrosesan | Pembentukan jendela riwayat dan tujuh fitur berbasis fisiologi |
+| 3 | Prakiraan | Prakiraan glukosa pada dua horizon, dipelajari sebagai selisih lalu direkonstruksi ke nilai absolut |
+| 4 | Ketidakpastian | Interval prediksi terkalibrasi dari lebar antar-kuantil |
 | 5 | Kondisi ★ | **Pengklasifikasi kondisi** sadar-biaya → hipoglikemia / normal / hiperglikemia |
-| 6 | Kontrak data ★ | `PatientState`: `risk_level`, `trend_direction`, `urgency` — diturunkan dari **nilai TERPREDIKSI** |
+| 6 | Kontrak data ★ | **Kondisi klinis terstruktur**: tingkat risiko, arah tren, dan kegentingan — diturunkan dari **nilai TERPREDIKSI** |
 | 7 | Kebaruan ★ | **Pembentuk kueri terkondisi-prediksi** — kueri disusun dari kondisi masa depan |
-| 8 | Penelusuran | **Okapi BM25** atas **4.038 potongan** ChromaDB · lima potongan teratas |
-| 9 | Pembangkitan | `gemini-3.5-flash-lite`, suhu 0,2, maks 700 token · rekomendasi dibumikan pada potongan |
+| 8 | Penelusuran | **Penelusuran leksikal** atas basis pengetahuan terindeks · lima potongan teratas |
+| 9 | Pembangkitan | Rekomendasi berbahasa Indonesia, dibumikan pada potongan yang ditelusur |
 | 10 | Sitasi ★ | Nomor halaman diresolusi **dari metadata potongan**, bukan dari teks model |
 | 11 | Validasi | Dokter setujui / sesuaikan / tolak → jejak audit |
 
@@ -181,91 +203,135 @@ dan **tidak** tersambung ke kotak 7 (§0.5).
 
 ---
 
-## 3. `Gambar_IV1_AlurRinciSistem.png` — Alur Rinci Sistem
+## 3. `Gambar_IV3_AlurRinciSistem.png` — Alur Rinci Sistem
 
 Tercetak **Gambar IV.3**. Label naskah `fig:alur-rinci`. **Arahan pembimbing.**
+
+> ### ⚠ REVISI 19 Agustus 2026 — versi terdahulu ditolak karena terlalu teknis
+>
+> Pembimbing menilai versi sebelumnya **terlalu teknis dan kurang ilmiah**. Diagnosisnya
+> diperoleh dengan membandingkan terhadap tiga laporan TA rekan sepembimbing yang sudah
+> lulus, dan **penyebabnya bukan jumlah kotak**.
+>
+> Gambar IV.1 milik Gabriel memuat sekitar dua puluh kotak dengan pemisahan
+> "Tahap Indexing (Luring)" dan "Tahap Inference (Daring)" — susunan yang sama dengan
+> gambar ini — dan **diterima**. Yang membedakan adalah **jenis labelnya**: seluruh kotak
+> Gabriel diberi nama **peran**, seperti *Semantic Chunker*, *Query Embedding*,
+> *Retrieval Evaluator*, dan *Response Generator (LLM)*. Tidak ada satu pun nama berkas,
+> nama fungsi, nama kelas, angka waktu, maupun jumlah potongan di dalam gambarnya.
+>
+> Reffy menempuh jalan yang sama secara lebih ekstrem: diagram alurnya hanya berisi empat
+> sampai tujuh kotak berlabel peran (*AI Agent*, *Router*, *Orchestrator*, *Synthesizer*),
+> sedangkan seluruh rincian teknis dipindahkan ke **tabel pendamping**, yaitu Tabel IV.4
+> "Komponen Arsitektur Sistem" berkolom Lapisan, Komponen, dan Peran dalam Sistem.
+>
+> **Aturan revisi, diturunkan dari kedua pola itu:**
+>
+> 1. **Label kotak menyebut PERAN, bukan implementasi.** Tidak boleh ada nama berkas
+>    (`ohio_parser.py`, `conformal_h6.json`), nama fungsi (`predict`, `build_source_list`,
+>    `evaluate_divergence`), nama kelas (`PatientState`, `MMRRetriever`,
+>    `ClinicalDecisionLog`), maupun nama pustaka atau model (`all-MiniLM-L6-v2`,
+>    `gemini-3.5-flash-lite`, ChromaDB).
+> 2. **Tidak ada angka waktu di dalam gambar.** 25,2 ms, 284,3 ms, dan 314,8 ms dipindahkan
+>    ke Tabel VI.9, yang memang sudah memuatnya. Kotak keterangan waktu **dihapus**.
+> 3. **Tidak ada angka jumlah di dalam gambar.** 4.038 potongan, 494 halaman, dan 12 pasien
+>    dipindahkan ke Tabel III.4 dan Tabel IV.1, yang juga sudah memuatnya.
+> 4. **Yang DIPERTAHANKAN**, sebab ketiganya justru ada pada gambar Gabriel yang diterima:
+>    pemisahan luring dan daring, label pada panah yang menyebut **objek data** yang
+>    berpindah, dan penandaan kotak kontribusi.
+> 5. **Rincian yang dibuang dari gambar dipindahkan ke Tabel IV.2 yang baru** (Subbab 3.5),
+>    mengikuti pola Tabel IV.4 milik Reffy.
 
 **Keterangan gambar di naskah:** *"Alur rinci sistem, memisahkan tahap luring yang dijalankan
 sekali di luar aplikasi dari tahap daring yang dijalankan pada tiap konsultasi."*
 
-Gambar terbesar di Bab IV. Isinya terbagi **dua kelompok bertanda**: LURING dan DARING.
-
 ### 3.1 Kelompok LURING — dijalankan sekali, di luar aplikasi
 
-| Kode | Isi label | Menuju |
+| Kode | Label pada kotak | Menuju |
 |---|---|---|
-| A | OhioT1DM XML · 12 pasien | B |
-| B | `ohio_parser.py` · selaraskan *event* ±2,5 menit | C |
-| C | `ohio_t1dm_merged.csv` · CGM 5 menit | D |
-| D | `preprocessor` · `engineer_features` → `create_sequences` | E, E2, E3 |
-| E | Latih **Gradient Boosting** · *bundle* `.pkl` per horizon | — |
-| E2 | Kalibrasi konformal · `conformal_h6.json`, `conformal_h12.json` | — |
-| E3 ★ | **Pengklasifikasi kondisi** · hipoglikemia / normal / hiperglikemia | — |
-| F | 12 PDF pedoman · KB-01…KB-12 + `manifest.csv` · 494 halaman diindeks | G |
-| G | Pecah 500/67 pada **batas kalimat** · `all-MiniLM-L6-v2` | H |
-| H | **ChromaDB `diabetes_kb` · 4.038 potongan** | — |
+| A | Rekaman pemantauan glukosa | B |
+| B | Penyelarasan waktu kejadian | C |
+| C | Deret waktu terpadu | D |
+| D | Rekayasa fitur fisiologis | E, E2, E3 |
+| E | Pelatihan model prakiraan | — |
+| E2 | Kalibrasi interval ketidakpastian | — |
+| E3 ★ | **Pelatihan pengklasifikasi kondisi** | — |
+| F | Korpus pedoman klinis | G |
+| G | Pemecahan pada batas kalimat | H |
+| H | Basis pengetahuan terindeks | — |
 
 ### 3.2 Kelompok DARING — dijalankan tiap konsultasi
 
-| Kode | Isi label | Waktu | Menuju |
-|---|---|---|---|
-| I | Dokter memilih pasien, memasukkan *logbook* | — | J |
-| J | Bangun jendela 12 baris terakhir · hitung 7 fitur | 25,2 ms | K, M |
-| K | `predict` · Δglukosa lalu rekonstruksi ke nilai absolut | 7,6 ms | L, O |
-| L | σ dari lebar antar-kuantil → **interval konformal 95%** | — | N, U |
-| M ★ | **Pengklasifikasi kondisi** | — | O |
-| N | `evaluate_divergence` · peringatan bila kondisi kini aman tetapi prediksi tidak | — | U |
-| O ★ | **`PatientState`** · risiko, tren, kegentingan — dari **nilai TERPREDIKSI** | — | P |
-| P ★ | **Pembentuk kueri terkondisi-prediksi** | — | Q |
-| Q | **`MMRRetriever` mode `bm25`** · Okapi BM25 → `top_k` 5 | 284,3 ms | R |
-| R | `gemini-3.5-flash-lite` · suhu 0,2 · maks 700 token | ± 8,3 s | S |
-| S | `_ensure_disclaimer` | — | T |
-| T ★ | **`build_source_list`** · nomor halaman dari **METADATA** | — | U |
-| U | Layar dokter · prediksi, interval, peringatan, rekomendasi, sumber | — | V |
-| V | `ClinicalDecisionLog` · jejak audit | — | — |
+| Kode | Label pada kotak | Menuju |
+|---|---|---|
+| I | Masukan logbook oleh dokter | J |
+| J | Pembentukan jendela dan fitur | K, M |
+| K | Prakiraan glukosa | L, N, O |
+| L | Interval ketidakpastian terkalibrasi | N, U |
+| M ★ | **Penentuan kondisi terprediksi** | O |
+| N | Deteksi divergensi | U |
+| O ★ | **Perakitan kondisi klinis terstruktur** | P |
+| P ★ | **Transformasi kueri terkondisi-prediksi** | Q |
+| Q | Penelusuran leksikal | R |
+| R | Pembangkitan rekomendasi | S |
+| S | Penjaminan penyangkalan | T |
+| T ★ | **Resolusi sitasi dari metadata** | U |
+| U | Layar konsultasi dokter | V |
+| V | Pencatatan keputusan dokter | — |
 
-★ = tahap kontribusi (§0.4). Perhatikan pengklasifikasi kondisi muncul dua kali, sebagai E3
-di sisi luring (pelatihannya) dan M di sisi daring (pemakaiannya) — itu satu komponen.
+★ = tahap kontribusi (§0.4). Pengklasifikasi kondisi muncul dua kali, sebagai E3 di sisi
+luring untuk pelatihannya dan M di sisi daring untuk pemakaiannya; keduanya satu komponen.
 
-### 3.3 Hubungan antar-kelompok
+### 3.3 Label pada panah — menyebut objek data yang berpindah
 
-Empat hubungan berikut menandai **artefak yang dipakai ulang**, bukan aliran data dalam satu
-jalan, sehingga sebaiknya dibedakan dari panah biasa:
+Mengikuti pola Gabriel, panah tidak dibiarkan telanjang. Tiap panah penting diberi label
+berisi **apa yang berpindah**, bukan bagaimana ia berpindah.
 
-- E → K *(bundle model)*
-- E2 → L *(faktor konformal)*
-- E3 → M *(pengklasifikasi)*
-- H → Q *(indeks leksikal dibangun dari potongan ChromaDB)*
+| Panah | Label |
+|---|---|
+| C → D | deret waktu |
+| D → E, E2, E3 | jendela berlabel |
+| E → K | model terlatih |
+| E2 → L | faktor kalibrasi |
+| E3 → M | pengklasifikasi terlatih |
+| H → Q | indeks potongan |
+| J → K, J → M | vektor fitur |
+| K → L, K → N | nilai terprediksi |
+| M → O | kondisi terprediksi |
+| O → P | kondisi klinis terstruktur |
+| P → Q | kueri terkondisi |
+| Q → R | lima potongan teratas |
+| R → S | teks rekomendasi |
+| T → U | sumber beserta nomor halaman |
 
-### 3.4 Kotak keterangan waktu
+Empat panah **E → K**, **E2 → L**, **E3 → M**, dan **H → Q** menyeberang dari luring ke
+daring dan menandai **artefak yang dipakai ulang**, bukan aliran dalam satu jalan; keempatnya
+digambar berbeda dari panah biasa, misalnya putus-putus.
 
-```
-Subtotal lokal (J + K + Q)   : 314,8 ms
-Model bahasa (R)             : ± 9,3 detik
-Total satu rekomendasi       : ± 9,6 detik
-Jejak memori                 : 641 MB
-Muat artefak, sekali di awal : 16,5 detik
-```
+### 3.4 Yang harus terbaca
 
-### 3.5 Tiga hal yang HARUS terbaca
+Tiga hal, dan seluruhnya dapat dibaca tanpa satu pun angka di dalam gambar.
 
-1. **Kotak O memakai nilai TERPREDIKSI**, bukan nilai terkini. Beri label pada hubungan
-   K → O: **"nilai terprediksi"**. Bila kotak ini memakai nilai sekarang, seluruh sifat
-   antisipatif sistem batal.
-2. **Kotak R tidak pernah menerima nomor halaman.** Beri keterangan: *"konteks bertanda
-   `[S1..Sn]` tanpa nomor halaman; nomor halaman baru muncul pada T dari metadata, sehingga
-   model bahasa tidak dapat mengarangnya"*.
-3. **Kotak V menyimpan potongan sumber yang persis dilihat dokter**, bukan hasil penelusuran
-   mentah, sehingga keputusan dapat diaudit ke halaman dokumen di kemudian hari.
+1. Kotak **O** memakai **nilai terprediksi**, bukan nilai yang sedang berlaku.
+2. Panah **Q → R** membawa potongan **tanpa nomor halaman**; nomor halaman baru muncul pada
+   panah **T → U**. Model bahasa karena itu tidak mungkin mengarangnya.
+3. **Tidak ada** panah dari kotak **L** menuju kotak **P** (§0.5).
 
-### 3.6 Yang TIDAK boleh ada
+### 3.5 Tabel IV.2 pendamping — tempat rincian teknis dipindahkan
 
-- Hubungan dari L (interval) ke P (pembentuk kueri) — lihat §0.5.
-- Tahap pelatihan atau pengindeksan di dalam kelompok daring. Seluruhnya luring; pemisahan
-  itulah yang membuat batasan komputasi dapat dipenuhi.
+Rincian yang dibuang dari gambar **tidak hilang**, melainkan pindah ke tabel yang dirujuk
+tepat sesudah gambar, mengikuti pola Tabel IV.4 milik Reffy. Tabelnya berkolom
+**Tahap · Komponen dalam sistem · Peran**, dan memuat baris untuk tiap kode A sampai V.
 
-**Rujukan tambahan:** `docs/METHODOLOGY.md` §7.0 memuat tabel kontrak data 14 tahap, yakni
-objek apa yang berpindah antar-tahap beserta tempat memeriksanya di kode.
+Contoh dua barisnya:
+
+| Tahap | Komponen dalam sistem | Peran |
+|---|---|---|
+| B | `src/data/ohio_parser.py` | Menyelaraskan tiap peristiwa ke kisi lima menit dengan toleransi ±2,5 menit |
+| Q | `MMRRetriever` mode `bm25` | Membobot potongan dengan Okapi BM25 dan mengembalikan lima teratas beserta metadatanya |
+
+Dengan begitu penguji tetap dapat menelusuri tiap tahap sampai ke berkasnya, tetapi gambarnya
+sendiri tetap terbaca sebagai rancangan, bukan sebagai peta kode.
 
 ---
 
