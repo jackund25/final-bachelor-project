@@ -28,26 +28,18 @@ Menyediakan simulasi intervensi karena itu menuntut model mekanistik yang menega
 Konsekuensinya terhadap alur kerja bersifat mendasar dan disengaja: sistem menyajikan \textbf{prakiraan beserta pedoman yang relevan terhadap kondisi yang diprakirakan}, sedangkan pemilihan intervensi tetap sepenuhnya berada pada dokter. Pembagian peran itu sejalan dengan rancangan \emph{human-in-the-loop} pada Subbab~\ref{sec:arsitektur-umum} dan menjadi dasar tinjauan dokter sebelum keputusan dicatat.
 
 \section{Perancangan Pipeline RAG \emph{terkondisi-prediksi}}
-Inti kebaruan tugas akhir ini terletak pada \textbf{satu titik} di dalam alur, yaitu sumber kondisi yang membentuk kueri penelusuran. RAG standar menyusun kueri dari kondisi \emph{terkini}, sedangkan RAG terkondisi-prediksi menyusunnya dari kondisi yang \emph{akan datang}. Gambar~\ref{fig:pipeline-pcrag} menyandingkan keduanya pada kasus divergen, yakni ketika kondisi terkini dan kondisi terprediksi berbeda kategori. Penyandingan itu memperlihatkan bahwa keduanya memakai korpus dan mesin penelusuran yang sama, sehingga selisih hasilnya tidak mungkin berasal dari perbedaan korpus maupun perbedaan cara menelusur.
+Inti kebaruan tugas akhir ini terletak pada \textbf{satu titik} di dalam alur, yaitu sumber kondisi yang membentuk kueri penelusuran. RAG standar menyusun kueri dari kondisi \emph{terkini}, sedangkan RAG terkondisi-prediksi menyusunnya dari kondisi yang \emph{akan datang}. Kontras keduanya sudah disajikan pada tingkat konsep melalui Gambar~\ref{fig:rag-konvensional} dan Gambar~\ref{fig:rag-terkondisi}, sehingga subbab ini langsung memaparkan bagaimana pengondisian itu diwujudkan pada sistem yang benar-benar dibangun.
+
+Agar sistem dapat diperiksa sebagai satu kesatuan yang berjalan, bukan hanya sebagai urutan tahap, Gambar~\ref{fig:alur-rinci} memerikan \textbf{alur rinci seluruh sistem}, yakni tiap tahap beserta objek yang berpindah antar-tahap, dari data mentah sampai layar dokter. Pembagian peran itu disengaja: gambar pertama menjawab apa yang baru, gambar kedua menjawab bagaimana sistemnya bekerja, dan tidak ada tahap yang diulang pada keduanya.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.95\textwidth]{images/Gambar_IV2_PipelinePCRAG.png}
-\caption{Kontras antara RAG konvensional dan RAG terkondisi-prediksi pada kasus divergen. Keduanya memakai korpus pedoman dan mesin penelusuran yang sama, sehingga bedanya hanya pada sumber kondisi yang membentuk kueri: kondisi yang sedang berlaku pada jalur atas, kondisi yang diprakirakan pada jalur bawah.}
-\label{fig:pipeline-pcrag}
-\end{figure}
-
-Alur lengkap yang dijalankan sistem, dan yang digambarkan pada Gambar~
-ef{fig:alur-rinci}, berlangsung sebagai berikut. (1)~Keadaan fisiologis terkini diekstraksi dari \emph{logbook}; (2)~model \emph{Gradient Boosting} memprediksi glukosa $+30/+60$ menit beserta interval ketidakpastiannya; (3)~nilai terprediksi diklasifikasikan menjadi kondisi klinis (hipoglikemia/normal/hiperglikemia) dan digabung dengan konteks terkini untuk membentuk \textbf{kueri yang dikondisikan prediksi}; (4)~kueri terkondisi ditelusurkan pada basis pengetahuan klinis memakai \textbf{penelusuran leksikal} berbasis pembobotan Okapi BM25 atas potongan dokumen yang terindeks, dengan dasar pemilihan yang dipaparkan pada Subbab~\ref{sec:penelusuran}; (5)~lima potongan dokumen teratas diberikan sebagai konteks kepada LLM \textbf{\texttt{gemini-3.5-flash-lite}} dengan parameter generatif konservatif; (6)~LLM menghasilkan rekomendasi berbahasa Indonesia yang \emph{grounded} dan tertelusur. Setiap lapisan dilengkapi \emph{graceful fallback} agar sistem tetap memberi keluaran aman saat salah satu komponen gagal.
-
-Gambar~\ref{fig:pipeline-pcrag} sengaja dibatasi pada titik pembedanya saja, tanpa memerikan tahap lain apa pun. Uraian sistem yang utuh diserahkan kepada Gambar~\ref{fig:alur-rinci}, yang memerikan \textbf{alur rinci seluruh sistem}, yakni tiap tahap beserta objek yang berpindah antar-tahap, dari data mentah sampai layar dokter. Pembagian peran itu disengaja: gambar pertama menjawab apa yang baru, gambar kedua menjawab bagaimana sistemnya bekerja, dan tidak ada tahap yang diulang pada keduanya.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.95\textwidth]{images/Gambar_IV3_AlurRinciSistem.png}
+\includegraphics[width=0.95\textwidth]{images/Gambar_IV2_AlurRinciSistem.png}
 \caption{Alur rinci sistem, memisahkan tahap \textbf{luring} yang dijalankan sekali di luar aplikasi dari tahap \textbf{daring} yang dijalankan pada tiap konsultasi. Kotak bertanda menunjukkan empat tahap yang menjadi kontribusi metodologis: pengklasifikasi kondisi, perakitan kondisi klinis terstruktur, transformasi kueri, serta resolusi sitasi dari metadata. Yang berjumlah empat adalah tahapnya, bukan kotaknya: pengklasifikasi kondisi muncul dua kali, sekali di sisi luring sebagai tahap pelatihannya dan sekali di sisi daring sebagai tahap pemakaiannya, sehingga gambar ini memuat lima kotak bertanda untuk empat tahap.}
 \label{fig:alur-rinci}
 \end{figure}
+
+Alur lengkap yang dijalankan sistem, dan yang digambarkan pada Gambar~\ref{fig:alur-rinci}, berlangsung sebagai berikut. (1)~Keadaan fisiologis terkini diekstraksi dari \emph{logbook}; (2)~model \emph{Gradient Boosting} memprediksi glukosa $+30/+60$ menit beserta interval ketidakpastiannya; (3)~nilai terprediksi diklasifikasikan menjadi kondisi klinis (hipoglikemia/normal/hiperglikemia) dan digabung dengan konteks terkini untuk membentuk \textbf{kueri yang dikondisikan prediksi}; (4)~kueri terkondisi ditelusurkan pada basis pengetahuan klinis memakai \textbf{penelusuran leksikal} berbasis pembobotan Okapi BM25 atas potongan dokumen yang terindeks, dengan dasar pemilihan yang dipaparkan pada Subbab~\ref{sec:penelusuran}; (5)~lima potongan dokumen teratas diberikan sebagai konteks kepada LLM \textbf{\texttt{gemini-3.5-flash-lite}} dengan parameter generatif konservatif; (6)~LLM menghasilkan rekomendasi berbahasa Indonesia yang \emph{grounded} dan tertelusur. Setiap lapisan dilengkapi \emph{graceful fallback} agar sistem tetap memberi keluaran aman saat salah satu komponen gagal.
 
 Pemisahan luring dan daring pada gambar tersebut bukan sekadar penataan visual, melainkan menyatakan \textbf{apa yang dibayar sekali dan apa yang dibayar tiap konsultasi}. Pelatihan model, kalibrasi konformal, dan pengindeksan korpus seluruhnya berada pada sisi luring; sisi daring hanya memuat pemuatan artefak yang sudah jadi, prakiraan, penelusuran, dan pembangkitan. Pembagian itulah yang membuat batasan komputasi pada Batasan~5 dapat dipenuhi: beban berat tidak pernah muncul pada saat dokter menunggu.
 
@@ -84,7 +76,7 @@ Perangkat lunak dirancang memisahkan \emph{domain logic} dari antarmuka (KNF-07)
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.95\textwidth]{images/Gambar_IV4_ClassDiagram.png}
+\includegraphics[width=0.95\textwidth]{images/Gambar_IV3_ClassDiagram.png}
 \caption{Diagram kelas komponen inti sistem, memisahkan \emph{domain logic} (prediksi, perakitan keadaan pasien, \emph{retrieval}, generasi) dari lapisan antarmuka.}
 \label{fig:class-diagram}
 \end{figure}
@@ -93,7 +85,7 @@ Interaksi antarobjek saat menjalankan satu siklus RAG terkondisi-prediksi, dari 
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.95\textwidth]{images/Gambar_IV5_SequencePCRAG.png}
+\includegraphics[width=0.95\textwidth]{images/Gambar_IV4_SequencePCRAG.png}
 \caption{Diagram sekuens satu siklus RAG \emph{terkondisi-prediksi}, dari permintaan dokter hingga rekomendasi tertelusur.}
 \label{fig:sequence-pcrag}
 \end{figure}
@@ -107,7 +99,7 @@ Antarmuka \textbf{sengaja tidak} menyediakan kendali simulasi intervensi, sejala
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.95\textwidth]{images/Gambar_IV6_Wireframe.png}
+\includegraphics[width=0.95\textwidth]{images/Gambar_IV5_Wireframe.png}
 \caption{Rancangan \emph{wireframe} antarmuka alat konsultasi klinis: panel ringkasan keadaan pasien, prediksi dengan interval terkalibrasi, rekomendasi tertelusur, dan pencatatan keputusan.}
 \label{fig:wireframe}
 \end{figure}

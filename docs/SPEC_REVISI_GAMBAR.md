@@ -24,7 +24,7 @@ Penyebabnya sudah ditelusuri dengan membandingkan ke tiga laporan tugas akhir re
 sepembimbing yang sudah lulus. Hasilnya penting, sebab **penyebabnya bukan jumlah kotak**.
 
 Satu laporan rekan memuat diagram alur berisi **sekitar dua puluh kotak** dengan pemisahan
-tahap luring dan tahap daring — susunan yang sama persis dengan Gambar IV.3 kita — dan
+tahap luring dan tahap daring — susunan yang sama persis dengan Gambar IV.2 kita — dan
 **diterima**. Diagram itu bahkan memakai label pada panah dan menyorot satu kotak sebagai
 kontribusi, sama seperti punya kita.
 
@@ -57,7 +57,7 @@ menciptakan dua sumber kebenaran yang pasti berselisih pada revisi berikutnya.
 
 **WAJIB dipertahankan**, sebab ketiganya justru ada pada diagram rekan yang diterima:
 
-1. Pemisahan **luring** dan **daring** sebagai dua kelompok bernama (khusus Gambar IV.3).
+1. Pemisahan **luring** dan **daring** sebagai dua kelompok bernama (khusus Gambar IV.2).
 2. **Label pada panah** yang menyebut **objek data** yang berpindah, bukan cara berpindahnya.
 3. **Penandaan kotak kontribusi**, memakai satu penanda yang konsisten.
 
@@ -213,7 +213,7 @@ Ketiganya dapat dibaca **tanpa satu pun angka** di dalam gambar.
 - [ ] Nol nama berkas, nama fungsi, nama kelas, nama pustaka, dan nama medan data
 - [ ] Nol angka waktu dan nol angka jumlah
 - [ ] Nol istilah dari daftar yang dicabut pada Bagian 0
-- [ ] Gambar IV.3 memisahkan luring dan daring sebagai dua kelompok bernama
+- [ ] Gambar IV.2 memisahkan luring dan daring sebagai dua kelompok bernama
 - [ ] Tiap panah penting berlabel objek data yang berpindah
 - [ ] Gambar II.3 dan II.4 tidak lagi memuat kotak *Semantic Search*
 - [ ] Gambar IV.2 memuat lima kotak bertanda untuk empat tahap, sesuai Subbab 2.3
