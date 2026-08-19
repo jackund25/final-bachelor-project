@@ -63,52 +63,107 @@ menciptakan dua sumber kebenaran yang pasti berselisih pada revisi berikutnya.
 
 ---
 
-## 1. `Gambar_IV2_PipelinePCRAG.png` — Pipeline RAG Terkondisi-Prediksi
+## 1. `Gambar_IV2_PipelinePCRAG.png` — Kontras RAG Konvensional dan RAG Terkondisi-Prediksi
 
 Tercetak **Gambar IV.2**.
 
-**Keterangan gambar di naskah:** *"Pipeline RAG terkondisi-prediksi: nilai glukosa terprediksi
-mengondisikan pembentukan kueri retrieval sebelum generasi rekomendasi."*
+> ### ⚠ PERUBAHAN BESAR — gambar ini berganti tujuan, bukan sekadar berganti label
+>
+> Versi terdahulu menggambar **pipeline lengkap sebelas tahap**. Pemeriksaan menemukan
+> **kesebelas tahapnya punya padanan di Gambar IV.3**, sehingga kedua gambar praktis
+> menyampaikan isi yang sama dan salah satunya mubazir.
+>
+> Naskah sebenarnya sudah memberi keduanya peran berbeda: Gambar IV.2 diperkenalkan sebagai
+> **"inti kebaruan"**, sedangkan Gambar IV.3 diperkenalkan agar sistem **"dapat diperiksa
+> sebagai satu kesatuan yang berjalan"**. Yang belum berjalan adalah gambarnya.
+>
+> Gambar IV.2 karena itu **dipersempit menjadi diagram kontras**. Ia tidak lagi memerikan
+> sistem, melainkan menjawab satu pertanyaan saja: **apa persisnya yang berbeda antara RAG
+> konvensional dan usulan penelitian ini.** Seluruh uraian sistem diserahkan ke Gambar IV.3.
+>
+> Pola ini mengikuti laporan rekan sepembimbing yang sudah lulus, yang memakai tiga diagram
+> berisi empat sampai tujuh kotak semata-mata untuk **membandingkan rancangan**, bukan untuk
+> memerikan sistem.
 
-### 1.1 Sebelas kotak, satu jalur berurutan
+**Keterangan gambar di naskah:** *"Kontras antara RAG konvensional dan RAG terkondisi-prediksi
+pada kasus divergen: keduanya memakai korpus dan mesin penelusuran yang sama, dan hanya
+berbeda pada sumber kondisi yang membentuk kueri."*
 
-| # | Nama kotak | Label isi |
-|---|---|---|
-| 1 | Masukan | Catatan logbook: glukosa, karbohidrat, insulin, aktivitas, stres |
-| 2 | Prapemrosesan | Pembentukan jendela riwayat dan tujuh fitur berbasis fisiologi |
-| 3 | Prakiraan | Prakiraan glukosa pada dua horizon, dipelajari sebagai selisih lalu direkonstruksi ke nilai absolut |
-| 4 | Ketidakpastian | Interval prediksi terkalibrasi dari lebar antar-kuantil |
-| 5 ★ | Kondisi | **Pengklasifikasi kondisi sadar-biaya**: hipoglikemia, normal, atau hiperglikemia |
-| 6 ★ | Kontrak data | **Kondisi klinis terstruktur**: tingkat risiko, arah tren, dan kegentingan, diturunkan dari **nilai TERPREDIKSI** |
-| 7 ★ | Kebaruan | **Transformasi kueri terkondisi-prediksi**: kueri disusun dari kondisi masa depan |
-| 8 | Penelusuran | Penelusuran leksikal atas basis pengetahuan terindeks, lima potongan teratas |
-| 9 | Pembangkitan | Rekomendasi berbahasa Indonesia, dibumikan pada potongan yang ditelusur |
-| 10 ★ | Sitasi | Nomor halaman diresolusi **dari metadata potongan**, bukan dari teks model |
-| 11 | Validasi | Dokter menyetujui, menyesuaikan, atau menolak, lalu keputusannya dicatat |
+### 1.1 Delapan kotak, dua jalur sejajar
 
-★ menandai empat tahap kontribusi. Pakai satu penanda konsisten, misalnya warna latar atau
-garis tepi yang berbeda, dan sebutkan artinya pada legenda kecil di dalam gambar.
+Satu kotak pembingkai di atas, lalu dua jalur mendatar yang berjalan sejajar dari kiri ke
+kanan. Jalur atas adalah pembanding, jalur bawah adalah usulan penelitian.
 
-### 1.2 Hubungan khusus
+**Kotak pembingkai, di atas kedua jalur:**
 
-Kotak **4** tersambung langsung ke kotak **11** dengan label **"peringatan klinis"**.
+| Kode | Label |
+|---|---|
+| Z | **Kasus divergen**: kondisi pasien saat ini **normal**, sedangkan kondisi yang akan datang **hiperglikemia** |
 
-**Kotak 4 TIDAK BOLEH tersambung ke kotak 7.** Ini larangan mutlak. Interval ketidakpastian
-tidak pernah ikut membentuk kueri; ia hanya menjadi peringatan bagi dokter.
+**Jalur atas — RAG konvensional:**
 
-### 1.3 Dua kotak keterangan terpisah
+| Kode | Label |
+|---|---|
+| A1 | Kueri disusun dari **kondisi SAAT INI** |
+| A2 | Pedoman yang ditelusur: penanganan kondisi normal |
+| A3 | Rekomendasi **reaktif**: tidak menyiapkan apa pun terhadap bahaya yang akan datang |
 
-**Kontras terhadap RAG konvensional**, digandengkan ke kotak 7:
+**Jalur bawah — RAG terkondisi-prediksi, usulan penelitian ini:**
 
-> RAG konvensional menyusun kueri dari glukosa saat ini. Pada kasus divergen, yaitu ketika
-> kondisi kini normal tetapi prediksi menuju hipoglikemia atau hiperglikemia, RAG
-> konvensional menargetkan kondisi normal sehingga buta terhadap bahaya yang akan datang.
+| Kode | Label |
+|---|---|
+| B1 ★ | **Prakiraan kondisi yang akan datang** |
+| B2 ★ | Kueri disusun dari **kondisi TERPREDIKSI** |
+| B3 | Pedoman yang ditelusur: penanganan hiperglikemia |
+| B4 | Rekomendasi **antisipatif**: menyiapkan tindakan sebelum kondisinya terjadi |
 
-**Cadangan berlapis**, tiga baris:
+★ menandai dua tahap yang menjadi kontribusi penelitian. Pakai penanda yang sama dengan
+Gambar IV.3 agar kedua gambar terbaca sebagai satu keluarga.
 
-- Data: dataset penelitian, lalu berkas terpadu, lalu logbook manual
-- Penelusuran: jalur leksikal, lalu jalur padat **disertai pernyataan penurunan**
-- Pembangkitan: model bahasa, lalu templat berbasis potongan
+### 1.2 Yang harus terbaca dalam satu pandangan
+
+Inilah alasan gambar ini ada, dan seluruh rancangannya harus tunduk pada satu hal ini.
+
+**Kedua jalur memakai korpus dan mesin penelusuran yang sama.** Perbedaannya **tepat satu**,
+yakni dari mana kondisi yang membentuk kueri berasal: jalur atas mengambilnya dari kondisi
+yang sedang berlaku, jalur bawah dari kondisi yang diprakirakan. Seluruh selisih hasil
+karena itu tidak mungkin berasal dari perbedaan korpus maupun perbedaan mesin penelusuran.
+
+Untuk menegaskannya, **A2 dan B3 digambar mengambil dari satu sumber yang sama**, yaitu satu
+kotak korpus pedoman yang dipakai bersama kedua jalur, bukan dua kotak terpisah.
+
+| Kode | Label |
+|---|---|
+| K | Korpus pedoman klinis yang sama, dipakai kedua jalur |
+
+Panah dari **K** menuju **A2** dan menuju **B3**.
+
+### 1.3 Label pada panah
+
+| Panah | Label |
+|---|---|
+| Z → A1 | kondisi saat ini |
+| Z → B1 | riwayat pemantauan |
+| B1 → B2 | kondisi terprediksi |
+| A1 → A2, B2 → B3 | kueri |
+| K → A2, K → B3 | korpus yang sama |
+| A2 → A3, B3 → B4 | potongan pedoman |
+
+### 1.4 Yang TIDAK boleh ada pada gambar ini
+
+- **Tidak ada** tahap pemrosesan lain: prapemrosesan, interval ketidakpastian, resolusi
+  sitasi, penyangkalan, maupun pencatatan keputusan. Seluruhnya milik Gambar IV.3.
+- **Tidak ada** angka apa pun, termasuk kadar glukosa dalam mg/dL. Kondisi disebut dengan
+  namanya saja, yaitu normal dan hiperglikemia.
+- **Tidak ada** nama berkas, fungsi, kelas, pustaka, maupun model.
+
+### 1.5 Satu kotak keterangan
+
+Diletakkan di bawah kedua jalur:
+
+> Pada kasus yang tidak divergen, yaitu ketika kondisi saat ini dan kondisi yang akan datang
+> sama, kedua jalur menghasilkan kueri yang identik. Nilai tambah pengondisian prediksi
+> karena itu terpusat pada kasus divergen.
 
 ---
 
@@ -213,8 +268,10 @@ Ketiganya dapat dibaca **tanpa satu pun angka** di dalam gambar.
 - [ ] Nol istilah dari daftar yang dicabut pada Bagian 0
 - [ ] Gambar IV.3 memisahkan luring dan daring sebagai dua kelompok bernama
 - [ ] Tiap panah penting berlabel objek data yang berpindah
-- [ ] Gambar IV.2 memuat empat kotak bertanda; Gambar IV.3 memuat lima kotak bertanda untuk
-      empat tahap, sesuai Subbab 2.3
+- [ ] Gambar IV.2 memuat dua jalur sejajar dengan **satu** kotak korpus yang dipakai
+      bersama, dan dua kotak bertanda; ia TIDAK lagi menggambar pipeline lengkap
+- [ ] Gambar IV.3 memuat lima kotak bertanda untuk empat tahap, sesuai Subbab 2.3
+- [ ] Tidak ada satu pun tahap Gambar IV.3 yang diulang pada Gambar IV.2
 - [ ] Tidak ada panah dari kotak interval ketidakpastian menuju kotak pembentuk kueri, pada
       kedua gambar
 - [ ] Nama berkas keluaran persis: `Gambar_IV2_PipelinePCRAG.png` dan
