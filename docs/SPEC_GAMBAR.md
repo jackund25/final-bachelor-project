@@ -28,8 +28,8 @@ bertentangan dengan naskah.
 
 ### 0.2 Angka yang WAJIB dipakai
 
-Dibaca dari `config.yaml` dan ChromaDB, 17 Agustus 2026, dan kecocokannya diverifikasi
-terprogram. Jangan memakai angka lain, jangan menambah angka di luar daftar ini.
+Dibaca dari `config.yaml` dan ChromaDB, **18 Agustus 2026, korpus V2**, dan kecocokannya
+diverifikasi terprogram. Jangan memakai angka lain, jangan menambah angka di luar daftar ini.
 
 **Satu pengecualian:** nilai contoh pada wireframe (§6) — kadar glukosa, interval, nomor
 halaman kutipan — adalah **ilustrasi tata letak**, bukan hasil pengukuran. Ia dipakai persis
@@ -44,20 +44,20 @@ seperti tertulis di §6 dan tidak perlu dicocokkan ke tabel ini.
 | Horizon prediksi | +30 menit (6 langkah) dan +60 menit (12 langkah) |
 | Model produksi | `HistGradientBoostingRegressor` (Gradient Boosting) |
 | Sumber sigma | dua model kuantil 0,025 dan 0,975; σ = (q₀,₉₇₅ − q₀,₀₂₅) / 3,92 |
-| Potongan korpus | **2.233** |
-| Ukuran potongan | 900 karakter, tumpang-tindih 120, dipotong pada **batas kalimat** |
+| Potongan korpus | **4.038** |
+| Ukuran potongan | **500** karakter, tumpang-tindih **67**, dipotong pada **batas kalimat** |
 | Model *embedding* | `all-MiniLM-L6-v2`, 384 dimensi, berjalan pada prosesor |
 | Cara penelusuran produksi | **`bm25`** (Okapi BM25) |
 | Potongan diambil | `top_k` = **5** |
 | Model bahasa (konfigurasi) | `gemini-3.5-flash-lite`, suhu 0,2, maks 700 token |
-| Rekayasa fitur | 25,2 ms |
-| Prediksi | 7,6 ms |
-| Penelusuran | 161,4 ms |
-| Subtotal lokal | **194,2 ms** |
-| Waktu pembangkitan | ± 8,3 detik |
-| Total satu rekomendasi | ± 8,5 detik |
-| Muat artefak, sekali di awal | 18,6 detik |
-| Jejak memori | 632 MB |
+| Rekayasa fitur | 23,0 ms |
+| Prediksi | 7,5 ms |
+| Penelusuran | 284,3 ms |
+| Subtotal lokal | **314,8 ms** |
+| Waktu pembangkitan | ± 9,3 detik |
+| Total satu rekomendasi | ± 9,6 detik |
+| Muat artefak, sekali di awal | 16,5 detik |
+| Jejak memori | 641 MB |
 | Korpus | 12 dokumen pedoman, KB-01…KB-12 |
 | Halaman dokumen | 543 |
 | Halaman diindeks | **494** — selisih 49 = 45 halaman depan + 4 halaman terlalu pendek |
@@ -127,7 +127,7 @@ yang divalidasi dokter."*
 | 1. Data | Catatan *logbook*: glukosa, karbohidrat, insulin, aktivitas, stres · Dataset OhioT1DM, 12 pasien |
 | 2. Prakiraan | Rekayasa fitur berbasis fisiologi (IOB, COB, tren, pola diurnal) · Gradient Boosting +30/+60 menit · Interval konformal · Pengklasifikasi kondisi |
 | 3. Kondisi klinis | `PatientState`: tingkat risiko, arah tren, kegentingan · Peringatan divergensi |
-| 4. Penalaran berbasis dokumen | Pembentuk kueri terkondisi-prediksi · Penelusuran BM25 atas 2.233 potongan · Model bahasa · Resolusi sitasi dari metadata |
+| 4. Penalaran berbasis dokumen | Pembentuk kueri terkondisi-prediksi · Penelusuran BM25 atas 4.038 potongan · Model bahasa · Resolusi sitasi dari metadata |
 | 5. Validasi dokter | Antarmuka konsultasi · Setujui / sesuaikan / tolak · Jejak audit keputusan |
 
 **Hubungan:** satu arah menaik lapis 1 → 5, ditambah satu panah balik dari lapis 5 ke lapis 1
@@ -157,7 +157,7 @@ kondisi.
 | 5 | Kondisi ★ | **Pengklasifikasi kondisi** sadar-biaya → hipoglikemia / normal / hiperglikemia |
 | 6 | Kontrak data ★ | `PatientState`: `risk_level`, `trend_direction`, `urgency` — diturunkan dari **nilai TERPREDIKSI** |
 | 7 | Kebaruan ★ | **Pembentuk kueri terkondisi-prediksi** — kueri disusun dari kondisi masa depan |
-| 8 | Penelusuran | **Okapi BM25** atas **2.233 potongan** ChromaDB · lima potongan teratas |
+| 8 | Penelusuran | **Okapi BM25** atas **4.038 potongan** ChromaDB · lima potongan teratas |
 | 9 | Pembangkitan | `gemini-3.5-flash-lite`, suhu 0,2, maks 700 token · rekomendasi dibumikan pada potongan |
 | 10 | Sitasi ★ | Nomor halaman diresolusi **dari metadata potongan**, bukan dari teks model |
 | 11 | Validasi | Dokter setujui / sesuaikan / tolak → jejak audit |
@@ -202,8 +202,8 @@ Gambar terbesar di Bab IV. Isinya terbagi **dua kelompok bertanda**: LURING dan 
 | E2 | Kalibrasi konformal · `conformal_h6.json`, `conformal_h12.json` | — |
 | E3 ★ | **Pengklasifikasi kondisi** · hipoglikemia / normal / hiperglikemia | — |
 | F | 12 PDF pedoman · KB-01…KB-12 + `manifest.csv` · 494 halaman diindeks | G |
-| G | Pecah 900/120 pada **batas kalimat** · `all-MiniLM-L6-v2` | H |
-| H | **ChromaDB `diabetes_kb` · 2.233 potongan** | — |
+| G | Pecah 500/67 pada **batas kalimat** · `all-MiniLM-L6-v2` | H |
+| H | **ChromaDB `diabetes_kb` · 4.038 potongan** | — |
 
 ### 3.2 Kelompok DARING — dijalankan tiap konsultasi
 
@@ -217,7 +217,7 @@ Gambar terbesar di Bab IV. Isinya terbagi **dua kelompok bertanda**: LURING dan 
 | N | `evaluate_divergence` · peringatan bila kondisi kini aman tetapi prediksi tidak | — | U |
 | O ★ | **`PatientState`** · risiko, tren, kegentingan — dari **nilai TERPREDIKSI** | — | P |
 | P ★ | **Pembentuk kueri terkondisi-prediksi** | — | Q |
-| Q | **`MMRRetriever` mode `bm25`** · Okapi BM25 → `top_k` 5 | 161,4 ms | R |
+| Q | **`MMRRetriever` mode `bm25`** · Okapi BM25 → `top_k` 5 | 284,3 ms | R |
 | R | `gemini-3.5-flash-lite` · suhu 0,2 · maks 700 token | ± 8,3 s | S |
 | S | `_ensure_disclaimer` | — | T |
 | T ★ | **`build_source_list`** · nomor halaman dari **METADATA** | — | U |
@@ -240,11 +240,11 @@ jalan, sehingga sebaiknya dibedakan dari panah biasa:
 ### 3.4 Kotak keterangan waktu
 
 ```
-Subtotal lokal (J + K + Q)   : 194,2 ms
-Model bahasa (R)             : ± 8,3 detik
-Total satu rekomendasi       : ± 8,5 detik
-Jejak memori                 : 632 MB
-Muat artefak, sekali di awal : 18,6 detik
+Subtotal lokal (J + K + Q)   : 314,8 ms
+Model bahasa (R)             : ± 9,3 detik
+Total satu rekomendasi       : ± 9,6 detik
+Jejak memori                 : 641 MB
+Muat artefak, sekali di awal : 16,5 detik
 ```
 
 ### 3.5 Tiga hal yang HARUS terbaca
@@ -311,12 +311,12 @@ Notasi UML. Tiga kelompok.
 | `RAGPipeline` — `src/rag/pipeline.py` | `+ _build_query(state, prediksi)`<br>`+ _retrieve(query, top_k=5)`<br>`+ answer(...)`<br>`+ _ensure_disclaimer(teks)` |
 | `MMRRetriever` — `src/rag/retriever.py` | `- retrieval_mode`: vektor \| **bm25** \| hibrida<br>`+ retrieve(query, top_k)`<br>`- _peringkat_bm25(query, n)`<br>`- _gabung_rrf(daftar)`<br>**bm25 = jalur produksi** |
 | `SimpleKeywordRetriever` «cadangan, KNF-04» | — |
-| `MedicalKnowledgeBase` — `src/rag/knowledge_base.py` | `+ chunk_documents()` → 900/120, batas kalimat<br>`+ save_to_chroma()` |
+| `MedicalKnowledgeBase` — `src/rag/knowledge_base.py` | `+ chunk_documents()` → 500/67, batas kalimat<br>`+ save_to_chroma()` |
 | `RAGGenerator` — `src/rag/generator.py` | `gemini-3.5-flash-lite`, suhu 0,2, maks 700 token<br>`+ generate_advisory(...)`<br>`+ generate_explanation(...)`<br>`- _template_answer(...)` «cadangan» |
 | `DiabetesAdvisorChain` — `src/rag/advisor_chain.py` | rantai LangChain yang benar-benar memanggil model bahasa<br>dibuat `RAGGenerator` pada `__init__` |
 | `RetrievedDocument` «dataclass» — `src/rag/pipeline.py` | `rank`, `text`, `source`, `similarity`, `metadata`<br>kontrak keluaran penelusuran; **di sinilah metadata sitasi mengalir** |
 | `citations` «modul» — `src/rag/citations.py` | `+ potong_batas_kalimat(teks, batas)`<br>kutipan berhenti di akhir kalimat (KNF-08) |
-| ChromaDB «penyimpan» | 2.233 potongan · `all-MiniLM-L6-v2`, 384 dimensi |
+| ChromaDB «penyimpan» | 4.038 potongan · `all-MiniLM-L6-v2`, 384 dimensi |
 
 ### 4.4 Hubungan antar-kelas
 
