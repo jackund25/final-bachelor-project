@@ -212,10 +212,23 @@ try:
 except FileNotFoundError:
     st.error("Data pasien belum tersedia."); disclaimer_footer(); st.stop()
 
-patient_ids = sorted(data_df["patient_id"].unique().tolist())
+# Logbook dimuat SEBELUM daftar pasien disusun, sebab pasien yang hanya ada di logbook
+# harus ikut muncul di pemilih. Sebelum ini daftarnya dibaca dari dataset saja, sehingga
+# catatan dokter atas pasien baru tersimpan rapi tetapi tidak pernah dapat dipilih.
+lb_semua = load_logbook_df()
+id_dataset = set(data_df["patient_id"].astype(str))
+id_logbook = (set(lb_semua["patient_id"].astype(str)) if not lb_semua.empty else set())
+patient_ids = sorted(id_dataset | id_logbook)
+
+
+def _label_pasien(pid: str) -> str:
+    """Tandai pasien yang datanya HANYA berasal dari logbook, supaya tidak tertukar."""
+    return pid if pid in id_dataset else f"{pid}  (logbook)"
+
+
 with st.sidebar:
     st.markdown("### 👤 Pasien")
-    sel = st.selectbox("Pilih pasien", patient_ids,
+    sel = st.selectbox("Pilih pasien", patient_ids, format_func=_label_pasien,
                        index=patient_ids.index(st.session_state.get("patient_id", patient_ids[0]))
                        if st.session_state.get("patient_id") in patient_ids else 0)
     st.session_state["patient_id"] = sel
@@ -226,13 +239,16 @@ with st.sidebar:
     # T4.2 — logbook manual dulu hanya ditulis ke berkas dan tidak pernah dibaca jalur
     # prediksi. Sekarang dapat disertakan, tetapi lewat pilihan sadar: menyertakan
     # catatan bertimestamp bebas mengubah kerapatan jendela, dan itu harus terlihat.
-    lb_semua = load_logbook_df()
     n_lb_pasien = int((lb_semua["patient_id"].astype(str) == str(sel)).sum()) if not lb_semua.empty else 0
     st.markdown("---")
     st.markdown("### 📝 Logbook manual")
-    pakai_logbook = st.checkbox(
+    hanya_logbook = str(sel) not in id_dataset
+    if hanya_logbook:
+        st.caption(f"Pasien ini **hanya** memiliki catatan logbook ({n_lb_pasien} catatan), "
+                   f"sehingga catatannya selalu dipakai.")
+    pakai_logbook = hanya_logbook or st.checkbox(
         f"Sertakan catatan logbook ({n_lb_pasien} untuk pasien ini)",
-        value=False, disabled=n_lb_pasien == 0,
+        value=False, disabled=n_lb_pasien == 0 or hanya_logbook,
         help="Catatan manual digabungkan ke deret CGM menurut stempel waktunya. "
              "Jendela hasil gabungan diperiksa terhadap kriteria kerapatan yang sama "
              "dengan yang dipakai saat melatih model.")
@@ -244,8 +260,9 @@ with st.sidebar:
 
 pat = data_df[data_df["patient_id"] == sel].sort_values("timestamp")
 seq_len = art["sequence_length"]
-if len(pat) < seq_len:
-    st.warning(f"Data pasien {sel} belum cukup ({len(pat)}/{seq_len} pembacaan)."); disclaimer_footer(); st.stop()
+# Penjaga jumlah baris DIPINDAH ke sesudah penggabungan logbook. Sebelumnya ia dijalankan
+# atas deret dataset saja, sehingga pasien yang hanya punya catatan logbook selalu terhenti
+# di sini sebelum gabung_dengan_dataset() sempat berjalan.
 
 # Penggabungan logbook + penjaganya. Bila jendela gabungan tidak sepadan dengan sebaran
 # pelatihan, aplikasi KEMBALI ke deret dataset saja dan mengatakan alasannya — bukan
@@ -267,6 +284,17 @@ if pakai_logbook and n_lb_pasien:
         catatan_logbook = ("ok", hasil, kelayakan)
     else:
         catatan_logbook = ("tolak", hasil, kelayakan)
+
+# Kecukupan diperiksa atas deret yang BENAR-BENAR dipakai, yakni hasil penggabungan bila
+# penggabungannya layak, atau deret dataset bila tidak. Pesannya memakai alasan yang sudah
+# disusun periksa_kelayakan() supaya sebabnya dinyatakan apa adanya, bukan digeneralkan.
+if len(pat) < seq_len:
+    pesan = f"Data pasien {sel} belum cukup ({len(pat)}/{seq_len} pembacaan)."
+    if catatan_logbook is not None and catatan_logbook[0] == "tolak":
+        pesan += " " + catatan_logbook[2].alasan.capitalize() + "."
+    st.warning(pesan)
+    disclaimer_footer()
+    st.stop()
 
 window_df = build_window(pat, art)
 current = float(window_df["glucose"].iloc[-1])
