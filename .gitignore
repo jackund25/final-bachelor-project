@@ -152,3 +152,6 @@ LEARN.html
 # riwayat (git filter-repo), yang harus dilakukan SEBELUM repositori dipublikasikan.
 # ---------------------------------------------------------------------------
 arsip/
+
+# Berkas sementara Code Runner pada VS Code
+tempCodeRunnerFile.py
