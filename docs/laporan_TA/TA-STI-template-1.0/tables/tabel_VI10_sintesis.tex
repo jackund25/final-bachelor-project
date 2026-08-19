@@ -7,23 +7,23 @@
 \toprule
 \textbf{Lapisan / skenario} & \textbf{Nilai tambah} & \textbf{Bukti} & \textbf{Sebab} \\
 \midrule
-Penelusuran, kasus divergen & \textbf{Besar} & MRR 0,190 $\rightarrow$ 0,284 & Kondisi terkini menyesatkan; \\
-(13,3\% jendela) & \emph{dan robust} & unggul 6/6 \emph{fold} ($p=0{,}031$) & hanya prediksi yang menolong \\
+Penelusuran, kasus divergen & \textbf{Besar} & MRR 0,065 $\rightarrow$ 0,168 & Kondisi terkini menyesatkan; \\
+(12,9\% jendela) & \emph{dan robust} & unggul 6/6 \emph{fold} ($p=0{,}031$) & hanya prediksi yang menolong \\
 \addlinespace
-Penelusuran, distribusi natural & \textbf{Tidak ada} & MRR 0,700 $\rightarrow$ 0,714 & 86,7\% jendela tidak divergen: \\
-& & ($p=0{,}312$; t.s.) & RAG standar sudah tepat sasaran \\
+Penelusuran, distribusi natural & \textbf{Tidak ada} & MRR 0,731 $\rightarrow$ 0,742 & 87,1\% jendela tidak divergen: \\
+& & ($p=0{,}225$; t.s.) & RAG standar sudah tepat sasaran \\
 \addlinespace
-Penelusuran, pengklasifikasi & \textbf{Besar} & MRR 0,312 lawan 0,284 & Pengklasifikasi tidak menyusut \\
+Penelusuran, pengklasifikasi & \textbf{Besar} & MRR 0,225 lawan 0,168 & Pengklasifikasi tidak menyusut \\
 (divergen, vs regresi) & \emph{dan robust} & unggul 6/6 \emph{fold} ($p=0{,}031$) & ke tengah sebaran \\
 \addlinespace
-Penelusuran, pengklasifikasi & \textbf{Merugikan} & MRR 0,663 lawan 0,714 & Kondisi terkini sudah benar; \\
-(natural, vs regresi) & & unggul 2/6 \emph{fold} (t.s.) & berpindah kelas justru menjauh \\
+Penelusuran, pengklasifikasi & \textbf{Merugikan} & MRR 0,698 lawan 0,742 & Kondisi terkini sudah benar; \\
+(natural, vs regresi) & & kalah 6/6 \emph{fold} ($p=0{,}031$) & berpindah kelas justru menjauh \\
 \addlinespace
-Penelusuran, cara leksikal & \textbf{Besar} & \emph{context recall} 0,900 & Model \emph{embedding} berbahasa \\
-(vs padat) & & lawan 0,100 & Inggris, korpus Indonesia \\
+Penelusuran, cara leksikal & \textbf{Besar} & \emph{context recall} 0,800 & Model \emph{embedding} berbahasa \\
+(vs padat) & & lawan 0,200 & Inggris, korpus Indonesia \\
 \addlinespace
-Penelusuran, penggabungan & \textbf{Merugikan} & \emph{context recall} 0,700 & Fusi peringkat tetap memberi \\
-hibrida (vs leksikal saja) & & lawan 0,900 & bobot pada daftar yang keliru \\
+Penelusuran, penggabungan & \textbf{Merugikan} & \emph{context recall} 0,550 & Fusi peringkat tetap memberi \\
+hibrida (vs leksikal saja) & & lawan 0,800 & bobot pada daftar yang keliru \\
 \midrule
 Deteksi hipoglikemia & \textbf{Besar} & Sensitivitas 17,3\% $\rightarrow$ 67,2\% & Kondisi diprediksi langsung, \\
 (pengklasifikasi kondisi) & & pada ambang standar & bukan diambangkan dari regresi \\
@@ -43,5 +43,5 @@ Prediksi SMBG, $+60$ menit & Moderat & RMSE 46,53 lawan \emph{persistence} & Asu
 \end{tabular}
 
 \vspace{0.4em}
-\footnotesize t.s. = tidak signifikan. Angka penelusuran pada baris pengondisian berasal dari validasi silang enam \emph{fold} lintas-pasien (Tabel~\ref{tab:crossfold-retrieval}), sedangkan baris perbandingan cara penelusuran berasal dari metrik RAGAS berbasis rujukan (Tabel~\ref{tab:lengan-penelusuran}). Dua baris pengklasifikasi sengaja dipisah karena arahnya \textbf{berbalik} antar-himpunan; menggabungkannya menjadi satu putusan akan menyembunyikan temuan yang justru menerangkan mekanismenya. Batas atas metode ini terukur dan konsisten: dengan kondisi masa depan yang diketahui benar (\emph{oracle}), penelusuran mencapai MRR 0,778 pada kasus divergen. Seluruh selisih antara 0,284 dan 0,778 adalah ruang perbaikan yang dapat diraih semata-mata dengan meningkatkan ketepatan prediksi kondisi, tanpa mengubah apa pun pada komponen penelusuran.
+\footnotesize t.s. = tidak signifikan. Angka penelusuran pada baris pengondisian berasal dari validasi silang enam \emph{fold} lintas-pasien (Tabel~\ref{tab:crossfold-retrieval}), sedangkan baris perbandingan cara penelusuran berasal dari metrik RAGAS berbasis rujukan (Tabel~\ref{tab:lengan-penelusuran}). Dua baris pengklasifikasi sengaja dipisah karena arahnya \textbf{berbalik} antar-himpunan; menggabungkannya menjadi satu putusan akan menyembunyikan temuan yang justru menerangkan mekanismenya. Batas atas metode ini terukur dan konsisten: dengan kondisi masa depan yang diketahui benar (\emph{oracle}), penelusuran mencapai MRR 0,833 pada kasus divergen. Seluruh selisih antara 0,168 dan 0,833 adalah ruang perbaikan yang dapat diraih semata-mata dengan meningkatkan ketepatan prediksi kondisi, tanpa mengubah apa pun pada komponen penelusuran.
 \end{table}
