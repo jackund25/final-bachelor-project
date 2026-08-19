@@ -84,12 +84,16 @@ Distribusi keamanan klinis prediksi model produksi pada \emph{Clarke Error Grid}
 \label{fig:clarke-gbm-h6}
 \end{figure}
 
+Sebaran pada Gambar~\ref{fig:clarke-gbm-h6} memusat rapat di sepanjang diagonal, yang berarti mayoritas prediksi berdekatan dengan nilai sebenarnya. Yang lebih menentukan bagi keamanan klinis adalah letak titik yang menyimpang: sisa 5,30\% titik di luar zona A dan B tidak tersebar merata, melainkan menumpuk pada kadar glukosa rendah. Pola itu sejalan dengan diagnosis penyusutan ke tengah sebaran yang dipaparkan pada Subbab~\ref{sec:hipo}: model yang dilatih meminimalkan galat kuadrat enggan melewati ambang, sehingga kejadian hipoglikemia lebih sering diprediksi sebagai kadar normal yang rendah daripada sebagai hipoglikemia. Zona A sendiri memuat 85,35\% titik.
+
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.7\textwidth]{images/Gambar_VI2_ClarkeGBM_h12.png}
 \caption{\emph{Clarke Error Grid} prediksi model produksi \emph{gradient boosting} pada horizon $+60$ menit; 87,32\% titik berada pada zona A dan B.}
 \label{fig:clarke-gbm-h12}
 \end{figure}
+
+Perbandingan kedua gambar memperlihatkan bagaimana keamanan klinis meluruh ketika horizon diperpanjang. Zona aman A dan B turun dari 94,70\% menjadi 87,32\%, sedangkan zona A yang menuntut ketepatan lebih tinggi turun jauh lebih tajam, dari 85,35\% menjadi 68,42\%. Penurunan yang tidak seimbang itu bermakna: pada horizon yang lebih jauh, prediksi tidak sekadar menjadi kurang tepat, melainkan berpindah dari kategori tepat menuju kategori yang masih aman tetapi tidak lagi presisi. Konsekuensi rancangannya dinyatakan pada Subbab~\ref{sec:eval-prediksi}: horizon $+60$ menit dipertahankan sebagai peringatan dini, bukan sebagai dasar penakaran dosis.
 
 \begin{figure}[htbp]
 \centering
