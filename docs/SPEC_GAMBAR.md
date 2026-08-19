@@ -160,7 +160,7 @@ memakai nilai yang diprediksi, bukan nilai yang sedang berlaku.
 
 ---
 
-## 2. `Gambar_IV3_PipelinePCRAG.png` — Pipeline RAG Terkondisi-Prediksi
+## 2. `Gambar_IV2_PipelinePCRAG.png` — Pipeline RAG Terkondisi-Prediksi
 
 Tercetak **Gambar IV.2**. Label naskah `fig:pipeline-pcrag`.
 
