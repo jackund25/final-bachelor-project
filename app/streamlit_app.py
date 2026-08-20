@@ -135,6 +135,20 @@ def load_rag():
     return p
 
 
+def nilai_terakhir(df, kolom: str, bawaan: float) -> float:
+    """Nilai terakhir satu kolom, dengan bawaan bila kolomnya tidak ada atau NaN.
+
+    Dibutuhkan sejak pasien logbook-murni dapat diprediksi. Deret gabungan menerima
+    kolom-kolom dataset seperti ``stress`` dari irisan dataset yang KOSONG, sehingga
+    kolomnya ada tetapi seluruh barisnya NaN. Tanpa penjaga ini, ``int(float(NaN))``
+    melempar ValueError dan seluruh tab gagal dirender.
+    """
+    if kolom not in df.columns or df.empty:
+        return bawaan
+    v = df[kolom].iloc[-1]
+    return bawaan if pd.isna(v) else float(v)
+
+
 def build_window(patient_df, art):
     """Bangun window fitur; hitung fitur engineered bila bundle memakainya."""
     seq = art["sequence_length"]
@@ -394,9 +408,9 @@ with c2:
     # ringkasan kondisi aktif
     st.markdown(
         f'<div class="card"><h4>Kondisi aktif</h4><p>'
-        f'Insulin aktif: {float(window_df["insulin"].iloc[-1]):.2f} u &nbsp;·&nbsp; '
-        f'Karbohidrat: {float(window_df["carbs"].iloc[-1]):.0f} g &nbsp;·&nbsp; '
-        f'Skor aktivitas: {int(float(window_df["activity"].iloc[-1]))}</p></div>',
+        f'Insulin aktif: {nilai_terakhir(window_df, "insulin", 0.0):.2f} u &nbsp;·&nbsp; '
+        f'Karbohidrat: {nilai_terakhir(window_df, "carbs", 0.0):.0f} g &nbsp;·&nbsp; '
+        f'Skor aktivitas: {int(nilai_terakhir(window_df, "activity", 0))}</p></div>',
         unsafe_allow_html=True)
 
 # Peringatan divergensi. Logikanya di src/alerts.py, bukan di sini, supaya keputusan
@@ -452,10 +466,10 @@ with tab_rec:
     if st.button("Buat rekomendasi klinis", type="primary"):
         patient_state = {
             "current_glucose": current,
-            "insulin_on_board": float(window_df["insulin"].iloc[-1]),
-            "carbs_on_board": float(window_df["carbs"].iloc[-1]),
-            "activity_level": int(float(window_df["activity"].iloc[-1])),
-            "stress_level": int(float(window_df["stress"].iloc[-1])) if "stress" in window_df else 5,
+            "insulin_on_board": nilai_terakhir(window_df, "insulin", 0.0),
+            "carbs_on_board": nilai_terakhir(window_df, "carbs", 0.0),
+            "activity_level": int(nilai_terakhir(window_df, "activity", 0)),
+            "stress_level": int(nilai_terakhir(window_df, "stress", 5)),
             # Kueri dikondisikan pada kondisi hasil pengklasifikasi, bukan pada nilai
             # regresi, karena pengklasifikasi jauh lebih sering menangkap hipoglikemia.
             #
@@ -615,10 +629,11 @@ with tab_log:
     st.caption("Catat keputusan/tinjauan dokter untuk audit.")
     sm = ClinicalDecisionLog(storage_file="data/processed/patient_states.json")
     sm.load()
-    init = {"current_glucose": current, "insulin_on_board": float(window_df["insulin"].iloc[-1]),
-            "carbs_on_board": float(window_df["carbs"].iloc[-1]),
-            "activity_level": int(float(window_df["activity"].iloc[-1])),
-            "stress_level": int(float(window_df["stress"].iloc[-1])) if "stress" in window_df else 5,
+    init = {"current_glucose": current,
+            "insulin_on_board": nilai_terakhir(window_df, "insulin", 0.0),
+            "carbs_on_board": nilai_terakhir(window_df, "carbs", 0.0),
+            "activity_level": int(nilai_terakhir(window_df, "activity", 0)),
+            "stress_level": int(nilai_terakhir(window_df, "stress", 5)),
             "timestamp": datetime.now().isoformat()}
     (sm.create_state if sel not in sm.list_patients() else sm.update_state)(sel, init)
     itype = st.selectbox("Jenis keputusan", ["tinjauan", "setujui rekomendasi", "sesuaikan rekomendasi", "tolak"])
