@@ -43,7 +43,11 @@ with left:
         patient_id = st.text_input("ID Pasien", value=st.session_state.get("patient_id", "adult#001"))
         dcol, tcol = st.columns(2)
         date_value = dcol.date_input("Tanggal")
-        time_value = tcol.time_input("Waktu")
+        # step=60 detik supaya menit mana pun dapat dipilih. Bawaan Streamlit mengunci
+        # pilihan ke kelipatan 15 menit dari 00:00, sehingga pembacaan nyata pukul 16.42
+        # terpaksa dibulatkan ke 16.45 dan catatannya menjadi tidak lagi jujur terhadap
+        # waktu pengukurannya.
+        time_value = tcol.time_input("Waktu", step=60)
 
         c1, c2, c3 = st.columns(3)
         with c1:
