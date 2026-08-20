@@ -7,20 +7,20 @@
 \toprule
 \textbf{Komponen} & \textbf{Parameter} & \textbf{Nilai} \\
 \midrule
-Model prakiraan & \emph{Gradient boosting} & \texttt{HistGradientBoostingRegressor}, \texttt{random\_state}=42 \\[2pt]
+Model prakiraan & \emph{Gradient boosting} & \texttt{HistGradientBoostingRegressor}, \texttt{random\_\allowbreak state}=42 \\[2pt]
 Ketidakpastian & Model kuantil & $q_{0{,}025}$ dan $q_{0{,}975}$; $\hat{\sigma}=(q_{0{,}975}-q_{0{,}025})/3{,}92$ \\[2pt]
-Model pembanding & Hutan acak; LSTM & \texttt{n\_estimators}=200, \texttt{max\_depth}=20, \texttt{min\_samples\_split}=5; LSTM 64/32 unit \\[2pt]
+Model pembanding & Hutan acak; LSTM & \texttt{n\_\allowbreak estimators}=200, \texttt{max\_\allowbreak depth}=20, \texttt{min\_\allowbreak samples\_\allowbreak split}=5; LSTM 64/32 unit \\[2pt]
 \emph{Look-back} & Panjang sekuens & 12 langkah CGM ($\sim$1 jam); 6 langkah SMBG \\[2pt]
 Horizon prediksi & Langkah ke depan & 6 ($+30$ menit) dan 12 ($+60$ menit) \\[2pt]
-Fitur (\emph{engineered}) & Vektor fitur & \texttt{[glucose, glucose\_delta, iob, cob, activity, hour\_sin, hour\_cos]}, target $\Delta$glukosa \\[2pt]
+Fitur (\emph{engineered}) & Vektor fitur & \texttt{[glucose, glucose\_\allowbreak delta, iob, cob, activity, hour\_\allowbreak sin, hour\_\allowbreak cos]}, target $\Delta$glukosa \\[2pt]
 Rekayasa fitur & Konstanta peluruhan & IOB $\tau=240$ menit; COB $\tau=180$ menit; tren 3 langkah \\[2pt]
 Pemecahan dokumen & Ukuran, tumpang-tindih, batas & 500 karakter, 67 karakter, dipotong pada batas kalimat \\[2pt]
 Penyimpan potongan & ChromaDB & 4.038 potongan terindeks \\[2pt]
 Penelusuran & Cara & \texttt{bm25} (Okapi, leksikal) atas potongan yang sama \\[2pt]
-& Jumlah dokumen & \texttt{top\_k}=5 \\[2pt]
+& Jumlah dokumen & \texttt{top\_\allowbreak k}=5 \\[2pt]
 \emph{Embedding} & Model & \texttt{all-MiniLM-L6-v2}, 384 dimensi, berjalan pada prosesor \\[2pt]
 Model bahasa & Generator & \texttt{gemini-3.5-flash-lite} \\[2pt]
-Parameter generatif & Konservatif (klinis) & \texttt{temperature}=0,2; \texttt{max\_tokens}=700 \\[2pt]
+Parameter generatif & Konservatif (klinis) & \texttt{temperature}=0,2; \texttt{max\_\allowbreak tokens}=700 \\[2pt]
 Antarmuka & Kerangka & Streamlit \emph{multi-page} \\
 \bottomrule
 \end{tabular}

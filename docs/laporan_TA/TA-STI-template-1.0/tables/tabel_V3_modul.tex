@@ -7,14 +7,14 @@
 \toprule
 \textbf{Modul} & \textbf{Tanggung jawab} & \textbf{Rancangan} \\
 \midrule
-\texttt{src/data/} & Akuisisi data OhioT1DM (\texttt{ohio\_parser}), pemrosesan dan rekayasa fitur (\texttt{preprocessor}), serta validasi kontrak data (\texttt{contracts}) & \S\ref{sec:data-impl} \\[2pt]
-\texttt{src/models/} & Abstraksi model (\texttt{base\_model}), \emph{gradient boosting} sebagai model produksi (\texttt{gbm\_model}), serta pembanding hutan acak (\texttt{rf\_model}) dan LSTM (\texttt{lstm\_model}) & \S\ref{sec:model-impl} \\[2pt]
-\texttt{src/patient\_state.py} & Kontrak data \texttt{PatientState}: menurunkan tingkat risiko, arah tren, dan kegentingan dari nilai terprediksi; menjembatani modul prakiraan $\leftrightarrow$ RAG & \S\ref{sec:kondisi-impl} \\[2pt]
+\texttt{src/data/} & Akuisisi data OhioT1DM (\texttt{ohio\_\allowbreak parser}), pemrosesan dan rekayasa fitur (\texttt{preprocessor}), serta validasi kontrak data (\texttt{contracts}) & \S\ref{sec:data-impl} \\[2pt]
+\texttt{src/models/} & Abstraksi model (\texttt{base\_\allowbreak model}), \emph{gradient boosting} sebagai model produksi (\texttt{gbm\_\allowbreak model}), serta pembanding hutan acak (\texttt{rf\_\allowbreak model}) dan LSTM (\texttt{lstm\_\allowbreak model}) & \S\ref{sec:model-impl} \\[2pt]
+\texttt{src/patient\_\allowbreak state.py} & Kontrak data \texttt{PatientState}: menurunkan tingkat risiko, arah tren, dan kegentingan dari nilai terprediksi; menjembatani modul prakiraan $\leftrightarrow$ RAG & \S\ref{sec:kondisi-impl} \\[2pt]
 \texttt{src/alerts.py} & Evaluasi divergensi antara kondisi terkini dan kondisi terprediksi & \S\ref{sec:kondisi-impl} \\[2pt]
-\texttt{src/clinical\_state/} & Jejak audit keputusan dokter (\texttt{decision\_log}) & \S\ref{sec:kondisi-impl} \\[2pt]
-\texttt{src/rag/} & Basis pengetahuan (\texttt{knowledge\_base}), penelusur tiga cara (\texttt{retriever}), pembentuk kueri terkondisi (\texttt{conditioned\_query}), pipeline (\texttt{pipeline}), generator (\texttt{generator}), dan pemotong sitasi (\texttt{citations}) & \S\ref{sec:rag-impl} \\[2pt]
+\texttt{src/clinical\_\allowbreak state/} & Jejak audit keputusan dokter (\texttt{decision\_\allowbreak log}) & \S\ref{sec:kondisi-impl} \\[2pt]
+\texttt{src/rag/} & Basis pengetahuan (\texttt{knowledge\_\allowbreak base}), penelusur tiga cara (\texttt{retriever}), pembentuk kueri terkondisi (\texttt{conditioned\_\allowbreak query}), pipeline (\texttt{pipeline}), generator (\texttt{generator}), dan pemotong sitasi (\texttt{citations}) & \S\ref{sec:rag-impl} \\[2pt]
 \texttt{src/utils/} & Metrik evaluasi (\texttt{metrics}) dan \emph{logging} & Bab~\ref{chap:evaluasi} \\[2pt]
-\texttt{app/} & Antarmuka Streamlit \emph{multi-page} (\texttt{streamlit\_app}, \texttt{ui}, \texttt{pages/}) & \S\ref{sec:ui-impl} \\[2pt]
+\texttt{app/} & Antarmuka Streamlit \emph{multi-page} (\texttt{streamlit\_\allowbreak app}, \texttt{ui}, \texttt{pages/}) & \S\ref{sec:ui-impl} \\[2pt]
 \texttt{scripts/} & Skrip eksperimen dan evaluasi (ablasi, validasi silang, konformal, sensitivitas, ingesti KB) & Bab~\ref{chap:evaluasi} \\[2pt]
 \texttt{config.yaml} & Konfigurasi terpusat (parameter data, model, RAG, evaluasi) & Bab ini \\
 \bottomrule
