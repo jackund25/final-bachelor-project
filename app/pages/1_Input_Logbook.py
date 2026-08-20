@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 sys.path.insert(0, str(Path(__file__).parent.parent))  # folder app (untuk ui)
 
@@ -42,12 +42,18 @@ with left:
     with st.form("logbook_form", clear_on_submit=False):
         patient_id = st.text_input("ID Pasien", value=st.session_state.get("patient_id", "adult#001"))
         dcol, tcol = st.columns(2)
-        date_value = dcol.date_input("Tanggal")
-        # step=60 detik supaya menit mana pun dapat dipilih. Bawaan Streamlit mengunci
-        # pilihan ke kelipatan 15 menit dari 00:00, sehingga pembacaan nyata pukul 16.42
-        # terpaksa dibulatkan ke 16.45 dan catatannya menjadi tidak lagi jujur terhadap
-        # waktu pengukurannya.
-        time_value = tcol.time_input("Waktu", step=60)
+        date_value = dcol.date_input("Tanggal", value=st.session_state.get("tanggal_terakhir"))
+        # Waktu diketik, BUKAN dipilih dari daftar bergulir. Dua alasan, keduanya ditemukan
+        # saat uji terima. Pertama, daftar bergulir mengunci pilihan ke kelipatan menit
+        # tertentu, sehingga pembacaan nyata pukul 16.42 tidak dapat dimasukkan apa adanya.
+        # Kedua, dan lebih berbahaya, widget waktu tanpa nilai awal kembali ke JAM SEKARANG
+        # pada tiap muat ulang, sehingga catatan yang jamnya tidak disentuh diam-diam
+        # terekam sebagai "sekarang" tanpa peringatan apa pun.
+        time_value_str = tcol.text_input(
+            "Waktu (format 24 jam)", value=st.session_state.get("waktu_berikutnya", "07:00"),
+            placeholder="16:42",
+            help="Ketik langsung, misalnya 16:42. Sesudah menyimpan, kolom ini maju "
+                 "otomatis lima menit supaya catatan berurutan tidak perlu diketik ulang.")
 
         c1, c2, c3 = st.columns(3)
         with c1:
@@ -73,6 +79,17 @@ with left:
         submitted = st.form_submit_button("💾 Simpan Catatan", type="primary", use_container_width=True)
 
     if submitted:
+        # Waktu diurai di sini supaya kesalahan ketik ditolak dengan pesan yang jelas,
+        # bukan diam-diam jatuh ke nilai bawaan.
+        mentah = time_value_str.strip().replace(".", ":")
+        if mentah.isdigit() and len(mentah) == 4:      # 1642 -> 16:42
+            mentah = mentah[:2] + ":" + mentah[2:]
+        try:
+            time_value = datetime.strptime(mentah, "%H:%M").time()
+        except ValueError:
+            st.error(f"Waktu **{time_value_str}** tidak dikenali. Tulis jam dan menit "
+                     f"dalam format 24 jam, misalnya 16:42, 16.42, atau 1642.")
+            st.stop()
         ts = datetime.combine(date_value, time_value)
         entry = {
             "timestamp": pd.to_datetime(ts), "patient_id": patient_id.strip(),
@@ -83,11 +100,19 @@ with left:
         }
         save_entry(entry)
         st.session_state["patient_id"] = patient_id.strip()
+        # Catatan berurutan berjarak lima menit adalah pola pemakaian yang paling sering,
+        # sehingga kolom waktu dimajukan otomatis. Dokter yang ingin jarak lain cukup
+        # menimpanya.
+        berikutnya = (ts + timedelta(minutes=5)).time()
+        st.session_state["waktu_berikutnya"] = berikutnya.strftime("%H:%M")
+        st.session_state["tanggal_terakhir"] = (ts + timedelta(minutes=5)).date()
         # Halaman Konsultasi men-cache logbook (@st.cache_data). Tanpa pembersihan ini,
         # catatan yang baru disimpan tidak akan terlihat di jalur prediksi sampai aplikasi
         # dimuat ulang — dan dokter akan mengira catatannya tidak tersimpan.
         st.cache_data.clear()
-        st.success(f"✅ Tersimpan untuk {patient_id} pada {entry['timestamp']}")
+        st.success(f"✅ Tersimpan untuk {patient_id} pada {entry['timestamp']}. "
+                   f"Kolom waktu sudah dimajukan ke **{st.session_state['waktu_berikutnya']}** "
+                   f"untuk catatan berikutnya.")
         st.info("Catatan ini dapat disertakan ke jendela prediksi lewat kotak centang "
                 "**Sertakan catatan logbook** di sidebar halaman Konsultasi. "
                 "Catatan hanya dipakai bila jaraknya terhadap pembacaan di sekitarnya "
