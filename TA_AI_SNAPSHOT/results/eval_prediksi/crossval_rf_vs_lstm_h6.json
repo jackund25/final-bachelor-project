@@ -1,0 +1,292 @@
+{
+  "catatan": "Kedua model dilatih atas jendela TERSEGMENTASI (max_gap_steps), sama seperti pelatihan produksi. Versi 9 Juli TIDAK tersegmentasi dan angkanya tidak sebanding.",
+  "horizon_steps": 6,
+  "horizon_min": 30,
+  "max_gap_steps": 6,
+  "k_fold": 6,
+  "folds": [
+    {
+      "fold": 0,
+      "test": [
+        "ohio_540",
+        "ohio_570"
+      ],
+      "n": 27669,
+      "RF": {
+        "RMSE": 20.448,
+        "MAE": 14.603,
+        "MAPE": 10.694,
+        "Clarke_A+B": 94.828,
+        "Clarke_A": 85.366,
+        "Clarke_B": 9.462,
+        "Clarke_C": 0.018,
+        "Clarke_D": 2.985,
+        "Clarke_E": 2.168
+      },
+      "LSTM": {
+        "RMSE": 19.899,
+        "MAE": 14.013,
+        "MAPE": 10.019,
+        "Clarke_A+B": 94.828,
+        "Clarke_A": 86.653,
+        "Clarke_B": 8.175,
+        "Clarke_C": 0.018,
+        "Clarke_D": 2.36,
+        "Clarke_E": 2.794
+      }
+    },
+    {
+      "fold": 1,
+      "test": [
+        "ohio_544",
+        "ohio_575"
+      ],
+      "n": 26574,
+      "RF": {
+        "RMSE": 20.045,
+        "MAE": 14.176,
+        "MAPE": 10.558,
+        "Clarke_A+B": 93.791,
+        "Clarke_A": 86.577,
+        "Clarke_B": 7.214,
+        "Clarke_C": 0.004,
+        "Clarke_D": 4.256,
+        "Clarke_E": 1.949
+      },
+      "LSTM": {
+        "RMSE": 19.538,
+        "MAE": 13.655,
+        "MAPE": 9.867,
+        "Clarke_A+B": 94.574,
+        "Clarke_A": 88.308,
+        "Clarke_B": 6.266,
+        "Clarke_C": 0.008,
+        "Clarke_D": 3.214,
+        "Clarke_E": 2.205
+      }
+    },
+    {
+      "fold": 2,
+      "test": [
+        "ohio_552",
+        "ohio_584"
+      ],
+      "n": 24912,
+      "RF": {
+        "RMSE": 23.091,
+        "MAE": 16.147,
+        "MAPE": 10.387,
+        "Clarke_A+B": 94.067,
+        "Clarke_A": 87.167,
+        "Clarke_B": 6.9,
+        "Clarke_C": 0.024,
+        "Clarke_D": 2.898,
+        "Clarke_E": 3.011
+      },
+      "LSTM": {
+        "RMSE": 22.791,
+        "MAE": 15.829,
+        "MAPE": 10.171,
+        "Clarke_A+B": 94.4,
+        "Clarke_A": 87.568,
+        "Clarke_B": 6.832,
+        "Clarke_C": 0.016,
+        "Clarke_D": 2.577,
+        "Clarke_E": 3.007
+      }
+    },
+    {
+      "fold": 3,
+      "test": [
+        "ohio_559",
+        "ohio_588"
+      ],
+      "n": 27747,
+      "RF": {
+        "RMSE": 22.215,
+        "MAE": 15.452,
+        "MAPE": 10.254,
+        "Clarke_A+B": 94.295,
+        "Clarke_A": 86.748,
+        "Clarke_B": 7.547,
+        "Clarke_C": 0.004,
+        "Clarke_D": 2.818,
+        "Clarke_E": 2.883
+      },
+      "LSTM": {
+        "RMSE": 22.043,
+        "MAE": 15.298,
+        "MAPE": 10.124,
+        "Clarke_A+B": 94.36,
+        "Clarke_A": 86.791,
+        "Clarke_B": 7.568,
+        "Clarke_C": 0.004,
+        "Clarke_D": 2.642,
+        "Clarke_E": 2.995
+      }
+    },
+    {
+      "fold": 4,
+      "test": [
+        "ohio_563",
+        "ohio_591"
+      ],
+      "n": 27723,
+      "RF": {
+        "RMSE": 20.502,
+        "MAE": 14.316,
+        "MAPE": 10.715,
+        "Clarke_A+B": 95.304,
+        "Clarke_A": 86.545,
+        "Clarke_B": 8.758,
+        "Clarke_C": 0.014,
+        "Clarke_D": 2.734,
+        "Clarke_E": 1.948
+      },
+      "LSTM": {
+        "RMSE": 20.096,
+        "MAE": 14.041,
+        "MAPE": 10.461,
+        "Clarke_A+B": 95.603,
+        "Clarke_A": 87.206,
+        "Clarke_B": 8.397,
+        "Clarke_C": 0.018,
+        "Clarke_D": 2.236,
+        "Clarke_E": 2.143
+      }
+    },
+    {
+      "fold": 5,
+      "test": [
+        "ohio_567",
+        "ohio_596"
+      ],
+      "n": 25456,
+      "RF": {
+        "RMSE": 20.175,
+        "MAE": 13.974,
+        "MAPE": 10.38,
+        "Clarke_A+B": 93.813,
+        "Clarke_A": 86.926,
+        "Clarke_B": 6.886,
+        "Clarke_C": 0.004,
+        "Clarke_D": 3.972,
+        "Clarke_E": 2.212
+      },
+      "LSTM": {
+        "RMSE": 19.243,
+        "MAE": 13.083,
+        "MAPE": 9.38,
+        "Clarke_A+B": 95.581,
+        "Clarke_A": 89.484,
+        "Clarke_B": 6.097,
+        "Clarke_C": 0.0,
+        "Clarke_D": 2.443,
+        "Clarke_E": 1.976
+      }
+    }
+  ],
+  "rerata_lintas_fold": {
+    "RF": {
+      "RMSE": [
+        21.079,
+        1.152
+      ],
+      "MAE": [
+        14.778,
+        0.773
+      ],
+      "MAPE": [
+        10.498,
+        0.171
+      ],
+      "Clarke_A+B": [
+        94.35,
+        0.551
+      ],
+      "Clarke_A": [
+        86.555,
+        0.572
+      ],
+      "Clarke_B": [
+        7.795,
+        0.977
+      ],
+      "Clarke_C": [
+        0.011,
+        0.008
+      ],
+      "Clarke_D": [
+        3.277,
+        0.602
+      ],
+      "Clarke_E": [
+        2.362,
+        0.427
+      ]
+    },
+    "LSTM": {
+      "RMSE": [
+        20.602,
+        1.329
+      ],
+      "MAE": [
+        14.32,
+        0.947
+      ],
+      "MAPE": [
+        10.004,
+        0.332
+      ],
+      "Clarke_A+B": [
+        94.891,
+        0.518
+      ],
+      "Clarke_A": [
+        87.668,
+        0.977
+      ],
+      "Clarke_B": [
+        7.223,
+        0.889
+      ],
+      "Clarke_C": [
+        0.011,
+        0.007
+      ],
+      "Clarke_D": [
+        2.579,
+        0.314
+      ],
+      "Clarke_E": [
+        2.52,
+        0.423
+      ]
+    }
+  },
+  "biaya": {
+    "RF": {
+      "waktu_latih_dtk": 705.2,
+      "inferensi_ms_per_sampel": 0.0057,
+      "ukuran_model_MB": 322.52
+    },
+    "LSTM": {
+      "waktu_latih_dtk": 476.8,
+      "inferensi_ms_per_sampel": 0.1156,
+      "ukuran_model_MB": 0.124
+    }
+  },
+  "uji": {
+    "fold_level_paired": {
+      "wilcoxon_p": 0.0312,
+      "ttest_rel_p": 0.0066,
+      "n_fold": 6
+    },
+    "sample_level_wilcoxon": {
+      "p": 1.8469385861416503e-159,
+      "n": 160081,
+      "median_abs_err_RF": 10.33,
+      "median_abs_err_LSTM": 9.91
+    }
+  }
+}

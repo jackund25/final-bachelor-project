@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import Any, Dict, List, Optional
-
 try:
     from src.patient_state import PatientState
 except ImportError:

@@ -1,6 +1,26 @@
 """
-Data Preprocessing utilities
+Data preprocessing utilities for modality-aware glucose prediction.
+
+M5.4 final design:
+    CGM:
+        - history: configurable (default 12 observations)
+        - horizons: +30m / +60m
+        - target tolerance: configurable (default 2.5m)
+
+    FINGER_STICK / SMBG:
+        - history: exactly 8 valid observations by default
+        - near-duplicate interval <5m excluded
+        - target window: 180–300m (~4h)
+        - maximum target gap: 12h
+        - irregular observation gaps are preserved as features
+
+Important:
+    - Official dataset_split is never recreated here.
+    - glucose_source is filtered before sequence construction.
+    - No artificial CGM→SMBG downsampling is used.
 """
+
+from __future__ import annotations
 
 import logging
 from typing import List, Optional, Tuple
@@ -14,350 +34,715 @@ from src.data.contracts import assert_feature_set, validate_data_contract
 logger = logging.getLogger(__name__)
 
 
-def _decay_accumulate(values: np.ndarray, decay: float) -> np.ndarray:
-    """Akumulasi peluruhan eksponensial first-order: out[t] = values[t] + decay*out[t-1].
+def _decay_accumulate_time_aware(
+    values: np.ndarray,
+    timestamps: pd.Series,
+    tau_min: float,
+) -> np.ndarray:
+    """Exponential accumulation using actual elapsed minutes."""
+    values = np.asarray(values, dtype=float)
+    ts = pd.to_datetime(timestamps).reset_index(drop=True)
 
-    Dipakai untuk Insulin-on-Board (IOB) dan Carbs-on-Board (COB): kejadian masa lalu
-    masih "aktif" namun meluruh seiring waktu (model fisiologis sederhana).
-    """
     out = np.zeros(len(values), dtype=float)
     acc = 0.0
-    for i, v in enumerate(values):
-        acc = float(v) + decay * acc
+
+    for i, value in enumerate(values):
+        if i == 0:
+            decay = 0.0
+        else:
+            dt_min = max(
+                0.0,
+                (ts.iloc[i] - ts.iloc[i - 1]).total_seconds() / 60.0,
+            )
+            decay = float(np.exp(-dt_min / float(tau_min)))
+
+        acc = float(value) + decay * acc
         out[i] = acc
+
     return out
 
 
 class DataPreprocessor:
-    """
-    Preprocess raw data for model training
-    """
-    
+    """Preprocess raw data for modality-aware GBM training."""
+
     def __init__(self, config):
         self.config = config or {}
         self.scaler = StandardScaler()
-        model_config = self.config.get('model', {})
-        self.feature_columns = list(model_config.get('features', ['glucose', 'carbs', 'insulin', 'activity', 'stress']))
 
-    def _require_columns(self, df: pd.DataFrame, columns: List[str]) -> None:
+        model_config = self.config.get("model", {})
+        self.feature_columns = list(
+            model_config.get(
+                "engineered_features",
+                model_config.get(
+                    "features",
+                    [
+                        "glucose",
+                        "carbs",
+                        "insulin",
+                        "activity",
+                        "stress",
+                    ],
+                ),
+            )
+        )
+
+    def _require_columns(
+        self,
+        df: pd.DataFrame,
+        columns: List[str],
+    ) -> None:
         assert_feature_set(df, columns)
-    
-    def handle_missing_values(self, df: pd.DataFrame,
-                              max_interpolate_steps: Optional[int] = None) -> pd.DataFrame:
+
+    def handle_missing_values(
+        self,
+        df: pd.DataFrame,
+        max_interpolate_steps: Optional[int] = None,
+    ) -> pd.DataFrame:
         """
-        Handle missing values via interpolation
+        Handle missing values without fabricating glucose observations.
 
-        Args:
-            df: Input DataFrame
-            max_interpolate_steps: Panjang maksimum runtun NaN berurutan yang masih
-                boleh diinterpolasi. None = tanpa batas (perilaku lama).
-
-        Returns:
-            df_clean: Cleaned DataFrame
-
-        Pada OhioT1DM batas ini tidak berpengaruh, sebab berkasnya tidak memuat NaN;
-        jeda sensor hadir sebagai baris yang hilang, bukan sebagai NaN, dan ditangani
-        segmentasi jendela di ``create_sequences``. Batas ini pengaman bagi sumber lain
-        seperti logbook manual, yang memang dapat memuat NaN.
+        Glucose is never interpolated. For sparse SMBG this is essential:
+        an artificial glucose value would create a fake temporal observation.
         """
         logger.info("Handling missing values...")
 
         df = validate_data_contract(df)
-        self._require_columns(df, ['patient_id', 'timestamp', *self.feature_columns])
-
         df = df.copy()
-        df = df.sort_values(['patient_id', 'timestamp']).reset_index(drop=True)
+        df = df.sort_values(
+            ["patient_id", "timestamp"]
+        ).reset_index(drop=True)
 
-        missing_before = df.isnull().sum().sum()
+        if "glucose" not in df.columns:
+            raise ValueError("Dataset requires 'glucose'.")
 
-        # Interpolate numeric columns
-        numeric_cols = df.select_dtypes(include=[np.number]).columns
-        if max_interpolate_steps is not None:
-            df[numeric_cols] = df[numeric_cols].interpolate(
-                method='linear', limit=int(max_interpolate_steps), limit_direction='both'
+        missing_before = int(df.isnull().sum().sum())
+
+        # Glucose must be observed, not fabricated.
+        before = len(df)
+        df = df.dropna(subset=["glucose"])
+        dropped_glucose = before - len(df)
+
+        if dropped_glucose:
+            logger.info(
+                "Dropped %d rows with missing glucose; "
+                "glucose is never interpolated.",
+                dropped_glucose,
             )
-            # Runtun NaN yang lebih panjang dari batas TIDAK diisi paksa — barisnya
-            # dibuang, karena mengisinya berarti mengarang pengamatan.
-            sebelum_drop = len(df)
-            df = df.dropna(subset=[c for c in self.feature_columns if c in df.columns])
-            n_drop = sebelum_drop - len(df)
-            if n_drop:
-                logger.info(
-                    f"Dibuang {n_drop} baris dengan runtun NaN > {max_interpolate_steps} langkah"
+
+        numeric_cols = df.select_dtypes(
+            include=[np.number]
+        ).columns.tolist()
+
+        numeric_non_glucose = [
+            c for c in numeric_cols
+            if c != "glucose"
+        ]
+
+        if numeric_non_glucose:
+            if max_interpolate_steps is not None:
+                df[numeric_non_glucose] = (
+                    df[numeric_non_glucose]
+                    .interpolate(
+                        method="linear",
+                        limit=int(max_interpolate_steps),
+                        limit_direction="both",
+                    )
                 )
-            df = df.reset_index(drop=True)
-        else:
-            df[numeric_cols] = df[numeric_cols].interpolate(
-                method='linear', limit_direction='both'
-            )
-            # Fill remaining NaNs with forward fill
-            df = df.ffill().bfill()
+            else:
+                df[numeric_non_glucose] = (
+                    df[numeric_non_glucose]
+                    .interpolate(
+                        method="linear",
+                        limit_direction="both",
+                    )
+                    .ffill()
+                    .bfill()
+                )
 
-        missing_after = df.isnull().sum().sum()
+        missing_after = int(df.isnull().sum().sum())
 
-        logger.info(f"Missing values: {missing_before} → {missing_after}")
+        logger.info(
+            "Missing values: %d → %d",
+            missing_before,
+            missing_after,
+        )
 
-        return df
-    
+        return df.reset_index(drop=True)
+
     def engineer_features(
         self,
         df: pd.DataFrame,
         insulin_tau_min: float = 240.0,
         carbs_tau_min: float = 180.0,
         trend_steps: int = 3,
-        source_interval_min: float = 5.0,
+        **kwargs,
     ) -> pd.DataFrame:
-        """Tambah fitur turunan berbasis fisiologi (dihitung per pasien, tanpa leakage).
+        """
+        Create elapsed-time-aware physiological and temporal features.
 
-        - iob  : Insulin-on-Board, peluruhan ~insulin_tau_min (default 4 jam) dari bolus.
-        - cob  : Carbs-on-Board, peluruhan ~carbs_tau_min (default 3 jam) dari makanan.
-        - glucose_delta : tren glukosa (selisih `trend_steps` langkah terakhir).
-        - hour_sin/hour_cos : waktu dalam hari (menangkap pola diurnal / dawn phenomenon).
-
-        Referensi: model glukosa-insulin-karbohidrat (Bergman minimal model; UVA/Padova).
+        IOB/COB use actual elapsed minutes.
+        glucose_rate uses actual elapsed time.
+        time_since_prev_glucose exposes irregular SMBG cadence.
         """
         df = validate_data_contract(df)
-        df = df.copy().sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
+        df = df.copy()
 
-        insulin_decay = float(np.exp(-source_interval_min / insulin_tau_min))
-        carbs_decay = float(np.exp(-source_interval_min / carbs_tau_min))
+        required = [
+            "patient_id",
+            "timestamp",
+            "glucose",
+            "glucose_source",
+        ]
+
+        self._require_columns(df, required)
+
+        df = df.sort_values(
+            ["patient_id", "timestamp"]
+        ).reset_index(drop=True)
 
         parts = []
-        for _, g in df.groupby("patient_id", sort=False):
-            g = g.copy()
-            # bolus_dose lebih tepat daripada insulin, sebab kolom insulin memuat basal yang
-            # hampir selalu bukan-nol dan bukan kejadian sesaat. Tetapi pada deret GABUNGAN
-            # dataset + logbook manual, kolom bolus_dose ada (dibawa baris dataset) sementara
-            # baris manual tidak memilikinya sehingga bernilai NaN. Tanpa fillna di bawah,
-            # IOB seluruh baris manual menjadi NaN dan insulin yang diketik dokter TIDAK
-            # PERNAH terpakai — dan karena HistGradientBoosting menerima NaN secara bawaan,
-            # kegagalan itu tidak memunculkan galat maupun peringatan apa pun.
+
+        for _, g in df.groupby(
+            ["patient_id", "glucose_source"],
+            sort=False,
+        ):
+            g = g.copy().reset_index(drop=True)
+
             if "bolus_dose" in g.columns:
-                insulin_src = g["bolus_dose"].fillna(g["insulin"])
+                insulin_src = g["bolus_dose"].fillna(
+                    g.get("insulin", 0.0)
+                )
             else:
-                insulin_src = g["insulin"]
-            g["iob"] = _decay_accumulate(
-                insulin_src.to_numpy(dtype=float), insulin_decay)
-            g["cob"] = _decay_accumulate(
-                g["carbs"].fillna(0.0).to_numpy(dtype=float), carbs_decay)
-            g["glucose_delta"] = g["glucose"].diff(trend_steps).fillna(0.0)
-            hour = g["timestamp"].dt.hour + g["timestamp"].dt.minute / 60.0
-            g["hour_sin"] = np.sin(2 * np.pi * hour / 24.0)
-            g["hour_cos"] = np.cos(2 * np.pi * hour / 24.0)
+                insulin_src = g.get(
+                    "insulin",
+                    pd.Series(
+                        0.0,
+                        index=g.index,
+                    ),
+                )
+
+            carbs_src = g.get(
+                "carbs",
+                pd.Series(
+                    0.0,
+                    index=g.index,
+                ),
+            )
+
+            g["iob"] = _decay_accumulate_time_aware(
+                insulin_src.fillna(0.0).to_numpy(dtype=float),
+                g["timestamp"],
+                insulin_tau_min,
+            )
+
+            g["cob"] = _decay_accumulate_time_aware(
+                carbs_src.fillna(0.0).to_numpy(dtype=float),
+                g["timestamp"],
+                carbs_tau_min,
+            )
+
+            prev_ts = g["timestamp"].shift(1)
+
+            dt_min = (
+                g["timestamp"] - prev_ts
+            ).dt.total_seconds().div(60.0)
+
+            g["time_since_prev_glucose"] = (
+                dt_min.fillna(0.0).clip(lower=0.0)
+            )
+
+            shift = max(1, int(trend_steps))
+
+            g["glucose_delta"] = (
+                g["glucose"]
+                - g["glucose"].shift(shift)
+            ).fillna(0.0)
+
+            trend_dt = (
+                g["timestamp"]
+                - g["timestamp"].shift(shift)
+            ).dt.total_seconds().div(60.0)
+
+            g["glucose_rate"] = (
+                g["glucose_delta"]
+                .div(
+                    trend_dt.replace(
+                        0,
+                        np.nan,
+                    )
+                )
+                .replace(
+                    [np.inf, -np.inf],
+                    np.nan,
+                )
+                .fillna(0.0)
+            )
+
+            hour = (
+                g["timestamp"].dt.hour
+                + g["timestamp"].dt.minute / 60.0
+            )
+
+            g["hour_sin"] = np.sin(
+                2 * np.pi * hour / 24.0
+            )
+
+            g["hour_cos"] = np.cos(
+                2 * np.pi * hour / 24.0
+            )
+
             parts.append(g)
 
-        result = pd.concat(parts, ignore_index=True)
-        logger.info(
-            f"Engineered features ditambahkan: iob, cob, glucose_delta, hour_sin, hour_cos "
-            f"(insulin_tau={insulin_tau_min}min, carbs_tau={carbs_tau_min}min, trend={trend_steps} langkah)"
+        result = (
+            pd.concat(parts, ignore_index=True)
+            .sort_values(
+                ["patient_id", "timestamp"]
+            )
+            .reset_index(drop=True)
         )
+
+        logger.info(
+            "Added time-aware features: "
+            "iob, cob, glucose_delta, glucose_rate, "
+            "time_since_prev_glucose, hour_sin, hour_cos"
+        )
+
         return result
 
-    def create_sequences(self, df: pd.DataFrame, sequence_length: int = 12,
-                         prediction_horizon: int = 1, return_anchor: bool = False,
-                         max_gap_steps: Optional[int] = None,
-                         source_interval_min: float = 5.0,
-                        ) -> Tuple[np.ndarray, ...]:
+    def create_time_horizon_sequences(
+        self,
+        df: pd.DataFrame,
+        sequence_length: int,
+        horizon_min: float,
+        target_tolerance_min: float = 0.0,
+        max_history_gap_min: Optional[float] = None,
+        return_anchor: bool = False,
+        min_target_horizon_min: Optional[float] = None,
+        max_target_horizon_min: Optional[float] = None,
+        min_history_interval_min: float = 0.0,
+    ) -> Tuple[np.ndarray, ...]:
         """
-        Create sequences for time-series prediction
+        Create modality-aware temporal sequences.
 
-        Args:
-            df: Input DataFrame with features
-            sequence_length: Number of time steps to look back
-            prediction_horizon: Number of steps ahead to predict (1 = next step).
-                Pada cadence CGM 5-menit: 6 = +30 menit, 12 = +60 menit.
-            max_gap_steps: Jeda maksimum ANTAR-BARIS yang masih boleh berada di dalam
-                satu jendela, dinyatakan dalam langkah cadence. None = tanpa batas
-                (perilaku lama). Baca dari config.model.max_gap_steps.
-            source_interval_min: Cadence nominal data sumber (menit).
+        Fixed horizon:
+            min/max target horizon omitted
+            -> nearest future target around horizon_min with tolerance.
 
-        Returns:
-            X: Input sequences (n_samples, sequence_length, n_features)
-            y: Target values (n_samples,)
+        Window horizon:
+            min_target_horizon_min/max_target_horizon_min supplied
+            -> choose the future observation closest to horizon_min
+               inside the allowed elapsed-time window.
 
-        Jendela dibentuk per posisi baris, sedangkan baris OhioT1DM tidak berjarak
-        seragam. Jendela yang memuat jeda melebihi ``max_gap_steps`` dibuang, bukan
-        diinterpolasi: nilai di dalam jeda memang tidak terobservasi.
+        SMBG quality rule:
+            consecutive history intervals < min_history_interval_min
+            are excluded. This removes near-duplicate finger-stick events.
         """
-        logger.info(
-            f"Creating sequences with length {sequence_length}, horizon {prediction_horizon}..."
-        )
-
         if sequence_length < 1:
-            raise ValueError("sequence_length must be at least 1")
-        if prediction_horizon < 1:
-            raise ValueError("prediction_horizon must be at least 1")
+            raise ValueError(
+                "sequence_length must be >= 1"
+            )
 
-        df = validate_data_contract(df)
-        self._require_columns(df, ['patient_id', 'timestamp', *self.feature_columns])
+        if horizon_min <= 0:
+            raise ValueError(
+                "horizon_min must be > 0"
+            )
 
-        max_gap_min = (
-            float(max_gap_steps) * float(source_interval_min)
-            if max_gap_steps is not None else None
+        if target_tolerance_min < 0:
+            raise ValueError(
+                "target_tolerance_min must be >= 0"
+            )
+
+        if (
+            min_target_horizon_min is not None
+            and max_target_horizon_min is None
+        ):
+            raise ValueError(
+                "max_target_horizon_min is required "
+                "when min_target_horizon_min is used."
+            )
+
+        if (
+            max_target_horizon_min is not None
+            and min_target_horizon_min is None
+        ):
+            raise ValueError(
+                "min_target_horizon_min is required "
+                "when max_target_horizon_min is used."
+            )
+
+        if (
+            min_target_horizon_min is not None
+            and min_target_horizon_min > max_target_horizon_min
+        ):
+            raise ValueError(
+                "Invalid target horizon window."
+            )
+
+        df = validate_data_contract(df).copy()
+
+        required = [
+            "patient_id",
+            "timestamp",
+            "glucose",
+            "glucose_source",
+            *self.feature_columns,
+        ]
+
+        self._require_columns(
+            df,
+            list(dict.fromkeys(required)),
         )
 
-        X, y, anchors = [], [], []
-        span = sequence_length + prediction_horizon  # baris minimum dibutuhkan
-        n_dibuang = 0
+        X = []
+        y = []
+        anchors = []
+        target_elapsed = []
 
-        for _, patient_df in df.sort_values(['patient_id', 'timestamp']).groupby('patient_id', sort=False):
-            patient_df = patient_df.reset_index(drop=True)
-            data = patient_df[self.feature_columns].values
+        group_cols = [
+            "patient_id",
+            "glucose_source",
+        ]
 
-            if len(data) < span:
+        for _, g in (
+            df.sort_values(
+                [
+                    "patient_id",
+                    "glucose_source",
+                    "timestamp",
+                ]
+            )
+            .groupby(
+                group_cols,
+                sort=False,
+            )
+        ):
+            g = g.reset_index(drop=True)
+
+            if len(g) < sequence_length + 1:
                 continue
 
-            # Penanda jeda terlalu panjang antara baris (k-1) dan k. Jumlah kumulatif
-            # membuat pemeriksaan "adakah jeda di dalam rentang ini" menjadi O(1),
-            # sehingga penyaringan tidak menambah biaya berarti pada 166 ribu jendela.
-            if max_gap_min is not None:
-                dt = patient_df['timestamp'].diff().dt.total_seconds().div(60.0).to_numpy()
-                bad = np.zeros(len(data), dtype=np.int32)
-                bad[1:] = (dt[1:] > max_gap_min + 1e-9).astype(np.int32)
-                bad_cum = np.cumsum(bad)
-            else:
-                bad_cum = None
+            times = pd.to_datetime(
+                g["timestamp"]
+            )
 
-            for i in range(len(data) - span + 1):
-                if bad_cum is not None:
-                    # Rentang yang harus mulus: seluruh baris i..i+span-1, yakni
-                    # jendela masukan DAN jalur menuju target di horizon.
-                    if bad_cum[i + span - 1] - bad_cum[i] > 0:
-                        n_dibuang += 1
-                        continue
-                X.append(data[i:i + sequence_length])
-                # target = glukosa pada (akhir window + horizon)
-                y.append(data[i + sequence_length + prediction_horizon - 1, 0])
-                # anchor = glukosa terakhir di window (untuk target delta), fitur index 0 = glucose
-                anchors.append(data[i + sequence_length - 1, 0])
+            values = g[
+                self.feature_columns
+            ].to_numpy(dtype=float)
+
+            glucose = g[
+                "glucose"
+            ].to_numpy(dtype=float)
+
+            gaps = (
+                times.diff()
+                .dt.total_seconds()
+                .div(60.0)
+                .to_numpy()
+            )
+
+            for anchor_idx in range(
+                sequence_length - 1,
+                len(g),
+            ):
+                start_idx = (
+                    anchor_idx
+                    - sequence_length
+                    + 1
+                )
+
+                history_gaps = gaps[
+                    start_idx + 1:
+                    anchor_idx + 1
+                ]
+
+                # No artificial/near-duplicate observations
+                # inside the historical window.
+                if (
+                    min_history_interval_min > 0
+                    and len(history_gaps)
+                    and np.any(
+                        history_gaps
+                        < min_history_interval_min
+                    )
+                ):
+                    continue
+
+                # Optional maximum gap between historical observations.
+                if (
+                    max_history_gap_min is not None
+                    and len(history_gaps)
+                    and np.any(
+                        history_gaps
+                        > max_history_gap_min
+                    )
+                ):
+                    continue
+
+                target_time = (
+                    times.iloc[anchor_idx]
+                    + pd.Timedelta(
+                        minutes=float(
+                            horizon_min
+                        )
+                    )
+                )
+
+                future_start = anchor_idx + 1
+
+                if future_start >= len(times):
+                    continue
+
+                future_times = times.iloc[
+                    future_start:
+                ]
+
+                elapsed = (
+                    future_times
+                    - times.iloc[anchor_idx]
+                ).dt.total_seconds().div(60.0)
+
+                if (
+                    min_target_horizon_min
+                    is not None
+                ):
+                    candidate_mask = (
+                        (elapsed >= min_target_horizon_min)
+                        & (
+                            elapsed
+                            <= max_target_horizon_min
+                        )
+                    )
+                else:
+                    candidate_mask = (
+                        np.abs(
+                            elapsed
+                            - horizon_min
+                        )
+                        <= target_tolerance_min
+                    )
+
+                candidate_positions = np.where(
+                    candidate_mask.to_numpy()
+                )[0]
+
+                if len(candidate_positions) == 0:
+                    continue
+
+                nearest_pos = candidate_positions[
+                    np.argmin(
+                        np.abs(
+                            elapsed.iloc[
+                                candidate_positions
+                            ].to_numpy()
+                            - horizon_min
+                        )
+                    )
+                ]
+
+                target_idx = (
+                    future_start
+                    + int(nearest_pos)
+                )
+
+                actual_elapsed = float(
+                    (
+                        times.iloc[target_idx]
+                        - times.iloc[anchor_idx]
+                    ).total_seconds()
+                    / 60.0
+                )
+
+                X.append(
+                    values[
+                        start_idx:
+                        anchor_idx + 1
+                    ]
+                )
+
+                y.append(
+                    glucose[target_idx]
+                )
+
+                anchors.append(
+                    glucose[anchor_idx]
+                )
+
+                target_elapsed.append(
+                    actual_elapsed
+                )
 
         if not X:
             raise ValueError(
-                f"Need at least sequence_length + prediction_horizon rows per patient; "
-                f"no valid windows for sequence_length={sequence_length}, "
-                f"prediction_horizon={prediction_horizon}"
+                "No valid time-horizon sequences found: "
+                f"sequence={sequence_length}, "
+                f"horizon={horizon_min}min"
             )
 
-        X = np.array(X)
-        y = np.array(y)
-        anchors = np.array(anchors)
+        X = np.asarray(X, dtype=float)
+        y = np.asarray(y, dtype=float)
+        anchors = np.asarray(
+            anchors,
+            dtype=float,
+        )
 
-        if max_gap_min is not None:
-            total = len(X) + n_dibuang
-            logger.info(
-                f"Segmentasi jeda: {n_dibuang} dari {total} jendela dibuang "
-                f"({100 * n_dibuang / max(total, 1):.2f}%) karena memuat jeda "
-                f"> {max_gap_min:.0f} menit ({max_gap_steps} langkah)"
-            )
-
-        logger.info(f"Created {len(X)} sequences")
-        logger.info(f"X shape: {X.shape}, y shape: {y.shape}")
+        logger.info(
+            "Created %d temporal sequences "
+            "(history=%d, target≈%g min, "
+            "median actual target=%0.2f min)",
+            len(y),
+            sequence_length,
+            horizon_min,
+            float(
+                np.median(target_elapsed)
+            ),
+        )
 
         if return_anchor:
             return X, y, anchors
-        return X, y
-    
-    def normalize_data(self, X_train: np.ndarray, X_test: np.ndarray = None
-                      ) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Normalize data using StandardScaler
-        
-        Args:
-            X_train: Training data
-            X_test: Test data (optional)
-            
-        Returns:
-            X_train_scaled, X_test_scaled
-        """
-        logger.info("Normalizing data...")
 
+        return X, y
+
+    def normalize_data(
+        self,
+        X_train: np.ndarray,
+        X_test: np.ndarray = None,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Fit StandardScaler on train only and transform train/test."""
         if X_train.ndim != 3:
-            raise ValueError("X_train must have shape (samples, sequence_length, n_features)")
+            raise ValueError(
+                "X_train must have shape "
+                "(samples, sequence_length, n_features)"
+            )
+
         if X_train.shape[0] == 0:
-            raise ValueError("X_train must contain at least one sample")
-        
-        # Reshape for scaling
-        n_samples, seq_len, n_features = X_train.shape
-        X_train_reshaped = X_train.reshape(-1, n_features)
-        
-        # Fit scaler on training data
-        self.scaler.fit(X_train_reshaped)
-        
-        # Transform
-        X_train_scaled = self.scaler.transform(X_train_reshaped)
-        X_train_scaled = X_train_scaled.reshape(n_samples, seq_len, n_features)
-        
-        if X_test is not None:
-            if X_test.ndim != 3:
-                raise ValueError("X_test must have shape (samples, sequence_length, n_features)")
-            n_test, seq_len_test, _ = X_test.shape
-            X_test_reshaped = X_test.reshape(-1, n_features)
-            X_test_scaled = self.scaler.transform(X_test_reshaped)
-            X_test_scaled = X_test_scaled.reshape(n_test, seq_len_test, n_features)
-            return X_train_scaled, X_test_scaled
-        
-        return X_train_scaled, None
-    
+            raise ValueError(
+                "X_train must contain samples"
+            )
+
+        n_samples, seq_len, n_features = (
+            X_train.shape
+        )
+
+        train_flat = X_train.reshape(
+            -1,
+            n_features,
+        )
+
+        self.scaler.fit(
+            train_flat
+        )
+
+        X_train_scaled = (
+            self.scaler.transform(
+                train_flat
+            )
+            .reshape(
+                n_samples,
+                seq_len,
+                n_features,
+            )
+        )
+
+        if X_test is None:
+            return X_train_scaled, None
+
+        if X_test.ndim != 3:
+            raise ValueError(
+                "X_test must have shape "
+                "(samples, sequence_length, n_features)"
+            )
+
+        n_test = X_test.shape[0]
+
+        X_test_scaled = (
+            self.scaler.transform(
+                X_test.reshape(
+                    -1,
+                    n_features,
+                )
+            )
+            .reshape(
+                n_test,
+                X_test.shape[1],
+                n_features,
+            )
+        )
+
+        return (
+            X_train_scaled,
+            X_test_scaled,
+        )
+
     def downsample_smbg(
         self,
         df: pd.DataFrame,
         interval_minutes: int = 240,
         source_interval_minutes: int = 5,
     ) -> pd.DataFrame:
-        """Downsample dense CGM data to simulate SMBG (finger-prick) cadence.
-
-        OhioT1DM records glucose every 5 minutes (CGM).  Real SMBG devices are
-        used 3–6 times per day (~240-min gaps).  This function retains every
-        N-th row per patient so downstream experiments can simulate a patient
-        who self-monitors rather than wearing a CGM sensor.
-
-        Args:
-            df: DataFrame with 'patient_id' and 'timestamp' columns.
-            interval_minutes: Target gap between retained readings (default 240 = 4 h ≈ 6/day).
-            source_interval_minutes: Cadence of the source data in minutes (default 5).
-
-        Returns:
-            Downsampled DataFrame with the same schema.
         """
-        step = max(1, round(interval_minutes / source_interval_minutes))
-        logger.info(
-            f"Downsampling CGM→SMBG: keeping 1 of every {step} rows "
-            f"({interval_minutes} min cadence, ~{1440 // interval_minutes} readings/day)"
+        Legacy simulation helper.
+
+        NOT used by the OhioT1DM real-SMBG training pipeline.
+        """
+        step = max(
+            1,
+            round(
+                interval_minutes
+                / source_interval_minutes
+            ),
         )
+
         parts = []
-        for _, patient_df in df.sort_values(["patient_id", "timestamp"]).groupby(
-            "patient_id", sort=False
+
+        for _, patient_df in (
+            df.sort_values(
+                ["patient_id", "timestamp"]
+            )
+            .groupby(
+                "patient_id",
+                sort=False,
+            )
         ):
-            parts.append(patient_df.iloc[::step].copy())
-        result = pd.concat(parts, ignore_index=True)
-        logger.info(
-            f"Downsampled: {len(df)} → {len(result)} rows "
-            f"({result['patient_id'].nunique()} patients)"
+            parts.append(
+                patient_df.iloc[
+                    ::step
+                ].copy()
+            )
+
+        return pd.concat(
+            parts,
+            ignore_index=True,
         )
-        return result
 
-    def split_by_patient(self, df: pd.DataFrame, test_patients: List[str]
-                        ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def split_by_patient(
+        self,
+        df: pd.DataFrame,
+        test_patients: List[str],
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
-        Split data by patient ID (important for avoiding data leakage)
-        
-        Args:
-            df: Full DataFrame
-            test_patients: List of patient IDs for test set
-            
-        Returns:
-            train_df, test_df
+        Legacy helper.
+
+        Production OhioT1DM training uses the official dataset_split
+        instead of creating a new patient split.
         """
-        df = validate_data_contract(df)
-        self._require_columns(df, ['patient_id'])
+        df = validate_data_contract(
+            df
+        ).copy()
 
-        df = df.sort_values(['patient_id', 'timestamp']).reset_index(drop=True)
+        test_patients = set(
+            test_patients
+        )
 
-        train_df = df[~df['patient_id'].isin(test_patients)].copy()
-        test_df = df[df['patient_id'].isin(test_patients)].copy()
-        
-        logger.info(f"Train patients: {train_df['patient_id'].nunique()}")
-        logger.info(f"Test patients: {test_df['patient_id'].nunique()}")
-        logger.info(f"Train size: {len(train_df)}, Test size: {len(test_df)}")
-        
+        train_df = df[
+            ~df["patient_id"].isin(
+                test_patients
+            )
+        ].copy()
+
+        test_df = df[
+            df["patient_id"].isin(
+                test_patients
+            )
+        ].copy()
+
         return train_df, test_df

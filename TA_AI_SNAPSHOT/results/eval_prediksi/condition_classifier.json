@@ -1,0 +1,49 @@
+{
+  "horizon_menit": 30,
+  "keluarga_model": "HistGradientBoostingClassifier",
+  "regresor_pembanding": "HistGradientBoostingRegressor",
+  "class_weight": "balanced",
+  "catatan": "Kondisi masa depan diprediksi langsung oleh pengklasifikasi tiga kelas (class_weight=balanced), dibandingkan terhadap kondisi yang diturunkan dari regresi pada keluarga model yang SAMA.",
+  "n_uji": 26445,
+  "n_divergen": 3416,
+  "regresi_lalu_ambang": {
+    "akurasi_keseluruhan_%": 89.4,
+    "hipoglikemia": {
+      "n": 768,
+      "sensitivitas_%": 17.3,
+      "PPV_%": 56.6
+    },
+    "normal": {
+      "n": 18427,
+      "sensitivitas_%": 93.7,
+      "PPV_%": 91.4
+    },
+    "hiperglikemia": {
+      "n": 7250,
+      "sensitivitas_%": 86.3,
+      "PPV_%": 85.5
+    }
+  },
+  "pengklasifikasi_kondisi": {
+    "akurasi_keseluruhan_%": 86.1,
+    "hipoglikemia": {
+      "n": 768,
+      "sensitivitas_%": 67.2,
+      "PPV_%": 31.9
+    },
+    "normal": {
+      "n": 18427,
+      "sensitivitas_%": 85.6,
+      "PPV_%": 94.0
+    },
+    "hiperglikemia": {
+      "n": 7250,
+      "sensitivitas_%": 89.5,
+      "PPV_%": 80.7
+    }
+  },
+  "pada_kasus_divergen": {
+    "akurasi_kondisi_regresi_%": 36.8,
+    "akurasi_kondisi_pengklasifikasi_%": 35.4
+  }
+}

@@ -12,73 +12,292 @@ data:
   # Skenario SMBG memakai pembacaan finger_stick NYATA dari OhioT1DM
   # (data/raw/ohio_t1dm_smbg.csv, dihasilkan parse_ohio_fingerstick) — BUKAN hasil
   # downsampling artifisial dari kanal CGM. Lihat Batasan Masalah #2 pada laporan.
-  smbg_csv: "data/raw/ohio_t1dm_smbg.csv"
+  unified_dataset: "ohio_t1dm.csv"
   # Dipakai HANYA oleh jalur eksperimen lama train_lstm_from_config(smbg_downsample=True),
   # yang tidak dipakai pada hasil mana pun di laporan. Dipertahankan untuk reproduksi historis.
-  smbg_interval_min: 240
+  # Deprecated: SMBG cadence is measured from actual timestamps, not assumed.
 
-# Model Training
+# =============================================================
+# MODEL TRAINING
+# =============================================================
 model:
-  # Diubah dari RandomForest pada 13 Agustus 2026. ALASANNYA UKURAN DAN KECEPATAN,
-  # BUKAN AKURASI.
+
+  # -----------------------------------------------------------
+  # MODEL FAMILY
+  # -----------------------------------------------------------
+  # Diubah dari RandomForest pada 13 Agustus 2026.
   #
-  # Rumusan Masalah 1 menuntut modul prediksi yang berjalan pada perangkat kelas
-  # konsumen, dan Tujuan 1 menuntutnya efisien secara komputasi. RF adalah yang
-  # TERBURUK dari ketiga kandidat pada kriteria itu (T4.1, 6 fold lintas-pasien):
+  # Alasan utama:
+  #   - ukuran model lebih kecil
+  #   - waktu training lebih cepat
+  #   - sesuai dengan kebutuhan deployment pada perangkat konsumen
+  #
+  # Berdasarkan evaluasi T4.1:
   #
   #   model   RMSE h6   ukuran      waktu latih
   #   RF      21,079    322,53 MB   708,1 dtk
-  #   GBM     20,721      0,485 MB    3,4 dtk   <- 665x lebih kecil, 208x lebih cepat
+  #   GBM     20,721      0,485 MB    3,4 dtk
   #   LSTM    20,602      0,124 MB  477   dtk
   #
-  # Keunggulan AKURASI GBM konsisten antar-fold tetapi TIDAK bermakna secara klinis
-  # (+0,358 mg/dL = 2,39% ambang ISO 15197 pada h6; +0,976 = 6,51% pada h12), jadi
-  # bukan itu alasannya. Yang menentukan adalah ukuran dan kecepatan.
+  # Catatan:
+  # Keunggulan akurasi GBM tidak menjadi dasar utama pemilihan model.
+  # Pemilihan terutama berdasarkan efisiensi ukuran dan waktu.
   #
-  # BATAS YANG WAJIB DINYATAKAN: pada h12 GBM KALAH dari RF pada sensitivitas
-  # hipoglikemia (2,42% lawan 4,36%; hipo berat terlewat 957 lawan 933). Klaim
-  # "unggul di setiap dimensi" hanya berlaku pada h6.
-  name: "GradientBoosting" # Options: GradientBoosting, RandomForest, Simulation
-  sequence_length: 12 # look-back 1 jam (12 x 5 menit)
-  # Horizon prediksi (langkah ke depan, cadence 5-menit) — standar BGLP Challenge:
-  #   6  = +30 menit, 12 = +60 menit
-  prediction_horizons: [6, 12]
-  default_horizon: 6   # horizon untuk bundle inferensi aplikasi (30 menit)
-  # stress dikeluarkan: OhioT1DM nyaris tak punya data stres (7 event di seluruh
-  # dataset) sehingga nol-varians & tak informatif bagi model. Tetap dipertahankan
-  # sebagai variabel Digital Twin / logbook (lihat docs/journey/).
-  features: ["glucose", "carbs", "insulin", "activity"]
+  # BATASAN:
+  # Pada h12, GBM memiliki sensitivitas hipoglikemia lebih rendah
+  # dibanding RF. Klaim keunggulan tidak boleh digeneralisasi ke
+  # seluruh horizon.
+  # -----------------------------------------------------------
 
-  # Fitur hasil rekayasa (engineered) berbasis fisiologi — dipakai bila use_engineered=true.
-  # iob/cob menangkap efek insulin/karbohidrat yang tertunda; glucose_delta = tren;
-  # hour_sin/cos = pola diurnal. glucose tetap fitur pertama (index 0 = anchor).
+  name: "GradientBoosting"
+  # Options:
+  #   GradientBoosting
+  #   RandomForest
+  #   Simulation
+
+
+  # -----------------------------------------------------------
+  # DEFAULT SEQUENCE LENGTH
+  # -----------------------------------------------------------
+  # Default digunakan oleh pipeline apabila source profile tidak
+  # memberikan sequence_length khusus.
+  #
+  # Untuk CGM:
+  #   12 observasi × 5 menit ≈ 1 jam historical window.
+  #
+  # SMBG TIDAK menggunakan nilai global ini karena mempunyai
+  # sequence_length khusus = 8 pada source_profiles/FINGER_STICK.
+  # -----------------------------------------------------------
+
+  sequence_length: 12
+
+
+  # -----------------------------------------------------------
+  # DEFAULT PREDICTION HORIZON
+  # -----------------------------------------------------------
+  # Horizon menggunakan SATUAN MENIT, bukan jumlah baris.
+  #
+  # Nilai ini merupakan fallback/default.
+  # Horizon produksi ditentukan oleh source_profiles.
+  # -----------------------------------------------------------
+
+  default_horizon_min: 30
+
+
+  # -----------------------------------------------------------
+  # BASE FEATURES
+  # -----------------------------------------------------------
+  # Stress tidak digunakan sebagai predictor produksi karena event
+  # stress pada OhioT1DM sangat terbatas.
+  #
+  # Variabel stress tetap dapat dipertahankan sebagai bagian dari
+  # Digital Twin / patient logbook.
+  # -----------------------------------------------------------
+
+  features:
+    - "glucose"
+    - "carbs"
+    - "insulin"
+    - "activity"
+
+
+  # -----------------------------------------------------------
+  # ENGINEERED FEATURES
+  # -----------------------------------------------------------
+  # Fitur berbasis temporal dan fisiologis:
+  #
+  # glucose          : glucose observation terakhir
+  # glucose_delta    : perubahan glucose
+  # iob              : insulin-on-board approximation
+  # cob              : carbohydrate-on-board approximation
+  # activity         : aktivitas
+  # hour_sin/cos     : konteks diurnal
+  # glucose_rate     : perubahan glucose per satuan waktu
+  # time_since_prev_glucose:
+  #                    penting untuk SMBG karena observation interval
+  #                    bersifat irregular.
+  # -----------------------------------------------------------
+
   use_engineered: true
-  engineered_features: ["glucose", "glucose_delta", "iob", "cob", "activity", "hour_sin", "hour_cos"]
-  predict_delta: true   # model memprediksi Δglukosa (selisih dari nilai terakhir), lalu direkonstruksi
 
-  # Segmentasi jendela pada jeda sensor (Tugas 5). Jendela dibentuk per posisi baris,
-  # padahal baris OhioT1DM tidak berjarak seragam: jeda terpanjang mencapai 118 jam.
-  # Jendela yang memuat jeda antar-baris lebih dari max_gap_steps langkah DIBUANG,
-  # bukan diinterpolasi — nilai di dalam jeda memang tidak terobservasi.
-  # 6 langkah x 5 menit = 30 menit.
-  max_gap_steps: 6
-  # Batas panjang runtun NaN yang masih boleh diinterpolasi. Tidak berpengaruh pada
-  # ohio_t1dm_merged.csv (nol NaN); pengaman untuk manual_logbook.csv.
+  engineered_features:
+    - "glucose"
+    - "glucose_delta"
+    - "iob"
+    - "cob"
+    - "activity"
+    - "hour_sin"
+    - "hour_cos"
+    - "glucose_rate"
+    - "time_since_prev_glucose"
+
+
+  # -----------------------------------------------------------
+  # TARGET REPRESENTATION
+  # -----------------------------------------------------------
+  # Model memprediksi perubahan glucose (delta) terhadap glucose
+  # pada anchor observation, kemudian dikembalikan menjadi glucose
+  # prediction.
+  # -----------------------------------------------------------
+
+  predict_delta: true
+
+
+  # -----------------------------------------------------------
+  # MISSING VALUE HANDLING
+  # -----------------------------------------------------------
+  # Glucose TIDAK diinterpolasi karena interpolasi akan menciptakan
+  # observasi glucose yang sebenarnya tidak pernah diukur.
+  #
+  # Parameter ini terutama menjadi safeguard untuk variabel
+  # non-glucose seperti logbook/manual data.
+  # -----------------------------------------------------------
+
   max_interpolate_steps: 6
+
+
+  # -----------------------------------------------------------
+  # TIME-AWARE FEATURE ENGINEERING
+  # -----------------------------------------------------------
+  # Semua parameter temporal menggunakan waktu aktual.
+  #
+  # insulin_tau_min:
+  #   approximate insulin decay / effect window.
+  #
+  # carbs_tau_min:
+  #   approximate carbohydrate absorption window.
+  #
+  # trend_steps:
+  #   jumlah observasi historis yang digunakan untuk menghitung
+  #   glucose_delta. glucose_rate kemudian menggunakan elapsed time
+  #   aktual antar-observasi.
+  # -----------------------------------------------------------
+
   feature_engineering:
-    insulin_tau_min: 240   # waktu kerja insulin ~4 jam
-    carbs_tau_min: 180     # penyerapan karbohidrat ~3 jam
-    trend_steps: 3         # tren glukosa atas 3 langkah (15 menit)
 
-  # sequence_length=12 → look-back 1 jam pada cadence CGM 5-menit
-  # smbg_sequence_length=6 → look-back ~1 hari pada cadence SMBG 240-menit
-  smbg_sequence_length: 6
+    insulin_tau_min: 240
 
-  # Prediktor produksi. HIPERPARAMETER SENGAJA BAWAAN scikit-learn.
-  # T4.1 mengukur GBM tanpa penyetelan agar perbandingannya terhadap RF yang juga
-  # tidak disetel tidak berat sebelah. Menyetel di sini akan membuat model produksi
-  # BERBEDA dari model yang angkanya dilaporkan Bab VI, sehingga angka itu tidak
-  # lagi berlaku bagi sistem yang benar-benar berjalan.
+    carbs_tau_min: 180
+
+    trend_steps: 3
+
+
+  # =============================================================
+  # MODALITY-SPECIFIC PREDICTION PROFILES
+  # =============================================================
+  #
+  # CGM dan FINGER_STICK diproses sebagai dua observation streams
+  # dengan karakteristik temporal berbeda.
+  #
+  # Patient ID tetap sama. Yang berbeda adalah modality-specific
+  # observation stream dan prediction configuration.
+  #
+  # CGM:
+  #   dense 5-minute observations
+  #   → short prediction horizons
+  #
+  # SMBG / FINGER_STICK:
+  #   irregular observations
+  #   → longer prediction horizon
+  #   → 8 historical observations
+  #   → target approximately 4 hours
+  #
+  # Pemilihan konfigurasi SMBG 8 × ~4h berasal dari temporal
+  # feasibility audit terhadap OhioT1DM, bukan asumsi bahwa setiap
+  # SMBG selalu berjarak 4 jam.
+  # =============================================================
+
+  source_profiles:
+
+
+    # -----------------------------------------------------------
+    # CGM PROFILE
+    # -----------------------------------------------------------
+    CGM:
+
+      # 12 CGM observations × 5 minutes ≈ 1 hour history.
+      sequence_length: 12
+
+      # Production CGM prediction horizons.
+      #
+      # +30 minutes
+      # +60 minutes
+      prediction_horizons_min:
+        - 30
+        - 60
+
+      # Target harus berada sangat dekat dengan horizon yang
+      # diminta karena CGM mempunyai cadence yang padat.
+      target_tolerance_min: 2.5
+
+      # Maximum allowable gap inside historical sequence.
+      #
+      # 30 menit = 6 × cadence CGM 5-menit.
+      #
+      # Sequence yang memiliki gap lebih besar tidak digunakan.
+      max_history_gap_min: 30
+
+      # Tidak diperlukan filtering interval minimum khusus
+      # untuk CGM.
+      min_history_interval_min: 0
+
+
+    # -----------------------------------------------------------
+    # SMBG / FINGER-STICK PROFILE
+    # -----------------------------------------------------------
+    FINGER_STICK:
+
+      # FINAL DESIGN:
+      #
+      # 8 historical SMBG observations.
+      #
+      # Bukan berarti 8 observasi tersebut harus terjadi dalam
+      # periode waktu tetap. Interval SMBG bersifat irregular.
+      sequence_length: 8
+
+      # FINAL PRODUCTION HORIZON:
+      #
+      # approximately 4 hours.
+      #
+      # Horizon aktual dipilih dari observation yang tersedia
+      # dalam window 180–300 menit.
+      prediction_horizons_min:
+        - 240
+
+      # Untuk SMBG kita TIDAK menggunakan tolerance simetris
+      # seperti CGM. Target ditentukan menggunakan explicit
+      # temporal window di bawah.
+      target_tolerance_min: 0
+
+      # Minimum interval antar-observasi historis.
+      #
+      # <5 menit dianggap suspicious / near-duplicate dan
+      # tidak digunakan sebagai bagian dari sequence training.
+      min_history_interval_min: 5
+
+      # Maximum gap antar-observasi historis.
+      #
+      # SMBG tetap irregular, tetapi sequence dengan gap ekstrem
+      # tidak digunakan.
+      max_history_gap_min: 720
+
+      # Explicit target window:
+      #
+      # minimum 180 menit = 3 jam
+      # maximum 300 menit = 5 jam
+      #
+      # Target nominal = 240 menit = 4 jam.
+      min_target_horizon_min: 180
+      max_target_horizon_min: 300
+
+
+  # -----------------------------------------------------------
+  # GRADIENT BOOSTING CONFIGURATION
+  # -----------------------------------------------------------
+  # Hyperparameter tetap menggunakan default scikit-learn agar
+  # konsisten dengan eksperimen baseline sebelumnya.
+  # -----------------------------------------------------------
+
   gradient_boosting:
     random_state: 42
 
@@ -105,6 +324,12 @@ rag:
   persist_dir: "models/chroma_db"
   collection_name: "diabetes_kb"
 
+  reranker:
+    enabled: true
+    model: "BAAI/bge-reranker-v2-m3"
+    candidate_k: 50
+    max_length: 512
+
   # Chunking dokumen pedoman (per halaman PDF)
   #
   # Varian V2 pada T7, diadopsi 18 Agustus 2026 atas keputusan pembimbing.
@@ -121,8 +346,8 @@ rag:
   #
   # Tumpang-tindih mengikuti rasio 0,1333 yang dipakai seluruh varian T7:
   # 500 x 0,1333 = 66,7 -> 67.
-  chunk_size: 500
-  chunk_overlap: 67
+  chunk_size: 900
+  chunk_overlap: 120
 
   # T7. Potongan berhenti di batas KALIMAT, bukan di sembarang kata.
   # Dasarnya Gao dkk. (2023) Bagian V.A.1 hal. 8, yang menyebut kelemahan pemecahan
@@ -144,7 +369,7 @@ rag:
     chunk_overlap: 40
 
   # Embedding
-  embedding_provider: "sentence-transformers"  # sentence-transformers | google | ollama
+  embedding_provider: "sentence-transformers" # sentence-transformers | google | ollama
 
   # TETAP all-MiniLM-L6-v2. Pergantian ke paraphrase-multilingual-MiniLM-L12-v2
   # sempat diterapkan pada 16 Agustus 2026 lalu DICABUT pada hari yang sama.
@@ -168,7 +393,7 @@ rag:
   # salah melabeli isi yang benar (lihat results/eval_rag/diagnosis_metrik_chunking.json),
   # di atas set pelaporan yang komposisinya menyembunyikan keruntuhan kelas `normal`.
   # Bukti lemah itu tidak sepadan untuk mengubah produksi.
-  embedding_model: "all-MiniLM-L6-v2"          # 384 dimensi, CPU
+  embedding_model: "all-MiniLM-L6-v2" # 384 dimensi, CPU
 
   # 0 = ikut bawaan model (256 untuk all-MiniLM-L6-v2). Menaikkannya ke 512 DIUJI
   # pada T8 dan TIDAK diadopsi: pemotongan senyap memang hilang seluruhnya, tetapi
@@ -189,8 +414,8 @@ rag:
   # Hit@5, MRR, precision@5, dan nDCG@5 yang pernah dilaporkan mengukur kedalaman yang
   # tidak pernah dipakai aplikasi. Menaikkan produksi lebih murah daripada menghitung ulang
   # seluruh angka retrieval, dan menampilkan lima rujukan tidak lebih buruk bagi dokter.
-  top_k_retrieval: 5    # jumlah dokumen yang dikembalikan
-  fetch_k: 12           # ukuran kolam kandidat sebelum diversifikasi MMR
+  top_k_retrieval: 5 # jumlah dokumen yang dikembalikan
+  fetch_k: 12 # ukuran kolam kandidat sebelum diversifikasi MMR
 
   # T13/T14. Cara menelusuri: vektor | bm25 | hibrida.
   #
@@ -267,7 +492,7 @@ rag:
     embed_model: "nomic-embed-text"
 
   llm:
-    provider: "gemini"  # Options: gemini, ollama, template
+    provider: "gemini" # Options: gemini, ollama, template
     # Diubah dari gemini-2.5-flash-lite pada 7 Agustus 2026. ALASANNYA KUOTA, BUKAN MUTU.
     #
     # Kuota free-tier BERBEDA JAUH antargenerasi (dasbor AI Studio, 7 Agu 2026):

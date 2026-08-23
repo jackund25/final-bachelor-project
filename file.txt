@@ -1,0 +1,249 @@
+RINGKASAN SINKRONISASI BACKEND DAN FRONTEND
+
+Tanggal: 2026-08-23
+Project: diabetes-digital-twin
+
+==================================================
+1. FRONTEND
+==================================================
+
+File yang diubah:
+- frontend/src/app/page.tsx
+- frontend/src/lib/api.ts
+- frontend/src/lib/glucose.ts
+- frontend/src/lib/assessment.ts
+- frontend/src/lib/logbook.ts
+- frontend/src/app/logbook/page.tsx
+
+Perubahan:
+- Patient selector mengambil patient dari patients.patient_code.
+- Tidak lagi menggunakan daftar patient demo atau hard-coded patient list.
+- Source selector mengambil source dari glucose_sources berdasarkan patient aktif.
+- Source yang tidak dimiliki patient tidak ditampilkan.
+- Glucose history mengambil data dari glucose_readings.
+- glucose_readings difilter menggunakan glucose_source_id.
+- Context pasien diambil dari tabel event:
+  - insulin_events
+  - meal_events
+  - activity_events
+  - stress_events
+- Observation untuk prediction dibentuk dari reading glucose dan event context.
+- Assessment history hanya berdasarkan patient aktif.
+- Assessment history tidak difilter berdasarkan source.
+- Assessment history dibatasi maksimal 5 data terbaru.
+- Setiap assessment history menampilkan source assessment.
+- Prediction dan advisory dibersihkan saat patient atau source berubah.
+- Source yang tidak tersedia tidak menampilkan angka 0.
+- LocalStorage tetap menggunakan:
+  - last_patient_id
+  - last_glucose_source
+- Logbook source-aware.
+- Submit Logbook tidak otomatis menjalankan prediction atau clinical assessment.
+- Penyimpanan clinical assessment tidak lagi dilakukan dua kali oleh frontend.
+- Frontend clinical request menggunakan patient_code dan glucose_source.
+
+==================================================
+2. BACKEND
+==================================================
+
+File yang diubah:
+- backend/main.py
+- backend/routes/clinical.py
+- backend/routes/logbook.py
+- backend/services/prediction_service.py
+- backend/services/supabase_data_service.py
+
+Perubahan:
+- Ditambahkan adapter Supabase backend.
+- Backend melakukan lookup patient_code ke patients.id.
+- Backend melakukan lookup source_type ke glucose_sources.id.
+- Backend mengambil data glucose dari glucose_readings.
+- Backend mengambil event pasien dari tabel event masing-masing.
+- Backend membangun DataFrame normalized untuk prediction pipeline.
+- Backend menyimpan clinical_assessments menggunakan internal IDs.
+- Backend response tetap menggunakan patient_code dan glucose_source.
+- Insufficient history tidak lagi dilempar sebagai exception biasa.
+- Status structured yang didukung:
+  - NO_DATA
+  - INSUFFICIENT_HISTORY
+  - MODEL_UNAVAILABLE
+- Artifact CGM tidak digunakan sebagai fallback untuk FINGER_STICK.
+- Ditambahkan endpoint POST /api/logbook.
+- Endpoint Logbook menyimpan data ke:
+  - glucose_readings
+  - insulin_events
+  - meal_events
+  - activity_events
+  - stress_events
+
+==================================================
+3. ALUR DATA AKHIR
+==================================================
+
+Clinical inference:
+
+patient_code
+    -> patients.id
+    -> glucose_sources.id
+    -> glucose_readings
+    -> insulin_events
+    -> meal_events
+    -> activity_events
+    -> stress_events
+    -> normalized observations
+    -> feature engineering
+    -> sequence construction
+    -> model artifact
+    -> condition classifier
+    -> RAG/reranker
+    -> clinical advisory
+    -> clinical_assessments
+    -> frontend response
+
+Logbook:
+
+patient_code + glucose_source
+    -> patients.id
+    -> glucose_sources.id
+    -> glucose_readings
+    -> event tables
+    -> historical window bertambah
+    -> inference berikutnya memakai data terbaru
+
+Submit Logbook tidak menjalankan clinical assessment secara otomatis.
+Assessment baru dibuat ketika user menekan Run Clinical Assessment.
+
+==================================================
+4. SCHEMA DATABASE YANG DIGUNAKAN
+==================================================
+
+patients:
+- id
+- patient_code
+
+glucose_sources:
+- id
+- patient_id
+- source_type
+
+glucose_readings:
+- id
+- glucose_source_id
+- timestamp
+- glucose
+
+insulin_events:
+- patient_id
+- timestamp
+- insulin_units
+- insulin_type
+
+meal_events:
+- patient_id
+- timestamp
+- carbs_grams
+- meal_type
+
+activity_events:
+- patient_id
+- timestamp
+- activity_level
+- duration_min
+- activity_type
+
+stress_events:
+- patient_id
+- timestamp
+- stress_level
+
+clinical_assessments:
+- patient_id
+- glucose_source_id
+- assessed_at
+- current_glucose
+- prediction_30m
+- prediction_60m
+- condition
+- recommendation
+- grounded
+- sources
+
+Tidak ada perubahan schema database yang dilakukan oleh agent.
+
+==================================================
+5. KONTRAK API CLINICAL
+==================================================
+
+Request utama:
+- patient_code
+- glucose_source
+- question
+- data bersifat kompatibilitas, backend menggunakan data Supabase sebagai sumber utama
+
+Response utama:
+- status
+- patient_code
+- glucose_source
+- mode
+- prediction
+- clinical_advisory
+
+Prediction fields:
+- current_glucose
+- prediction_30m
+- prediction_60m
+- condition
+- horizons
+- prediction_available
+- history
+- reason
+
+Clinical advisory fields:
+- explanation
+- risk_level
+- grounded
+- citations
+- retrieved_docs
+- disclaimer
+- recommendation_available
+
+==================================================
+6. KONFIGURASI BACKEND
+==================================================
+
+Backend membutuhkan environment variable Supabase:
+
+SUPABASE_URL=https://project.supabase.co
+SUPABASE_SECRET_KEY=...
+
+frontend/.env.local hanya digunakan oleh Next.js dan tidak otomatis dibaca backend Python.
+
+==================================================
+7. MASALAH YANG MASIH TERSISA
+==================================================
+
+1. Artifact FINGER_STICK belum tersedia secara terverifikasi.
+   Backend mengembalikan MODEL_UNAVAILABLE dan tidak memakai artifact CGM sebagai fallback.
+
+2. backend/routes/prediction.py masih merupakan endpoint legacy.
+   Endpoint tersebut masih menerima observation inline dan belum memakai adapter Supabase baru.
+
+3. src/logbook.py masih merupakan modul legacy berbasis manual_logbook.csv.
+   Modul tersebut tidak digunakan oleh endpoint Logbook FastAPI baru.
+
+4. Penyimpanan Logbook backend melakukan beberapa insert berurutan.
+   Jika salah satu event gagal, sebagian data dapat tersimpan.
+   Transaction/RPC Supabase diperlukan bila atomic write diwajibkan.
+
+5. Backend memakai Supabase REST API dan membutuhkan konfigurasi environment backend.
+
+==================================================
+8. STATUS
+==================================================
+
+Frontend dan endpoint clinical sudah diarahkan ke schema Supabase normalized baru.
+Backend tidak lagi menggunakan glucose_observations pada jalur clinical/logbook aktif.
+Model GBM, condition classifier, RAG, dan Reranker v2 tidak diubah.
+Komponen UI existing dipertahankan.
+Schema Supabase tidak diubah.
+Testing belum dijalankan; pengujian dilakukan oleh user.

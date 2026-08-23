@@ -1,0 +1,307 @@
+# Configuration for Diabetes Digital Twin System
+
+# Data Generation Settings
+data:
+  num_patients: 10
+  days_per_patient: 7
+  sampling_interval_min: 5
+  output_dir: "data/raw"
+  seed: 42
+  primary_source: "ohio_t1dm"
+  fallback_source: "latest_generated"
+  # Skenario SMBG memakai pembacaan finger_stick NYATA dari OhioT1DM
+  # (data/raw/ohio_t1dm_smbg.csv, dihasilkan parse_ohio_fingerstick) — BUKAN hasil
+  # downsampling artifisial dari kanal CGM. Lihat Batasan Masalah #2 pada laporan.
+  smbg_csv: "data/raw/ohio_t1dm_smbg.csv"
+  # Dipakai HANYA oleh jalur eksperimen lama train_lstm_from_config(smbg_downsample=True),
+  # yang tidak dipakai pada hasil mana pun di laporan. Dipertahankan untuk reproduksi historis.
+  smbg_interval_min: 240
+
+# Model Training
+model:
+  # Diubah dari RandomForest pada 13 Agustus 2026. ALASANNYA UKURAN DAN KECEPATAN,
+  # BUKAN AKURASI.
+  #
+  # Rumusan Masalah 1 menuntut modul prediksi yang berjalan pada perangkat kelas
+  # konsumen, dan Tujuan 1 menuntutnya efisien secara komputasi. RF adalah yang
+  # TERBURUK dari ketiga kandidat pada kriteria itu (T4.1, 6 fold lintas-pasien):
+  #
+  #   model   RMSE h6   ukuran      waktu latih
+  #   RF      21,079    322,53 MB   708,1 dtk
+  #   GBM     20,721      0,485 MB    3,4 dtk   <- 665x lebih kecil, 208x lebih cepat
+  #   LSTM    20,602      0,124 MB  477   dtk
+  #
+  # Keunggulan AKURASI GBM konsisten antar-fold tetapi TIDAK bermakna secara klinis
+  # (+0,358 mg/dL = 2,39% ambang ISO 15197 pada h6; +0,976 = 6,51% pada h12), jadi
+  # bukan itu alasannya. Yang menentukan adalah ukuran dan kecepatan.
+  #
+  # BATAS YANG WAJIB DINYATAKAN: pada h12 GBM KALAH dari RF pada sensitivitas
+  # hipoglikemia (2,42% lawan 4,36%; hipo berat terlewat 957 lawan 933). Klaim
+  # "unggul di setiap dimensi" hanya berlaku pada h6.
+  name: "GradientBoosting" # Options: GradientBoosting, RandomForest, Simulation
+  sequence_length: 12 # look-back 1 jam (12 x 5 menit)
+  # Horizon prediksi (langkah ke depan, cadence 5-menit) — standar BGLP Challenge:
+  #   6  = +30 menit, 12 = +60 menit
+  prediction_horizons: [6, 12]
+  default_horizon: 6   # horizon untuk bundle inferensi aplikasi (30 menit)
+  # stress dikeluarkan: OhioT1DM nyaris tak punya data stres (7 event di seluruh
+  # dataset) sehingga nol-varians & tak informatif bagi model. Tetap dipertahankan
+  # sebagai variabel Digital Twin / logbook (lihat docs/journey/).
+  features: ["glucose", "carbs", "insulin", "activity"]
+
+  # Fitur hasil rekayasa (engineered) berbasis fisiologi — dipakai bila use_engineered=true.
+  # iob/cob menangkap efek insulin/karbohidrat yang tertunda; glucose_delta = tren;
+  # hour_sin/cos = pola diurnal. glucose tetap fitur pertama (index 0 = anchor).
+  use_engineered: true
+  engineered_features: ["glucose", "glucose_delta", "iob", "cob", "activity", "hour_sin", "hour_cos"]
+  predict_delta: true   # model memprediksi Δglukosa (selisih dari nilai terakhir), lalu direkonstruksi
+
+  # Segmentasi jendela pada jeda sensor (Tugas 5). Jendela dibentuk per posisi baris,
+  # padahal baris OhioT1DM tidak berjarak seragam: jeda terpanjang mencapai 118 jam.
+  # Jendela yang memuat jeda antar-baris lebih dari max_gap_steps langkah DIBUANG,
+  # bukan diinterpolasi — nilai di dalam jeda memang tidak terobservasi.
+  # 6 langkah x 5 menit = 30 menit.
+  max_gap_steps: 6
+  # Batas panjang runtun NaN yang masih boleh diinterpolasi. Tidak berpengaruh pada
+  # ohio_t1dm_merged.csv (nol NaN); pengaman untuk manual_logbook.csv.
+  max_interpolate_steps: 6
+  feature_engineering:
+    insulin_tau_min: 240   # waktu kerja insulin ~4 jam
+    carbs_tau_min: 180     # penyerapan karbohidrat ~3 jam
+    trend_steps: 3         # tren glukosa atas 3 langkah (15 menit)
+
+  # sequence_length=12 → look-back 1 jam pada cadence CGM 5-menit
+  # smbg_sequence_length=6 → look-back ~1 hari pada cadence SMBG 240-menit
+  smbg_sequence_length: 6
+
+  # Prediktor produksi. HIPERPARAMETER SENGAJA BAWAAN scikit-learn.
+  # T4.1 mengukur GBM tanpa penyetelan agar perbandingannya terhadap RF yang juga
+  # tidak disetel tidak berat sebelah. Menyetel di sini akan membuat model produksi
+  # BERBEDA dari model yang angkanya dilaporkan Bab VI, sehingga angka itu tidak
+  # lagi berlaku bagi sistem yang benar-benar berjalan.
+  gradient_boosting:
+    random_state: 42
+
+  # Dipertahankan untuk reproduksi angka pembanding T1.1, T2.1, dan T4.1.
+  # Tidak lagi dipakai jalur produksi.
+  random_forest:
+    n_estimators: 200
+    max_depth: 20
+    min_samples_split: 5
+
+  lstm:
+    units_1: 64
+    units_2: 32
+    dropout: 0.2
+    learning_rate: 0.001
+    epochs: 100
+    patience: 10
+
+# RAG Settings
+# Seluruh nilai di blok ini BENAR-BENAR DIBACA kode lewat src/config.py (Tugas 4).
+# Presedensi: argumen konstruktor > variabel environment > config.yaml > default kode.
+rag:
+  knowledge_base_dir: "data/knowledge_base"
+  persist_dir: "models/chroma_db"
+  collection_name: "diabetes_kb"
+
+  # Chunking dokumen pedoman (per halaman PDF)
+  #
+  # Varian V2 pada T7, diadopsi 18 Agustus 2026 atas keputusan pembimbing.
+  # Sebelumnya V1 (900/120). V2 dipilih karena satu-satunya varian yang menuntaskan
+  # KEDUA cacat pemecahan sekaligus:
+  #   - cacat B, potongan berakhir di tengah kalimat : akhir utuh 19,7% -> 85,3%
+  #   - cacat A, potongan melewati jendela 256 token : token terbuang 8,23% -> 0,00%
+  # V1 hanya menuntaskan cacat B dan menyisakan 6,14% token yang tidak pernah
+  # dapat ditelusur karena ekornya tak pernah masuk vektor.
+  #
+  # Dasar adopsinya INTEGRITAS KORPUS, bukan MRR. Kolom MRR pada Tabel VI.13 tidak
+  # sah dipakai membandingkan antar-varian, sebab label kebenarannya diturunkan dari
+  # teks potongan sehingga ikut bergerak ketika panjang potongan diubah.
+  #
+  # Tumpang-tindih mengikuti rasio 0,1333 yang dipakai seluruh varian T7:
+  # 500 x 0,1333 = 66,7 -> 67.
+  chunk_size: 500
+  chunk_overlap: 67
+
+  # T7. Potongan berhenti di batas KALIMAT, bukan di sembarang kata.
+  # Dasarnya Gao dkk. (2023) Bagian V.A.1 hal. 8, yang menyebut kelemahan pemecahan
+  # berukuran tetap sebagai "truncation within sentences".
+  # Terukur pada korpus yang sama: potongan yang berakhir kalimat utuh naik
+  # 19,7% -> 85,3% pada varian V2 yang kini dipakai (83,5% pada V1 terdahulu).
+  #
+  # URUTAN pemisahnya yang menentukan, bukan sekadar keberadaannya. Menyisipkan
+  # ". " SESUDAH "\n" praktis tidak berpengaruh (37,4%) karena "\n" selalu berhasil
+  # lebih dulu; pada teks hasil ekstraksi PDF, "\n" tunggal adalah pembungkusan
+  # baris — artefak tata letak, bukan batas makna. Lihat PEMISAH_KALIMAT pada
+  # src/rag/knowledge_base.py.
+  #
+  # Hanya berpengaruh saat INDEXING. Mengubahnya menuntut indeks ulang.
+  pemisah_kalimat: true
+  # Entri manual_kb adalah prosa pendek, bukan halaman buku — sengaja lebih kecil.
+  manual_kb:
+    chunk_size: 350
+    chunk_overlap: 40
+
+  # Embedding
+  embedding_provider: "sentence-transformers"  # sentence-transformers | google | ollama
+
+  # TETAP all-MiniLM-L6-v2. Pergantian ke paraphrase-multilingual-MiniLM-L12-v2
+  # sempat diterapkan pada 16 Agustus 2026 lalu DICABUT pada hari yang sama.
+  #
+  # Alasan pencabutan — dua sinyal yang saling bebas:
+  #   1. Kontrol crossfold RUSAK. Mode `oracle` (memakai glukosa yang benar-benar
+  #      terjadi) turun ke 0,516, DI BAWAH `standard` 0,537. Oracle adalah batas
+  #      atas menurut rancangan; ia mustahil kalah dari standard bila pengukurannya
+  #      sehat. Rentang antarmode ikut runtuh dari 0,382..0,829 menjadi 0,52..0,56.
+  #   2. Sapuan kondisi seimbang (120 kueri, 40 per kondisi) pada satu korpus yang
+  #      sama, hanya modelnya berbeda:
+  #        EN + pemisah lama     hit@5 100%   MRR 0,831   normal 100%
+  #        EN + pemisah kalimat  hit@5 100%   MRR 0,790   normal 100%
+  #        ML + pemisah lama     hit@5  98%   MRR 0,586   normal  95%
+  #        ML + pemisah kalimat  hit@5  79%   MRR 0,530   normal  38%
+  #      Kemampuan membedakan KONDISI — yang menjadi tumpuan seluruh kontribusi —
+  #      merosot, dan kelas `normal` nyaris hilang.
+  #
+  # T9 sempat menyimpulkan sebaliknya (+0,014 bagi model multibahasa). Kesimpulan
+  # itu diukur dengan classify_chunk, alat yang sudah terbukti berbias panjang dan
+  # salah melabeli isi yang benar (lihat results/eval_rag/diagnosis_metrik_chunking.json),
+  # di atas set pelaporan yang komposisinya menyembunyikan keruntuhan kelas `normal`.
+  # Bukti lemah itu tidak sepadan untuk mengubah produksi.
+  embedding_model: "all-MiniLM-L6-v2"          # 384 dimensi, CPU
+
+  # 0 = ikut bawaan model (256 untuk all-MiniLM-L6-v2). Menaikkannya ke 512 DIUJI
+  # pada T8 dan TIDAK diadopsi: pemotongan senyap memang hilang seluruhnya, tetapi
+  # MRR justru turun 0,023 karena model disetel pada jendela 256.
+  embedding_max_seq_length: 0
+
+  # models/embedding-001 SUDAH TIDAK ADA pada API Google per 16 Agustus 2026
+  # (diperiksa lewat models.list, tidak muncul di antara 53 model). Diarahkan ke
+  # model yang hidup agar jalur google tidak gagal apa adanya bila dipakai.
+  # CATATAN KELAYAKAN: jalur google TIDAK dapat mengindeks korpus ini pada free
+  # tier — batas 1.000 embedding/hari/model lawan kebutuhan 2.061. Lihat
+  # results/eval_rag/embedding_gemini_TIDAK_LAYAK.json.
+  google_embedding_model: "models/gemini-embedding-001"
+
+  # Retrieval (MMR)
+  # Dinaikkan dari 4 ke 5 pada Tahap 1 (keputusan pembimbing). Sebelumnya produksi memakai
+  # 4 sedangkan SELURUH skrip evaluasi memakai TOP_K=5 hardcoded, sehingga setiap angka
+  # Hit@5, MRR, precision@5, dan nDCG@5 yang pernah dilaporkan mengukur kedalaman yang
+  # tidak pernah dipakai aplikasi. Menaikkan produksi lebih murah daripada menghitung ulang
+  # seluruh angka retrieval, dan menampilkan lima rujukan tidak lebih buruk bagi dokter.
+  top_k_retrieval: 5    # jumlah dokumen yang dikembalikan
+  fetch_k: 12           # ukuran kolam kandidat sebelum diversifikasi MMR
+
+  # T13/T14. Cara menelusuri: vektor | bm25 | hibrida.
+  #
+  # Diubah dari vektor ke HIBRIDA setelah dua pengukuran yang saling bebas.
+  #
+  # 1. Crossfold enam fold, korpus produksi (T13). Selisih kontribusi terkondisi
+  #    lawan standard pada kasus divergen, seluruhnya positif 6/6 fold:
+  #        vektor  pc_rag +0,0832 | pengklasifikasi +0,1423
+  #        hibrida pc_rag +0,1087 | pengklasifikasi +0,1895
+  #    Hibrida lolos kelima dugaan prapendaftaran; BM25 sendirian gagal tiga.
+  #
+  # 2. RAGAS berbasis rujukan, 10 kasus ber-jawaban acuan terverifikasi (T14).
+  #    Diperlukan karena T13 diukur dengan classify_chunk yang berbasis kata kunci,
+  #    sama seperti BM25, sehingga keunggulannya bisa saja artefak keselarasan:
+  #        context_precision  vektor 0,025 -> hibrida 0,545
+  #        context_recall     vektor 0,100 -> hibrida 0,800
+  #    Lengan vektor gagal total pada 9 dari 10 kasus dan TIDAK PERNAH menang.
+  #
+  # Dasar literatur medis, keduanya ada di koleksi rujukan:
+  #   Xiong dkk. (2024) benchmark MedRAG — fusi RRF BM25+padat optimal untuk medis
+  #   Lee dkk. (2024) RAG pedoman diabetes — ensemble dense+sparse, domain sama
+  #
+  # Sebabnya dapat diterangkan: model embedding produksi berbahasa INGGRIS sedangkan
+  # korpusnya INDONESIA, dan T9 sudah menutup jalan mengganti model (multibahasa
+  # merusak pembedaan kondisi). Pencocokan leksikal tidak bergantung pada ruang
+  # semantik sama sekali, sehingga bekerja tepat di titik model paling lemah.
+  #
+  # Nilai "vektor" DIPERTAHANKAN agar angka era-vektor dapat direproduksi.
+  #
+  # T14 (17 Agustus 2026) MENGUBAH nilai ini dari "hibrida" menjadi "bm25", menjalankan
+  # Aturan 4 prapendaftaran T13 yang ditetapkan SEBELUM angkanya dilihat. Alat ukurnya
+  # RAGAS berbasis rujukan, bukan classify_chunk yang berbagi sinyal dengan BM25.
+  #
+  #   lengan    context_precision   context_recall   recall penuh
+  #   vektor              0,025           0,100         1/10
+  #   bm25                0,803           0,900         9/10
+  #   hibrida             0,542           0,700         7/10
+  #
+  # Perbandingan langsung bm25 lawan hibrida: bm25 unggul 2 kasus, hibrida unggul NOL,
+  # seri 8. Tidak ada satu kasus pun hibrida mengungguli BM25.
+  #
+  # MENGAPA fusi justru merugikan di sini, dan ini yang menentukan. RRF menggabungkan
+  # PERINGKAT, sehingga ia tetap memberi bobot pada posisi teratas daftar padat betapa
+  # pun kelirunya. Lengan padat benar hanya 1 dari 10, sehingga fusi menyuntikkan
+  # dokumen keliru ke lima besar dan MENGGESER KELUAR temuan BM25 yang sudah benar.
+  # Terlihat langsung pada kasus E04 dan E05: bm25 recall 1,0 sedangkan hibrida 0,0.
+  # Fusi hanya menguntungkan bila kedua lengan sama-sama layak; di sini tidak.
+  #
+  # Akar masalahnya tetap sama dengan catatan di atas: model embedding berbahasa
+  # Inggris atas korpus berbahasa Indonesia. T9 sudah menutup jalan menggantinya.
+  #
+  # Nilai "hibrida" DIPERTAHANKAN agar angka T13/T14 dapat direproduksi.
+  retrieval_mode: "bm25"
+  # Ukuran kolam tiap lengan sebelum digabung RRF. Bukan fetch_k, yang mengatur
+  # kolam MMR di dalam lengan vektor.
+  rrf_pool: 50
+  # Tetapan RRF. TIDAK disetel, sengaja dibiarkan pada nilai baku Cormack dkk.
+  # supaya tidak menambah parameter bebas yang menuntut protokol penyetelan.
+  rrf_k: 60
+  # 1,0 = relevansi murni; 0,0 = keragaman maksimum.
+  # Diubah dari 0,5 ke 0,0 pada Tahap 0 (adopsi B5), berdasarkan sapuan 5 nilai yang
+  # mengikuti protokol Bagian C: set penyetelan dan set pelaporan tidak beririsan, dan
+  # angka di bawah berasal dari set pelaporan yang tidak pernah dipakai menyetel.
+  #   lambda 0,5 -> MRR 0,435   lambda 0,0 -> MRR 0,492   (n=240)
+  # Biayanya bukan nol: keragaman dokumen di top-k turun tipis dari 3,73 ke 3,60.
+  # chunk_size SENGAJA tetap 900. Menggabungkan lambda 0,0 dengan chunk_size 500 justru
+  # MENURUNKAN MRR ke 0,464 — lebih buruk daripada masing-masing sendirian, dan ditolak
+  # uji Wilcoxon terhadap chunk 500 sendirian (p=0,029). Lihat
+  # results/baseline_ablation_fullkb_kb12_sym/kombinasi_b4b5.json.
+  lambda_mult: 0.0
+
+  ollama:
+    base_url: "http://localhost:11434"
+    embed_model: "nomic-embed-text"
+
+  llm:
+    provider: "gemini"  # Options: gemini, ollama, template
+    # Diubah dari gemini-2.5-flash-lite pada 7 Agustus 2026. ALASANNYA KUOTA, BUKAN MUTU.
+    #
+    # Kuota free-tier BERBEDA JAUH antargenerasi (dasbor AI Studio, 7 Agu 2026):
+    #   gemini-3.5-flash-lite : 15 RPM, 500 RPD   <-- dipakai sekarang
+    #   gemini-3.1-flash-lite : 15 RPM, 500 RPD
+    #   gemini-2.5-flash-lite : 10 RPM,  20 RPD   <-- sebelumnya; 25x lebih kecil
+    #   gemini-2.5-flash      :  5 RPM,  20 RPD
+    #   gemini-3-flash        :  5 RPM,  20 RPD
+    #
+    # Dengan 20 RPD, evaluasi RAGAS (~116 panggilan) butuh 6 hari dan praktis tidak
+    # dapat dijalankan. Dengan 500 RPD selesai dalam satu hari. Kuota berlaku PER MODEL.
+    #
+    # Kepatuhan SYSTEM_PROMPT diuji lewat jalur produksi sebelum diadopsi: penanda [S..]
+    # valid, tidak menulis nomor halaman sendiri, jawaban tersusun, Bahasa Indonesia
+    # penuh. Pada kasus yang konteksnya tidak memuat jawaban, 3.5 MENGAKUI keterbatasan
+    # itu sedangkan 2.5 mengarang dari konteks yang salah.
+    model: "gemini-3.5-flash-lite"
+    ollama_model: "llama3.1:8b"
+    # Temperature rendah demi keselamatan klinis: menekan risiko halusinasi pada
+    # nasihat medis. Nilai >0,5 menghasilkan bahasa lebih bervariasi tetapi berisiko
+    # mengarang angka dosis/ambang.
+    temperature: 0.2
+    # Batas panjang keluaran. Sebelum Tugas 4 nilai ini tidak pernah diterapkan;
+    # 300 token terlalu ketat untuk nasihat Bahasa Indonesia beserta disclaimer.
+    max_tokens: 700
+
+# Evaluation
+evaluation:
+  test_split: 0.2
+  metrics: ["RMSE", "MAE", "MAPE", "ClarkeErrorGrid"]
+  clarke_zones: ["A", "B", "C", "D", "E"]
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/system.log"

@@ -1,0 +1,478 @@
+{
+  "percobaan": "T3.3 — jangkauan varian kueri dan bentuk kueri aplikasi",
+  "waktu": "2026-08-11T11:17:16",
+  "prapendaftaran": "docs/PRAPENDAFTARAN_T3.3.md",
+  "n_chunk_korpus": 2061,
+  "konfigurasi": {
+    "top_k": 5,
+    "fetch_k": 12,
+    "lambda_mult": 0.0,
+    "chunk_size": 900,
+    "embedding_model": "all-MiniLM-L6-v2",
+    "horizon_menit": 30
+  },
+  "grid_glukosa": {
+    "min": 40,
+    "maks": 400,
+    "langkah": 5,
+    "n": 73
+  },
+  "contoh_kueri": {
+    "produksi": "Kadar glukosa darah 58 mg/dL. Hipoglikemia, gula darah rendah di bawah 70 mg/dL. Penyebab, gejala, dan penanganan segera (aturan 15-15).",
+    "hanya_angka": "Kadar glukosa darah 58 mg/dL.",
+    "hanya_kondisi": "Hipoglikemia, gula darah rendah di bawah 70 mg/dL. Penyebab, gejala, dan penanganan segera (aturan 15-15).",
+    "kondisi_dulu": "Hipoglikemia, gula darah rendah di bawah 70 mg/dL. Penyebab, gejala, dan penanganan segera (aturan 15-15). Kadar glukosa darah 58 mg/dL.",
+    "pertanyaan": "Bagaimana tatalaksana pasien diabetes dengan hipoglikemia pada kadar glukosa 58 mg/dL?",
+    "ringkas": "Kadar glukosa darah 58 mg/dL. Hipoglikemia, gula darah rendah.",
+    "kata_kunci": "hipoglikemia gula darah rendah penanganan aturan 15-15 glukagon",
+    "aplikasi_delta0": "Prediksi glukosa 30 menit ke depan: 58.0 mg/dL (dari 58.0 mg/dL, perubahan +0.0 mg/dL, tren stabil). Status risiko prediksi: BAHAYA - Hipoglikemia. Faktor kontribusi: aktivitas fisik rendah. Berikan penilaian risiko, tindakan pencegahan, dan protokol pemantauan untuk kondisi prediksi glukosa 58 mg/dL (BAHAYA - Hipoglikemia) dalam 30 menit ke depan. Sertakan rekomendasi yang bisa dilakukan dokter maupun pasien.",
+    "aplikasi_penuh": "Prediksi glukosa 30 menit ke depan: 58.0 mg/dL (dari 112.0 mg/dL, perubahan -54.0 mg/dL, tren menurun). Status risiko prediksi: BAHAYA - Hipoglikemia. Faktor kontribusi: tren cepat menurun, aktivitas fisik rendah. Berikan penilaian risiko, tindakan pencegahan, dan protokol pemantauan untuk kondisi prediksi glukosa 58 mg/dL (BAHAYA - Hipoglikemia) dalam 30 menit ke depan. Sertakan rekomendasi yang bisa dilakukan dokter maupun pasien."
+  },
+  "A_jangkauan": {
+    "produksi": {
+      "n_unik": 24,
+      "n_pengambilan": 365,
+      "pengambilan_per_potongan_unik": 15.2,
+      "porsi_pengambilan_ke_10_potongan_teratas": 75.07,
+      "persen_korpus_terjangkau": 1.16,
+      "persen_korpus_TIDAK_pernah_terambil": 98.84,
+      "n_teks_kueri_berbeda": 73
+    },
+    "hanya_angka": {
+      "n_unik": 14,
+      "n_pengambilan": 365,
+      "pengambilan_per_potongan_unik": 26.1,
+      "porsi_pengambilan_ke_10_potongan_teratas": 98.63,
+      "persen_korpus_terjangkau": 0.68,
+      "persen_korpus_TIDAK_pernah_terambil": 99.32,
+      "n_teks_kueri_berbeda": 73
+    },
+    "hanya_kondisi": {
+      "n_unik": 14,
+      "n_pengambilan": 365,
+      "pengambilan_per_potongan_unik": 26.1,
+      "porsi_pengambilan_ke_10_potongan_teratas": 93.42,
+      "persen_korpus_terjangkau": 0.68,
+      "persen_korpus_TIDAK_pernah_terambil": 99.32,
+      "n_teks_kueri_berbeda": 3
+    },
+    "kondisi_dulu": {
+      "n_unik": 23,
+      "n_pengambilan": 365,
+      "pengambilan_per_potongan_unik": 15.9,
+      "porsi_pengambilan_ke_10_potongan_teratas": 84.11,
+      "persen_korpus_terjangkau": 1.12,
+      "persen_korpus_TIDAK_pernah_terambil": 98.88,
+      "n_teks_kueri_berbeda": 73
+    },
+    "pertanyaan": {
+      "n_unik": 25,
+      "n_pengambilan": 365,
+      "pengambilan_per_potongan_unik": 14.6,
+      "porsi_pengambilan_ke_10_potongan_teratas": 81.37,
+      "persen_korpus_terjangkau": 1.21,
+      "persen_korpus_TIDAK_pernah_terambil": 98.79,
+      "n_teks_kueri_berbeda": 73
+    },
+    "ringkas": {
+      "n_unik": 23,
+      "n_pengambilan": 365,
+      "pengambilan_per_potongan_unik": 15.9,
+      "porsi_pengambilan_ke_10_potongan_teratas": 83.56,
+      "persen_korpus_terjangkau": 1.12,
+      "persen_korpus_TIDAK_pernah_terambil": 98.88,
+      "n_teks_kueri_berbeda": 73
+    },
+    "kata_kunci": {
+      "n_unik": 14,
+      "n_pengambilan": 365,
+      "pengambilan_per_potongan_unik": 26.1,
+      "porsi_pengambilan_ke_10_potongan_teratas": 93.42,
+      "persen_korpus_terjangkau": 0.68,
+      "persen_korpus_TIDAK_pernah_terambil": 99.32,
+      "n_teks_kueri_berbeda": 3
+    },
+    "aplikasi_delta0": {
+      "n_unik": 23,
+      "n_pengambilan": 365,
+      "pengambilan_per_potongan_unik": 15.9,
+      "porsi_pengambilan_ke_10_potongan_teratas": 82.47,
+      "persen_korpus_terjangkau": 1.12,
+      "persen_korpus_TIDAK_pernah_terambil": 98.88,
+      "n_teks_kueri_berbeda": 73
+    }
+  },
+  "A_pertukaran_peringkat_lawan_jangkauan": {
+    "produksi": {
+      "n_unik": 24,
+      "persen_korpus": 1.16,
+      "porsi_10_teratas": 75.07,
+      "mrr_T3.1_set_penyetelan": 0.6211,
+      "hit@1_T3.1_set_penyetelan": 0.4222
+    },
+    "hanya_kondisi": {
+      "n_unik": 14,
+      "persen_korpus": 0.68,
+      "porsi_10_teratas": 93.42,
+      "mrr_T3.1_set_penyetelan": 0.7111,
+      "hit@1_T3.1_set_penyetelan": 0.7111
+    },
+    "selisih_n_unik": -10,
+    "selisih_persen_relatif": -41.7,
+    "prapendaftaran_D1_perkiraan_n_unik": 14,
+    "prapendaftaran_D1_terpenuhi": true
+  },
+  "B_peringkat_bentuk_aplikasi": {
+    "catatan_protokol": "SET PENYETELAN SAJA. Set pelaporan T3.1 (ohio_591, ohio_596) tidak disentuh karena sudah dipakai sekali. Angka di sini adalah pengukuran susulan, BUKAN baris kedelapan tabel T3.1, dan tidak boleh disandingkan dengan kolom set pelaporan T3.1.",
+    "set_latih": [
+      "ohio_540",
+      "ohio_544",
+      "ohio_552",
+      "ohio_559",
+      "ohio_563",
+      "ohio_567",
+      "ohio_570",
+      "ohio_575"
+    ],
+    "set_penyetelan": [
+      "ohio_584",
+      "ohio_588"
+    ],
+    "set_pelaporan_TIDAK_disentuh": [
+      "ohio_591",
+      "ohio_596"
+    ],
+    "kriteria_ditetapkan_di_muka": "mrr",
+    "n_kasus": 90,
+    "verifikasi_kasus_identik_dengan_T3.1": {
+      "mrr_produksi_terukur": 0.6211,
+      "mrr_produksi_T3.1": 0.6211,
+      "cocok": true,
+      "arti_bila_tidak_cocok": "kasus, benih, atau pembagian pasien berbeda; seluruh angka Bagian B tidak sepadan dengan T3.1 dan tidak boleh disandingkan"
+    },
+    "hasil": {
+      "produksi": {
+        "n": 90,
+        "hit@1": 0.4222,
+        "mrr": 0.6211,
+        "ndcg@5": 0.4058
+      },
+      "pertanyaan": {
+        "n": 90,
+        "hit@1": 0.1556,
+        "mrr": 0.4744,
+        "ndcg@5": 0.3193
+      },
+      "aplikasi_delta0": {
+        "n": 90,
+        "hit@1": 0.5444,
+        "mrr": 0.6611,
+        "ndcg@5": 0.3389
+      },
+      "aplikasi_penuh": {
+        "n": 90,
+        "hit@1": 0.5333,
+        "mrr": 0.6556,
+        "ndcg@5": 0.3436
+      }
+    },
+    "uji_berpasangan": {
+      "aplikasi_delta0_vs_pertanyaan": {
+        "selisih_mrr": 0.1867,
+        "wilcoxon_p": 0.000289,
+        "signifikan": true,
+        "kebal_kontaminasi": true
+      },
+      "aplikasi_penuh_vs_pertanyaan": {
+        "selisih_mrr": 0.1812,
+        "wilcoxon_p": 0.000449,
+        "signifikan": true,
+        "kebal_kontaminasi": true
+      },
+      "aplikasi_delta0_vs_produksi": {
+        "selisih_mrr": 0.04,
+        "wilcoxon_p": 0.441164,
+        "signifikan": false,
+        "kebal_kontaminasi": false
+      },
+      "aplikasi_penuh_vs_produksi": {
+        "selisih_mrr": 0.0345,
+        "wilcoxon_p": 0.540274,
+        "signifikan": false,
+        "kebal_kontaminasi": false
+      },
+      "aplikasi_penuh_vs_aplikasi_delta0": {
+        "selisih_mrr": -0.0055,
+        "wilcoxon_p": 0.842097,
+        "signifikan": false,
+        "kebal_kontaminasi": true
+      }
+    },
+    "prapendaftaran_D2_rentang": [
+      0.2276,
+      0.4744
+    ],
+    "prapendaftaran_D2_terpenuhi": false,
+    "prapendaftaran_D2_terpenuhi_sebagian": false
+  },
+  "C_bobot_kata_kunci_pelabel": {
+    "produksi": {
+      "per_kelas": {
+        "hipoglikemia": {
+          "n_kata_kunci": 3,
+          "bobot": 7,
+          "kata_kunci_cocok": [
+            "hipoglikemi",
+            "gula darah rendah",
+            "15-15"
+          ]
+        },
+        "normal": {
+          "n_kata_kunci": 2,
+          "bobot": 5,
+          "kata_kunci_cocok": [
+            "target kontrol glikemik",
+            "kontrol glikemik"
+          ]
+        },
+        "hiperglikemia": {
+          "n_kata_kunci": 2,
+          "bobot": 5,
+          "kata_kunci_cocok": [
+            "hiperglikemi",
+            "gula darah tinggi"
+          ]
+        }
+      },
+      "total_bobot": 17
+    },
+    "hanya_angka": {
+      "per_kelas": {
+        "hipoglikemia": {
+          "n_kata_kunci": 0,
+          "bobot": 0,
+          "kata_kunci_cocok": []
+        },
+        "normal": {
+          "n_kata_kunci": 0,
+          "bobot": 0,
+          "kata_kunci_cocok": []
+        },
+        "hiperglikemia": {
+          "n_kata_kunci": 0,
+          "bobot": 0,
+          "kata_kunci_cocok": []
+        }
+      },
+      "total_bobot": 0
+    },
+    "hanya_kondisi": {
+      "per_kelas": {
+        "hipoglikemia": {
+          "n_kata_kunci": 3,
+          "bobot": 7,
+          "kata_kunci_cocok": [
+            "hipoglikemi",
+            "gula darah rendah",
+            "15-15"
+          ]
+        },
+        "normal": {
+          "n_kata_kunci": 2,
+          "bobot": 5,
+          "kata_kunci_cocok": [
+            "target kontrol glikemik",
+            "kontrol glikemik"
+          ]
+        },
+        "hiperglikemia": {
+          "n_kata_kunci": 2,
+          "bobot": 5,
+          "kata_kunci_cocok": [
+            "hiperglikemi",
+            "gula darah tinggi"
+          ]
+        }
+      },
+      "total_bobot": 17
+    },
+    "kondisi_dulu": {
+      "per_kelas": {
+        "hipoglikemia": {
+          "n_kata_kunci": 3,
+          "bobot": 7,
+          "kata_kunci_cocok": [
+            "hipoglikemi",
+            "gula darah rendah",
+            "15-15"
+          ]
+        },
+        "normal": {
+          "n_kata_kunci": 2,
+          "bobot": 5,
+          "kata_kunci_cocok": [
+            "target kontrol glikemik",
+            "kontrol glikemik"
+          ]
+        },
+        "hiperglikemia": {
+          "n_kata_kunci": 2,
+          "bobot": 5,
+          "kata_kunci_cocok": [
+            "hiperglikemi",
+            "gula darah tinggi"
+          ]
+        }
+      },
+      "total_bobot": 17
+    },
+    "pertanyaan": {
+      "per_kelas": {
+        "hipoglikemia": {
+          "n_kata_kunci": 1,
+          "bobot": 3,
+          "kata_kunci_cocok": [
+            "hipoglikemi"
+          ]
+        },
+        "normal": {
+          "n_kata_kunci": 0,
+          "bobot": 0,
+          "kata_kunci_cocok": []
+        },
+        "hiperglikemia": {
+          "n_kata_kunci": 1,
+          "bobot": 3,
+          "kata_kunci_cocok": [
+            "hiperglikemi"
+          ]
+        }
+      },
+      "total_bobot": 6
+    },
+    "ringkas": {
+      "per_kelas": {
+        "hipoglikemia": {
+          "n_kata_kunci": 2,
+          "bobot": 5,
+          "kata_kunci_cocok": [
+            "hipoglikemi",
+            "gula darah rendah"
+          ]
+        },
+        "normal": {
+          "n_kata_kunci": 0,
+          "bobot": 0,
+          "kata_kunci_cocok": []
+        },
+        "hiperglikemia": {
+          "n_kata_kunci": 2,
+          "bobot": 5,
+          "kata_kunci_cocok": [
+            "hiperglikemi",
+            "gula darah tinggi"
+          ]
+        }
+      },
+      "total_bobot": 10
+    },
+    "kata_kunci": {
+      "per_kelas": {
+        "hipoglikemia": {
+          "n_kata_kunci": 4,
+          "bobot": 9,
+          "kata_kunci_cocok": [
+            "hipoglikemi",
+            "gula darah rendah",
+            "15-15",
+            "glukagon"
+          ]
+        },
+        "normal": {
+          "n_kata_kunci": 3,
+          "bobot": 5,
+          "kata_kunci_cocok": [
+            "time in range",
+            "pemantauan glukosa",
+            "target glikemik"
+          ]
+        },
+        "hiperglikemia": {
+          "n_kata_kunci": 3,
+          "bobot": 8,
+          "kata_kunci_cocok": [
+            "hiperglikemi",
+            "ketoasidosis",
+            "gula darah tinggi"
+          ]
+        }
+      },
+      "total_bobot": 22
+    },
+    "aplikasi_delta0": {
+      "per_kelas": {
+        "hipoglikemia": {
+          "n_kata_kunci": 1,
+          "bobot": 3,
+          "kata_kunci_cocok": [
+            "hipoglikemi"
+          ]
+        },
+        "normal": {
+          "n_kata_kunci": 0,
+          "bobot": 0,
+          "kata_kunci_cocok": []
+        },
+        "hiperglikemia": {
+          "n_kata_kunci": 1,
+          "bobot": 3,
+          "kata_kunci_cocok": [
+            "hiperglikemi"
+          ]
+        }
+      },
+      "total_bobot": 6
+    }
+  },
+  "C_kebal_kontaminasi": {
+    "aplikasi_vs_pertanyaan": true,
+    "bobot_aplikasi": 6,
+    "bobot_pertanyaan": 6,
+    "prapendaftaran_D3_perkiraan": 6,
+    "prapendaftaran_D3_terpenuhi": true,
+    "aturan": "Spearman(bobot, MRR) = 0,964 pada T3.1. Peringkat antar-bentuk yang bobotnya BERBEDA tidak boleh dinarasikan sebagai selisih bentuk kueri; hanya pasangan berbobot sama yang dapat dibaca."
+  },
+  "keterbatasan_K1": "Relevansi dari classify_chunk(), pelabel kata kunci, bukan penilaian manusia. Selama T2.2 belum diisi, tidak satu pun angka di sini boleh dinyatakan mantap.",
+  "keterbatasan_lengan_aplikasi": "Pada Bagian A, lengan aplikasi dibangun dengan current_glucose = predicted_glucose (delta 0, tren stabil), tanpa IOB/COB aktif dan tanpa interval konformal, supaya hanya angka prediksi yang berubah dan ia sebanding dengan tujuh bentuk lain. Kueri aplikasi sungguhan lebih beragam, sehingga angka jangkauannya adalah BATAS BAWAH. Bagian B menjalankan kedua lengan: delta0 (sebanding) dan penuh (setia pada aplikasi).",
+  "yang_TIDAK_diukur": "Mutu jawaban. Bila bentuk aplikasi berperingkat buruk, yang terbukti adalah bentuk kuerinya merugikan penelusuran menurut pelabel kata kunci — bukan bahwa jawaban yang dihasilkan aplikasi lebih buruk. Itu diukur RAGAS (T1.2) dan tidak diuji di sini.",
+  "D_susulan_PASCA_HOC": {
+    "status": "PASCA-HOC. Tidak ada di prapendaftaran; dihitung setelah hasil terlihat. Dilaporkan sebagai pengamatan, BUKAN sebagai uji hipotesis.",
+    "spearman_bobot_vs_mrr": {
+      "tujuh_varian_T3.1": {
+        "rho": 0.9636,
+        "p": 0.000475,
+        "n": 7
+      },
+      "delapan_dengan_lengan_aplikasi": {
+        "rho": 0.7611,
+        "p": 0.02827,
+        "n": 8
+      },
+      "arti": "Satu titik tambahan menurunkan rho dari 0,964 ke 0,761. Lengan aplikasi berbobot 6 — sama dengan pertanyaan — tetapi MRR-nya 0,6611 lawan 0,4744. Bobot pelabel karena itu BUKAN penentu tunggal peringkat, dan hubungan 0,964 pada T3.1 sebagian berasal dari varian yang kebetulan pendek DAN berbobot rendah sekaligus."
+    },
+    "jangkauan_vs_peringkat": {
+      "catatan": "Dinyatakan sebagai fakta peringkat, bukan koefisien: hanya DUA bentuk yang menghasilkan 3 teks kueri berbeda (hanya_kondisi dan kata_kunci), dan keduanya menempati peringkat MRR #1 dan #2. Enam bentuk lain menghasilkan 73 teks kueri dan menempati peringkat #3-#8. Spearman atas 8 titik = -0,756 (p=0,030) tetapi ditopang pembelahan 2 lawan 6, sehingga koefisiennya tidak layak dikutip sendirian.",
+      "spearman_n_teks_kueri_vs_mrr": {
+        "rho": -0.7559,
+        "p": 0.03002,
+        "n": 8
+      },
+      "spearman_jangkauan_vs_mrr": {
+        "rho": -0.4005,
+        "p": 0.3255,
+        "n": 8
+      }
+    },
+    "pytest": "133 passed, sama dengan baseline sebelum percobaan"
+  }
+}

@@ -1,0 +1,153 @@
+"""Ablation KORPUS-PENUH: standard vs prediction-conditioned atas KB deployment nyata.
+
+Melengkapi T5 (`ablation_rag.py`, korpus terkontrol `manual_kb` 7 topik) dengan uji pada
+SELURUH ChromaDB (2.585 chunk PERKENI/ADA, pasca-pembersihan). Retrieval memakai MMRRetriever (identik dengan
+sistem); topik tiap chunk diklasifikasi via kata kunci berbobot (deterministik, tanpa LLM/kuota).
+Query & kasus divergen IDENTIK dengan T5 → apple-to-apple, tetapi pada korpus penuh.
+
+Tujuan: membuktikan keunggulan prediction-conditioning bertahan di luar 7 topik berlabel —
+menjawab pertanyaan "apakah novelty ini nyata di korpus deployment, bukan hanya set kecil?".
+
+Output: results/baseline_ablation_fullkb/
+"""
+import torch  # noqa: F401  (Windows: torch sebelum numpy/pandas — WinError 1114)
+import os
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+
+import math
+from pathlib import Path
+import pandas as pd
+from src.rag.retriever import MMRRetriever
+
+
+def ndcg_at_k(rels, k):
+    """nDCG@k (metrik IR baku; Jarvelin & Kekalainen 2002). Relevansi biner: 1 bila topik chunk
+    == kondisi diharapkan. DCG didiskon posisi (1/log2(pos+1)); IDCG = ideal k slot relevan
+    (korpus punya >>k chunk per kondisi). Skor 0..1: menghargai relevansi DAN posisi tinggi."""
+    dcg = sum(rel / math.log2(i + 2) for i, rel in enumerate(rels[:k]))
+    idcg = sum(1.0 / math.log2(i + 2) for i in range(min(k, len(rels))))
+    return dcg / idcg if idcg > 0 else 0.0
+
+TOP_K = 5
+# Tag korpus untuk penamaan keluaran. Korpus berpindah dari additional_docs/
+# (14 PDF PERKENI/ADA) ke books/ (KB-01..KB-12) pada Tugas 1, sehingga angka lama
+# tidak berlaku lagi. Sufiks ini membuat hasil baru berdampingan dengan hasil lama
+# tanpa menimpanya, supaya keduanya bisa dibandingkan di laporan.
+CORPUS_TAG = os.environ.get("CORPUS_TAG", "kb12")
+OUT = Path(f"results/baseline_ablation_fullkb_{CORPUS_TAG}")
+
+# Kasus divergen IDENTIK dengan T5 (current normal/near, prediksi hipo/hiper).
+TEST_CASES = [
+    {"id": "D1", "scenario": "Insulin menumpuk pasca-bolus", "current": 112.0, "predicted": 58.0, "expected": "hipoglikemia"},
+    {"id": "D2", "scenario": "Olahraga tanpa penyesuaian insulin", "current": 98.0, "predicted": 64.0, "expected": "hipoglikemia"},
+    {"id": "D3", "scenario": "Tren turun cepat sebelum tidur", "current": 128.0, "predicted": 66.0, "expected": "hipoglikemia"},
+    {"id": "D4", "scenario": "Makan tinggi karbohidrat", "current": 150.0, "predicted": 214.0, "expected": "hiperglikemia"},
+    {"id": "D5", "scenario": "Karbohidrat + stres tinggi", "current": 162.0, "predicted": 205.0, "expected": "hiperglikemia"},
+    {"id": "D6", "scenario": "Dosis insulin kurang", "current": 140.0, "predicted": 238.0, "expected": "hiperglikemia"},
+]
+# Frasa kondisi & pembentuk kueri dari SATU sumber kebenaran (src/rag/ablation_query.py).
+# Skrip lain (crossfold, realcases) mengimpor CONDITION_PHRASE dari sini; re-export ini
+# menjaga impor tersebut tetap berjalan.
+from src.rag.ablation_query import CONDITION_PHRASE, build_ablation_query  # noqa: E402,F401
+
+
+# Ambang dari SATU sumber kebenaran (src/constants.py).
+from src.constants import classify_glucose_3class
+
+classify_glucose = classify_glucose_3class
+
+
+# Horizon prediksi dalam MENIT, diturunkan dari config (model.default_horizon x
+# data.sampling_interval_min). Tidak lagi masuk ke teks kueri (lihat build_query),
+# tetapi tetap dilaporkan pada keluaran agar pembaca tahu horizon mana yang diuji.
+from src.config import cfg_get  # noqa: E402
+HORIZON_MIN = int(cfg_get("model.default_horizon", 6) * cfg_get("data.sampling_interval_min", 5))
+
+
+def build_query(case, mode: str) -> str:
+    """Kueri kedua lengan ber-STRUKTUR IDENTIK; hanya angkanya yang berbeda.
+
+    Sebelumnya lengan prediction-conditioned mendapat sufiks "(prediksi N menit ke
+    depan)" yang tidak dimiliki lengan standard, sehingga selisih metrik tidak murni
+    berasal dari sumber pengondisian. Lihat src/rag/ablation_query.py.
+    """
+    g = case["current"] if mode == "standard" else case["predicted"]
+    return build_ablation_query(g)
+
+
+# Klasifikasi topik chunk via kata kunci berbobot (nama kondisi berbobot > angka ambang).
+KW = {
+    "hipoglikemia": [("hipoglikemi", 3), ("hypoglycemi", 3), ("gula darah rendah", 2), ("glukosa darah rendah", 2),
+                     ("15-15", 2), ("glukagon", 2), ("dekstrosa", 1), ("< 70 mg", 1), ("<70 mg", 1), ("< 54", 1)],
+    "hiperglikemia": [("hiperglikemi", 3), ("hyperglycemi", 3), ("ketoasidosis", 3), ("ketoacidosis", 3),
+                      ("gula darah tinggi", 2), ("keton", 2), ("hiperosmolar", 2), ("hyperosmolar", 2),
+                      ("krisis hiperglikemia", 2), ("> 180 mg", 1), (">180 mg", 1), ("> 250", 1), ("poliuria", 1)],
+    "normal": [("target kontrol glikemik", 3), ("kontrol glikemik", 2), ("time in range", 2),
+               ("pemantauan glukosa", 1), ("hba1c", 1), ("target glikemik", 2)],
+}
+
+
+def classify_chunk(text: str) -> str:
+    t = text.lower()
+    score = {k: sum(w for kw, w in kws if kw in t) for k, kws in KW.items()}
+    best = max(score, key=score.get)
+    return best if score[best] > 0 else "lain"
+
+
+def main() -> None:
+    OUT.mkdir(parents=True, exist_ok=True)
+    r = MMRRetriever(persist_dir="models/chroma_db", collection_name="diabetes_kb",
+                     embed_provider="sentence-transformers")
+    rows = []
+    for case in TEST_CASES:
+        expected = case["expected"]
+        for mode in ("standard", "prediction_conditioned"):
+            q = build_query(case, mode)
+            tgt = classify_glucose(case["current"] if mode == "standard" else case["predicted"])
+            docs = r.retrieve(q, top_k=TOP_K)
+            topics = [classify_chunk(d["text"]) for d in docs]
+            rank = (topics.index(expected) + 1) if expected in topics else 0
+            rels = [1 if t == expected else 0 for t in topics]
+            rows.append({
+                "case": case["id"], "scenario": case["scenario"], "mode": mode,
+                "predicted": case["predicted"], "expected": expected, "targeted": tgt,
+                "targets_needed": int(tgt == expected),
+                "top1_topic": topics[0] if topics else "-", "retrieved_topics": "|".join(topics),
+                "hit@1": int(bool(topics) and topics[0] == expected),
+                f"hit@{TOP_K}": int(expected in topics), "rank": rank,
+                "mrr": round(1.0 / rank, 3) if rank else 0.0,
+                f"precision@{TOP_K}": round(sum(t == expected for t in topics) / max(len(topics), 1), 3),
+                f"ndcg@{TOP_K}": round(ndcg_at_k(rels, TOP_K), 3),
+                "top_sources": " | ".join(d["source"] for d in docs),
+            })
+
+    df = pd.DataFrame(rows)
+    df.to_csv(OUT / "ablation_fullkb_per_case.csv", index=False)
+    hk, pk, nk = f"hit@{TOP_K}", f"precision@{TOP_K}", f"ndcg@{TOP_K}"
+    summ = df.groupby("mode").agg(n=("case", "count"), targets_needed=("targets_needed", "mean"),
+                                  hit1=("hit@1", "mean"), hitk=(hk, "mean"),
+                                  mrr=("mrr", "mean"), prec=(pk, "mean"), ndcg=(nk, "mean")).reset_index()
+    for c in ["targets_needed", "hit1", "hitk", "prec"]:
+        summ[c] = (summ[c] * 100).round(1)
+    summ["mrr"] = summ["mrr"].round(3)
+    summ["ndcg"] = summ["ndcg"].round(3)
+    summ = summ.rename(columns={"targets_needed": "targets_needed(%)", "hit1": "hit@1(%)",
+                                "hitk": f"hit@{TOP_K}(%)", "prec": f"precision@{TOP_K}(%)",
+                                "ndcg": f"ndcg@{TOP_K}"})
+    summ.to_csv(OUT / "ablation_fullkb_summary.csv", index=False)
+
+    # Jumlah chunk dibaca dari koleksi yang benar-benar dipakai. Sebelumnya nilai ini
+    # jatuh ke literal '2585' karena MMRRetriever tidak punya atribut .collection,
+    # sehingga header selalu mencetak jumlah korpus lama.
+    try:
+        n_chunk = r._vector_store._collection.count()
+    except Exception:  # noqa: BLE001
+        n_chunk = "?"
+    print(f"=== Ablation KORPUS-PENUH ({n_chunk} chunk, top_k={TOP_K}, horizon={HORIZON_MIN} mnt) ===")
+    print(summ.to_string(index=False))
+    print(f"\nOutput -> {OUT}/")
+
+
+if __name__ == "__main__":
+    main()

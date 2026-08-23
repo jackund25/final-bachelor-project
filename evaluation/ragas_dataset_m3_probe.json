@@ -1,0 +1,28 @@
+{
+  "kasus": [
+    {
+      "id": "E02",
+      "pertanyaan": "Apa yang harus dilakukan terhadap dosis insulin basal bila pasien mengalami hipoglikemia?",
+      "kondisi_terprediksi": "hipoglikemia",
+      "jawaban_acuan": "Tentukan dan atasi dahulu penyebab hipoglikemianya, lalu turunkan dosis insulin basal sebanyak 4 unit atau sebesar 10% sampai 20%.",
+      "konteks_acuan": "INSULIN BASAL ... Hipoglikemia : Tentukan dan atasi penyebab, turunkan dosis 4 unit atau 10% - 20%",
+      "halaman_sumber": 23
+    },
+    {
+      "id": "E03",
+      "pertanyaan": "Berapa ambang kadar glukosa darah untuk hipoglikemia Level 1 dan Level 2?",
+      "kondisi_terprediksi": "hipoglikemia",
+      "jawaban_acuan": "Level 1 adalah nilai peringatan hipoglikemia dengan kadar glukosa darah kurang dari atau sama dengan 70 mg/dL. Level 2 adalah hipoglikemia yang signifikan secara klinis dengan kadar glukosa darah kurang dari 54 mg/dL.",
+      "konteks_acuan": "Tabel VIII.1 Klasifikasi Hipoglikemia Level Glukosa Darah Nilai peringatan hipoglikemia (Level 1) <= 70 mg/dL Hipoglikemia signifikan secara klinis (Level 2) < 54 mg/dL",
+      "halaman_sumber": 48
+    },
+    {
+      "id": "E09",
+      "pertanyaan": "Mengapa pemberian insulin subkutan pada krisis hiperglikemia lebih berisiko dibandingkan intramuskular?",
+      "kondisi_terprediksi": "hiperglikemia",
+      "jawaban_acuan": "Insulin subkutan membutuhkan waktu lebih lama untuk mencapai kadar puncak, menyebabkan penurunan glukosa darah awal yang lebih lambat, dan menimbulkan efek hipoglikemia lambat atau late hypoglycemia yang lebih sering dibandingkan terapi insulin intramuskular.",
+      "konteks_acuan": "Namun untuk mencapai kadar insulin puncak dibutuhkan waktu yang lebih lama. Metode ini menyebabkan penurunan kadar glukosa darah awal yang lebih lambat dan timbulnya efek hipoglikemia lambat (late hypoglycemia) yang lebih sering dibandingkan dengan terapi insulin intramuskular.",
+      "halaman_sumber": 45
+    }
+  ]
+}

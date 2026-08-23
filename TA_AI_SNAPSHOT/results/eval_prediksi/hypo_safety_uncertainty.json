@@ -1,0 +1,23 @@
+{
+  "horizon_min": 30,
+  "n_test": 27193,
+  "n_hypo_events": 806,
+  "hypo_detection": {
+    "sensitivity_%": 14.0,
+    "specificity_%": 99.7,
+    "PPV_%": 57.1,
+    "F1_%": 22.5,
+    "TP": 113,
+    "FN": 693,
+    "FP": 85,
+    "TN": 26302
+  },
+  "hypo_rmse_mgdl": 33.16,
+  "hypo_missed_to_normal_range": 687,
+  "uncertainty": {
+    "mean_std_mgdl": 15.88,
+    "median_std_mgdl": 13.91,
+    "interval95_coverage_%": 84.0,
+    "mean_interval_width_mgdl": 62.3
+  }
+}

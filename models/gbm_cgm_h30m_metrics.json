@@ -1,0 +1,21 @@
+{
+  "source": "CGM",
+  "horizon_min": 30.0,
+  "sequence_length": 12,
+  "train_samples": 129113,
+  "test_samples": 30281,
+  "target_tolerance_min": 2.5,
+  "min_target_horizon_min": null,
+  "max_target_horizon_min": null,
+  "min_history_interval_min": 0.0,
+  "max_history_gap_min": 30,
+  "RMSE": 18.67189905819944,
+  "MAE": 13.193594930981732,
+  "MAPE": 8.994477533362854,
+  "Clarke_A": 89.9012582147221,
+  "Clarke_B": 5.964135926818797,
+  "Clarke_C": 0.0,
+  "Clarke_D": 2.3017733892539876,
+  "Clarke_E": 1.8328324692051121,
+  "Clarke_A+B": 95.8653941415409
+}

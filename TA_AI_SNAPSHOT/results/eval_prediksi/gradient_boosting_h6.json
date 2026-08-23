@@ -1,0 +1,1458 @@
+{
+  "percobaan": "T4.1 — Gradient Boosting sebagai pembanding ketiga",
+  "horizon_steps": 6,
+  "horizon_min": 30,
+  "k_fold": 6,
+  "max_gap_steps": 6,
+  "gbm": {
+    "kelas": "sklearn.ensemble.HistGradientBoostingRegressor",
+    "hiperparameter": "BAWAAN scikit-learn, kecuali random_state",
+    "alasan_tanpa_penyetelan": "RF produksi juga tidak pernah disetel ekstensif. Menyetel GBM tetapi tidak menyetel RF akan membuat perbandingan berat sebelah.",
+    "akibat": "Hasil ini batas BAWAH kemampuan gradient boosting. Bila GBM menang, keunggulannya lebih meyakinkan; bila kalah, kesimpulannya hanya berlaku untuk keadaan tak-tersetel.",
+    "alasan_hist": "GradientBoostingRegressor membangun pohon persis dan tidak sepadan anggaran komputasinya pada 100+ ribu jendela. Pilihan implementasi, bukan pilihan keluarga model."
+  },
+  "pemeriksaan_reproduksibilitas_RF": {
+    "selisih_RMSE_per_fold": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "selisih_maks": 0.0,
+    "toleransi": 0.05,
+    "RF_tereproduksi": true
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "test": [
+        "ohio_540",
+        "ohio_570"
+      ],
+      "n": 27669,
+      "RF": {
+        "RMSE": 20.448,
+        "MAE": 14.603,
+        "MAPE": 10.694,
+        "Clarke_A+B": 94.828,
+        "Clarke_A": 85.366,
+        "Clarke_B": 9.462,
+        "Clarke_C": 0.018,
+        "Clarke_D": 2.985,
+        "Clarke_E": 2.168
+      },
+      "GBM": {
+        "RMSE": 19.832,
+        "MAE": 14.187,
+        "MAPE": 10.236,
+        "Clarke_A+B": 94.937,
+        "Clarke_A": 86.288,
+        "Clarke_B": 8.649,
+        "Clarke_C": 0.018,
+        "Clarke_D": 2.913,
+        "Clarke_E": 2.132
+      },
+      "LSTM": {
+        "RMSE": 19.899,
+        "MAE": 14.013,
+        "MAPE": 10.019,
+        "Clarke_A+B": 94.828,
+        "Clarke_A": 86.653,
+        "Clarke_B": 8.175,
+        "Clarke_C": 0.018,
+        "Clarke_D": 2.36,
+        "Clarke_E": 2.794
+      },
+      "hipo": {
+        "RF": {
+          "n_total": 27669,
+          "n_hipo_benar": 1056,
+          "porsi_hipo_persen": 3.817,
+          "n_hipo_berat_benar": 158,
+          "deteksi": {
+            "sensitivitas_persen": 25.663,
+            "spesifisitas_persen": 99.605,
+            "ppv_persen": 72.074,
+            "f1_persen": 37.849,
+            "TP": 271,
+            "FN": 785,
+            "FP": 105,
+            "TN": 26508
+          },
+          "galat_pada_hipo": {
+            "rmse": 26.381,
+            "mae": 19.956,
+            "bias": 19.652,
+            "rerata_glukosa_benar": 60.92,
+            "rerata_glukosa_diduga": 80.57
+          },
+          "terlewat_ke_rentang_target": 785,
+          "hipo_berat_terlewat": 78,
+          "clarke_pada_hipo": {
+            "Clarke_A": 45.644,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.473,
+            "Clarke_D": 53.883,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": 0.902
+        },
+        "GBM": {
+          "n_total": 27669,
+          "n_hipo_benar": 1056,
+          "porsi_hipo_persen": 3.817,
+          "n_hipo_berat_benar": 158,
+          "deteksi": {
+            "sensitivitas_persen": 25.568,
+            "spesifisitas_persen": 99.519,
+            "ppv_persen": 67.839,
+            "f1_persen": 37.139,
+            "TP": 270,
+            "FN": 786,
+            "FP": 128,
+            "TN": 26485
+          },
+          "galat_pada_hipo": {
+            "rmse": 23.391,
+            "mae": 17.855,
+            "bias": 17.576,
+            "rerata_glukosa_benar": 60.92,
+            "rerata_glukosa_diduga": 78.5
+          },
+          "terlewat_ke_rentang_target": 786,
+          "hipo_berat_terlewat": 66,
+          "clarke_pada_hipo": {
+            "Clarke_A": 47.254,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.473,
+            "Clarke_D": 52.273,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": 0.339
+        },
+        "LSTM": {
+          "n_total": 27669,
+          "n_hipo_benar": 1056,
+          "porsi_hipo_persen": 3.817,
+          "n_hipo_berat_benar": 158,
+          "deteksi": {
+            "sensitivitas_persen": 32.008,
+            "spesifisitas_persen": 99.414,
+            "ppv_persen": 68.421,
+            "f1_persen": 43.613,
+            "TP": 338,
+            "FN": 718,
+            "FP": 156,
+            "TN": 26457
+          },
+          "galat_pada_hipo": {
+            "rmse": 23.366,
+            "mae": 17.428,
+            "bias": 16.964,
+            "rerata_glukosa_benar": 60.92,
+            "rerata_glukosa_diduga": 77.89
+          },
+          "terlewat_ke_rentang_target": 718,
+          "hipo_berat_terlewat": 66,
+          "clarke_pada_hipo": {
+            "Clarke_A": 50.568,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.284,
+            "Clarke_D": 49.148,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": 0.39
+        }
+      },
+      "biaya": {
+        "latih_rf_dtk": 636.5690767765045,
+        "latih_gb_dtk": 5.430553674697876,
+        "inf_rf_ms": 0.004767725321109907,
+        "inf_gb_ms": 0.0034056744201013825,
+        "ukuran_rf_MB": 305.441,
+        "ukuran_gb_MB": 0.485
+      }
+    },
+    {
+      "fold": 1,
+      "test": [
+        "ohio_544",
+        "ohio_575"
+      ],
+      "n": 26574,
+      "RF": {
+        "RMSE": 20.045,
+        "MAE": 14.176,
+        "MAPE": 10.558,
+        "Clarke_A+B": 93.791,
+        "Clarke_A": 86.577,
+        "Clarke_B": 7.214,
+        "Clarke_C": 0.004,
+        "Clarke_D": 4.256,
+        "Clarke_E": 1.949
+      },
+      "GBM": {
+        "RMSE": 19.764,
+        "MAE": 13.993,
+        "MAPE": 10.354,
+        "Clarke_A+B": 93.84,
+        "Clarke_A": 86.968,
+        "Clarke_B": 6.871,
+        "Clarke_C": 0.004,
+        "Clarke_D": 4.102,
+        "Clarke_E": 2.055
+      },
+      "LSTM": {
+        "RMSE": 19.538,
+        "MAE": 13.655,
+        "MAPE": 9.867,
+        "Clarke_A+B": 94.574,
+        "Clarke_A": 88.308,
+        "Clarke_B": 6.266,
+        "Clarke_C": 0.008,
+        "Clarke_D": 3.214,
+        "Clarke_E": 2.205
+      },
+      "hipo": {
+        "RF": {
+          "n_total": 26574,
+          "n_hipo_benar": 1209,
+          "porsi_hipo_persen": 4.55,
+          "n_hipo_berat_benar": 270,
+          "deteksi": {
+            "sensitivitas_persen": 16.956,
+            "spesifisitas_persen": 99.862,
+            "ppv_persen": 85.417,
+            "f1_persen": 28.295,
+            "TP": 205,
+            "FN": 1004,
+            "FP": 35,
+            "TN": 25330
+          },
+          "galat_pada_hipo": {
+            "rmse": 25.529,
+            "mae": 21.572,
+            "bias": 21.495,
+            "rerata_glukosa_benar": 59.34,
+            "rerata_glukosa_diduga": 80.83
+          },
+          "terlewat_ke_rentang_target": 1004,
+          "hipo_berat_terlewat": 169,
+          "clarke_pada_hipo": {
+            "Clarke_A": 32.258,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.083,
+            "Clarke_D": 67.659,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": 1.745
+        },
+        "GBM": {
+          "n_total": 26574,
+          "n_hipo_benar": 1209,
+          "porsi_hipo_persen": 4.55,
+          "n_hipo_berat_benar": 270,
+          "deteksi": {
+            "sensitivitas_persen": 18.362,
+            "spesifisitas_persen": 99.779,
+            "ppv_persen": 79.856,
+            "f1_persen": 29.858,
+            "TP": 222,
+            "FN": 987,
+            "FP": 56,
+            "TN": 25309
+          },
+          "galat_pada_hipo": {
+            "rmse": 23.708,
+            "mae": 20.073,
+            "bias": 19.926,
+            "rerata_glukosa_benar": 59.34,
+            "rerata_glukosa_diduga": 79.26
+          },
+          "terlewat_ke_rentang_target": 987,
+          "hipo_berat_terlewat": 167,
+          "clarke_pada_hipo": {
+            "Clarke_A": 35.153,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.083,
+            "Clarke_D": 64.764,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": 1.77
+        },
+        "LSTM": {
+          "n_total": 26574,
+          "n_hipo_benar": 1209,
+          "porsi_hipo_persen": 4.55,
+          "n_hipo_berat_benar": 270,
+          "deteksi": {
+            "sensitivitas_persen": 30.604,
+            "spesifisitas_persen": 99.586,
+            "ppv_persen": 77.895,
+            "f1_persen": 43.943,
+            "TP": 370,
+            "FN": 839,
+            "FP": 105,
+            "TN": 25260
+          },
+          "galat_pada_hipo": {
+            "rmse": 22.626,
+            "mae": 17.905,
+            "bias": 17.407,
+            "rerata_glukosa_benar": 59.34,
+            "rerata_glukosa_diduga": 76.75
+          },
+          "terlewat_ke_rentang_target": 839,
+          "hipo_berat_terlewat": 141,
+          "clarke_pada_hipo": {
+            "Clarke_A": 47.064,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.083,
+            "Clarke_D": 52.854,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": 1.181
+        }
+      },
+      "biaya": {
+        "latih_rf_dtk": 707.6591470241547,
+        "latih_gb_dtk": 3.0153067111968994,
+        "inf_rf_ms": 0.0050131960791533784,
+        "inf_gb_ms": 0.0027638306384109215,
+        "ukuran_rf_MB": 324.707,
+        "ukuran_gb_MB": 0.485
+      }
+    },
+    {
+      "fold": 2,
+      "test": [
+        "ohio_552",
+        "ohio_584"
+      ],
+      "n": 24912,
+      "RF": {
+        "RMSE": 23.091,
+        "MAE": 16.147,
+        "MAPE": 10.387,
+        "Clarke_A+B": 94.067,
+        "Clarke_A": 87.167,
+        "Clarke_B": 6.9,
+        "Clarke_C": 0.024,
+        "Clarke_D": 2.898,
+        "Clarke_E": 3.011
+      },
+      "GBM": {
+        "RMSE": 22.8,
+        "MAE": 15.903,
+        "MAPE": 10.23,
+        "Clarke_A+B": 94.384,
+        "Clarke_A": 87.653,
+        "Clarke_B": 6.732,
+        "Clarke_C": 0.02,
+        "Clarke_D": 2.75,
+        "Clarke_E": 2.846
+      },
+      "LSTM": {
+        "RMSE": 22.791,
+        "MAE": 15.829,
+        "MAPE": 10.171,
+        "Clarke_A+B": 94.4,
+        "Clarke_A": 87.568,
+        "Clarke_B": 6.832,
+        "Clarke_C": 0.016,
+        "Clarke_D": 2.577,
+        "Clarke_E": 3.007
+      },
+      "hipo": {
+        "RF": {
+          "n_total": 24912,
+          "n_hipo_benar": 479,
+          "porsi_hipo_persen": 1.923,
+          "n_hipo_berat_benar": 81,
+          "deteksi": {
+            "sensitivitas_persen": 17.954,
+            "spesifisitas_persen": 99.705,
+            "ppv_persen": 54.43,
+            "f1_persen": 27.001,
+            "TP": 86,
+            "FN": 393,
+            "FP": 72,
+            "TN": 24361
+          },
+          "galat_pada_hipo": {
+            "rmse": 30.349,
+            "mae": 21.847,
+            "bias": 21.549,
+            "rerata_glukosa_benar": 60.68,
+            "rerata_glukosa_diduga": 82.23
+          },
+          "terlewat_ke_rentang_target": 393,
+          "hipo_berat_terlewat": 61,
+          "clarke_pada_hipo": {
+            "Clarke_A": 38.622,
+            "Clarke_B": 0.0,
+            "Clarke_C": 1.253,
+            "Clarke_D": 60.125,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": -1.759
+        },
+        "GBM": {
+          "n_total": 24912,
+          "n_hipo_benar": 479,
+          "porsi_hipo_persen": 1.923,
+          "n_hipo_berat_benar": 81,
+          "deteksi": {
+            "sensitivitas_persen": 18.789,
+            "spesifisitas_persen": 99.664,
+            "ppv_persen": 52.326,
+            "f1_persen": 27.65,
+            "TP": 90,
+            "FN": 389,
+            "FP": 82,
+            "TN": 24351
+          },
+          "galat_pada_hipo": {
+            "rmse": 29.405,
+            "mae": 21.201,
+            "bias": 20.794,
+            "rerata_glukosa_benar": 60.68,
+            "rerata_glukosa_diduga": 81.48
+          },
+          "terlewat_ke_rentang_target": 389,
+          "hipo_berat_terlewat": 52,
+          "clarke_pada_hipo": {
+            "Clarke_A": 42.797,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.835,
+            "Clarke_D": 56.367,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": -1.971
+        },
+        "LSTM": {
+          "n_total": 24912,
+          "n_hipo_benar": 479,
+          "porsi_hipo_persen": 1.923,
+          "n_hipo_berat_benar": 81,
+          "deteksi": {
+            "sensitivitas_persen": 25.678,
+            "spesifisitas_persen": 99.484,
+            "ppv_persen": 49.398,
+            "f1_persen": 33.791,
+            "TP": 123,
+            "FN": 356,
+            "FP": 126,
+            "TN": 24307
+          },
+          "galat_pada_hipo": {
+            "rmse": 29.102,
+            "mae": 20.059,
+            "bias": 19.468,
+            "rerata_glukosa_benar": 60.68,
+            "rerata_glukosa_diduga": 80.15
+          },
+          "terlewat_ke_rentang_target": 356,
+          "hipo_berat_terlewat": 48,
+          "clarke_pada_hipo": {
+            "Clarke_A": 44.885,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.835,
+            "Clarke_D": 54.28,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": -2.962
+        }
+      },
+      "biaya": {
+        "latih_rf_dtk": 728.0667009353638,
+        "latih_gb_dtk": 3.0702590942382812,
+        "inf_rf_ms": 0.005187728731159071,
+        "inf_gb_ms": 0.0025192819961616453,
+        "ukuran_rf_MB": 331.982,
+        "ukuran_gb_MB": 0.484
+      }
+    },
+    {
+      "fold": 3,
+      "test": [
+        "ohio_559",
+        "ohio_588"
+      ],
+      "n": 27747,
+      "RF": {
+        "RMSE": 22.215,
+        "MAE": 15.452,
+        "MAPE": 10.254,
+        "Clarke_A+B": 94.295,
+        "Clarke_A": 86.748,
+        "Clarke_B": 7.547,
+        "Clarke_C": 0.004,
+        "Clarke_D": 2.818,
+        "Clarke_E": 2.883
+      },
+      "GBM": {
+        "RMSE": 21.787,
+        "MAE": 15.141,
+        "MAPE": 10.007,
+        "Clarke_A+B": 94.684,
+        "Clarke_A": 87.155,
+        "Clarke_B": 7.529,
+        "Clarke_C": 0.0,
+        "Clarke_D": 2.505,
+        "Clarke_E": 2.811
+      },
+      "LSTM": {
+        "RMSE": 22.043,
+        "MAE": 15.298,
+        "MAPE": 10.124,
+        "Clarke_A+B": 94.36,
+        "Clarke_A": 86.791,
+        "Clarke_B": 7.568,
+        "Clarke_C": 0.004,
+        "Clarke_D": 2.642,
+        "Clarke_E": 2.995
+      },
+      "hipo": {
+        "RF": {
+          "n_total": 27747,
+          "n_hipo_benar": 575,
+          "porsi_hipo_persen": 2.072,
+          "n_hipo_berat_benar": 119,
+          "deteksi": {
+            "sensitivitas_persen": 30.087,
+            "spesifisitas_persen": 99.661,
+            "ppv_persen": 65.283,
+            "f1_persen": 41.191,
+            "TP": 173,
+            "FN": 402,
+            "FP": 92,
+            "TN": 27080
+          },
+          "galat_pada_hipo": {
+            "rmse": 27.0,
+            "mae": 20.875,
+            "bias": 20.755,
+            "rerata_glukosa_benar": 60.01,
+            "rerata_glukosa_diduga": 80.76
+          },
+          "terlewat_ke_rentang_target": 402,
+          "hipo_berat_terlewat": 40,
+          "clarke_pada_hipo": {
+            "Clarke_A": 43.478,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.174,
+            "Clarke_D": 56.348,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": -0.894
+        },
+        "GBM": {
+          "n_total": 27747,
+          "n_hipo_benar": 575,
+          "porsi_hipo_persen": 2.072,
+          "n_hipo_berat_benar": 119,
+          "deteksi": {
+            "sensitivitas_persen": 34.783,
+            "spesifisitas_persen": 99.595,
+            "ppv_persen": 64.516,
+            "f1_persen": 45.198,
+            "TP": 200,
+            "FN": 375,
+            "FP": 110,
+            "TN": 27062
+          },
+          "galat_pada_hipo": {
+            "rmse": 24.333,
+            "mae": 18.406,
+            "bias": 18.03,
+            "rerata_glukosa_benar": 60.01,
+            "rerata_glukosa_diduga": 78.04
+          },
+          "terlewat_ke_rentang_target": 375,
+          "hipo_berat_terlewat": 19,
+          "clarke_pada_hipo": {
+            "Clarke_A": 54.957,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.0,
+            "Clarke_D": 45.043,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": -0.946
+        },
+        "LSTM": {
+          "n_total": 27747,
+          "n_hipo_benar": 575,
+          "porsi_hipo_persen": 2.072,
+          "n_hipo_berat_benar": 119,
+          "deteksi": {
+            "sensitivitas_persen": 39.826,
+            "spesifisitas_persen": 99.566,
+            "ppv_persen": 65.994,
+            "f1_persen": 49.674,
+            "TP": 229,
+            "FN": 346,
+            "FP": 118,
+            "TN": 27054
+          },
+          "galat_pada_hipo": {
+            "rmse": 25.262,
+            "mae": 18.919,
+            "bias": 18.493,
+            "rerata_glukosa_benar": 60.01,
+            "rerata_glukosa_diduga": 78.5
+          },
+          "terlewat_ke_rentang_target": 346,
+          "hipo_berat_terlewat": 19,
+          "clarke_pada_hipo": {
+            "Clarke_A": 53.217,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.174,
+            "Clarke_D": 46.609,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": -1.293
+        }
+      },
+      "biaya": {
+        "latih_rf_dtk": 714.4924972057343,
+        "latih_gb_dtk": 2.9157276153564453,
+        "inf_rf_ms": 0.00484805925646769,
+        "inf_gb_ms": 0.0026318671815300063,
+        "ukuran_rf_MB": 318.672,
+        "ukuran_gb_MB": 0.485
+      }
+    },
+    {
+      "fold": 4,
+      "test": [
+        "ohio_563",
+        "ohio_591"
+      ],
+      "n": 27723,
+      "RF": {
+        "RMSE": 20.502,
+        "MAE": 14.316,
+        "MAPE": 10.715,
+        "Clarke_A+B": 95.304,
+        "Clarke_A": 86.545,
+        "Clarke_B": 8.758,
+        "Clarke_C": 0.014,
+        "Clarke_D": 2.734,
+        "Clarke_E": 1.948
+      },
+      "GBM": {
+        "RMSE": 20.307,
+        "MAE": 14.107,
+        "MAPE": 10.452,
+        "Clarke_A+B": 95.488,
+        "Clarke_A": 86.996,
+        "Clarke_B": 8.491,
+        "Clarke_C": 0.011,
+        "Clarke_D": 2.532,
+        "Clarke_E": 1.969
+      },
+      "LSTM": {
+        "RMSE": 20.096,
+        "MAE": 14.041,
+        "MAPE": 10.461,
+        "Clarke_A+B": 95.603,
+        "Clarke_A": 87.206,
+        "Clarke_B": 8.397,
+        "Clarke_C": 0.018,
+        "Clarke_D": 2.236,
+        "Clarke_E": 2.143
+      },
+      "hipo": {
+        "RF": {
+          "n_total": 27723,
+          "n_hipo_benar": 787,
+          "porsi_hipo_persen": 2.839,
+          "n_hipo_berat_benar": 163,
+          "deteksi": {
+            "sensitivitas_persen": 18.424,
+            "spesifisitas_persen": 99.599,
+            "ppv_persen": 57.312,
+            "f1_persen": 27.884,
+            "TP": 145,
+            "FN": 642,
+            "FP": 108,
+            "TN": 26828
+          },
+          "galat_pada_hipo": {
+            "rmse": 29.43,
+            "mae": 23.149,
+            "bias": 22.802,
+            "rerata_glukosa_benar": 59.74,
+            "rerata_glukosa_diduga": 82.54
+          },
+          "terlewat_ke_rentang_target": 642,
+          "hipo_berat_terlewat": 123,
+          "clarke_pada_hipo": {
+            "Clarke_A": 35.324,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.254,
+            "Clarke_D": 64.422,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": 0.773
+        },
+        "GBM": {
+          "n_total": 27723,
+          "n_hipo_benar": 787,
+          "porsi_hipo_persen": 2.839,
+          "n_hipo_berat_benar": 163,
+          "deteksi": {
+            "sensitivitas_persen": 19.441,
+            "spesifisitas_persen": 99.558,
+            "ppv_persen": 56.25,
+            "f1_persen": 28.895,
+            "TP": 153,
+            "FN": 634,
+            "FP": 119,
+            "TN": 26817
+          },
+          "galat_pada_hipo": {
+            "rmse": 27.294,
+            "mae": 21.093,
+            "bias": 20.804,
+            "rerata_glukosa_benar": 59.74,
+            "rerata_glukosa_diduga": 80.54
+          },
+          "terlewat_ke_rentang_target": 634,
+          "hipo_berat_terlewat": 96,
+          "clarke_pada_hipo": {
+            "Clarke_A": 41.423,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.254,
+            "Clarke_D": 58.323,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": 0.394
+        },
+        "LSTM": {
+          "n_total": 27723,
+          "n_hipo_benar": 787,
+          "porsi_hipo_persen": 2.839,
+          "n_hipo_berat_benar": 163,
+          "deteksi": {
+            "sensitivitas_persen": 24.269,
+            "spesifisitas_persen": 99.421,
+            "ppv_persen": 55.043,
+            "f1_persen": 33.686,
+            "TP": 191,
+            "FN": 596,
+            "FP": 156,
+            "TN": 26780
+          },
+          "galat_pada_hipo": {
+            "rmse": 27.021,
+            "mae": 21.082,
+            "bias": 20.548,
+            "rerata_glukosa_benar": 59.74,
+            "rerata_glukosa_diduga": 80.29
+          },
+          "terlewat_ke_rentang_target": 596,
+          "hipo_berat_terlewat": 86,
+          "clarke_pada_hipo": {
+            "Clarke_A": 41.55,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.254,
+            "Clarke_D": 58.196,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": 1.744
+        }
+      },
+      "biaya": {
+        "latih_rf_dtk": 726.1234328746796,
+        "latih_gb_dtk": 3.0144150257110596,
+        "inf_rf_ms": 0.004991499311165545,
+        "inf_gb_ms": 0.0028034285610124532,
+        "ukuran_rf_MB": 328.32,
+        "ukuran_gb_MB": 0.485
+      }
+    },
+    {
+      "fold": 5,
+      "test": [
+        "ohio_567",
+        "ohio_596"
+      ],
+      "n": 25456,
+      "RF": {
+        "RMSE": 20.175,
+        "MAE": 13.974,
+        "MAPE": 10.38,
+        "Clarke_A+B": 93.813,
+        "Clarke_A": 86.926,
+        "Clarke_B": 6.886,
+        "Clarke_C": 0.004,
+        "Clarke_D": 3.972,
+        "Clarke_E": 2.212
+      },
+      "GBM": {
+        "RMSE": 19.836,
+        "MAE": 13.568,
+        "MAPE": 9.891,
+        "Clarke_A+B": 94.783,
+        "Clarke_A": 88.231,
+        "Clarke_B": 6.552,
+        "Clarke_C": 0.004,
+        "Clarke_D": 3.374,
+        "Clarke_E": 1.838
+      },
+      "LSTM": {
+        "RMSE": 19.243,
+        "MAE": 13.083,
+        "MAPE": 9.38,
+        "Clarke_A+B": 95.581,
+        "Clarke_A": 89.484,
+        "Clarke_B": 6.097,
+        "Clarke_C": 0.0,
+        "Clarke_D": 2.443,
+        "Clarke_E": 1.976
+      },
+      "hipo": {
+        "RF": {
+          "n_total": 25456,
+          "n_hipo_benar": 1100,
+          "porsi_hipo_persen": 4.321,
+          "n_hipo_berat_benar": 268,
+          "deteksi": {
+            "sensitivitas_persen": 21.0,
+            "spesifisitas_persen": 99.758,
+            "ppv_persen": 79.655,
+            "f1_persen": 33.237,
+            "TP": 231,
+            "FN": 869,
+            "FP": 59,
+            "TN": 24297
+          },
+          "galat_pada_hipo": {
+            "rmse": 22.663,
+            "mae": 20.005,
+            "bias": 19.9,
+            "rerata_glukosa_benar": 59.11,
+            "rerata_glukosa_diduga": 79.01
+          },
+          "terlewat_ke_rentang_target": 869,
+          "hipo_berat_terlewat": 117,
+          "clarke_pada_hipo": {
+            "Clarke_A": 35.818,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.091,
+            "Clarke_D": 64.091,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": 0.518
+        },
+        "GBM": {
+          "n_total": 25456,
+          "n_hipo_benar": 1100,
+          "porsi_hipo_persen": 4.321,
+          "n_hipo_berat_benar": 268,
+          "deteksi": {
+            "sensitivitas_persen": 26.636,
+            "spesifisitas_persen": 99.828,
+            "ppv_persen": 87.463,
+            "f1_persen": 40.836,
+            "TP": 293,
+            "FN": 807,
+            "FP": 42,
+            "TN": 24314
+          },
+          "galat_pada_hipo": {
+            "rmse": 19.921,
+            "mae": 17.086,
+            "bias": 16.96,
+            "rerata_glukosa_benar": 59.11,
+            "rerata_glukosa_diduga": 76.07
+          },
+          "terlewat_ke_rentang_target": 807,
+          "hipo_berat_terlewat": 95,
+          "clarke_pada_hipo": {
+            "Clarke_A": 51.636,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.091,
+            "Clarke_D": 48.273,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": -0.563
+        },
+        "LSTM": {
+          "n_total": 25456,
+          "n_hipo_benar": 1100,
+          "porsi_hipo_persen": 4.321,
+          "n_hipo_berat_benar": 268,
+          "deteksi": {
+            "sensitivitas_persen": 40.273,
+            "spesifisitas_persen": 99.581,
+            "ppv_persen": 81.284,
+            "f1_persen": 53.86,
+            "TP": 443,
+            "FN": 657,
+            "FP": 102,
+            "TN": 24254
+          },
+          "galat_pada_hipo": {
+            "rmse": 17.363,
+            "mae": 14.284,
+            "bias": 13.98,
+            "rerata_glukosa_benar": 59.11,
+            "rerata_glukosa_diduga": 73.09
+          },
+          "terlewat_ke_rentang_target": 657,
+          "hipo_berat_terlewat": 50,
+          "clarke_pada_hipo": {
+            "Clarke_A": 59.364,
+            "Clarke_B": 0.0,
+            "Clarke_C": 0.0,
+            "Clarke_D": 40.636,
+            "Clarke_E": 0.0
+          },
+          "bias_keseluruhan": 0.698
+        }
+      },
+      "biaya": {
+        "latih_rf_dtk": 735.4477972984314,
+        "latih_gb_dtk": 3.1967859268188477,
+        "inf_rf_ms": 0.004783694209129386,
+        "inf_gb_ms": 0.0026846066875925306,
+        "ukuran_rf_MB": 326.033,
+        "ukuran_gb_MB": 0.485
+      }
+    }
+  ],
+  "rerata_lintas_fold": {
+    "RF": {
+      "RMSE": [
+        21.079,
+        1.152
+      ],
+      "MAE": [
+        14.778,
+        0.773
+      ],
+      "MAPE": [
+        10.498,
+        0.171
+      ],
+      "Clarke_A+B": [
+        94.35,
+        0.551
+      ],
+      "Clarke_A": [
+        86.555,
+        0.572
+      ],
+      "Clarke_B": [
+        7.795,
+        0.977
+      ],
+      "Clarke_C": [
+        0.011,
+        0.008
+      ],
+      "Clarke_D": [
+        3.277,
+        0.602
+      ],
+      "Clarke_E": [
+        2.362,
+        0.427
+      ]
+    },
+    "GBM": {
+      "RMSE": [
+        20.721,
+        1.163
+      ],
+      "MAE": [
+        14.483,
+        0.791
+      ],
+      "MAPE": [
+        10.195,
+        0.192
+      ],
+      "Clarke_A+B": [
+        94.686,
+        0.504
+      ],
+      "Clarke_A": [
+        87.215,
+        0.605
+      ],
+      "Clarke_B": [
+        7.471,
+        0.835
+      ],
+      "Clarke_C": [
+        0.009,
+        0.007
+      ],
+      "Clarke_D": [
+        3.029,
+        0.56
+      ],
+      "Clarke_E": [
+        2.275,
+        0.401
+      ]
+    },
+    "LSTM": {
+      "RMSE": [
+        20.602,
+        1.329
+      ],
+      "MAE": [
+        14.32,
+        0.947
+      ],
+      "MAPE": [
+        10.004,
+        0.332
+      ],
+      "Clarke_A+B": [
+        94.891,
+        0.518
+      ],
+      "Clarke_A": [
+        87.668,
+        0.977
+      ],
+      "Clarke_B": [
+        7.223,
+        0.889
+      ],
+      "Clarke_C": [
+        0.011,
+        0.007
+      ],
+      "Clarke_D": [
+        2.579,
+        0.314
+      ],
+      "Clarke_E": [
+        2.52,
+        0.423
+      ]
+    }
+  },
+  "hipoglikemia": {
+    "catatan": "Definisi diimpor dari eval_hipoglikemia.metrik_hipo() — ambang 70 dan 54 mg/dL, konvensi tanda bias, dan penanganan pembagi nol identik dengan T2.1. LSTM TIDAK dilatih ulang di sini; angkanya diambil dari hipoglikemia_h{H}.json yang aturan foldnya sama.",
+    "basis_kejadian": {
+      "n_hipo_benar": 5206,
+      "n_total": 160081,
+      "terlewat_ke_rentang_target": {
+        "RF": 4095,
+        "GBM": 3978,
+        "LSTM": 3512
+      },
+      "hipo_berat_terlewat": {
+        "RF": 588,
+        "GBM": 495,
+        "LSTM": 410
+      },
+      "porsi_hipo_persen": 3.252
+    },
+    "rerata_lintas_fold": {
+      "RF": {
+        "sensitivitas_persen": [
+          21.681,
+          4.722,
+          6
+        ],
+        "spesifisitas_persen": [
+          99.698,
+          0.092,
+          6
+        ],
+        "ppv_persen": [
+          69.029,
+          11.219,
+          6
+        ],
+        "f1_persen": [
+          32.576,
+          5.383,
+          6
+        ],
+        "rmse_pada_hipo": [
+          26.892,
+          2.53,
+          6
+        ],
+        "mae_pada_hipo": [
+          21.234,
+          1.113,
+          6
+        ],
+        "bias_pada_hipo": [
+          21.026,
+          1.071,
+          6
+        ],
+        "bias_keseluruhan": [
+          0.214,
+          1.179,
+          6
+        ]
+      },
+      "GBM": {
+        "sensitivitas_persen": [
+          23.93,
+          5.851,
+          6
+        ],
+        "spesifisitas_persen": [
+          99.657,
+          0.113,
+          6
+        ],
+        "ppv_persen": [
+          68.042,
+          12.351,
+          6
+        ],
+        "f1_persen": [
+          34.929,
+          6.587,
+          6
+        ],
+        "rmse_pada_hipo": [
+          24.675,
+          3.015,
+          6
+        ],
+        "mae_pada_hipo": [
+          19.286,
+          1.592,
+          6
+        ],
+        "bias_pada_hipo": [
+          19.015,
+          1.552,
+          6
+        ],
+        "bias_keseluruhan": [
+          -0.163,
+          1.179,
+          6
+        ]
+      },
+      "LSTM": {
+        "sensitivitas_persen": [
+          32.11,
+          6.209,
+          6
+        ],
+        "spesifisitas_persen": [
+          99.509,
+          0.073,
+          6
+        ],
+        "ppv_persen": [
+          66.339,
+          11.372,
+          6
+        ],
+        "f1_persen": [
+          43.095,
+          7.475,
+          6
+        ],
+        "rmse_pada_hipo": [
+          24.123,
+          3.719,
+          6
+        ],
+        "mae_pada_hipo": [
+          18.28,
+          2.17,
+          6
+        ],
+        "bias_pada_hipo": [
+          17.81,
+          2.092,
+          6
+        ],
+        "bias_keseluruhan": [
+          -0.04,
+          1.608,
+          6
+        ]
+      }
+    },
+    "uji_berpasangan_tingkat_fold": {
+      "RF_vs_GBM__sensitivitas_persen": {
+        "selisih_rerata": -2.249,
+        "sd_antar_fold": {
+          "gabungan_definisi_T2.1": 5.434,
+          "maks_per_model": 5.851,
+          "selisih_berpasangan": 2.128
+        },
+        "melampaui_sd": {
+          "gabungan_definisi_T2.1": false,
+          "maks_per_model": false,
+          "selisih_berpasangan": true
+        },
+        "sd_sepakat": false,
+        "wilcoxon_p": 0.0625,
+        "layak_dinarasikan_konservatif": false,
+        "layak_menurut_definisi_T2.1": false
+      },
+      "RF_vs_GBM__mae_pada_hipo": {
+        "selisih_rerata": 1.948,
+        "sd_antar_fold": {
+          "gabungan_definisi_T2.1": 1.684,
+          "maks_per_model": 1.592,
+          "selisih_berpasangan": 0.724
+        },
+        "melampaui_sd": {
+          "gabungan_definisi_T2.1": true,
+          "maks_per_model": true,
+          "selisih_berpasangan": true
+        },
+        "sd_sepakat": true,
+        "wilcoxon_p": 0.03125,
+        "layak_dinarasikan_konservatif": true,
+        "layak_menurut_definisi_T2.1": true
+      },
+      "RF_vs_GBM__bias_pada_hipo": {
+        "selisih_rerata": 2.01,
+        "sd_antar_fold": {
+          "gabungan_definisi_T2.1": 1.67,
+          "maks_per_model": 1.552,
+          "selisih_berpasangan": 0.725
+        },
+        "melampaui_sd": {
+          "gabungan_definisi_T2.1": true,
+          "maks_per_model": true,
+          "selisih_berpasangan": true
+        },
+        "sd_sepakat": true,
+        "wilcoxon_p": 0.03125,
+        "layak_dinarasikan_konservatif": true,
+        "layak_menurut_definisi_T2.1": true
+      },
+      "GBM_vs_LSTM__sensitivitas_persen": {
+        "selisih_rerata": -8.18,
+        "sd_antar_fold": {
+          "gabungan_definisi_T2.1": 7.288,
+          "maks_per_model": 6.209,
+          "selisih_berpasangan": 3.465
+        },
+        "melampaui_sd": {
+          "gabungan_definisi_T2.1": true,
+          "maks_per_model": true,
+          "selisih_berpasangan": true
+        },
+        "sd_sepakat": true,
+        "wilcoxon_p": 0.03125,
+        "layak_dinarasikan_konservatif": true,
+        "layak_menurut_definisi_T2.1": true
+      },
+      "GBM_vs_LSTM__mae_pada_hipo": {
+        "selisih_rerata": 1.006,
+        "sd_antar_fold": {
+          "gabungan_definisi_T2.1": 1.969,
+          "maks_per_model": 2.17,
+          "selisih_berpasangan": 1.171
+        },
+        "melampaui_sd": {
+          "gabungan_definisi_T2.1": false,
+          "maks_per_model": false,
+          "selisih_berpasangan": false
+        },
+        "sd_sepakat": true,
+        "wilcoxon_p": 0.15625,
+        "layak_dinarasikan_konservatif": false,
+        "layak_menurut_definisi_T2.1": false
+      },
+      "GBM_vs_LSTM__bias_pada_hipo": {
+        "selisih_rerata": 1.205,
+        "sd_antar_fold": {
+          "gabungan_definisi_T2.1": 1.938,
+          "maks_per_model": 2.092,
+          "selisih_berpasangan": 1.22
+        },
+        "melampaui_sd": {
+          "gabungan_definisi_T2.1": false,
+          "maks_per_model": false,
+          "selisih_berpasangan": false
+        },
+        "sd_sepakat": true,
+        "wilcoxon_p": 0.09375,
+        "layak_dinarasikan_konservatif": false,
+        "layak_menurut_definisi_T2.1": false
+      },
+      "RF_vs_LSTM__sensitivitas_persen": {
+        "selisih_rerata": -10.429,
+        "sd_antar_fold": {
+          "gabungan_definisi_T2.1": 7.591,
+          "maks_per_model": 6.209,
+          "selisih_berpasangan": 4.727
+        },
+        "melampaui_sd": {
+          "gabungan_definisi_T2.1": true,
+          "maks_per_model": true,
+          "selisih_berpasangan": true
+        },
+        "sd_sepakat": true,
+        "wilcoxon_p": 0.03125,
+        "layak_dinarasikan_konservatif": true,
+        "layak_menurut_definisi_T2.1": true
+      },
+      "RF_vs_LSTM__mae_pada_hipo": {
+        "selisih_rerata": 2.954,
+        "sd_antar_fold": {
+          "gabungan_definisi_T2.1": 2.271,
+          "maks_per_model": 2.17,
+          "selisih_berpasangan": 1.384
+        },
+        "melampaui_sd": {
+          "gabungan_definisi_T2.1": true,
+          "maks_per_model": true,
+          "selisih_berpasangan": true
+        },
+        "sd_sepakat": true,
+        "wilcoxon_p": 0.03125,
+        "layak_dinarasikan_konservatif": true,
+        "layak_menurut_definisi_T2.1": true
+      },
+      "RF_vs_LSTM__bias_pada_hipo": {
+        "selisih_rerata": 3.216,
+        "sd_antar_fold": {
+          "gabungan_definisi_T2.1": 2.312,
+          "maks_per_model": 2.092,
+          "selisih_berpasangan": 1.383
+        },
+        "melampaui_sd": {
+          "gabungan_definisi_T2.1": true,
+          "maks_per_model": true,
+          "selisih_berpasangan": true
+        },
+        "sd_sepakat": true,
+        "wilcoxon_p": 0.03125,
+        "layak_dinarasikan_konservatif": true,
+        "layak_menurut_definisi_T2.1": true
+      }
+    },
+    "aturan_pelaporan": "KEPUTUSAN #8, 11 Agustus 2026 (docs/KEPUTUSAN_DIAMBIL.md). Dua pertanyaan DIPISAH. Konsistensi: SD selisih berpasangan std(A-B) + Wilcoxon tingkat fold. Kebermaknaan: ambang ORDE BESARAN dari ISO 15197:2013, +-15 mg/dL untuk glukosa < 100 mg/dL. Ketiga definisi SD tetap dilaporkan. Ambang klinis TIDAK berlaku bagi besaran bersatuan poin persen (mis. sensitivitas); bagi besaran itu hanya konsistensi yang dapat dijawab."
+  },
+  "checkpoint": {
+    "direktori": ".cache\\gradient_boosting_h6",
+    "sidik_jari": {
+      "horizon_steps": 6,
+      "max_gap_steps": 6,
+      "k_fold": 6,
+      "folds": [
+        [
+          "ohio_540",
+          "ohio_570"
+        ],
+        [
+          "ohio_544",
+          "ohio_575"
+        ],
+        [
+          "ohio_552",
+          "ohio_584"
+        ],
+        [
+          "ohio_559",
+          "ohio_588"
+        ],
+        [
+          "ohio_563",
+          "ohio_591"
+        ],
+        [
+          "ohio_567",
+          "ohio_596"
+        ]
+      ],
+      "seed": 42,
+      "random_forest": {
+        "n_estimators": 200,
+        "max_depth": 20,
+        "min_samples_split": 5
+      },
+      "fitur": [
+        "glucose",
+        "glucose_delta",
+        "iob",
+        "cob",
+        "activity",
+        "hour_sin",
+        "hour_cos"
+      ],
+      "gbm": "HistGradientBoostingRegressor(bawaan, random_state=seed)"
+    },
+    "n_fold_dipulihkan": 6,
+    "isi": "yte, yp_rf, yp_gb per fold — galat per sampel dapat diturunkan sehingga Wilcoxon dapat dilanjutkan tanpa melatih ulang."
+  },
+  "biaya": {
+    "RF": {
+      "waktu_latih_dtk": 708.1,
+      "inferensi_ms_per_sampel": 0.0049,
+      "ukuran_model_MB": 322.53
+    },
+    "GBM": {
+      "waktu_latih_dtk": 3.4,
+      "inferensi_ms_per_sampel": 0.0028,
+      "ukuran_model_MB": 0.485
+    }
+  },
+  "uji": {
+    "RF_vs_GBM": {
+      "fold_level": {
+        "rerata_RMSE_RF": 21.079,
+        "rerata_RMSE_GBM": 20.721,
+        "selisih": 0.358,
+        "sd_antar_fold_RF": 1.152,
+        "sd_antar_fold_GBM": 1.163,
+        "sd_tiga_definisi": {
+          "gabungan_definisi_T2.1": 1.171,
+          "maks_per_model": 1.163,
+          "selisih_berpasangan": 0.135
+        },
+        "melampaui_sd": {
+          "gabungan_definisi_T2.1": false,
+          "maks_per_model": false,
+          "selisih_berpasangan": true
+        },
+        "sd_sepakat": false,
+        "KONSISTEN_definisi_terpilih": true,
+        "ambang_klinis_mg_dL": 15.0,
+        "persen_dari_ambang_klinis": 2.39,
+        "BERMAKNA_secara_klinis": false,
+        "RUMUSAN": "KONSISTEN TETAPI TIDAK BERMAKNA",
+        "keputusan_8": "docs/KEPUTUSAN_DIAMBIL.md. Konsistensi diukur SD selisih berpasangan; kebermaknaan diukur ambang ORDE BESARAN dari ISO 15197:2013 (+-15 mg/dL untuk glukosa < 100 mg/dL, KB-02_PERKENI-2021 hal. 25). Ambang itu ANALOGI BERDASAR LITERATUR, bukan penerapan ISO pada perbandingan model, dan diadopsi SETELAH hasil terlihat.",
+        "wilcoxon_p": 0.0312,
+        "ttest_rel_p": 0.0019,
+        "selisih_melampaui_sd": false
+      },
+      "sample_level": {
+        "wilcoxon_p": 4.1352291629337946e-98,
+        "n": 160081,
+        "median_abs_err_RF": 10.33,
+        "median_abs_err_GBM": 10.13
+      }
+    },
+    "GBM_vs_LSTM": {
+      "fold_level": {
+        "rerata_RMSE_GBM": 20.721,
+        "rerata_RMSE_LSTM": 20.602,
+        "selisih": 0.119,
+        "wilcoxon_p": 0.5625,
+        "catatan": "Hanya tingkat fold. LSTM tidak dilatih ulang di sini, sehingga galat per sampelnya tidak tersedia dan uji tingkat sampel TIDAK dapat dilakukan."
+      }
+    }
+  },
+  "aturan_pelaporan": "Selisih yang lebih kecil daripada simpangan baku antar-fold tidak boleh dinarasikan sebagai keunggulan."
+}

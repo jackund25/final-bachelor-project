@@ -1,15 +1,15 @@
 {
-  "n_sampel": 10,
+  "n_sampel": 3,
   "metrik": [
     "faithfulness"
   ],
   "top_k": 5,
-  "panggilan_pembangkitan": 10,
+  "panggilan_pembangkitan": 3,
   "panggilan_per_metrik": {
-    "faithfulness": 20
+    "faithfulness": 6
   },
   "sudah_ter-cache": 0,
-  "total_estimasi": 30,
+  "total_estimasi": 9,
   "proyeksi_dataset_penuh": {
     "n": 10,
     "total": 30

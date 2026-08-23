@@ -1,0 +1,721 @@
+{
+  "experiment": "Standard RAG vs Prediction-Conditioned RAG",
+  "pipeline": {
+    "standard": "Question -> Hybrid -> RRF -> BGE",
+    "prediction_conditioned": "Question + clinical prediction/classification context -> Hybrid -> RRF -> BGE"
+  },
+  "config": {
+    "persist_dir": "models/chroma_db_eval",
+    "collection_name": "diabetes_kb_eval",
+    "retrieval_mode": "hibrida",
+    "top_k": 5,
+    "candidate_k": 50,
+    "reranker_model": "BAAI/bge-reranker-v2-m3"
+  },
+  "summary": {
+    "standard": {
+      "hit@1": 0.0,
+      "hit@3": 0.0,
+      "hit@5": 0.0,
+      "mrr": 0.0
+    },
+    "prediction_conditioned": {
+      "hit@1": 0.0,
+      "hit@3": 0.0,
+      "hit@5": 0.0,
+      "mrr": 0.0
+    }
+  },
+  "cases": [
+    {
+      "id": "E01",
+      "question": "Berapa dosis awal insulin basal pada terapi insulin rawat jalan?",
+      "clinical_context": "",
+      "standard_rank": 0,
+      "conditioned_rank": 0,
+      "standard_mrr": 0.0,
+      "conditioned_mrr": 0.0,
+      "standard_hit@1": 0,
+      "standard_hit@3": 0,
+      "standard_hit@5": 0,
+      "conditioned_hit@1": 0,
+      "conditioned_hit@3": 0,
+      "conditioned_hit@5": 0,
+      "standard_top5": [
+        {
+          "rank": 1,
+          "score": 0.9927700161933899,
+          "text": "Perkumpulan Endokrinologi Indonesia 23 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Gambar III.2 Algoritma Strategi Umum Terapi Insulin Rawat Jalan I..."
+        },
+        {
+          "rank": 2,
+          "score": 0.811002790927887,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        },
+        {
+          "rank": 3,
+          "score": 0.7852869033813477,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        },
+        {
+          "rank": 4,
+          "score": 0.5387799143791199,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        },
+        {
+          "rank": 5,
+          "score": 0.48083165287971497,
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantun..."
+        }
+      ],
+      "conditioned_top5": [
+        {
+          "rank": 1,
+          "score": 0.9927700161933899,
+          "text": "Perkumpulan Endokrinologi Indonesia 23 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Gambar III.2 Algoritma Strategi Umum Terapi Insulin Rawat Jalan I..."
+        },
+        {
+          "rank": 2,
+          "score": 0.811002790927887,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        },
+        {
+          "rank": 3,
+          "score": 0.7852869033813477,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        },
+        {
+          "rank": 4,
+          "score": 0.5387799143791199,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        },
+        {
+          "rank": 5,
+          "score": 0.48083165287971497,
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantun..."
+        }
+      ]
+    },
+    {
+      "id": "E02",
+      "question": "Apa yang harus dilakukan terhadap dosis insulin basal bila pasien mengalami hipoglikemia?",
+      "clinical_context": "",
+      "standard_rank": 0,
+      "conditioned_rank": 0,
+      "standard_mrr": 0.0,
+      "conditioned_mrr": 0.0,
+      "standard_hit@1": 0,
+      "standard_hit@3": 0,
+      "standard_hit@5": 0,
+      "conditioned_hit@1": 0,
+      "conditioned_hit@3": 0,
+      "conditioned_hit@5": 0,
+      "standard_top5": [
+        {
+          "rank": 1,
+          "score": 0.9417060017585754,
+          "text": "Perkumpulan Endokrinologi Indonesia 23 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Gambar III.2 Algoritma Strategi Umum Terapi Insulin Rawat Jalan I..."
+        },
+        {
+          "rank": 2,
+          "score": 0.9195464849472046,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        },
+        {
+          "rank": 3,
+          "score": 0.9128084182739258,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        },
+        {
+          "rank": 4,
+          "score": 0.7998520731925964,
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik de..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6240374445915222,
+          "text": "48 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 peningkatan insiden hipoglikemia, termasuk episode hipoglikemia nokturnal. FDA pada april 2012 menyet..."
+        }
+      ],
+      "conditioned_top5": [
+        {
+          "rank": 1,
+          "score": 0.9417060017585754,
+          "text": "Perkumpulan Endokrinologi Indonesia 23 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Gambar III.2 Algoritma Strategi Umum Terapi Insulin Rawat Jalan I..."
+        },
+        {
+          "rank": 2,
+          "score": 0.9195464849472046,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        },
+        {
+          "rank": 3,
+          "score": 0.9128084182739258,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        },
+        {
+          "rank": 4,
+          "score": 0.7998520731925964,
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik de..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6240374445915222,
+          "text": "48 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 peningkatan insiden hipoglikemia, termasuk episode hipoglikemia nokturnal. FDA pada april 2012 menyet..."
+        }
+      ]
+    },
+    {
+      "id": "E03",
+      "question": "Berapa ambang kadar glukosa darah untuk hipoglikemia Level 1 dan Level 2?",
+      "clinical_context": "",
+      "standard_rank": 0,
+      "conditioned_rank": 0,
+      "standard_mrr": 0.0,
+      "conditioned_mrr": 0.0,
+      "standard_hit@1": 0,
+      "standard_hit@3": 0,
+      "standard_hit@5": 0,
+      "conditioned_hit@1": 0,
+      "conditioned_hit@3": 0,
+      "conditioned_hit@5": 0,
+      "standard_top5": [
+        {
+          "rank": 1,
+          "score": 0.9482370018959045,
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik de..."
+        },
+        {
+          "rank": 2,
+          "score": 0.15016117691993713,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        },
+        {
+          "rank": 3,
+          "score": 0.13186107575893402,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        },
+        {
+          "rank": 4,
+          "score": 0.08161167055368423,
+          "text": "Terdapat laporan kasus pasien wanita hamil dengan DMT2 yang menggunakan degludec sejak prekonsepsi memiliki keluaran klinis dalam kehamilan yang sukses. Namun saat ini belum terdap..."
+        },
+        {
+          "rank": 5,
+          "score": 0.07924705743789673,
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hipe..."
+        }
+      ],
+      "conditioned_top5": [
+        {
+          "rank": 1,
+          "score": 0.9482370018959045,
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik de..."
+        },
+        {
+          "rank": 2,
+          "score": 0.15016117691993713,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        },
+        {
+          "rank": 3,
+          "score": 0.13186107575893402,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        },
+        {
+          "rank": 4,
+          "score": 0.08161167055368423,
+          "text": "Terdapat laporan kasus pasien wanita hamil dengan DMT2 yang menggunakan degludec sejak prekonsepsi memiliki keluaran klinis dalam kehamilan yang sukses. Namun saat ini belum terdap..."
+        },
+        {
+          "rank": 5,
+          "score": 0.07924705743789673,
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hipe..."
+        }
+      ]
+    },
+    {
+      "id": "E04",
+      "question": "Apa yang dimaksud dengan hipoglikemia berat atau Level 3?",
+      "clinical_context": "",
+      "standard_rank": 0,
+      "conditioned_rank": 0,
+      "standard_mrr": 0.0,
+      "conditioned_mrr": 0.0,
+      "standard_hit@1": 0,
+      "standard_hit@3": 0,
+      "standard_hit@5": 0,
+      "conditioned_hit@1": 0,
+      "conditioned_hit@3": 0,
+      "conditioned_hit@5": 0,
+      "standard_top5": [
+        {
+          "rank": 1,
+          "score": 0.7857693433761597,
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik de..."
+        },
+        {
+          "rank": 2,
+          "score": 0.18783310055732727,
+          "text": "Hipoglikemia berat dengan ganggan status mental dan/atau fisik yang membutuhkan bantuan orang lain."
+        },
+        {
+          "rank": 3,
+          "score": 0.040184903889894485,
+          "text": "48 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 peningkatan insiden hipoglikemia, termasuk episode hipoglikemia nokturnal. FDA pada april 2012 menyet..."
+        },
+        {
+          "rank": 4,
+          "score": 0.034286800771951675,
+          "text": "Terdapat laporan kasus pasien wanita hamil dengan DMT2 yang menggunakan degludec sejak prekonsepsi memiliki keluaran klinis dalam kehamilan yang sukses. Namun saat ini belum terdap..."
+        },
+        {
+          "rank": 5,
+          "score": 0.03414848819375038,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        }
+      ],
+      "conditioned_top5": [
+        {
+          "rank": 1,
+          "score": 0.7857693433761597,
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik de..."
+        },
+        {
+          "rank": 2,
+          "score": 0.18783310055732727,
+          "text": "Hipoglikemia berat dengan ganggan status mental dan/atau fisik yang membutuhkan bantuan orang lain."
+        },
+        {
+          "rank": 3,
+          "score": 0.040184903889894485,
+          "text": "48 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 peningkatan insiden hipoglikemia, termasuk episode hipoglikemia nokturnal. FDA pada april 2012 menyet..."
+        },
+        {
+          "rank": 4,
+          "score": 0.034286800771951675,
+          "text": "Terdapat laporan kasus pasien wanita hamil dengan DMT2 yang menggunakan degludec sejak prekonsepsi memiliki keluaran klinis dalam kehamilan yang sukses. Namun saat ini belum terdap..."
+        },
+        {
+          "rank": 5,
+          "score": 0.03414848819375038,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        }
+      ]
+    },
+    {
+      "id": "E05",
+      "question": "Berapa laju infus insulin intravena pada krisis hiperglikemia dan berapa penurunan glukosa darah yang diharapkan?",
+      "clinical_context": "",
+      "standard_rank": 0,
+      "conditioned_rank": 0,
+      "standard_mrr": 0.0,
+      "conditioned_mrr": 0.0,
+      "standard_hit@1": 0,
+      "standard_hit@3": 0,
+      "standard_hit@5": 0,
+      "conditioned_hit@1": 0,
+      "conditioned_hit@3": 0,
+      "conditioned_hit@5": 0,
+      "standard_top5": [
+        {
+          "rank": 1,
+          "score": 0.99677973985672,
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї..."
+        },
+        {
+          "rank": 2,
+          "score": 0.9276967644691467,
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hipe..."
+        },
+        {
+          "rank": 3,
+          "score": 0.8319804668426514,
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous inf..."
+        },
+        {
+          "rank": 4,
+          "score": 0.7105129361152649,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        },
+        {
+          "rank": 5,
+          "score": 0.43960806727409363,
+          "text": "NaCl 0,9% 1 liter/jam (15 ї 20 mL/kgBB/jam). Tabel VII.2. Skema Penatalaksanaan Ketoasidosis Diabetik dan Sindroma Hiperosmolar Hiperglikemia Jam Ke - Infus NaCl 0,9% Infus II (Ins..."
+        }
+      ],
+      "conditioned_top5": [
+        {
+          "rank": 1,
+          "score": 0.99677973985672,
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї..."
+        },
+        {
+          "rank": 2,
+          "score": 0.9276967644691467,
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hipe..."
+        },
+        {
+          "rank": 3,
+          "score": 0.8319804668426514,
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous inf..."
+        },
+        {
+          "rank": 4,
+          "score": 0.7105129361152649,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        },
+        {
+          "rank": 5,
+          "score": 0.43960806727409363,
+          "text": "NaCl 0,9% 1 liter/jam (15 ї 20 mL/kgBB/jam). Tabel VII.2. Skema Penatalaksanaan Ketoasidosis Diabetik dan Sindroma Hiperosmolar Hiperglikemia Jam Ke - Infus NaCl 0,9% Infus II (Ins..."
+        }
+      ]
+    },
+    {
+      "id": "E06",
+      "question": "Apa yang harus dilakukan terhadap dosis infus insulin bila kadar glukosa darah sudah turun di bawah 250 mg/dL?",
+      "clinical_context": "",
+      "standard_rank": 0,
+      "conditioned_rank": 0,
+      "standard_mrr": 0.0,
+      "conditioned_mrr": 0.0,
+      "standard_hit@1": 0,
+      "standard_hit@3": 0,
+      "standard_hit@5": 0,
+      "conditioned_hit@1": 0,
+      "conditioned_hit@3": 0,
+      "conditioned_hit@5": 0,
+      "standard_top5": [
+        {
+          "rank": 1,
+          "score": 0.9977838397026062,
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї..."
+        },
+        {
+          "rank": 2,
+          "score": 0.953324019908905,
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantun..."
+        },
+        {
+          "rank": 3,
+          "score": 0.5166258215904236,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        },
+        {
+          "rank": 4,
+          "score": 0.42303037643432617,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        },
+        {
+          "rank": 5,
+          "score": 0.3642559051513672,
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous inf..."
+        }
+      ],
+      "conditioned_top5": [
+        {
+          "rank": 1,
+          "score": 0.9977838397026062,
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї..."
+        },
+        {
+          "rank": 2,
+          "score": 0.953324019908905,
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantun..."
+        },
+        {
+          "rank": 3,
+          "score": 0.5166258215904236,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        },
+        {
+          "rank": 4,
+          "score": 0.42303037643432617,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        },
+        {
+          "rank": 5,
+          "score": 0.3642559051513672,
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous inf..."
+        }
+      ]
+    },
+    {
+      "id": "E07",
+      "question": "Berapa dosis awal insulin intramuskular pada krisis hiperglikemia bila drip insulin tidak tersedia?",
+      "clinical_context": "",
+      "standard_rank": 0,
+      "conditioned_rank": 0,
+      "standard_mrr": 0.0,
+      "conditioned_mrr": 0.0,
+      "standard_hit@1": 0,
+      "standard_hit@3": 0,
+      "standard_hit@5": 0,
+      "conditioned_hit@1": 0,
+      "conditioned_hit@3": 0,
+      "conditioned_hit@5": 0,
+      "standard_top5": [
+        {
+          "rank": 1,
+          "score": 0.9820804595947266,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        },
+        {
+          "rank": 2,
+          "score": 0.9060759544372559,
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous inf..."
+        },
+        {
+          "rank": 3,
+          "score": 0.7089290022850037,
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hipe..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6775650978088379,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6514537930488586,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        }
+      ],
+      "conditioned_top5": [
+        {
+          "rank": 1,
+          "score": 0.9820804595947266,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        },
+        {
+          "rank": 2,
+          "score": 0.9060759544372559,
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous inf..."
+        },
+        {
+          "rank": 3,
+          "score": 0.7089290022850037,
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hipe..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6775650978088379,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6514537930488586,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        }
+      ]
+    },
+    {
+      "id": "E08",
+      "question": "Bagaimana menyesuaikan kecepatan drip insulin bila glukosa darah hanya menurun 0 sampai 49 mg/dL per jam?",
+      "clinical_context": "",
+      "standard_rank": 0,
+      "conditioned_rank": 0,
+      "standard_mrr": 0.0,
+      "conditioned_mrr": 0.0,
+      "standard_hit@1": 0,
+      "standard_hit@3": 0,
+      "standard_hit@5": 0,
+      "conditioned_hit@1": 0,
+      "conditioned_hit@3": 0,
+      "conditioned_hit@5": 0,
+      "standard_top5": [
+        {
+          "rank": 1,
+          "score": 0.9707932472229004,
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantun..."
+        },
+        {
+          "rank": 2,
+          "score": 0.8390848636627197,
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї..."
+        },
+        {
+          "rank": 3,
+          "score": 0.3817223310470581,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        },
+        {
+          "rank": 4,
+          "score": 0.1618576943874359,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        },
+        {
+          "rank": 5,
+          "score": 0.0938907191157341,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        }
+      ],
+      "conditioned_top5": [
+        {
+          "rank": 1,
+          "score": 0.9707932472229004,
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantun..."
+        },
+        {
+          "rank": 2,
+          "score": 0.8390848636627197,
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї..."
+        },
+        {
+          "rank": 3,
+          "score": 0.3817223310470581,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        },
+        {
+          "rank": 4,
+          "score": 0.1618576943874359,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        },
+        {
+          "rank": 5,
+          "score": 0.0938907191157341,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        }
+      ]
+    },
+    {
+      "id": "E09",
+      "question": "Mengapa pemberian insulin subkutan pada krisis hiperglikemia lebih berisiko dibandingkan intramuskular?",
+      "clinical_context": "",
+      "standard_rank": 0,
+      "conditioned_rank": 0,
+      "standard_mrr": 0.0,
+      "conditioned_mrr": 0.0,
+      "standard_hit@1": 0,
+      "standard_hit@3": 0,
+      "standard_hit@5": 0,
+      "conditioned_hit@1": 0,
+      "conditioned_hit@3": 0,
+      "conditioned_hit@5": 0,
+      "standard_top5": [
+        {
+          "rank": 1,
+          "score": 0.9859776496887207,
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hipe..."
+        },
+        {
+          "rank": 2,
+          "score": 0.8213358521461487,
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous inf..."
+        },
+        {
+          "rank": 3,
+          "score": 0.629081130027771,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        },
+        {
+          "rank": 4,
+          "score": 0.21246707439422607,
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї..."
+        },
+        {
+          "rank": 5,
+          "score": 0.0370180644094944,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        }
+      ],
+      "conditioned_top5": [
+        {
+          "rank": 1,
+          "score": 0.9859776496887207,
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hipe..."
+        },
+        {
+          "rank": 2,
+          "score": 0.8213358521461487,
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous inf..."
+        },
+        {
+          "rank": 3,
+          "score": 0.629081130027771,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        },
+        {
+          "rank": 4,
+          "score": 0.21246707439422607,
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї..."
+        },
+        {
+          "rank": 5,
+          "score": 0.0370180644094944,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        }
+      ]
+    },
+    {
+      "id": "E10",
+      "question": "Bila insulin basal diganti menjadi insulin premixed dua kali sehari, bagaimana pembagian dosisnya?",
+      "clinical_context": "",
+      "standard_rank": 0,
+      "conditioned_rank": 0,
+      "standard_mrr": 0.0,
+      "conditioned_mrr": 0.0,
+      "standard_hit@1": 0,
+      "standard_hit@3": 0,
+      "standard_hit@5": 0,
+      "conditioned_hit@1": 0,
+      "conditioned_hit@3": 0,
+      "conditioned_hit@5": 0,
+      "standard_top5": [
+        {
+          "rank": 1,
+          "score": 0.9807721376419067,
+          "text": "Perkumpulan Endokrinologi Indonesia 23 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Gambar III.2 Algoritma Strategi Umum Terapi Insulin Rawat Jalan I..."
+        },
+        {
+          "rank": 2,
+          "score": 0.3416237533092499,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        },
+        {
+          "rank": 3,
+          "score": 0.26551929116249084,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        },
+        {
+          "rank": 4,
+          "score": 0.1003926694393158,
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantun..."
+        },
+        {
+          "rank": 5,
+          "score": 0.050038840621709824,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        }
+      ],
+      "conditioned_top5": [
+        {
+          "rank": 1,
+          "score": 0.9807721376419067,
+          "text": "Perkumpulan Endokrinologi Indonesia 23 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Gambar III.2 Algoritma Strategi Umum Terapi Insulin Rawat Jalan I..."
+        },
+        {
+          "rank": 2,
+          "score": 0.3416237533092499,
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yan..."
+        },
+        {
+          "rank": 3,
+          "score": 0.26551929116249084,
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam juml..."
+        },
+        {
+          "rank": 4,
+          "score": 0.1003926694393158,
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantun..."
+        },
+        {
+          "rank": 5,
+          "score": 0.050038840621709824,
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Met..."
+        }
+      ]
+    }
+  ]
+}

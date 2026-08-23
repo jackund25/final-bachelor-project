@@ -57,7 +57,11 @@ class DiabetesAdvisorChain:
                         "human",
                         "Konteks dokumen:\n{context}\n\n"
                         "Data dan pertanyaan:\n{question_payload}\n\n"
-                        "Berikan jawaban klinis ringkas dengan langkah aksi dan disclaimer dokter.",
+                        "Berikan jawaban klinis ringkas yang langsung menjawab pertanyaan. "
+                        "Berikan langkah aksi hanya jika pertanyaan meminta tindakan atau penanganan, "
+                        "atau jika tindakan tersebut diperlukan untuk keselamatan pasien. "
+                        "Jangan menambahkan rekomendasi klinis yang tidak diminta. "
+                        "Selalu sertakan disclaimer dokter.",
                     ),
                 ]
             )

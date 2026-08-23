@@ -1,0 +1,33 @@
+{
+  "perkara": "Tiga penilaian ditulis sebagai teks bebas di luar empat nilai yang sah.",
+  "waktu_pengodean": "2026-08-13T16:58:56",
+  "diputuskan_oleh": "Penilai 1 (mahasiswa kedokteran), dikonfirmasi eksplisit; tidak dinormalkan sendiri oleh skrip.",
+  "mengapa_dicatat": "Teks bebas penilai memuat informasi yang hilang bila hanya kelasnya disimpan. id 31 khususnya menunjuk keterbatasan nyata skema empat kelas berlabel TUNGGAL: satu potongan dapat membahas hiperglikemia dan hipoglikemia sekaligus, dan skema ini memaksa memilih satu.",
+  "entri": [
+    {
+      "id": "2",
+      "ditulis_penilai_verbatim": "lainnya, Catatan: Pemeriksaan Standar",
+      "dikodekan_menjadi": "lain",
+      "sumber": "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf",
+      "halaman_cetak": "25",
+      "kueri": "Kadar glukosa darah 50 mg/dL."
+    },
+    {
+      "id": "5",
+      "ditulis_penilai_verbatim": "lainnya, Catatan: Pemeriksaan Standar",
+      "dikodekan_menjadi": "lain",
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": "52",
+      "kueri": "Kadar glukosa darah 44 mg/dL."
+    },
+    {
+      "id": "31",
+      "ditulis_penilai_verbatim": "lainnya, bisa hiperglikemi dan hipoglikemia",
+      "dikodekan_menjadi": "hiperglikemia",
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": "48",
+      "kueri": "Gula darah dalam rentang normal/target. Target kontrol glikemik dan pemantauan rutin diabetes."
+    }
+  ],
+  "KOREKSI_13_AGUSTUS_2026": "Medan ini semula berbunyi 'pembimbing'. Itu KELIRU: putaran pertama diisi PENILAI 1, seorang mahasiswa kedokteran, bukan pembimbing. Kualifikasi penilai menentukan bobot bukti K1 dan wajib dinyatakan tepat. Dikoreksi setelah dikonfirmasi 13 Agustus 2026."
+}

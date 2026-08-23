@@ -1,0 +1,21 @@
+{
+  "source": "FINGER_STICK",
+  "horizon_min": 240.0,
+  "sequence_length": 8,
+  "train_samples": 894,
+  "test_samples": 139,
+  "target_tolerance_min": 0.0,
+  "min_target_horizon_min": 180,
+  "max_target_horizon_min": 300,
+  "min_history_interval_min": 5.0,
+  "max_history_gap_min": 720,
+  "RMSE": 68.2361142607191,
+  "MAE": 55.6152169581706,
+  "MAPE": 33.12248331261052,
+  "Clarke_A": 37.410071942446045,
+  "Clarke_B": 15.107913669064748,
+  "Clarke_C": 0.0,
+  "Clarke_D": 24.46043165467626,
+  "Clarke_E": 23.021582733812952,
+  "Clarke_A+B": 52.517985611510795
+}

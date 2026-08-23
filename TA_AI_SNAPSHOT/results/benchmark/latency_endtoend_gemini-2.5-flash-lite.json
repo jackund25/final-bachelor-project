@@ -1,0 +1,205 @@
+{
+  "catatan": "Waktu tanggap ujung-ke-ujung: rekayasa fitur -> prediksi -> kalibrasi -> penyusunan kueri -> retrieval -> generasi LLM. Pemanasan dibuang.",
+  "n": 12,
+  "warmup_dibuang": 1,
+  "llm_provider": "gemini",
+  "horizon_steps": [
+    6,
+    12
+  ],
+  "per_tahap": {
+    "rekayasa_fitur": {
+      "median_dtk": 0.1968,
+      "p95_dtk": 0.3841,
+      "min_dtk": 0.1575,
+      "max_dtk": 0.3947
+    },
+    "prediksi": {
+      "median_dtk": 0.0566,
+      "p95_dtk": 0.0584,
+      "min_dtk": 0.0556,
+      "max_dtk": 0.0585
+    },
+    "kalibrasi_interval": {
+      "median_dtk": 0.0335,
+      "p95_dtk": 0.0343,
+      "min_dtk": 0.0329,
+      "max_dtk": 0.0343
+    },
+    "penyusunan_kueri": {
+      "median_dtk": 0.0001,
+      "p95_dtk": 0.0001,
+      "min_dtk": 0.0001,
+      "max_dtk": 0.0001
+    },
+    "retrieval": {
+      "median_dtk": 0.0353,
+      "p95_dtk": 0.0426,
+      "min_dtk": 0.0301,
+      "max_dtk": 0.0447
+    },
+    "generasi_llm": {
+      "median_dtk": 3.0382,
+      "p95_dtk": 17.3239,
+      "min_dtk": 2.3276,
+      "max_dtk": 33.4359
+    }
+  },
+  "total": {
+    "median_dtk": 3.4403,
+    "p95_dtk": 17.8337,
+    "min_dtk": 2.6527,
+    "max_dtk": 33.9302
+  },
+  "komputasi_lokal": {
+    "median_dtk": 0.3244,
+    "p95_dtk": 0.507,
+    "min_dtk": 0.2896,
+    "max_dtk": 0.5225
+  },
+  "menunggu_llm": {
+    "median_dtk": 3.0382,
+    "p95_dtk": 17.3239,
+    "min_dtk": 2.3276,
+    "max_dtk": 33.4359
+  },
+  "proporsi_llm": {
+    "median": 0.8958,
+    "p95": 0.9544
+  },
+  "durasi_benchmark_dtk": 72.7,
+  "sampel": [
+    {
+      "rekayasa_fitur": 0.39468560001114383,
+      "prediksi": 0.05815749999601394,
+      "kalibrasi_interval": 0.03433729999233037,
+      "penyusunan_kueri": 0.00011200003791600466,
+      "retrieval": 0.035212500020861626,
+      "generasi_llm": 4.141354000021238,
+      "_total": 4.663858900079504,
+      "_lokal": 0.5225049000582658,
+      "_jaringan": 4.141354000021238
+    },
+    {
+      "rekayasa_fitur": 0.18340370000805706,
+      "prediksi": 0.05604799999855459,
+      "kalibrasi_interval": 0.03434950002701953,
+      "penyusunan_kueri": 0.0001154000055976212,
+      "retrieval": 0.044700899976305664,
+      "generasi_llm": 3.6013890999602154,
+      "_total": 3.92000659997575,
+      "_lokal": 0.31861750001553446,
+      "_jaringan": 3.6013890999602154
+    },
+    {
+      "rekayasa_fitur": 0.15751409996300936,
+      "prediksi": 0.058306300023104995,
+      "kalibrasi_interval": 0.033235899987630546,
+      "penyusunan_kueri": 0.00011419999646022916,
+      "retrieval": 0.040461700002197176,
+      "generasi_llm": 3.793091600004118,
+      "_total": 4.08272379997652,
+      "_lokal": 0.2896321999724023,
+      "_jaringan": 3.793091600004118
+    },
+    {
+      "rekayasa_fitur": 0.18755159998545423,
+      "prediksi": 0.05705350002972409,
+      "kalibrasi_interval": 0.03409889998147264,
+      "penyusunan_kueri": 0.00011189997894689441,
+      "retrieval": 0.03391440003179014,
+      "generasi_llm": 2.9427119999891147,
+      "_total": 3.2554422999965027,
+      "_lokal": 0.312730300007388,
+      "_jaringan": 2.9427119999891147
+    },
+    {
+      "rekayasa_fitur": 0.19869089999701828,
+      "prediksi": 0.0584985000314191,
+      "kalibrasi_interval": 0.03417269996134564,
+      "penyusunan_kueri": 0.00010830000974237919,
+      "retrieval": 0.04094869998516515,
+      "generasi_llm": 2.9007376999943517,
+      "_total": 3.2331567999790423,
+      "_lokal": 0.33241909998469055,
+      "_jaringan": 2.9007376999943517
+    },
+    {
+      "rekayasa_fitur": 0.36746320000384003,
+      "prediksi": 0.056174299970734864,
+      "kalibrasi_interval": 0.03422940004384145,
+      "penyusunan_kueri": 0.00011470000026747584,
+      "retrieval": 0.03359279996948317,
+      "generasi_llm": 3.133604699978605,
+      "_total": 3.625179099966772,
+      "_lokal": 0.491574399988167,
+      "_jaringan": 3.133604699978605
+    },
+    {
+      "rekayasa_fitur": 0.18734960001893342,
+      "prediksi": 0.05669399996986613,
+      "kalibrasi_interval": 0.033134100027382374,
+      "penyusunan_kueri": 0.00011969998013228178,
+      "retrieval": 0.03546250000363216,
+      "generasi_llm": 2.647494899982121,
+      "_total": 2.960254799982067,
+      "_lokal": 0.31275989999994636,
+      "_jaringan": 2.647494899982121
+    },
+    {
+      "rekayasa_fitur": 0.195970100001432,
+      "prediksi": 0.05657670000800863,
+      "kalibrasi_interval": 0.03291790001094341,
+      "penyusunan_kueri": 0.00010320002911612391,
+      "retrieval": 0.039550800051074475,
+      "generasi_llm": 2.327557999989949,
+      "_total": 2.652676700090524,
+      "_lokal": 0.32511870010057464,
+      "_jaringan": 2.327557999989949
+    },
+    {
+      "rekayasa_fitur": 0.19771209999453276,
+      "prediksi": 0.05734970001503825,
+      "kalibrasi_interval": 0.033462499966844916,
+      "penyusunan_kueri": 9.609997505322099e-05,
+      "retrieval": 0.035132699995301664,
+      "generasi_llm": 3.9686420000507496,
+      "_total": 4.2923950999975204,
+      "_lokal": 0.3237530999467708,
+      "_jaringan": 3.9686420000507496
+    },
+    {
+      "rekayasa_fitur": 0.2130769999930635,
+      "prediksi": 0.05615000001853332,
+      "kalibrasi_interval": 0.03350110002793372,
+      "penyusunan_kueri": 9.280000813305378e-05,
+      "retrieval": 0.03194330004043877,
+      "generasi_llm": 2.830522100033704,
+      "_total": 3.1652863001218066,
+      "_lokal": 0.33476420008810237,
+      "_jaringan": 2.830522100033704
+    },
+    {
+      "rekayasa_fitur": 0.37542739999480546,
+      "prediksi": 0.055572899989783764,
+      "kalibrasi_interval": 0.03308459999971092,
+      "penyusunan_kueri": 9.390001650899649e-05,
+      "retrieval": 0.03007219999562949,
+      "generasi_llm": 33.435905599966645,
+      "_total": 33.930156599963084,
+      "_lokal": 0.4942509999964386,
+      "_jaringan": 33.435905599966645
+    },
+    {
+      "rekayasa_fitur": 0.1822377999778837,
+      "prediksi": 0.05626660003326833,
+      "kalibrasi_interval": 0.03340719995321706,
+      "penyusunan_kueri": 9.240000508725643e-05,
+      "retrieval": 0.03832290001446381,
+      "generasi_llm": 2.5062514999881387,
+      "_total": 2.816578399972059,
+      "_lokal": 0.31032689998392016,
+      "_jaringan": 2.5062514999881387
+    }
+  ]
+}

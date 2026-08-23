@@ -1,0 +1,39 @@
+{
+  "horizon_min": 30,
+  "n_cal": 30212,
+  "n_test": 27193,
+  "levels": {
+    "90": {
+      "baseline_z_std": {
+        "coverage%": 80.6,
+        "mean_width": 54.4
+      },
+      "conformal_absolute": {
+        "coverage%": 92.5,
+        "mean_width": 76.3,
+        "q": 38.14
+      },
+      "conformal_normalized": {
+        "coverage%": 91.2,
+        "mean_width": 80.8,
+        "q": 2.44
+      }
+    },
+    "95": {
+      "baseline_z_std": {
+        "coverage%": 86.0,
+        "mean_width": 64.8
+      },
+      "conformal_absolute": {
+        "coverage%": 96.5,
+        "mean_width": 102.6,
+        "q": 51.32
+      },
+      "conformal_normalized": {
+        "coverage%": 95.5,
+        "mean_width": 109.1,
+        "q": 3.3
+      }
+    }
+  }
+}

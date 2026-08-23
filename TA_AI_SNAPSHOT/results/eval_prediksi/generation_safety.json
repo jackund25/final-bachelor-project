@@ -1,0 +1,79 @@
+{
+  "catatan": "Angka dianggap tertelusur bila muncul pada dokumen yang di-retrieve, berasal dari state pasien, atau merupakan ambang klinis baku.",
+  "ringkasan": {
+    "n_kasus": 6,
+    "total_angka_klinis": 56,
+    "total_angka_tak_tertelusur": 0,
+    "keterlacakan_angka_%": 100.0,
+    "kasus_dengan_tindakan_salah_arah": 0,
+    "kasus_dengan_disclaimer_%": 100.0
+  },
+  "per_kasus": [
+    {
+      "kasus": "S1",
+      "kondisi": "hypoglycemia",
+      "n_dokumen_retrieved": 4,
+      "panjang_teks": 2732,
+      "n_angka_klinis": 12,
+      "n_angka_tak_tertelusur": 0,
+      "angka_tak_tertelusur": [],
+      "tindakan_salah_arah": [],
+      "disclaimer_ada": true
+    },
+    {
+      "kasus": "S2",
+      "kondisi": "hypoglycemia",
+      "n_dokumen_retrieved": 4,
+      "panjang_teks": 3534,
+      "n_angka_klinis": 13,
+      "n_angka_tak_tertelusur": 0,
+      "angka_tak_tertelusur": [],
+      "tindakan_salah_arah": [],
+      "disclaimer_ada": true
+    },
+    {
+      "kasus": "S3",
+      "kondisi": "hyperglycemia",
+      "n_dokumen_retrieved": 4,
+      "panjang_teks": 2216,
+      "n_angka_klinis": 6,
+      "n_angka_tak_tertelusur": 0,
+      "angka_tak_tertelusur": [],
+      "tindakan_salah_arah": [],
+      "disclaimer_ada": true
+    },
+    {
+      "kasus": "S4",
+      "kondisi": "hyperglycemia",
+      "n_dokumen_retrieved": 4,
+      "panjang_teks": 2461,
+      "n_angka_klinis": 8,
+      "n_angka_tak_tertelusur": 0,
+      "angka_tak_tertelusur": [],
+      "tindakan_salah_arah": [],
+      "disclaimer_ada": true
+    },
+    {
+      "kasus": "S5",
+      "kondisi": "normal",
+      "n_dokumen_retrieved": 4,
+      "panjang_teks": 1669,
+      "n_angka_klinis": 9,
+      "n_angka_tak_tertelusur": 0,
+      "angka_tak_tertelusur": [],
+      "tindakan_salah_arah": [],
+      "disclaimer_ada": true
+    },
+    {
+      "kasus": "S6",
+      "kondisi": "normal",
+      "n_dokumen_retrieved": 4,
+      "panjang_teks": 1801,
+      "n_angka_klinis": 8,
+      "n_angka_tak_tertelusur": 0,
+      "angka_tak_tertelusur": [],
+      "tindakan_salah_arah": [],
+      "disclaimer_ada": true
+    }
+  ]
+}

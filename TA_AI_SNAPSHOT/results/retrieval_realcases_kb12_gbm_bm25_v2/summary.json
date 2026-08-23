@@ -1,0 +1,564 @@
+{
+  "catatan": "Kasus nyata dari 2 pasien hold-out. Ground truth = kondisi glukosa yang BENAR-BENAR terjadi pada t+30 menit (bukan nilai prediksi), sehingga kesalahan prediksi dihukum. Himpunan 'divergen' = kondisi terkini berbeda dari kondisi masa depan (tempat antisipasi bernilai, diseimbangkan antar-kelas). Himpunan 'natural' = sampel acak dari seluruh jendela (konteks penerapan sesungguhnya).",
+  "n_windows_holdout": 27193,
+  "n_divergent_available": 3621,
+  "proporsi_divergen(%)": 13.3,
+  "top_k": 5,
+  "divergen": {
+    "n": 120,
+    "distribusi": {
+      "normal": 40,
+      "hipoglikemia": 40,
+      "hiperglikemia": 40
+    },
+    "modes": {
+      "random": {
+        "condition_correct(%)": 24.2,
+        "hit@1": 0.142,
+        "hit@1_ci95": [
+          0.083,
+          0.208
+        ],
+        "hit@5": 0.492,
+        "hit@5_ci95": [
+          0.4,
+          0.583
+        ],
+        "mrr": 0.294,
+        "mrr_ci95": [
+          0.233,
+          0.358
+        ],
+        "ndcg@5": 0.209,
+        "ndcg@5_ci95": [
+          0.165,
+          0.254
+        ]
+      },
+      "standard": {
+        "condition_correct(%)": 0.0,
+        "hit@1": 0.0,
+        "hit@1_ci95": [
+          0.0,
+          0.0
+        ],
+        "hit@5": 0.308,
+        "hit@5_ci95": [
+          0.225,
+          0.392
+        ],
+        "mrr": 0.062,
+        "mrr_ci95": [
+          0.045,
+          0.078
+        ],
+        "ndcg@5": 0.04,
+        "ndcg@5_ci95": [
+          0.03,
+          0.051
+        ]
+      },
+      "pc_rag": {
+        "condition_correct(%)": 16.7,
+        "hit@1": 0.133,
+        "hit@1_ci95": [
+          0.075,
+          0.2
+        ],
+        "hit@5": 0.458,
+        "hit@5_ci95": [
+          0.375,
+          0.55
+        ],
+        "mrr": 0.208,
+        "mrr_ci95": [
+          0.15,
+          0.269
+        ],
+        "ndcg@5": 0.119,
+        "ndcg@5_ci95": [
+          0.087,
+          0.152
+        ]
+      },
+      "pc_rag_interval": {
+        "condition_correct(%)": 74.2,
+        "hit@1": 0.267,
+        "hit@1_ci95": [
+          0.192,
+          0.35
+        ],
+        "hit@5": 0.625,
+        "hit@5_ci95": [
+          0.533,
+          0.708
+        ],
+        "mrr": 0.389,
+        "mrr_ci95": [
+          0.319,
+          0.464
+        ],
+        "ndcg@5": 0.236,
+        "ndcg@5_ci95": [
+          0.198,
+          0.276
+        ]
+      },
+      "pc_rag_classifier": {
+        "condition_correct(%)": 12.5,
+        "hit@1": 0.1,
+        "hit@1_ci95": [
+          0.05,
+          0.15
+        ],
+        "hit@5": 0.383,
+        "hit@5_ci95": [
+          0.3,
+          0.475
+        ],
+        "mrr": 0.164,
+        "mrr_ci95": [
+          0.113,
+          0.218
+        ],
+        "ndcg@5": 0.102,
+        "ndcg@5_ci95": [
+          0.07,
+          0.137
+        ]
+      },
+      "pc_rag_combined": {
+        "condition_correct(%)": 67.5,
+        "hit@1": 0.267,
+        "hit@1_ci95": [
+          0.192,
+          0.35
+        ],
+        "hit@5": 0.625,
+        "hit@5_ci95": [
+          0.533,
+          0.708
+        ],
+        "mrr": 0.387,
+        "mrr_ci95": [
+          0.317,
+          0.461
+        ],
+        "ndcg@5": 0.239,
+        "ndcg@5_ci95": [
+          0.199,
+          0.28
+        ]
+      },
+      "noise_10": {
+        "condition_correct(%)": 25.0,
+        "hit@1": 0.192,
+        "hit@1_ci95": [
+          0.125,
+          0.267
+        ],
+        "hit@5": 0.558,
+        "hit@5_ci95": [
+          0.467,
+          0.65
+        ],
+        "mrr": 0.281,
+        "mrr_ci95": [
+          0.216,
+          0.349
+        ],
+        "ndcg@5": 0.162,
+        "ndcg@5_ci95": [
+          0.125,
+          0.202
+        ]
+      },
+      "noise_20": {
+        "condition_correct(%)": 29.2,
+        "hit@1": 0.242,
+        "hit@1_ci95": [
+          0.167,
+          0.317
+        ],
+        "hit@5": 0.517,
+        "hit@5_ci95": [
+          0.425,
+          0.608
+        ],
+        "mrr": 0.312,
+        "mrr_ci95": [
+          0.24,
+          0.385
+        ],
+        "ndcg@5": 0.192,
+        "ndcg@5_ci95": [
+          0.146,
+          0.239
+        ]
+      },
+      "noise_40": {
+        "condition_correct(%)": 28.3,
+        "hit@1": 0.192,
+        "hit@1_ci95": [
+          0.125,
+          0.267
+        ],
+        "hit@5": 0.558,
+        "hit@5_ci95": [
+          0.475,
+          0.642
+        ],
+        "mrr": 0.298,
+        "mrr_ci95": [
+          0.232,
+          0.366
+        ],
+        "ndcg@5": 0.184,
+        "ndcg@5_ci95": [
+          0.141,
+          0.23
+        ]
+      },
+      "oracle": {
+        "condition_correct(%)": 100.0,
+        "hit@1": 0.667,
+        "hit@1_ci95": [
+          0.583,
+          0.75
+        ],
+        "hit@5": 1.0,
+        "hit@5_ci95": [
+          1.0,
+          1.0
+        ],
+        "mrr": 0.833,
+        "mrr_ci95": [
+          0.792,
+          0.875
+        ],
+        "ndcg@5": 0.514,
+        "ndcg@5_ci95": [
+          0.472,
+          0.557
+        ]
+      }
+    },
+    "signifikansi_vs_standard": {
+      "random": {
+        "wilcoxon_p": 4.5161944271506345e-12,
+        "selisih_rerata_mrr": 0.233
+      },
+      "pc_rag": {
+        "wilcoxon_p": 2.4714267393709084e-05,
+        "selisih_rerata_mrr": 0.147
+      },
+      "pc_rag_interval": {
+        "wilcoxon_p": 2.309746065973217e-14,
+        "selisih_rerata_mrr": 0.328
+      },
+      "pc_rag_classifier": {
+        "wilcoxon_p": 0.00038452009523299636,
+        "selisih_rerata_mrr": 0.103
+      },
+      "pc_rag_combined": {
+        "wilcoxon_p": 2.2736205907149795e-14,
+        "selisih_rerata_mrr": 0.326
+      },
+      "noise_10": {
+        "wilcoxon_p": 1.6620754916621135e-07,
+        "selisih_rerata_mrr": 0.219
+      },
+      "noise_20": {
+        "wilcoxon_p": 4.6764909157703284e-08,
+        "selisih_rerata_mrr": 0.25
+      },
+      "noise_40": {
+        "wilcoxon_p": 2.5768233826676245e-08,
+        "selisih_rerata_mrr": 0.236
+      },
+      "oracle": {
+        "wilcoxon_p": 5.361784788638635e-22,
+        "selisih_rerata_mrr": 0.772
+      }
+    }
+  },
+  "natural": {
+    "n": 120,
+    "distribusi": {
+      "normal": 92,
+      "hiperglikemia": 27,
+      "hipoglikemia": 1
+    },
+    "n_divergen_di_dalamnya": 18,
+    "modes": {
+      "random": {
+        "condition_correct(%)": 30.8,
+        "hit@1": 0.308,
+        "hit@1_ci95": [
+          0.225,
+          0.392
+        ],
+        "hit@5": 0.408,
+        "hit@5_ci95": [
+          0.317,
+          0.5
+        ],
+        "mrr": 0.342,
+        "mrr_ci95": [
+          0.264,
+          0.425
+        ],
+        "ndcg@5": 0.171,
+        "ndcg@5_ci95": [
+          0.131,
+          0.214
+        ]
+      },
+      "standard": {
+        "condition_correct(%)": 85.0,
+        "hit@1": 0.692,
+        "hit@1_ci95": [
+          0.608,
+          0.775
+        ],
+        "hit@5": 0.858,
+        "hit@5_ci95": [
+          0.792,
+          0.917
+        ],
+        "mrr": 0.77,
+        "mrr_ci95": [
+          0.702,
+          0.833
+        ],
+        "ndcg@5": 0.417,
+        "ndcg@5_ci95": [
+          0.378,
+          0.454
+        ]
+      },
+      "pc_rag": {
+        "condition_correct(%)": 85.8,
+        "hit@1": 0.683,
+        "hit@1_ci95": [
+          0.6,
+          0.767
+        ],
+        "hit@5": 0.867,
+        "hit@5_ci95": [
+          0.8,
+          0.925
+        ],
+        "mrr": 0.771,
+        "mrr_ci95": [
+          0.704,
+          0.833
+        ],
+        "ndcg@5": 0.418,
+        "ndcg@5_ci95": [
+          0.381,
+          0.454
+        ]
+      },
+      "pc_rag_interval": {
+        "condition_correct(%)": 91.7,
+        "hit@1": 0.033,
+        "hit@1_ci95": [
+          0.008,
+          0.067
+        ],
+        "hit@5": 0.508,
+        "hit@5_ci95": [
+          0.417,
+          0.6
+        ],
+        "mrr": 0.205,
+        "mrr_ci95": [
+          0.162,
+          0.249
+        ],
+        "ndcg@5": 0.17,
+        "ndcg@5_ci95": [
+          0.137,
+          0.202
+        ]
+      },
+      "pc_rag_classifier": {
+        "condition_correct(%)": 88.3,
+        "hit@1": 0.708,
+        "hit@1_ci95": [
+          0.625,
+          0.792
+        ],
+        "hit@5": 0.892,
+        "hit@5_ci95": [
+          0.833,
+          0.942
+        ],
+        "mrr": 0.796,
+        "mrr_ci95": [
+          0.731,
+          0.855
+        ],
+        "ndcg@5": 0.432,
+        "ndcg@5_ci95": [
+          0.395,
+          0.466
+        ]
+      },
+      "pc_rag_combined": {
+        "condition_correct(%)": 94.2,
+        "hit@1": 0.033,
+        "hit@1_ci95": [
+          0.008,
+          0.067
+        ],
+        "hit@5": 0.508,
+        "hit@5_ci95": [
+          0.417,
+          0.6
+        ],
+        "mrr": 0.205,
+        "mrr_ci95": [
+          0.162,
+          0.249
+        ],
+        "ndcg@5": 0.17,
+        "ndcg@5_ci95": [
+          0.137,
+          0.202
+        ]
+      },
+      "noise_10": {
+        "condition_correct(%)": 85.8,
+        "hit@1": 0.692,
+        "hit@1_ci95": [
+          0.608,
+          0.775
+        ],
+        "hit@5": 0.867,
+        "hit@5_ci95": [
+          0.808,
+          0.925
+        ],
+        "mrr": 0.774,
+        "mrr_ci95": [
+          0.71,
+          0.839
+        ],
+        "ndcg@5": 0.417,
+        "ndcg@5_ci95": [
+          0.38,
+          0.454
+        ]
+      },
+      "noise_20": {
+        "condition_correct(%)": 86.7,
+        "hit@1": 0.692,
+        "hit@1_ci95": [
+          0.608,
+          0.775
+        ],
+        "hit@5": 0.875,
+        "hit@5_ci95": [
+          0.817,
+          0.933
+        ],
+        "mrr": 0.779,
+        "mrr_ci95": [
+          0.716,
+          0.842
+        ],
+        "ndcg@5": 0.419,
+        "ndcg@5_ci95": [
+          0.381,
+          0.455
+        ]
+      },
+      "noise_40": {
+        "condition_correct(%)": 72.5,
+        "hit@1": 0.55,
+        "hit@1_ci95": [
+          0.467,
+          0.642
+        ],
+        "hit@5": 0.725,
+        "hit@5_ci95": [
+          0.642,
+          0.8
+        ],
+        "mrr": 0.637,
+        "mrr_ci95": [
+          0.558,
+          0.713
+        ],
+        "ndcg@5": 0.344,
+        "ndcg@5_ci95": [
+          0.299,
+          0.388
+        ]
+      },
+      "oracle": {
+        "condition_correct(%)": 100.0,
+        "hit@1": 0.775,
+        "hit@1_ci95": [
+          0.7,
+          0.85
+        ],
+        "hit@5": 1.0,
+        "hit@5_ci95": [
+          1.0,
+          1.0
+        ],
+        "mrr": 0.887,
+        "mrr_ci95": [
+          0.85,
+          0.925
+        ],
+        "ndcg@5": 0.478,
+        "ndcg@5_ci95": [
+          0.451,
+          0.502
+        ]
+      }
+    },
+    "signifikansi_vs_standard": {
+      "random": {
+        "wilcoxon_p": 5.486747754146298e-11,
+        "selisih_rerata_mrr": -0.428
+      },
+      "pc_rag": {
+        "wilcoxon_p": 0.5950764956239487,
+        "selisih_rerata_mrr": 0.001
+      },
+      "pc_rag_interval": {
+        "wilcoxon_p": 2.1588037447018891e-16,
+        "selisih_rerata_mrr": -0.565
+      },
+      "pc_rag_classifier": {
+        "wilcoxon_p": 0.11857552973507543,
+        "selisih_rerata_mrr": 0.026
+      },
+      "pc_rag_combined": {
+        "wilcoxon_p": 2.1588037447018891e-16,
+        "selisih_rerata_mrr": -0.565
+      },
+      "noise_10": {
+        "wilcoxon_p": 0.8584527520340373,
+        "selisih_rerata_mrr": 0.004
+      },
+      "noise_20": {
+        "wilcoxon_p": 0.7707300236390395,
+        "selisih_rerata_mrr": 0.01
+      },
+      "noise_40": {
+        "wilcoxon_p": 0.0018184578748866326,
+        "selisih_rerata_mrr": -0.132
+      },
+      "oracle": {
+        "wilcoxon_p": 6.55566199986336e-05,
+        "selisih_rerata_mrr": 0.118
+      }
+    }
+  }
+}

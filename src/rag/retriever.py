@@ -104,6 +104,24 @@ class MMRRetriever:
         self.rrf_pool = int(getattr(cfg, "rrf_pool", 50))
         self.rrf_k = int(getattr(cfg, "rrf_k", 60))
 
+        self.reranker_enabled = bool(
+            getattr(getattr(cfg, "reranker", None), "enabled", False)
+        )
+        self.reranker_model = getattr(
+            getattr(cfg, "reranker", None),
+            "model",
+            "BAAI/bge-reranker-v2-m3",
+        )
+        self.reranker_candidate_k = int(
+            getattr(getattr(cfg, "reranker", None), "candidate_k", 50)
+        )
+        self.reranker_max_length = int(
+            getattr(getattr(cfg, "reranker", None), "max_length", 512)
+        )
+
+        self._reranker = None
+        self._reranker_error = None
+
         self._vector_store = None
         self._embeddings = None
         self._bm25 = None
@@ -121,17 +139,44 @@ class MMRRetriever:
                 hf_model=cfg.embedding_model, google_model=cfg.google_embedding_model,
             )
             self._embeddings = embeddings
+
             self._vector_store = Chroma(
                 collection_name=self.collection_name,
                 embedding_function=embeddings,
                 persist_directory=self.persist_dir,
             )
+
+            if self.reranker_enabled:
+                try:
+                    from sentence_transformers import CrossEncoder
+
+                    self._reranker = CrossEncoder(
+                        self.reranker_model,
+                        max_length=self.reranker_max_length,
+                    )
+
+                    logger.info(
+                        "BGE reranker loaded — model=%s candidate_k=%d",
+                        self.reranker_model,
+                        self.reranker_candidate_k,
+                    )
+
+                except Exception as exc:
+                    self._reranker_error = f"{type(exc).__name__}: {exc}"
+                    self._reranker = None
+
+                    logger.warning(
+                        "Reranker gagal dimuat: %s",
+                        self._reranker_error,
+                    )
+
             logger.info(
                 "MMRRetriever connected — collection=%s embed=%s mode=%s",
                 self.collection_name,
                 embed_provider,
                 self.retrieval_mode,
             )
+
             if self.retrieval_mode in ("bm25", "hibrida"):
                 self._bangun_bm25()
         except Exception as exc:
@@ -230,6 +275,76 @@ class MMRRetriever:
             })
         return keluar
 
+    def _rerank(
+        self,
+        query: str,
+        candidates: List[Dict[str, Any]],
+        top_k: int,
+    ) -> List[Dict[str, Any]]:
+        """Rerank kandidat retrieval menggunakan BGE Cross-Encoder.
+
+        Alur:
+            Hybrid/RRF -> candidate_k -> BGE reranker -> top_k
+
+        Reranker hanya digunakan untuk mengurutkan kandidat yang sudah
+        ditemukan oleh tahap retrieval. Ia tidak mencari dokumen baru.
+        """
+        if not candidates:
+            return []
+
+        if self._reranker is None:
+            logger.warning(
+                "Reranker tidak tersedia; mengembalikan kandidat berdasarkan "
+                "urutan retrieval."
+            )
+            return candidates[:top_k]
+
+        pairs = [
+            [query, str(candidate.get("text", ""))]
+            for candidate in candidates
+        ]
+
+        try:
+            scores = self._reranker.predict(
+                pairs,
+                batch_size=8,
+                show_progress_bar=False,
+            )
+
+            # Tambahkan skor reranker ke setiap kandidat.
+            reranked = []
+
+            for candidate, score in zip(candidates, scores):
+                row = dict(candidate)
+                row["reranker_score"] = float(score)
+                reranked.append(row)
+
+            # Skor BGE semakin tinggi = semakin relevan.
+            reranked.sort(
+                key=lambda item: item["reranker_score"],
+                reverse=True,
+            )
+
+            # Rank diperbarui SETELAH reranking.
+            for rank, row in enumerate(reranked[:top_k], start=1):
+                row["rank"] = rank
+
+            return reranked[:top_k]
+
+        except Exception as exc:
+            logger.warning(
+                "Reranking gagal; menggunakan urutan retrieval: %s",
+                exc,
+            )
+
+            # Jangan membuat seluruh RAG mati hanya karena reranker gagal.
+            fallback = candidates[:top_k]
+
+            for rank, row in enumerate(fallback, start=1):
+                row["rank"] = rank
+
+            return fallback
+
     @property
     def is_ready(self) -> bool:
         return self._vector_store is not None
@@ -272,20 +387,70 @@ class MMRRetriever:
         # vektor di bawahnya tidak berubah satu baris pun dan angka era-vektor tetap
         # dapat direproduksi persis.
         if self._bm25 is not None and self.retrieval_mode in ("bm25", "hibrida"):
-            urut_bm = self._peringkat_bm25(query, self.rrf_pool)
-            if self.retrieval_mode == "bm25":
-                return self._hasil_dari_indeks(urut_bm[:top_k])
-            # Hibrida: kolam vektor diambil sebesar rrf_pool. MMR menghasilkan lima
-            # teratas yang BERBEDA bergantung ukuran kolamnya, sehingga kolam ini
-            # sengaja tidak dipakai ulang untuk melayani mode vektor.
-            docs_v = self._vector_store.max_marginal_relevance_search(
-                query, k=self.rrf_pool, fetch_k=max(self.rrf_pool, fetch_k),
-                lambda_mult=lambda_mult, filter=metadata_filter,
+            urut_bm = self._peringkat_bm25(
+                query,
+                self.rrf_pool,
             )
-            urut_v = [self._bm25_peta[d.page_content] for d in docs_v
-                      if d.page_content in self._bm25_peta]
-            return self._hasil_dari_indeks(
-                self._gabung_rrf([urut_v, urut_bm])[:top_k])
+
+            if self.retrieval_mode == "bm25":
+                results = self._hasil_dari_indeks(
+                    urut_bm[:top_k]
+                )
+                return results
+
+            # ============================================================
+            # HYBRID RETRIEVAL
+            # BM25 + Vector/MMR -> RRF
+            # ============================================================
+
+            docs_v = self._vector_store.max_marginal_relevance_search(
+                query,
+                k=self.rrf_pool,
+                fetch_k=max(self.rrf_pool, fetch_k),
+                lambda_mult=lambda_mult,
+                filter=metadata_filter,
+            )
+
+            urut_v = [
+                self._bm25_peta[d.page_content]
+                for d in docs_v
+                if d.page_content in self._bm25_peta
+            ]
+
+            # Gabungkan ranking BM25 dan Vector menggunakan RRF.
+            rrf_indices = self._gabung_rrf(
+                [urut_v, urut_bm]
+            )
+
+            # ============================================================
+            # CANDIDATE POOL
+            # ============================================================
+
+            candidate_k = max(
+                top_k,
+                self.reranker_candidate_k,
+            )
+
+            candidate_indices = rrf_indices[:candidate_k]
+
+            candidates = self._hasil_dari_indeks(
+                candidate_indices
+            )
+
+            # ============================================================
+            # RERANKING
+            # ============================================================
+
+            if self.reranker_enabled and self._reranker is not None:
+                return self._rerank(
+                    query=query,
+                    candidates=candidates,
+                    top_k=top_k,
+                )
+
+            # Jika reranker disabled/gagal load,
+            # sistem tetap menggunakan hasil hybrid.
+            return candidates[:top_k]
 
         kwargs: Dict[str, Any] = {"k": top_k, "fetch_k": fetch_k, "lambda_mult": lambda_mult}
         if metadata_filter:
@@ -358,34 +523,30 @@ class MMRRetriever:
         patient_state: Dict[str, Any],
         condition_glucose: Optional[float] = None,
     ) -> str:
-        """Tambahkan tag kondisi + stres ke kueri.
+        """Bangun query retrieval dengan clinical intent sebagai anchor.
 
-        STRUKTUR kueri identik untuk kedua mode ablasi; yang berbeda HANYA angka
-        yang dipakai menurunkan kondisi (lihat ``condition_glucose``). Kesimetrisan
-        ini menjaga agar ablasi mengukur pengaruh SUMBER pengondisian, bukan
-        pengaruh perbedaan bentuk kueri.
-
-        Tag "stress tinggi" tidak bergantung pada prediksi, sehingga berlaku pada
-        kedua mode.
+        Prediction/state hanya digunakan untuk menghasilkan condition tag
+        yang ringkas. Nilai numerik dan narasi prediction tidak ditempel
+        ke query karena dapat mendominasi retrieval.
         """
         from src.constants import CLASS_NORMAL, classify_glucose_3class
 
-        tags: List[str] = []
+        conditions: List[str] = []
 
-        # Sumber kondisi HARUS eksplisit. Tidak ada fallback ke current_glucose:
-        # fallback itulah yang dulu membocorkan kondisi saat ini ke setiap kueri.
         if condition_glucose is not None:
             kondisi = classify_glucose_3class(float(condition_glucose))
+
             if kondisi != CLASS_NORMAL:
-                tags.append(kondisi)
+                conditions.append(kondisi)
 
         stress = int(patient_state.get("stress_level", 0))
         if stress >= 7:
-            tags.append("stress tinggi")
+            conditions.append("stress tinggi")
 
-        if not tags:
-            return query
-        return f"{query}. Konteks pasien: {', '.join(tags)}."
+        if not conditions:
+            return query.strip()
+
+        return f"{query.strip()} Konteks klinis: {', '.join(conditions)}."
 
 
 def _metadata_matches(metadata: Dict[str, Any], metadata_filter: Dict[str, Any]) -> bool:

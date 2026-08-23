@@ -1,0 +1,229 @@
+{
+  "protokol": "Bagian C. Set penyetelan dan pelaporan dipisah per pasien sebelum hasil dilihat. Kriteria ditetapkan di muka: konfigurasi TERKECIL yang RMSE-nya tidak berbeda signifikan dari acuan, BUKAN RMSE terendah.",
+  "kriteria_utama": "mrr",
+  "alpha": 0.05,
+  "horizon_steps": 6,
+  "horizon_min": 30,
+  "max_gap_steps": 6,
+  "acuan": {
+    "n_estimators": 200,
+    "max_depth": 20
+  },
+  "n_konfigurasi_diuji": 11,
+  "pasien_latih": [
+    "ohio_540",
+    "ohio_544",
+    "ohio_552",
+    "ohio_559",
+    "ohio_563",
+    "ohio_567",
+    "ohio_570",
+    "ohio_575"
+  ],
+  "pasien_penyetelan": [
+    "ohio_584",
+    "ohio_588"
+  ],
+  "pasien_pelaporan": [
+    "ohio_591",
+    "ohio_596"
+  ],
+  "n_jendela": {
+    "latih": 104388,
+    "penyetelan": 29248,
+    "pelaporan": 26445
+  },
+  "hasil_set_penyetelan": {
+    "n200_d20": {
+      "n_estimators": 200,
+      "max_depth": 20,
+      "RMSE": 23.671,
+      "MAE": 16.472,
+      "Clarke_A+B": 94.42,
+      "ukuran_MB": 297.15,
+      "total_simpul": 4126394,
+      "kedalaman_tercapai_median": 20,
+      "waktu_latih_dtk": 740.5,
+      "inferensi_ms_per_sampel": 0.0049,
+      "p_vs_acuan": null,
+      "tidak_berbeda": true
+    },
+    "n100_d20": {
+      "n_estimators": 100,
+      "max_depth": 20,
+      "RMSE": 23.693,
+      "MAE": 16.482,
+      "Clarke_A+B": 94.38,
+      "ukuran_MB": 148.67,
+      "total_simpul": 2064490,
+      "kedalaman_tercapai_median": 20,
+      "waktu_latih_dtk": 294.0,
+      "inferensi_ms_per_sampel": 0.0028,
+      "p_vs_acuan": 0.2184,
+      "tidak_berbeda": true
+    },
+    "n50_d20": {
+      "n_estimators": 50,
+      "max_depth": 20,
+      "RMSE": 23.808,
+      "MAE": 16.549,
+      "Clarke_A+B": 94.32,
+      "ukuran_MB": 74.44,
+      "total_simpul": 1033652,
+      "kedalaman_tercapai_median": 20,
+      "waktu_latih_dtk": 151.4,
+      "inferensi_ms_per_sampel": 0.0016,
+      "p_vs_acuan": 0.0,
+      "tidak_berbeda": false
+    },
+    "n200_d15": {
+      "n_estimators": 200,
+      "max_depth": 15,
+      "RMSE": 23.658,
+      "MAE": 16.444,
+      "Clarke_A+B": 94.43,
+      "ukuran_MB": 115.16,
+      "total_simpul": 1598764,
+      "kedalaman_tercapai_median": 15,
+      "waktu_latih_dtk": 518.7,
+      "inferensi_ms_per_sampel": 0.0058,
+      "p_vs_acuan": 0.0005,
+      "tidak_berbeda": false
+    },
+    "n200_d12": {
+      "n_estimators": 200,
+      "max_depth": 12,
+      "RMSE": 23.696,
+      "MAE": 16.468,
+      "Clarke_A+B": 94.45,
+      "ukuran_MB": 43.87,
+      "total_simpul": 608566,
+      "kedalaman_tercapai_median": 12,
+      "waktu_latih_dtk": 449.7,
+      "inferensi_ms_per_sampel": 0.0035,
+      "p_vs_acuan": 0.5759,
+      "tidak_berbeda": true
+    },
+    "n200_d10": {
+      "n_estimators": 200,
+      "max_depth": 10,
+      "RMSE": 23.74,
+      "MAE": 16.501,
+      "Clarke_A+B": 94.37,
+      "ukuran_MB": 18.23,
+      "total_simpul": 252464,
+      "kedalaman_tercapai_median": 10,
+      "waktu_latih_dtk": 299.0,
+      "inferensi_ms_per_sampel": 0.003,
+      "p_vs_acuan": 0.1346,
+      "tidak_berbeda": true
+    },
+    "n100_d15": {
+      "n_estimators": 100,
+      "max_depth": 15,
+      "RMSE": 23.662,
+      "MAE": 16.45,
+      "Clarke_A+B": 94.39,
+      "ukuran_MB": 57.81,
+      "total_simpul": 802540,
+      "kedalaman_tercapai_median": 15,
+      "waktu_latih_dtk": 231.5,
+      "inferensi_ms_per_sampel": 0.0019,
+      "p_vs_acuan": 0.025,
+      "tidak_berbeda": false
+    },
+    "n100_d12": {
+      "n_estimators": 100,
+      "max_depth": 12,
+      "RMSE": 23.687,
+      "MAE": 16.458,
+      "Clarke_A+B": 94.44,
+      "ukuran_MB": 22.06,
+      "total_simpul": 305976,
+      "kedalaman_tercapai_median": 12,
+      "waktu_latih_dtk": 171.9,
+      "inferensi_ms_per_sampel": 0.0019,
+      "p_vs_acuan": 0.4279,
+      "tidak_berbeda": true
+    },
+    "n50_d15": {
+      "n_estimators": 50,
+      "max_depth": 15,
+      "RMSE": 23.735,
+      "MAE": 16.484,
+      "Clarke_A+B": 94.39,
+      "ukuran_MB": 29.09,
+      "total_simpul": 403898,
+      "kedalaman_tercapai_median": 15,
+      "waktu_latih_dtk": 122.7,
+      "inferensi_ms_per_sampel": 0.0012,
+      "p_vs_acuan": 0.7796,
+      "tidak_berbeda": true
+    },
+    "n50_d12": {
+      "n_estimators": 50,
+      "max_depth": 12,
+      "RMSE": 23.74,
+      "MAE": 16.477,
+      "Clarke_A+B": 94.37,
+      "ukuran_MB": 11.09,
+      "total_simpul": 153888,
+      "kedalaman_tercapai_median": 12,
+      "waktu_latih_dtk": 85.3,
+      "inferensi_ms_per_sampel": 0.0012,
+      "p_vs_acuan": 0.9546,
+      "tidak_berbeda": true
+    },
+    "n50_d10": {
+      "n_estimators": 50,
+      "max_depth": 10,
+      "RMSE": 23.774,
+      "MAE": 16.51,
+      "Clarke_A+B": 94.31,
+      "ukuran_MB": 4.61,
+      "total_simpul": 63834,
+      "kedalaman_tercapai_median": 10,
+      "waktu_latih_dtk": 67.7,
+      "inferensi_ms_per_sampel": 0.0012,
+      "p_vs_acuan": 0.0343,
+      "tidak_berbeda": false
+    }
+  },
+  "terpilih": {
+    "n_estimators": 50,
+    "max_depth": 12
+  },
+  "set_pelaporan": {
+    "n200_d20": {
+      "RMSE": 21.251,
+      "MAE": 14.403,
+      "Clarke_A+B": 94.9,
+      "ukuran_MB": 297.15
+    },
+    "n50_d12": {
+      "RMSE": 21.332,
+      "MAE": 14.446,
+      "Clarke_A+B": 94.93,
+      "ukuran_MB": 11.09
+    }
+  },
+  "p_set_pelaporan": 0.0,
+  "PERINGATAN_PENAFSIRAN": {
+    "1_uji_beda_bukan_uji_kesetaraan": "Kriteria 'tidak berbeda signifikan' memakai uji BEDA (Wilcoxon). Uji beda tidak pernah dapat membuktikan kesetaraan: gagal menolak H0 hanya berarti daya tidak cukup. Instrumen yang benar adalah uji kesetaraan (TOST) dengan margin yang ditetapkan di muka. Margin itu TIDAK pernah ditetapkan, dan tidak boleh ditetapkan sekarang. Karena itu berkas ini TIDAK membuktikan 50/12 setara dengan 200/20.",
+    "2_uji_dua_sisi_mencoret_yang_lebih_baik": "n=200 d=15 dan n=100 d=15 (RMSE 23,66, lebih RENDAH daripada acuan 23,67) ditandai 'berbeda signifikan' justru karena lebih baik. Kriteria tidak diubah karena Bagian C melarangnya, dan cacat ini tidak mengubah jawaban: keduanya berukuran 115,2 dan 57,8 MB, jauh di atas 11,1 MB, sehingga tidak akan menang pada kriteria 'terkecil'.",
+    "3_kesetaraan_TIDAK_bertahan_di_set_pelaporan": "p pada set penyetelan 0,9546 menjadi p ~ 0 pada set pelaporan. Inilah gunanya pemisahan set, dan ia bekerja.",
+    "4_yang_boleh_disimpulkan": "Tanpa uji hipotesis apa pun: menukar 297,15 MB dengan 11,09 MB berbiaya 0,081 mg/dL RMSE dan 0,043 mg/dL MAE, sementara Clarke A+B naik tipis 94,90% -> 94,93%. Apakah pertukaran itu diterima adalah pertimbangan klinis dan rekayasa, bukan statistik.",
+    "5_waktu_latih_peka_beban": "Kolom waktu_latih_dtk pada jalan ini tercemar proses lain yang berjalan bersamaan (menyimpang sampai +39% dibanding jalan bersih). RMSE, ukuran, dan jumlah simpul identik antar-jalan. Waktu latih untuk laporan diambil dari jalan pertama yang bersih."
+  },
+  "selisih_set_pelaporan": {
+    "rmse_mg_dL": 0.081,
+    "rmse_persen": 0.38,
+    "mae_mg_dL": 0.043,
+    "mae_persen": 0.3,
+    "clarke_A_plus_B_pp": 0.03,
+    "penghematan_ukuran_persen": 96.3,
+    "nisbah_ukuran_thd_LSTM_sebelum": 2396,
+    "nisbah_ukuran_thd_LSTM_sesudah": 89
+  },
+  "keputusan_produksi": "BELUM diambil. Bundle produksi tetap 200/20. Penggantian menuntut keputusan pengguna, bukan keputusan skrip."
+}

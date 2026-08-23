@@ -1,90 +1,283 @@
 {
   "peringatan": "Berkas KUNCI. Jangan dibuka sebelum penilaian manusia selesai — melihatnya membatalkan sifat buta penilaian.",
-  "dibuat": "2026-08-10T11:56:49",
+  "dibuat": "2026-08-22T10:38:36",
   "seed": 42,
   "n": 40,
   "sebaran_label_otomatis": {
-    "hiperglikemia": 16,
     "lain": 10,
-    "normal": 4,
-    "hipoglikemia": 10
+    "hiperglikemia": 13,
+    "hipoglikemia": 15,
+    "normal": 2
   },
   "potongan_unik_per_bentuk_kueri": {
-    "produksi": 25,
-    "hanya_angka": 6,
-    "hanya_kondisi": 5,
+    "produksi": 16,
+    "hanya_angka": 7,
+    "hanya_kondisi": 6,
     "kondisi_dulu": 0,
-    "pertanyaan": 11
+    "pertanyaan": 9,
+    "ringkas": 3
   },
-  "konsentrasi_penelusuran": "Bentuk kueri PRODUKSI hanya menghasilkan 25 potongan unik dari 180 pengambilan (36 kueri x top_k 5), atas korpus 2.186 chunk. Kerangka sampel diperlebar dengan bentuk kueri lain yang dipakai T3.1, BUKAN dengan menaikkan top_k.",
+  "konsentrasi_penelusuran": "Bentuk kueri PRODUKSI hanya menghasilkan 16 potongan unik dari 180 pengambilan (36 kueri x top_k 5), atas korpus 2.186 chunk. Kerangka sampel diperlebar dengan bentuk kueri lain yang dipakai T3.1, BUKAN dengan menaikkan top_k.",
   "label": {
-    "1": "hiperglikemia",
-    "2": "lain",
-    "3": "normal",
-    "4": "hipoglikemia",
-    "5": "lain",
-    "6": "hiperglikemia",
-    "7": "hiperglikemia",
-    "8": "normal",
-    "9": "hiperglikemia",
+    "1": "lain",
+    "2": "hiperglikemia",
+    "3": "hiperglikemia",
+    "4": "hiperglikemia",
+    "5": "hipoglikemia",
+    "6": "hipoglikemia",
+    "7": "lain",
+    "8": "lain",
+    "9": "hipoglikemia",
     "10": "hiperglikemia",
-    "11": "hipoglikemia",
+    "11": "normal",
     "12": "hiperglikemia",
-    "13": "hipoglikemia",
-    "14": "hipoglikemia",
+    "13": "hiperglikemia",
+    "14": "hiperglikemia",
     "15": "lain",
     "16": "hiperglikemia",
-    "17": "normal",
-    "18": "lain",
+    "17": "hipoglikemia",
+    "18": "hipoglikemia",
     "19": "hiperglikemia",
     "20": "hipoglikemia",
-    "21": "lain",
-    "22": "hiperglikemia",
+    "21": "hipoglikemia",
+    "22": "lain",
     "23": "hipoglikemia",
-    "24": "hiperglikemia",
-    "25": "lain",
-    "26": "lain",
+    "24": "normal",
+    "25": "hiperglikemia",
+    "26": "hipoglikemia",
     "27": "hipoglikemia",
     "28": "hipoglikemia",
-    "29": "hiperglikemia",
-    "30": "hiperglikemia",
+    "29": "hipoglikemia",
+    "30": "hipoglikemia",
     "31": "lain",
-    "32": "hipoglikemia",
-    "33": "hiperglikemia",
-    "34": "hiperglikemia",
-    "35": "hiperglikemia",
-    "36": "lain",
+    "32": "lain",
+    "33": "lain",
+    "34": "hipoglikemia",
+    "35": "lain",
+    "36": "hipoglikemia",
     "37": "hiperglikemia",
-    "38": "hipoglikemia",
-    "39": "normal",
+    "38": "hiperglikemia",
+    "39": "hiperglikemia",
     "40": "lain"
   },
   "rincian": {
     "1": {
-      "kondisi_kueri": "hiperglikemia",
-      "glukosa_kueri": 227.0,
-      "peringkat": 4,
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 58.0,
+      "peringkat": 2,
       "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 46,
-      "label_otomatis": "hiperglikemia"
+      "halaman_cetak": 78,
+      "label_otomatis": "lain"
     },
     "2": {
       "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 50.0,
+      "glukosa_kueri": 64.0,
       "peringkat": 4,
+      "sumber": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+      "halaman_cetak": 11,
+      "label_otomatis": "hiperglikemia"
+    },
+    "3": {
+      "kondisi_kueri": "hiperglikemia",
+      "glukosa_kueri": 216.0,
+      "peringkat": 5,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 52,
+      "label_otomatis": "hiperglikemia"
+    },
+    "4": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 70.0,
+      "peringkat": 3,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 44,
+      "label_otomatis": "hiperglikemia"
+    },
+    "5": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 44.0,
+      "peringkat": 5,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 74,
+      "label_otomatis": "hipoglikemia"
+    },
+    "6": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 70.0,
+      "peringkat": 5,
+      "sumber": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+      "halaman_cetak": 48,
+      "label_otomatis": "hipoglikemia"
+    },
+    "7": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 50.0,
+      "peringkat": 3,
+      "sumber": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+      "halaman_cetak": 44,
+      "label_otomatis": "lain"
+    },
+    "8": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 55.0,
+      "peringkat": 1,
       "sumber": "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf",
       "halaman_cetak": 25,
       "label_otomatis": "lain"
     },
-    "3": {
+    "9": {
       "kondisi_kueri": "normal",
       "glukosa_kueri": 106.0,
+      "peringkat": 4,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 40,
+      "label_otomatis": "hipoglikemia"
+    },
+    "10": {
+      "kondisi_kueri": "hiperglikemia",
+      "glukosa_kueri": 216.0,
+      "peringkat": 5,
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": 53,
+      "label_otomatis": "hiperglikemia"
+    },
+    "11": {
+      "kondisi_kueri": "normal",
+      "glukosa_kueri": 126.0,
       "peringkat": 1,
-      "sumber": "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf",
-      "halaman_cetak": 31,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 4,
       "label_otomatis": "normal"
     },
-    "4": {
+    "12": {
+      "kondisi_kueri": "normal",
+      "glukosa_kueri": 120.0,
+      "peringkat": 2,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 42,
+      "label_otomatis": "hiperglikemia"
+    },
+    "13": {
+      "kondisi_kueri": "hiperglikemia",
+      "glukosa_kueri": 216.0,
+      "peringkat": 3,
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": 63,
+      "label_otomatis": "hiperglikemia"
+    },
+    "14": {
+      "kondisi_kueri": "normal",
+      "glukosa_kueri": 106.0,
+      "peringkat": 3,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 39,
+      "label_otomatis": "hiperglikemia"
+    },
+    "15": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 70.0,
+      "peringkat": 3,
+      "sumber": "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf",
+      "halaman_cetak": 8,
+      "label_otomatis": "lain"
+    },
+    "16": {
+      "kondisi_kueri": "hiperglikemia",
+      "glukosa_kueri": 216.0,
+      "peringkat": 4,
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": 1,
+      "label_otomatis": "hiperglikemia"
+    },
+    "17": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 52.0,
+      "peringkat": 5,
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": 78,
+      "label_otomatis": "hipoglikemia"
+    },
+    "18": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 50.0,
+      "peringkat": 5,
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": 66,
+      "label_otomatis": "hipoglikemia"
+    },
+    "19": {
+      "kondisi_kueri": "hiperglikemia",
+      "glukosa_kueri": 216.0,
+      "peringkat": 3,
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": 4,
+      "label_otomatis": "hiperglikemia"
+    },
+    "20": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 60.0,
+      "peringkat": 5,
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": 67,
+      "label_otomatis": "hipoglikemia"
+    },
+    "21": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 44.0,
+      "peringkat": 2,
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": 59,
+      "label_otomatis": "hipoglikemia"
+    },
+    "22": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 70.0,
+      "peringkat": 5,
+      "sumber": "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf",
+      "halaman_cetak": 8,
+      "label_otomatis": "lain"
+    },
+    "23": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 44.0,
+      "peringkat": 3,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 70,
+      "label_otomatis": "hipoglikemia"
+    },
+    "24": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 70.0,
+      "peringkat": 2,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 40,
+      "label_otomatis": "normal"
+    },
+    "25": {
+      "kondisi_kueri": "hiperglikemia",
+      "glukosa_kueri": 219.0,
+      "peringkat": 5,
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": 36,
+      "label_otomatis": "hiperglikemia"
+    },
+    "26": {
+      "kondisi_kueri": "hiperglikemia",
+      "glukosa_kueri": 216.0,
+      "peringkat": 5,
+      "sumber": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+      "halaman_cetak": 25,
+      "label_otomatis": "hipoglikemia"
+    },
+    "27": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 70.0,
+      "peringkat": 4,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 51,
+      "label_otomatis": "hipoglikemia"
+    },
+    "28": {
       "kondisi_kueri": "hipoglikemia",
       "glukosa_kueri": 44.0,
       "peringkat": 4,
@@ -92,292 +285,100 @@
       "halaman_cetak": 70,
       "label_otomatis": "hipoglikemia"
     },
-    "5": {
-      "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 44.0,
-      "peringkat": 4,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 52,
-      "label_otomatis": "lain"
-    },
-    "6": {
-      "kondisi_kueri": "normal",
-      "glukosa_kueri": 112.0,
-      "peringkat": 5,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 36,
-      "label_otomatis": "hiperglikemia"
-    },
-    "7": {
-      "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 50.0,
-      "peringkat": 2,
-      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
-      "halaman_cetak": 36,
-      "label_otomatis": "hiperglikemia"
-    },
-    "8": {
-      "kondisi_kueri": "normal",
-      "glukosa_kueri": 122.0,
-      "peringkat": 4,
-      "sumber": "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf",
-      "halaman_cetak": 1,
-      "label_otomatis": "normal"
-    },
-    "9": {
-      "kondisi_kueri": "normal",
-      "glukosa_kueri": 124.0,
-      "peringkat": 5,
-      "sumber": "manual_kb",
-      "halaman_cetak": null,
-      "label_otomatis": "hiperglikemia"
-    },
-    "10": {
-      "kondisi_kueri": "hiperglikemia",
-      "glukosa_kueri": 219.0,
-      "peringkat": 4,
-      "sumber": "manual_kb",
-      "halaman_cetak": null,
-      "label_otomatis": "hiperglikemia"
-    },
-    "11": {
-      "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 44.0,
-      "peringkat": 5,
-      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
-      "halaman_cetak": 71,
-      "label_otomatis": "hipoglikemia"
-    },
-    "12": {
-      "kondisi_kueri": "hiperglikemia",
-      "glukosa_kueri": 219.0,
-      "peringkat": 1,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 27,
-      "label_otomatis": "hiperglikemia"
-    },
-    "13": {
-      "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 44.0,
-      "peringkat": 4,
-      "sumber": "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf",
-      "halaman_cetak": 20,
-      "label_otomatis": "hipoglikemia"
-    },
-    "14": {
-      "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 50.0,
-      "peringkat": 5,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 54,
-      "label_otomatis": "hipoglikemia"
-    },
-    "15": {
-      "kondisi_kueri": "normal",
-      "glukosa_kueri": 112.0,
-      "peringkat": 3,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 69,
-      "label_otomatis": "lain"
-    },
-    "16": {
-      "kondisi_kueri": "hiperglikemia",
-      "glukosa_kueri": 234.0,
-      "peringkat": 5,
-      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
-      "halaman_cetak": 46,
-      "label_otomatis": "hiperglikemia"
-    },
-    "17": {
-      "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 70.0,
-      "peringkat": 2,
-      "sumber": "manual_kb",
-      "halaman_cetak": null,
-      "label_otomatis": "normal"
-    },
-    "18": {
-      "kondisi_kueri": "hiperglikemia",
-      "glukosa_kueri": 239.0,
-      "peringkat": 5,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 87,
-      "label_otomatis": "lain"
-    },
-    "19": {
-      "kondisi_kueri": "hiperglikemia",
-      "glukosa_kueri": 216.0,
-      "peringkat": 5,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 53,
-      "label_otomatis": "hiperglikemia"
-    },
-    "20": {
-      "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 47.0,
-      "peringkat": 1,
-      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
-      "halaman_cetak": 72,
-      "label_otomatis": "hipoglikemia"
-    },
-    "21": {
-      "kondisi_kueri": "normal",
-      "glukosa_kueri": 119.0,
-      "peringkat": 5,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 76,
-      "label_otomatis": "lain"
-    },
-    "22": {
-      "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 47.0,
-      "peringkat": 4,
-      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
-      "halaman_cetak": 53,
-      "label_otomatis": "hiperglikemia"
-    },
-    "23": {
-      "kondisi_kueri": "hiperglikemia",
-      "glukosa_kueri": 219.0,
-      "peringkat": 5,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 94,
-      "label_otomatis": "hipoglikemia"
-    },
-    "24": {
-      "kondisi_kueri": "normal",
-      "glukosa_kueri": 109.0,
-      "peringkat": 5,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 59,
-      "label_otomatis": "hiperglikemia"
-    },
-    "25": {
-      "kondisi_kueri": "hiperglikemia",
-      "glukosa_kueri": 229.0,
-      "peringkat": 5,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 68,
-      "label_otomatis": "lain"
-    },
-    "26": {
-      "kondisi_kueri": "normal",
-      "glukosa_kueri": 112.0,
-      "peringkat": 1,
-      "sumber": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
-      "halaman_cetak": 31,
-      "label_otomatis": "lain"
-    },
-    "27": {
-      "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 44.0,
-      "peringkat": 5,
-      "sumber": "manual_kb",
-      "halaman_cetak": null,
-      "label_otomatis": "hipoglikemia"
-    },
-    "28": {
-      "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 70.0,
-      "peringkat": 3,
-      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
-      "halaman_cetak": 51,
-      "label_otomatis": "hipoglikemia"
-    },
     "29": {
       "kondisi_kueri": "hipoglikemia",
       "glukosa_kueri": 44.0,
-      "peringkat": 4,
+      "peringkat": 1,
       "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
-      "halaman_cetak": 44,
-      "label_otomatis": "hiperglikemia"
+      "halaman_cetak": 55,
+      "label_otomatis": "hipoglikemia"
     },
     "30": {
-      "kondisi_kueri": "normal",
-      "glukosa_kueri": 106.0,
+      "kondisi_kueri": "hiperglikemia",
+      "glukosa_kueri": 219.0,
       "peringkat": 5,
-      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
-      "halaman_cetak": 47,
-      "label_otomatis": "hiperglikemia"
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": 62,
+      "label_otomatis": "hipoglikemia"
     },
     "31": {
-      "kondisi_kueri": "normal",
-      "glukosa_kueri": 106.0,
-      "peringkat": 5,
-      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
-      "halaman_cetak": 48,
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 50.0,
+      "peringkat": 4,
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": 56,
       "label_otomatis": "lain"
     },
     "32": {
       "kondisi_kueri": "normal",
-      "glukosa_kueri": 122.0,
-      "peringkat": 3,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 37,
-      "label_otomatis": "hipoglikemia"
-    },
-    "33": {
-      "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 50.0,
+      "glukosa_kueri": 106.0,
       "peringkat": 3,
       "sumber": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
-      "halaman_cetak": 27,
-      "label_otomatis": "hiperglikemia"
-    },
-    "34": {
-      "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 70.0,
-      "peringkat": 4,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 93,
-      "label_otomatis": "hiperglikemia"
-    },
-    "35": {
-      "kondisi_kueri": "hiperglikemia",
-      "glukosa_kueri": 219.0,
-      "peringkat": 3,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 49,
-      "label_otomatis": "hiperglikemia"
-    },
-    "36": {
-      "kondisi_kueri": "normal",
-      "glukosa_kueri": 132.0,
-      "peringkat": 2,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 77,
+      "halaman_cetak": 33,
       "label_otomatis": "lain"
     },
-    "37": {
+    "33": {
+      "kondisi_kueri": "normal",
+      "glukosa_kueri": 120.0,
+      "peringkat": 5,
+      "sumber": "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf",
+      "halaman_cetak": 9,
+      "label_otomatis": "lain"
+    },
+    "34": {
       "kondisi_kueri": "hiperglikemia",
       "glukosa_kueri": 216.0,
       "peringkat": 4,
       "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 36,
+      "halaman_cetak": 10,
+      "label_otomatis": "hipoglikemia"
+    },
+    "35": {
+      "kondisi_kueri": "normal",
+      "glukosa_kueri": 106.0,
+      "peringkat": 4,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 27,
+      "label_otomatis": "lain"
+    },
+    "36": {
+      "kondisi_kueri": "hipoglikemia",
+      "glukosa_kueri": 44.0,
+      "peringkat": 3,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 71,
+      "label_otomatis": "hipoglikemia"
+    },
+    "37": {
+      "kondisi_kueri": "hiperglikemia",
+      "glukosa_kueri": 219.0,
+      "peringkat": 4,
+      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
+      "halaman_cetak": 91,
       "label_otomatis": "hiperglikemia"
     },
     "38": {
       "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 44.0,
-      "peringkat": 1,
+      "glukosa_kueri": 58.0,
+      "peringkat": 4,
       "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 80,
-      "label_otomatis": "hipoglikemia"
+      "halaman_cetak": 58,
+      "label_otomatis": "hiperglikemia"
     },
     "39": {
       "kondisi_kueri": "hipoglikemia",
-      "glukosa_kueri": 70.0,
-      "peringkat": 5,
-      "sumber": "KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf",
-      "halaman_cetak": 19,
-      "label_otomatis": "normal"
+      "glukosa_kueri": 44.0,
+      "peringkat": 2,
+      "sumber": "KB-01_IDAI-2015_Konsensus-DMT1.pdf",
+      "halaman_cetak": 51,
+      "label_otomatis": "hiperglikemia"
     },
     "40": {
-      "kondisi_kueri": "normal",
-      "glukosa_kueri": 106.0,
-      "peringkat": 5,
-      "sumber": "KB-04_PERKENI-2023_Tatalaksana-Hiperglikemia-RS.pdf",
-      "halaman_cetak": 94,
+      "kondisi_kueri": "hiperglikemia",
+      "glukosa_kueri": 216.0,
+      "peringkat": 3,
+      "sumber": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+      "halaman_cetak": 30,
       "label_otomatis": "lain"
     }
   }

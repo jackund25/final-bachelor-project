@@ -1,0 +1,28 @@
+{
+  "catatan": "Korpus, kasus uji, metrik, dan top_k identik. Hanya model embedding yang berbeda.",
+  "n_chunks_alternatif": 2585,
+  "all-MiniLM-L6-v2": {
+    "standard": {
+      "hit@1(%)": 0.0,
+      "hit@5(%)": 100.0,
+      "mrr": 0.225
+    },
+    "prediction_conditioned": {
+      "hit@1(%)": 83.3,
+      "hit@5(%)": 100.0,
+      "mrr": 0.889
+    }
+  },
+  "paraphrase-multilingual-MiniLM-L12-v2": {
+    "standard": {
+      "hit@1(%)": 0.0,
+      "hit@5(%)": 100.0,
+      "mrr": 0.375
+    },
+    "prediction_conditioned": {
+      "hit@1(%)": 0.0,
+      "hit@5(%)": 100.0,
+      "mrr": 0.319
+    }
+  }
+}

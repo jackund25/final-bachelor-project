@@ -1,40 +1,13 @@
-"""Pengklasifikasi kondisi masa depan: memperbaiki leher botol PC-RAG sekaligus deteksi hipoglikemia.
+"""Train CGM condition classifier with the current 9-feature schema.
 
-Latar. Evaluasi pada kasus nyata (eval_retrieval_realcases.py) menunjukkan bahwa manfaat
-Prediction-Conditioned RAG dibatasi bukan oleh mekanismenya --- dengan glukosa masa depan yang
-benar, retrieval nyaris sempurna (MRR 0,99) --- melainkan oleh prediktornya: pada kasus divergen,
-regresi Random Forest hanya benar menebak KONDISI masa depan 15,8% kali. Akarnya sama dengan
-rendahnya sensitivitas hipoglikemia (14%): regresi yang meminimalkan galat kuadrat menyusut ke
-tengah (under-dispersed), sehingga jarang berani melewati ambang 70/180 mg/dL.
-
-Gagasan. PC-RAG sebenarnya tidak membutuhkan NILAI glukosa, melainkan KONDISI-nya
-(hipoglikemia / normal / hiperglikemia) untuk membentuk kueri. Karena itu, alih-alih
-menurunkan kondisi dari regresi lalu mengambangkannya, kondisi diprediksi LANGSUNG oleh
-pengklasifikasi tiga kelas yang sadar-biaya (class_weight balanced), sehingga kelas minoritas
-yang justru paling penting secara klinis (hipoglikemia) tidak lagi tenggelam.
-
-Model ini melengkapi --- bukan menggantikan --- model regresi: regresi tetap dipakai untuk
-menampilkan nilai prediksi dan intervalnya kepada dokter, sedangkan pengklasifikasi dipakai
-untuk (a) peringatan dini hipoglikemia dan (b) pengondisian kueri PC-RAG.
-
-KELUARGA MODEL mengikuti config.model.name, dapat ditimpa lewat --model.
-Sejak 13 Agustus 2026 produksi memakai Gradient Boosting. Mekanisme intinya TIDAK
-berubah: ``class_weight="balanced"`` tetap dipakai, dan HistGradientBoostingClassifier
-mendukungnya sejak scikit-learn 1.2. Yang berubah hanya keluarga pohonnya.
-
-Alasan ikut berganti: pengklasifikasi RF berukuran 195,69 MB, yaitu 98,5% dari seluruh
-jejak penyimpanan produksi setelah regresor berpindah ke GBM (1,45 MB per horizon).
-Membiarkannya sebagai RF akan membatalkan sebagian besar klaim efisiensi yang menjadi
-alasan penggantian model pada Rumusan Masalah 1.
-
-BASELINE PEMBANDING ikut mengikuti keluarga yang sama. Baris "regresi lalu ambang"
-harus berasal dari regresor yang BENAR-BENAR dipakai produksi; membandingkan
-pengklasifikasi GBM terhadap regresi RF akan mencampur dua perubahan sekaligus.
-
-Keluaran:
-  models/{gbm,rf}_condition_classifier_h6.pkl
-  results/eval_prediksi/condition_classifier.json
+This version is aligned with the current modality-aware preprocessing:
+- source: data/raw/ohio_t1dm.csv
+- modality: CGM
+- features: config.model.engineered_features (9 features)
+- temporal builder: create_time_horizon_sequences()
+- classifier gets its OWN StandardScaler fitted on training data
 """
+
 from __future__ import annotations
 
 import argparse
@@ -48,178 +21,593 @@ import pandas as pd
 import yaml
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import StandardScaler
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from src.constants import CONDITION_CLASSES, classify_glucose_3class  # noqa: E402
-from src.data.preprocessor import DataPreprocessor  # noqa: E402
+from src.constants import CONDITION_CLASSES, classify_glucose_3class
+from src.data.preprocessor import DataPreprocessor
 
-HORIZON = 6          # +30 menit
+
+SOURCE = "CGM"
+CLASSIFIER_HORIZON_MIN = 30.0
 SEED = 42
-# Ambang dan daftar kelas dari SATU sumber kebenaran (src/constants.py).
-# Tetap 3 kelas: memecah hipoglikemia di ambang 54 tidak mengubah tindakan klinis,
-# sementara data latih hanya punya 998 sampel hipoglikemia berat (0,72%).
 CLASSES = CONDITION_CLASSES
 classify_glucose = classify_glucose_3class
 
 
 def build(cfg: dict):
     mc = cfg["model"]
-    df = pd.read_csv(ROOT / "data/raw/ohio_t1dm_merged.csv", parse_dates=["timestamp"])
+
+    data_path = ROOT / "data/raw/ohio_t1dm.csv"
+    if not data_path.exists():
+        raise SystemExit(f"Dataset tidak ditemukan: {data_path}")
+
+    df = pd.read_csv(
+        data_path,
+        parse_dates=["timestamp"],
+    )
+
+    required_source_cols = {
+        "patient_id",
+        "timestamp",
+        "glucose",
+        "glucose_source",
+    }
+    missing = required_source_cols - set(df.columns)
+    if missing:
+        raise ValueError(
+            "Dataset unified belum memiliki kolom: "
+            + ", ".join(sorted(missing))
+        )
+
+    # Condition classifier ini adalah classifier CGM.
+    df = df[
+        df["glucose_source"]
+        .astype(str)
+        .str.upper()
+        .eq(SOURCE)
+    ].copy()
+
+    if df.empty:
+        raise ValueError("Tidak ada data CGM pada dataset unified.")
 
     pre = DataPreprocessor(cfg)
-    df = pre.handle_missing_values(df)
-    df = pre.engineer_features(df, **mc["feature_engineering"])
-    pre.feature_columns = list(mc["engineered_features"])
 
-    patients = sorted(df["patient_id"].unique())
-    train_df, test_df = pre.split_by_patient(df, patients[-2:])
+    df = pre.handle_missing_values(
+        df,
+        max_interpolate_steps=mc.get(
+            "max_interpolate_steps"
+        ),
+    )
 
-    # Segmentasi jeda yang sama dengan model regresi (Tugas 5). Kalau hanya salah
-    # satu yang disaring, keduanya dilatih atas himpunan jendela berbeda dan
-    # perbandingan "regresi lalu ambang" vs "pengklasifikasi" tidak lagi setara.
-    max_gap_steps = mc.get("max_gap_steps")
-    cadence_min = cfg.get("data", {}).get("sampling_interval_min", 5)
+    df = pre.engineer_features(
+        df,
+        **mc["feature_engineering"],
+    )
+
+    feature_columns = list(
+        mc["engineered_features"]
+    )
+    pre.feature_columns = feature_columns
+
+    missing_features = [
+        f for f in feature_columns
+        if f not in df.columns
+    ]
+    if missing_features:
+        raise ValueError(
+            "Engineered features tidak tersedia: "
+            + ", ".join(missing_features)
+        )
+
+    # Keep patient split identical to the previous classifier script.
+    patients = sorted(
+        df["patient_id"].unique()
+    )
+
+    if len(patients) < 3:
+        raise ValueError(
+            "Minimal 3 pasien diperlukan untuk split train/test."
+        )
+
+    test_patients = patients[-2:]
+
+    train_df, test_df = pre.split_by_patient(
+        df,
+        test_patients,
+    )
+
+    try:
+        profile = mc["source_profiles"][SOURCE]
+    except KeyError as exc:
+        raise ValueError(
+            f"Source profile tidak ditemukan untuk modality {SOURCE}."
+        ) from exc
+
+    configured_horizons = profile.get(
+        "prediction_horizons_min",
+        [],
+    )
+    if CLASSIFIER_HORIZON_MIN not in configured_horizons:
+        raise ValueError(
+            f"Horizon classifier {CLASSIFIER_HORIZON_MIN:g} menit "
+            f"tidak tersedia pada profile {SOURCE}: {configured_horizons}"
+        )
+
+    sequence_length = int(
+        profile.get(
+            "sequence_length",
+            mc.get("sequence_length", 12),
+        )
+    )
+
+    target_tolerance_min = float(
+        profile.get(
+            "target_tolerance_min",
+            2.5,
+        )
+    )
+
+    max_history_gap_min = profile.get(
+        "max_history_gap_min",
+        30,
+    )
+
+    min_history_interval_min = float(
+        profile.get(
+            "min_history_interval_min",
+            0,
+        )
+    )
 
     def seqs(d):
-        X, y, anc = pre.create_sequences(
-            d, mc["sequence_length"], HORIZON, return_anchor=True,
-            max_gap_steps=max_gap_steps, source_interval_min=cadence_min,
+        X, y, anc = (
+            pre.create_time_horizon_sequences(
+                d,
+                sequence_length=sequence_length,
+                horizon_min=CLASSIFIER_HORIZON_MIN,
+                target_tolerance_min=target_tolerance_min,
+                max_history_gap_min=max_history_gap_min,
+                return_anchor=True,
+                min_history_interval_min=min_history_interval_min,
+            )
         )
-        n, s, f = X.shape
-        return X.reshape(n, s * f), y, anc
+        return X, y, anc
 
     Xtr, ytr, atr = seqs(train_df)
     Xte, yte, ate = seqs(test_df)
-    return (Xtr, ytr, atr), (Xte, yte, ate), mc
+
+    return (
+        (Xtr, ytr, atr),
+        (Xte, yte, ate),
+        mc,
+        feature_columns,
+        sequence_length,
+        CLASSIFIER_HORIZON_MIN,
+        target_tolerance_min,
+    )
 
 
-def metrics_for(y_true_lbl: np.ndarray, y_pred_lbl: np.ndarray) -> dict:
-    cm = confusion_matrix(y_true_lbl, y_pred_lbl, labels=CLASSES)
-    out = {"akurasi_keseluruhan_%": round(100 * float((y_true_lbl == y_pred_lbl).mean()), 1)}
+def metrics_for(
+    y_true_lbl: np.ndarray,
+    y_pred_lbl: np.ndarray,
+) -> dict:
+    cm = confusion_matrix(
+        y_true_lbl,
+        y_pred_lbl,
+        labels=CLASSES,
+    )
+
+    out = {
+        "akurasi_keseluruhan_%": round(
+            100
+            * float(
+                (y_true_lbl == y_pred_lbl).mean()
+            ),
+            1,
+        )
+    }
+
     for i, c in enumerate(CLASSES):
         tp = cm[i, i]
         fn = cm[i, :].sum() - tp
         fp = cm[:, i].sum() - tp
-        sens = 100 * tp / (tp + fn) if tp + fn else 0.0
-        ppv = 100 * tp / (tp + fp) if tp + fp else 0.0
+
+        sens = (
+            100 * tp / (tp + fn)
+            if tp + fn
+            else 0.0
+        )
+
+        ppv = (
+            100 * tp / (tp + fp)
+            if tp + fp
+            else 0.0
+        )
+
         out[c] = {
             "n": int(cm[i, :].sum()),
-            "sensitivitas_%": round(float(sens), 1),
-            "PPV_%": round(float(ppv), 1),
+            "sensitivitas_%": round(
+                float(sens),
+                1,
+            ),
+            "PPV_%": round(
+                float(ppv),
+                1,
+            ),
         }
+
     return out
 
 
 def main() -> None:
-    cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
+    cfg = yaml.safe_load(
+        (
+            ROOT / "config.yaml"
+        ).read_text(
+            encoding="utf-8"
+        )
+    )
 
-    ap = argparse.ArgumentParser(description="Latih pengklasifikasi kondisi masa depan")
-    ap.add_argument("--model", choices=["gbm", "rf"],
-                    default=("rf" if cfg["model"].get("name") == "RandomForest" else "gbm"),
-                    help="keluarga model; bawaan mengikuti config.model.name")
+    ap = argparse.ArgumentParser(
+        description=(
+            "Latih condition classifier "
+            "CGM dengan 9 engineered features."
+        )
+    )
+
+    ap.add_argument(
+        "--model",
+        choices=["gbm", "rf"],
+        default=(
+            "rf"
+            if cfg["model"].get(
+                "name"
+            )
+            == "RandomForest"
+            else "gbm"
+        ),
+    )
+
     args = ap.parse_args()
     prefix = args.model
 
-    (Xtr, ytr, atr), (Xte, yte, ate), mc = build(cfg)
+    (
+        (Xtr, ytr, atr),
+        (Xte, yte, ate),
+        mc,
+        feature_columns,
+        sequence_length,
+        horizon_min,
+        target_tolerance_min,
+    ) = build(cfg)
 
-    lbl_tr = np.array([classify_glucose(v) for v in ytr])
-    lbl_te = np.array([classify_glucose(v) for v in yte])
-    cur_te = np.array([classify_glucose(v) for v in ate])
+    n_features = len(feature_columns)
+
+    print(
+        f"SOURCE              : {SOURCE}"
+    )
+    print(
+        f"FEATURES            : {n_features}"
+    )
+    print(
+        f"FEATURE NAMES       : {feature_columns}"
+    )
+    print(
+        f"SEQUENCE LENGTH     : {Xtr.shape[1]}"
+    )
+    print(
+        f"HORIZON             : +{horizon_min:g} menit"
+    )
+    print(
+        f"TRAIN SAMPLES       : {len(ytr)}"
+    )
+    print(
+        f"TEST SAMPLES        : {len(yte)}"
+    )
+
+    if n_features != 9:
+        raise RuntimeError(
+            "Config saat ini tidak menghasilkan 9 engineered features. "
+            f"Ditemukan {n_features}: {feature_columns}"
+        )
+
+    if Xtr.shape[1] != sequence_length:
+        raise RuntimeError(
+            "Sequence length hasil builder tidak sesuai profile: "
+            f"{Xtr.shape[1]} vs {sequence_length}."
+        )
+
+    lbl_tr = np.array([
+        classify_glucose(v)
+        for v in ytr
+    ])
+
+    lbl_te = np.array([
+        classify_glucose(v)
+        for v in yte
+    ])
+
+    cur_te = np.array([
+        classify_glucose(v)
+        for v in ate
+    ])
+
     divergent = cur_te != lbl_te
 
-    print(f"Latih: {len(ytr)} | Uji: {len(yte)} | kasus divergen di data uji: {int(divergent.sum())}")
-    print("Distribusi kelas (uji):", {c: int((lbl_te == c).sum()) for c in CLASSES})
+    print(
+        f"Kasus divergen di data uji: "
+        f"{int(divergent.sum())}"
+    )
 
-    # --- Baseline: kondisi diturunkan dari REGRESI (pendekatan laporan saat ini)
-    # Regresor pembanding WAJIB sekeluarga dengan pengklasifikasinya, kalau tidak
-    # selisih yang terukur mencampur "pengklasifikasi lebih baik daripada regresi"
-    # dengan "GBM lebih baik daripada RF".
-    bundle_path = ROOT / f"models/{prefix}_inference_bundle_h{HORIZON}.pkl"
-    if not bundle_path.exists():
-        raise SystemExit(
-            f"Bundle regresi tidak ditemukan: {bundle_path.name}\n"
-            f"Latih dulu: PYTHONPATH=. python -m src.models."
-            f"{'gbm_model' if prefix == 'gbm' else 'rf_model'} --horizon {HORIZON}"
+    # ---------------------------------------------------------
+    # Regression baseline from the SAME GBM family.
+    # This comparison is kept for continuity with the previous
+    # experiment.
+    # ---------------------------------------------------------
+
+
+
+    # ---------------------------------------------------------
+    # NEW condition classifier
+    #
+    # IMPORTANT:
+    # Do NOT reuse the regression scaler object.
+    # The classifier gets its own scaler fitted on the same
+    # 9-feature representation, preventing the old 7-feature
+    # classifier artifact from leaking into this pipeline.
+    # ---------------------------------------------------------
+
+    classifier_scaler = StandardScaler()
+
+    Xtr_flat = Xtr.reshape(
+        -1,
+        n_features,
+    )
+
+    Xte_flat = Xte.reshape(
+        -1,
+        n_features,
+    )
+
+    Xtr_s = classifier_scaler.fit_transform(
+        Xtr_flat
+    ).reshape(
+        len(Xtr),
+        Xtr.shape[1],
+        n_features,
+    )
+
+    Xte_s = classifier_scaler.transform(
+        Xte_flat
+    ).reshape(
+        len(Xte),
+        Xte.shape[1],
+        n_features,
+    )
+
+    if classifier_scaler.n_features_in_ != n_features:
+        raise RuntimeError(
+            "Classifier scaler tidak sesuai schema fitur: "
+            f"{classifier_scaler.n_features_in_} vs {n_features}."
         )
-    with open(bundle_path, "rb") as f:
-        bundle = pickle.load(f)
-    n_feat = len(mc["engineered_features"])
-    Xte_s = bundle["scaler"].transform(Xte.reshape(-1, n_feat)).reshape(len(Xte), -1)
-    reg_pred = bundle["model"].predict(Xte_s) + (ate if bundle["predict_delta"] else 0)
-    lbl_reg = np.array([classify_glucose(v) for v in reg_pred])
 
-    # --- Usulan: pengklasifikasi kondisi sadar-biaya
-    scaler = bundle["scaler"]
-    Xtr_s = scaler.transform(Xtr.reshape(-1, n_feat)).reshape(len(Xtr), -1)
-    # class_weight="balanced" adalah INTI percobaan ini pada kedua keluarga: tanpanya
-    # kelas hipoglikemia (3,3% sampel) tenggelam dan sensitivitasnya kembali runtuh.
+    Xtr_model = Xtr_s.reshape(
+        len(Xtr_s),
+        -1,
+    )
+
+    Xte_model = Xte_s.reshape(
+        len(Xte_s),
+        -1,
+    )
+
     if prefix == "gbm":
         clf = HistGradientBoostingClassifier(
             class_weight="balanced",
-            random_state=mc.get("gradient_boosting", {}).get("random_state", SEED),
+            random_state=(
+                mc.get(
+                    "gradient_boosting",
+                    {},
+                ).get(
+                    "random_state",
+                    SEED,
+                )
+            ),
         )
     else:
+        rf_cfg = mc["random_forest"]
+
         clf = RandomForestClassifier(
-            n_estimators=mc["random_forest"]["n_estimators"],
-            max_depth=mc["random_forest"]["max_depth"],
-            min_samples_split=mc["random_forest"]["min_samples_split"],
+            n_estimators=rf_cfg[
+                "n_estimators"
+            ],
+            max_depth=rf_cfg[
+                "max_depth"
+            ],
+            min_samples_split=rf_cfg[
+                "min_samples_split"
+            ],
             class_weight="balanced",
-            random_state=SEED, n_jobs=-1,
+            random_state=SEED,
+            n_jobs=-1,
         )
-    clf.fit(Xtr_s, lbl_tr)
-    lbl_clf = clf.predict(Xte_s)
+
+    clf.fit(
+        Xtr_model,
+        lbl_tr,
+    )
+
+    lbl_clf = clf.predict(
+        Xte_model
+    )
+
+    # ---------------------------------------------------------
+    # Report
+    # ---------------------------------------------------------
 
     res = {
-        "horizon_menit": HORIZON * 5,
-        # Provenans ditulis ke berkas hasil, bukan hanya tersirat dari nama berkas.
-        "keluarga_model": type(clf).__name__,
-        "regresor_pembanding": type(bundle["model"]).__name__,
-        "class_weight": "balanced",
-        "catatan": (
-            "Kondisi masa depan diprediksi langsung oleh pengklasifikasi tiga kelas "
-            "(class_weight=balanced), dibandingkan terhadap kondisi yang diturunkan dari regresi "
-            "pada keluarga model yang SAMA."
+        "source": SOURCE,
+        "horizon_menit": int(
+            horizon_min
         ),
-        "n_uji": int(len(yte)),
-        "n_divergen": int(divergent.sum()),
-        "regresi_lalu_ambang": metrics_for(lbl_te, lbl_reg),
-        "pengklasifikasi_kondisi": metrics_for(lbl_te, lbl_clf),
+        "sequence_length": int(
+            sequence_length
+        ),
+        "n_features": n_features,
+        "features": feature_columns,
+        "keluarga_model": type(
+            clf
+        ).__name__,
+        "class_weight": "balanced",
+        "classifier_scaler": (
+            "StandardScaler fitted on training data"
+        ),
+        "catatan": (
+            "Kondisi masa depan diprediksi langsung "
+            "oleh pengklasifikasi tiga kelas dengan "
+            "9 engineered features yang sama dengan "
+            "pipeline GBM regression."
+        ),
+        "n_train": int(
+            len(ytr)
+        ),
+        "n_uji": int(
+            len(yte)
+        ),
+        "n_divergen": int(
+            divergent.sum()
+        ),
+        "pengklasifikasi_kondisi": metrics_for(
+            lbl_te,
+            lbl_clf,
+        ),
         "pada_kasus_divergen": {
-            "akurasi_kondisi_regresi_%": round(100 * float((lbl_reg[divergent] == lbl_te[divergent]).mean()), 1),
-            "akurasi_kondisi_pengklasifikasi_%": round(100 * float((lbl_clf[divergent] == lbl_te[divergent]).mean()), 1),
+            "akurasi_kondisi_pengklasifikasi_%": (
+                round(
+                    100
+                    * float(
+                        (
+                            lbl_clf[divergent]
+                            == lbl_te[divergent]
+                        ).mean()
+                    ),
+                    1,
+                )
+                if divergent.any()
+                else 0.0
+            ),
         },
     }
 
-    print("\n--- Kondisi dari REGRESI (pendekatan saat ini) ---")
+    print(
+        "\n--- Kondisi dari CLASSIFIER 9-FEATURE ---"
+    )
+
     for c in CLASSES:
-        d = res["regresi_lalu_ambang"][c]
-        print(f"  {c:15s} n={d['n']:6d}  sensitivitas {d['sensitivitas_%']:5.1f}%  PPV {d['PPV_%']:5.1f}%")
-    print(f"  akurasi keseluruhan: {res['regresi_lalu_ambang']['akurasi_keseluruhan_%']}%")
+        d = res[
+            "pengklasifikasi_kondisi"
+        ][c]
 
-    print("\n--- Kondisi dari PENGKLASIFIKASI (usulan) ---")
-    for c in CLASSES:
-        d = res["pengklasifikasi_kondisi"][c]
-        print(f"  {c:15s} n={d['n']:6d}  sensitivitas {d['sensitivitas_%']:5.1f}%  PPV {d['PPV_%']:5.1f}%")
-    print(f"  akurasi keseluruhan: {res['pengklasifikasi_kondisi']['akurasi_keseluruhan_%']}%")
+        print(
+            f"  {c:15s} "
+            f"n={d['n']:6d} "
+            f"sensitivitas={d['sensitivitas_%']:5.1f}% "
+            f"PPV={d['PPV_%']:5.1f}%"
+        )
 
-    print("\n--- Pada kasus divergen (yang menuntut antisipasi) ---")
-    print(f"  regresi        : {res['pada_kasus_divergen']['akurasi_kondisi_regresi_%']}%")
-    print(f"  pengklasifikasi: {res['pada_kasus_divergen']['akurasi_kondisi_pengklasifikasi_%']}%")
+    print(
+        "  akurasi keseluruhan:",
+        res[
+            "pengklasifikasi_kondisi"
+        ][
+            "akurasi_keseluruhan_%"
+        ],
+        "%",
+    )
 
-    clf_path = ROOT / f"models/{prefix}_condition_classifier_h{HORIZON}.pkl"
-    with open(clf_path, "wb") as f:
-        pickle.dump({"model": clf, "scaler": scaler, "classes": CLASSES,
-                     "features": mc["engineered_features"],
-                     "sequence_length": mc["sequence_length"],
-                     "prediction_horizon": HORIZON,
-                     "model_family": type(clf).__name__}, f)
-    print(f"\nPengklasifikasi -> {clf_path.name} ({clf_path.stat().st_size / 1e6:.2f} MB)")
+    print("\n--- Pada kasus divergen ---")
+    print(
+        "  classifier 9F   :",
+        res["pada_kasus_divergen"][
+            "akurasi_kondisi_pengklasifikasi_%"
+        ],
+        "%",
+    )
 
-    dest = ROOT / "results/eval_prediksi/condition_classifier.json"
-    dest.write_text(json.dumps(res, indent=2), encoding="utf-8")
-    print(f"\nDisimpan ke {dest}")
+    # ---------------------------------------------------------
+    # Persist bundle
+    # ---------------------------------------------------------
+
+    clf_path = (
+        ROOT
+        / f"models/{prefix}_condition_classifier_h6.pkl"
+    )
+
+    classifier_bundle = {
+        "model": clf,
+        "scaler": classifier_scaler,
+        "classes": CLASSES,
+        "features": feature_columns,
+        "n_features": n_features,
+        "sequence_length": sequence_length,
+        "prediction_horizon": int(
+            horizon_min / 5
+        ),
+        "prediction_horizon_min": int(
+            horizon_min
+        ),
+        "glucose_source": SOURCE,
+        "model_family": type(
+            clf
+        ).__name__,
+        "feature_engineering": mc[
+            "feature_engineering"
+        ],
+        "target_tolerance_min": (
+            target_tolerance_min
+        ),
+    }
+
+    with open(
+        clf_path,
+        "wb",
+    ) as f:
+        pickle.dump(
+            classifier_bundle,
+            f,
+        )
+
+    print(
+        f"\nPengklasifikasi -> "
+        f"{clf_path.name} "
+        f"({clf_path.stat().st_size / 1e6:.2f} MB)"
+    )
+
+    dest = (
+        ROOT
+        / "results/eval_prediksi/"
+        "condition_classifier_9features.json"
+    )
+
+    dest.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    dest.write_text(
+        json.dumps(
+            res,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    print(
+        f"Disimpan ke {dest}"
+    )
 
 
 if __name__ == "__main__":

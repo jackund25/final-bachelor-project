@@ -140,6 +140,7 @@ class RagConfig:
     ollama_llm_model: str
     temperature: float
     max_tokens: int
+    reranker: RerankerConfig
 
 
 @lru_cache(maxsize=None)
@@ -227,6 +228,44 @@ def _load_rag_config_cached(path_str: Optional[str]) -> RagConfig:
             "temperature", None, None, "rag.llm.temperature", 0.2, cast=float, path=path),
         max_tokens=resolve(
             "max_tokens", None, None, "rag.llm.max_tokens", 700, cast=int, path=path),
+        reranker=RerankerConfig(
+            enabled=resolve(
+                "reranker.enabled",
+                None,
+                None,
+                "rag.reranker.enabled",
+                False,
+                cast=bool,
+                path=path,
+            ),
+            model=resolve(
+                "reranker.model",
+                None,
+                None,
+                "rag.reranker.model",
+                "BAAI/bge-reranker-v2-m3",
+                cast=str,
+                path=path,
+            ),
+            candidate_k=resolve(
+                "reranker.candidate_k",
+                None,
+                None,
+                "rag.reranker.candidate_k",
+                50,
+                cast=int,
+                path=path,
+            ),
+            max_length=resolve(
+                "reranker.max_length",
+                None,
+                None,
+                "rag.reranker.max_length",
+                512,
+                cast=int,
+                path=path,
+            ),
+        ),
     )
 
 
@@ -239,3 +278,10 @@ def clear_cache() -> None:
     """Kosongkan cache config — dipakai tes yang menulis config sementara."""
     _load_config_cached.cache_clear()
     _load_rag_config_cached.cache_clear()
+
+@dataclass(frozen=True)
+class RerankerConfig:
+    enabled: bool
+    model: str
+    candidate_k: int
+    max_length: int

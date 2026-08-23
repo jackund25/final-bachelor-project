@@ -351,6 +351,8 @@ def main() -> int:
                         help="Sisipkan '. ', '! ', '? ', '; ' sebelum spasi pada daftar "
                              "pemisah, sehingga potongan berhenti di batas kalimat "
                              "(Gao dkk. 2023 §V.A.1)")
+    parser.add_argument("--tanpa-pemisah-kalimat", action="store_true",
+                    help="Paksa memakai pemisah lama tanpa sentence-aware splitting")
     parser.add_argument("--satuan-panjang", choices=["karakter", "token"],
                         default="karakter",
                         help="Satuan pengukur chunk_size. 'token' menakar dengan "
@@ -447,7 +449,11 @@ def main() -> int:
                                 # Meneruskan False saat argumen tidak diberikan akan
                                 # MENIMPA config dan diam-diam mengindeks dengan
                                 # pemisah lama meski config menyalakannya.
-                                pemisah_kalimat=(True if args.pemisah_kalimat else None),
+                                pemisah_kalimat=(
+                                    False if args.tanpa_pemisah_kalimat
+                                    else True if args.pemisah_kalimat
+                                    else None
+                                ),
                                 satuan_panjang=args.satuan_panjang)
     if args.chunk_size is not None or args.chunk_overlap is not None:
         print(f"    (chunk_size={args.chunk_size or 'config'}, "

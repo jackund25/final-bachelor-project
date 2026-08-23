@@ -142,12 +142,12 @@ def _buang_disclaimer(teks: str) -> str:
     return _re.sub(r"\n{3,}", "\n\n", bersih).strip()
 
 
-def _load_cases(limit: int | None) -> List[Dict[str, Any]]:
-    data = json.loads(DATASET.read_text(encoding="utf-8"))
+def _load_cases(dataset_path: Path, limit: int | None) -> List[Dict[str, Any]]:
+    data = json.loads(dataset_path.read_text(encoding="utf-8"))
     cases = [c for c in data["kasus"] if (c.get("pertanyaan") or "").strip()]
     if not cases:
         raise SystemExit(
-            f"Tidak ada kasus terisi di {DATASET}.\n"
+            f"Tidak ada kasus terisi di {dataset_path}.\n"
             f"Lengkapi medan 'pertanyaan', 'jawaban_acuan', dan 'konteks_acuan' terlebih dulu."
         )
     return cases[:limit] if limit else cases
@@ -273,6 +273,8 @@ def _print_estimate(est: Dict[str, Any], rpd: int = 20, rpm: int = 10,
 def main() -> int:
     ap = argparse.ArgumentParser(description="Evaluasi RAGAS atas basis data terkontrol")
     ap.add_argument("--limit", type=int, default=None, help="Batasi jumlah sampel")
+    ap.add_argument("--dataset", default=str(DATASET),
+                    help="Path dataset evaluasi JSON")
     ap.add_argument("--metrics", default=",".join(DEFAULT_METRICS),
                     help=f"Metrik dipisah koma. Pilihan: {', '.join(DEFAULT_METRICS)}")
     ap.add_argument("--dry-run", action="store_true",
@@ -296,7 +298,7 @@ def main() -> int:
     top_k = args.top_k or cfg.top_k
     judge_model = os.getenv("RAGAS_JUDGE_MODEL") or cfg.llm_model
 
-    cases = _load_cases(args.limit)
+    cases = _load_cases(Path(args.dataset), args.limit)
 
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cached = 0

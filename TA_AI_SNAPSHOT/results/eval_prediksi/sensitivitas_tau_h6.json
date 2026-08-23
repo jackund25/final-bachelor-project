@@ -1,0 +1,419 @@
+{
+  "percobaan": "T1.4 / J3 — sensitivitas insulin_tau_min & carbs_tau_min",
+  "verdik_kepekaan": {
+    "definisi_skala_derau": "SD bootstrap RMSE pada set penyetelan, 1000 resample, benih 42. DITETAPKAN DI MUKA pada docs/PRAPENDAFTARAN_T1.4.md.",
+    "mengapa_bukan_sd_antar_fold": "T1.4 memakai pembagian pasien TUNGGAL, bukan validasi silang 6 fold. 'SD antar-fold' — yang T4.1 temukan punya tiga definisi berbeda dan dapat memberi verdik berlawanan — TIDAK TERDEFINISI di sini. Dinyatakan agar T1.4 tidak dikutip seolah punya variabilitas tingkat fold.",
+    "bootstrap_konfigurasi_produksi": {
+      "rmse_titik": 23.671,
+      "sd_bootstrap": 0.1968,
+      "ci95": [
+        23.2911,
+        24.0525
+      ],
+      "n_resample": 1000,
+      "benih": 42,
+      "n": 29248
+    },
+    "ambang_peka": 0.3936,
+    "faktor_ambang": 2.0,
+    "rentang_rmse_sapuan": 0.1064,
+    "PEKA": false,
+    "sd_deskriptif_9_konfigurasi": 0.0402,
+    "pemeriksaan_kesehatan_thd_J7": {
+      "biaya_permutasi_iob": 0.4369,
+      "biaya_permutasi_cob": 0.6743,
+      "rentang_sapuan_di_bawah_biaya_iob": true,
+      "arti_bila_TIDAK": "Menggeser tau tidak memusnahkan fitur, sehingga pengaruhnya wajib lebih kecil daripada memusnahkannya. Bila rentang sapuan MELAMPAUI biaya permutasi iob, yang dicurigai lebih dulu adalah apakah engineer_features benar-benar dihitung ulang dari data MENTAH tiap konfigurasi — menumpuk peluruhan dua kali menghasilkan fitur RUSAK, bukan fitur ber-tau lain."
+    }
+  },
+  "checkpoint": {
+    "direktori": ".cache\\sensitivitas_tau_h6",
+    "sidik_jari": {
+      "horizon_steps": 6,
+      "max_gap_steps": 6,
+      "set_latih": [
+        "ohio_540",
+        "ohio_544",
+        "ohio_552",
+        "ohio_559",
+        "ohio_563",
+        "ohio_567",
+        "ohio_570",
+        "ohio_575"
+      ],
+      "set_penyetelan": [
+        "ohio_584",
+        "ohio_588"
+      ],
+      "set_pelaporan": [
+        "ohio_591",
+        "ohio_596"
+      ],
+      "seed": 42,
+      "random_forest": {
+        "n_estimators": 200,
+        "max_depth": 20,
+        "min_samples_split": 5
+      },
+      "fitur": [
+        "glucose",
+        "glucose_delta",
+        "iob",
+        "cob",
+        "activity",
+        "hour_sin",
+        "hour_cos"
+      ],
+      "sapuan_insulin": [
+        120.0,
+        180.0,
+        240.0,
+        300.0,
+        360.0
+      ],
+      "sapuan_carbs": [
+        60.0,
+        120.0,
+        180.0,
+        240.0,
+        300.0
+      ]
+    },
+    "n_dipulihkan": 0
+  },
+  "sifat": "PENGUKURAN SENSITIVITAS, bukan penyetelan. Nilai produksi tidak diubah berdasarkan hasil ini.",
+  "horizon_steps": 6,
+  "horizon_min": 30,
+  "protokol_bagian_c": {
+    "set_penyetelan": [
+      "ohio_584",
+      "ohio_588"
+    ],
+    "set_pelaporan": [
+      "ohio_591",
+      "ohio_596"
+    ],
+    "set_latih": [
+      "ohio_540",
+      "ohio_544",
+      "ohio_552",
+      "ohio_559",
+      "ohio_563",
+      "ohio_567",
+      "ohio_570",
+      "ohio_575"
+    ],
+    "kriteria_ditetapkan_di_muka": "RMSE pada set penyetelan; beda terhadap produksi diuji Wilcoxon berpasangan atas |galat|, alpha=0.05",
+    "jumlah_konfigurasi_diuji": 9,
+    "seluruh_konfigurasi_dicatat": true,
+    "set_pelaporan_disentuh_berapa_kali": 1
+  },
+  "rancangan": {
+    "jenis": "satu-per-satu (OAT) mengelilingi titik produksi",
+    "sapuan_insulin_tau_min": [
+      120.0,
+      180.0,
+      240.0,
+      300.0,
+      360.0
+    ],
+    "sapuan_carbs_tau_min": [
+      60.0,
+      120.0,
+      180.0,
+      240.0,
+      300.0
+    ],
+    "grid_penuh_tidak_dipakai": "25 sel x ~9 menit > 3,5 jam, dan sebagian besar selnya tidak menjawab pertanyaan Subbab II.3.5",
+    "keterbatasan": "OAT tidak dapat menangkap interaksi antara kedua konstanta. Bila kedua sumbu datar, interaksinya hampir pasti juga datar; bila salah satu berpengaruh besar, interaksi layak diperiksa."
+  },
+  "produksi": {
+    "insulin_tau_min": 240.0,
+    "carbs_tau_min": 180.0,
+    "rmse_penyetelan": 23.671
+  },
+  "hasil_set_penyetelan": [
+    {
+      "rmse": 23.588,
+      "mae": 16.3914,
+      "n": 29248,
+      "insulin_tau_min": 120.0,
+      "carbs_tau_min": 180.0,
+      "sumbu_sapuan": "insulin",
+      "adalah_produksi": false,
+      "durasi_detik": 525.6,
+      "n_jendela_latih": 104388,
+      "p_wilcoxon": 1.2e-05,
+      "berbeda_signifikan": true
+    },
+    {
+      "rmse": 23.6559,
+      "mae": 16.4497,
+      "n": 29248,
+      "insulin_tau_min": 180.0,
+      "carbs_tau_min": 180.0,
+      "sumbu_sapuan": "insulin",
+      "adalah_produksi": false,
+      "durasi_detik": 532.6,
+      "n_jendela_latih": 104388,
+      "p_wilcoxon": 0.070507,
+      "berbeda_signifikan": false
+    },
+    {
+      "rmse": 23.671,
+      "mae": 16.4715,
+      "n": 29248,
+      "insulin_tau_min": 240.0,
+      "carbs_tau_min": 180.0,
+      "sumbu_sapuan": "insulin",
+      "adalah_produksi": true,
+      "durasi_detik": 530.9,
+      "n_jendela_latih": 104388,
+      "p_wilcoxon": null,
+      "berbeda_signifikan": false
+    },
+    {
+      "rmse": 23.6876,
+      "mae": 16.4887,
+      "n": 29248,
+      "insulin_tau_min": 300.0,
+      "carbs_tau_min": 180.0,
+      "sumbu_sapuan": "insulin",
+      "adalah_produksi": false,
+      "durasi_detik": 550.4,
+      "n_jendela_latih": 104388,
+      "p_wilcoxon": 0.333136,
+      "berbeda_signifikan": false
+    },
+    {
+      "rmse": 23.6879,
+      "mae": 16.4915,
+      "n": 29248,
+      "insulin_tau_min": 360.0,
+      "carbs_tau_min": 180.0,
+      "sumbu_sapuan": "insulin",
+      "adalah_produksi": false,
+      "durasi_detik": 586.9,
+      "n_jendela_latih": 104388,
+      "p_wilcoxon": 0.223162,
+      "berbeda_signifikan": false
+    },
+    {
+      "rmse": 23.5966,
+      "mae": 16.3896,
+      "n": 29248,
+      "insulin_tau_min": 240.0,
+      "carbs_tau_min": 60.0,
+      "sumbu_sapuan": "carbs",
+      "adalah_produksi": false,
+      "durasi_detik": 557.9,
+      "n_jendela_latih": 104388,
+      "p_wilcoxon": 0.0,
+      "berbeda_signifikan": true
+    },
+    {
+      "rmse": 23.6477,
+      "mae": 16.4275,
+      "n": 29248,
+      "insulin_tau_min": 240.0,
+      "carbs_tau_min": 120.0,
+      "sumbu_sapuan": "carbs",
+      "adalah_produksi": false,
+      "durasi_detik": 572.0,
+      "n_jendela_latih": 104388,
+      "p_wilcoxon": 0.000222,
+      "berbeda_signifikan": true
+    },
+    {
+      "rmse": 23.6882,
+      "mae": 16.4747,
+      "n": 29248,
+      "insulin_tau_min": 240.0,
+      "carbs_tau_min": 240.0,
+      "sumbu_sapuan": "carbs",
+      "adalah_produksi": false,
+      "durasi_detik": 565.6,
+      "n_jendela_latih": 104388,
+      "p_wilcoxon": 0.318226,
+      "berbeda_signifikan": false
+    },
+    {
+      "rmse": 23.6944,
+      "mae": 16.4712,
+      "n": 29248,
+      "insulin_tau_min": 240.0,
+      "carbs_tau_min": 300.0,
+      "sumbu_sapuan": "carbs",
+      "adalah_produksi": false,
+      "durasi_detik": 554.1,
+      "n_jendela_latih": 104388,
+      "p_wilcoxon": 0.170919,
+      "berbeda_signifikan": false
+    }
+  ],
+  "per_sumbu": {
+    "insulin": {
+      "n_nilai_diuji": 5,
+      "rmse_min": 23.588,
+      "rmse_maks": 23.6879,
+      "rentang_rmse": 0.0999,
+      "rentang_rmse_persen_thd_produksi": 0.42,
+      "n_berbeda_signifikan": 1
+    },
+    "carbs": {
+      "n_nilai_diuji": 5,
+      "rmse_min": 23.5966,
+      "rmse_maks": 23.6944,
+      "rentang_rmse": 0.0978,
+      "rentang_rmse_persen_thd_produksi": 0.41,
+      "n_berbeda_signifikan": 2
+    }
+  },
+  "rentang_rmse_seluruh_konfigurasi": 0.1064,
+  "rentang_rmse_persen_thd_produksi": 0.45,
+  "n_konfigurasi_berbeda_signifikan": 3,
+  "hasil_set_pelaporan": {
+    "produksi": {
+      "rmse": 21.2513,
+      "mae": 14.4034,
+      "n": 26445,
+      "insulin_tau_min": 240.0,
+      "carbs_tau_min": 180.0
+    },
+    "pembanding": {
+      "rmse": 21.162,
+      "mae": 14.3286,
+      "n": 26445,
+      "insulin_tau_min": 120.0,
+      "carbs_tau_min": 180.0
+    },
+    "p_wilcoxon": 0.001228,
+    "berbeda_signifikan": true
+  },
+  "prapendaftaran_hasil": {
+    "berkas": "docs/PRAPENDAFTARAN_T1.4.md",
+    "D1_sapuan_datar": {
+      "perkiraan": "rentang RMSE 0,05-0,30 dan di bawah 0,4369",
+      "terukur": 0.1064,
+      "TERPENUHI": true
+    },
+    "D2_carbs_lebih_berpengaruh": {
+      "perkiraan": "rentang carbs > rentang insulin",
+      "terukur_insulin": 0.1,
+      "terukur_carbs": 0.098,
+      "TERPENUHI": false,
+      "letak_penalaran_salah": "Nisbah permutation importance (cob/iob = 1,54x) diekstrapolasi menjadi nisbah KEPEKAAN TERHADAP PARAMETER. Lebih pokok: D1 dan D2 saling bertentangan sebagai dugaan. Bila permukaannya datar (D1), selisih antar-sumbu 0,002 mg/dL berada ~1% dari SD bootstrap 0,1968, sehingga urutan apa pun TIDAK DAPAT diselesaikan pada resolusi ini. Seharusnya saya sadari D2 tak teruji begitu D1 diperkirakan terpenuhi."
+    },
+    "D3_produksi_bukan_argmin": {
+      "perkiraan": "produksi bukan minimum, terbaik menang < 0,20",
+      "argmin": "insulin=120",
+      "selisih": 0.083,
+      "TERPENUHI": true
+    },
+    "D4_tidak_bertahan_di_pelaporan": {
+      "perkiraan": "keunggulan set penyetelan tidak bertahan",
+      "terukur": "bertahan, tanda sama, p=0,001228",
+      "TERPENUHI": false,
+      "letak_penalaran_salah": "Digeneralisasi dari T1.1b dan T3.2. Pada kedua kasus itu keunggulan set penyetelan memang derau. Di sini hubungan tau->RMSE monoton dan stabil, hanya sangat kecil, sehingga ia memang tereplikasi. Kegagalan replikasi bukan hukum; ia terjadi bila efeknya derau, bukan setiap kali set dipisah."
+    },
+    "D5_mayoritas_signifikan": {
+      "perkiraan": ">4 dari 8 berbeda signifikan",
+      "terukur": 3,
+      "TERPENUHI": false,
+      "letak_penalaran_salah": "Diasumsikan n~29.000 membuat nyaris semua selisih signifikan. Ternyata 5 dari 8 TIDAK signifikan, artinya selisih ~0,02-0,04 mg/dL tak terselesaikan bahkan pada n itu. Ini justru MEMPERKUAT kesimpulan tidak-peka."
+    },
+    "ringkasan": "2 dari 5 terpenuhi (D1, D3); 3 terbantah (D2, D4, D5). Seluruhnya dicatat apa adanya."
+  },
+  "susulan_PASCA_HOC": {
+    "status": "PASCA-HOC, tidak ada di prapendaftaran.",
+    "permukaan_monoton": {
+      "insulin": [
+        [
+          120.0,
+          23.588
+        ],
+        [
+          180.0,
+          23.6559
+        ],
+        [
+          240.0,
+          23.671
+        ],
+        [
+          300.0,
+          23.6876
+        ],
+        [
+          360.0,
+          23.6879
+        ]
+      ],
+      "carbs": [
+        [
+          60.0,
+          23.5966
+        ],
+        [
+          120.0,
+          23.6477
+        ],
+        [
+          180.0,
+          23.671
+        ],
+        [
+          240.0,
+          23.6882
+        ],
+        [
+          300.0,
+          23.6944
+        ]
+      ],
+      "monoton_naik_insulin": true,
+      "monoton_naik_carbs": true,
+      "arti": "RMSE naik monoton terhadap KEDUA tau. Sapuan karena itu TIDAK MENGURUNG optimum: nilai terbaik ada di tepi bawah rentang (insulin 120, carbs 60) atau di bawahnya, yang tidak disapu. Nilai literatur 240/180 berada di sisi yang keliru dari optimum, tetapi sebesar 0,106 mg/dL untuk seluruh rentang.",
+      "keterbatasan": "Optimum sebenarnya mungkin di bawah 120/60 dan belum diukur."
+    },
+    "ambang_kebermaknaan_klinis": {
+      "sumber": "ISO 15197:2013, dikutip KB-02_PERKENI-2021_Pemantauan-Glukosa-Mandiri.pdf halaman cetak 25",
+      "kutipan": "95% pemeriksaan harus berada pada kisaran +-15 mg/dL bila glukosa < 100 mg/dL, +-15% bila >= 100 mg/dL",
+      "ambang_dipakai_mg_dL": 15.0,
+      "rentang_sapuan_persen_dari_ambang": 0.71,
+      "selisih_set_pelaporan_persen_dari_ambang": 0.59,
+      "CATATAN_KEJUJURAN": "Ambang ini diadopsi SETELAH hasil terlihat. Yang membuatnya tetap dapat dipertahankan: ia diturunkan dari literatur eksternal dan tidak menyebut satu pun angka proyek ini, sehingga tidak dapat dipilih demi meloloskan atau menggugurkan klaim tertentu.",
+      "MARD_CGM": "Dicari di seluruh teks terekstrak proyek ini dan TIDAK DITEMUKAN. Tidak dikutip.",
+      "bingkai": "ARGUMEN ORDE BESARAN, bukan penerapan standar ISO pada perbandingan model. Lihat KOREKSI_11_AGUSTUS_2026 butir 1.",
+      "orde_selisih_thd_toleransi": "dua orde besaran di bawah",
+      "yang_TIDAK_diklaim": "Bahwa ISO 15197 menetapkan ambang kebermaknaan bagi selisih antarmodel. Ia mengatur akurasi alat ukur. Yang dipinjam hanya skala besarannya."
+    },
+    "pytest": "133 passed, sama dengan baseline",
+    "KOREKSI_11_AGUSTUS_2026": [
+      {
+        "no": 1,
+        "perkara": "bingkai argumen ISO 15197",
+        "yang_keliru": "Menyandingkan selisih RMSE AGREGAT dengan toleransi PER-PENGUKURAN 95% seolah keduanya sepadan. Keduanya bukan besaran statistik yang sama: RMSE adalah galat rerata kuadratik atas puluhan ribu jendela, sedangkan +-15 mg/dL adalah selang toleransi satu pengukuran tunggal.",
+        "yang_benar": "Argumen ORDE BESARAN, bukan penerapan standar. Selisih 0,089 mg/dL berada DUA ORDE di bawah toleransi per-pengukuran alat yang menghasilkan datanya. Angka sekecil itu tidak dapat ditafsirkan secara fisik, karena variabel yang diukurnya sendiri tidak pernah diketahui pada ketelitian itu. Ini ANALOGI BERDASAR LITERATUR, BUKAN penerapan ISO 15197 pada perbandingan model. ISO 15197 mengatur akurasi alat ukur, bukan ambang kebermaknaan selisih antarmodel prediksi."
+      },
+      {
+        "no": 2,
+        "perkara": "batas atas efek tau di seluruh ruang parameter",
+        "yang_kurang": "Temuan monoton berhenti pada \"optimum mungkin di bawah 120/60 dan belum diukur\", tanpa batas atas.",
+        "yang_ditambahkan": "Batas atas dapat diturunkan dari J7. tau mendekati nol membuat IOB meluruh seketika, sehingga fiturnya secara kasar mendekati keadaan TAK BERINFORMASI. J7 mengukur biaya memusnahkan iob sepenuhnya: 0,4369 mg/dL. Efek maksimum di SELURUH ruang tau karena itu terbatas sekitar 0,44 mg/dL. Angka itu SEDIKIT DI ATAS ambang peka 0,3936 mg/dL, sehingga tidak dapat dinyatakan bahwa seluruh ruang tau pasti tidak peka -- hanya bahwa rentang yang DISAPU tidak peka, dan bahwa ruang sisanya tidak dapat menyumbang lebih dari sekitar satu ambang peka.",
+        "kualifikasi": "Peluruhan seketika TIDAK identik dengan permutasi. Fitur ber-tau sangat kecil tetap membawa informasi kejadian insulin pada langkah terakhir, sedangkan permutasi menghancurkan seluruh kaitannya dengan sasaran. Batas 0,44 karena itu batas LONGGAR, dan arah longgarnya tidak dapat dipastikan."
+      }
+    ],
+    "batas_atas_efek_tau": {
+      "sumber": "J7 permutation importance iob",
+      "nilai_mg_dL": 0.4369,
+      "ambang_peka": 0.3936,
+      "melampaui_ambang": true,
+      "arti": "Ruang tau yang belum disapu tidak dapat menyumbang lebih dari sekitar satu ambang peka."
+    },
+    "batas_lingkup": {
+      "horizon_diukur": "+30 menit SAJA (h6)",
+      "arti": "Klaim ketidakpekaan DIBATASI ke +30 menit. Pada +60 menit RMSE dasar naik dari ~21 ke ~34 mg/dL dan bobot IOB/COB relatif dapat berbeda; T1.4 tidak mengukurnya."
+    }
+  }
+}

@@ -8,7 +8,11 @@ Versi ini:
 - Meal   : membaca `ts` + `carbs`.
 - Alignment event ke grid CGM 5-menit memakai `merge_asof` (nearest, toleransi
   2.5 menit) — bukan kecocokan timestamp eksak.
-- finger_stick (SMBG nyata) diekspor terpisah sebagai dataset SMBG.
+- finger_stick (SMBG nyata) dipertahankan dalam dataset yang sama
+  dengan metadata `glucose_source`.
+- `dataset_split` mempertahankan pembagian resmi OhioT1DM:
+  `*_training.xml` -> `train`, `*_testing.xml` -> `test`.
+- Output akhir berupa satu CSV gabungan: `ohio_t1dm.csv`.
 
 Catatan dataset (hasil scan 24 file): kanal `stressors` nyaris kosong (7 event di
 seluruh 12 pasien), sehingga fitur `stress` secara inheren tak informatif di OhioT1DM.
@@ -110,7 +114,37 @@ def _basal_rate_stepwise(basal: pd.DataFrame, base_ts: pd.Series) -> pd.Series:
     return out
 
 
-def _build_feature_frame(root: ET.Element, base: pd.DataFrame, patient_id: str) -> pd.DataFrame:
+
+def _get_dataset_split(xml_path: Path | str) -> str:
+    """
+    Feature creation / metadata engineering:
+    infer the official OhioT1DM split from the source XML filename.
+
+        *_training.xml -> train
+        *_testing.xml  -> test
+
+    This does not alter timestamps or create a new random split.
+    """
+    name = Path(xml_path).name.lower()
+
+    if "-training.xml" in name:
+        return "train"
+
+    if "-testing.xml" in name:
+        return "test"
+
+    raise ValueError(
+        f"Tidak dapat menentukan dataset_split dari nama file: {name}"
+    )
+
+
+def _build_feature_frame(
+    root: ET.Element,
+    base: pd.DataFrame,
+    patient_id: str,
+    dataset_split: str,
+    glucose_source: str,
+) -> pd.DataFrame:
     """Bangun frame fitur ter-align untuk timeline `base` (kolom: ts, glucose)."""
     base = base.sort_values("ts").reset_index(drop=True)
     ts = base["ts"]
@@ -146,7 +180,14 @@ def _build_feature_frame(root: ET.Element, base: pd.DataFrame, patient_id: str) 
         "illness": _align_presence(illness, ts).values,
     })
     df["meal_type"] = (df["carbs"] > 0).map({True: "meal", False: "none"})
+
+    # Feature creation / metadata engineering:
+    # these fields do not exist in the raw XML; they are created here
+    # from the source file and the type of glucose observation.
     df["source"] = "ohio_t1dm"
+    df["glucose_source"] = glucose_source
+    df["dataset_split"] = dataset_split
+
     return df
 
 
@@ -165,7 +206,15 @@ def parse_ohio_xml(xml_path: Path | str) -> pd.DataFrame:
     cgm = cgm[cgm["glucose"] > 0].reset_index(drop=True)
     if cgm.empty:
         return pd.DataFrame()
-    return _build_feature_frame(root, cgm, patient_id)
+    dataset_split = _get_dataset_split(xml_path)
+
+    return _build_feature_frame(
+        root,
+        cgm,
+        patient_id,
+        dataset_split,
+        "CGM",
+    )
 
 
 def parse_ohio_fingerstick(xml_path: Path | str) -> pd.DataFrame:
@@ -183,7 +232,15 @@ def parse_ohio_fingerstick(xml_path: Path | str) -> pd.DataFrame:
     fs = fs[fs["glucose"] > 0].reset_index(drop=True)
     if fs.empty:
         return pd.DataFrame()
-    return _build_feature_frame(root, fs, patient_id)
+    dataset_split = _get_dataset_split(xml_path)
+
+    return _build_feature_frame(
+        root,
+        fs,
+        patient_id,
+        dataset_split,
+        "FINGER_STICK",
+    )
 
 
 def _merge_and_write(parser_fn, xml_files: List[Path], output_path: Path, label: str) -> Optional[pd.DataFrame]:
@@ -209,25 +266,260 @@ def _merge_and_write(parser_fn, xml_files: List[Path], output_path: Path, label:
 
 def process_ohio_dataset(
     ohio_root_dir: str | Path = "data/raw/OhioT1DM",
-    output_csv: str | Path = "data/raw/ohio_t1dm_merged.csv",
-    smbg_csv: str | Path = "data/raw/ohio_t1dm_smbg.csv",
+    output_csv: str | Path = "data/raw/ohio_t1dm.csv",
 ) -> None:
-    """Proses semua XML OhioT1DM → CSV CGM (training) + CSV SMBG (finger_stick)."""
+    """
+    Proses semua XML OhioT1DM menjadi SATU CSV gabungan.
+
+    Setiap row mempertahankan metadata:
+
+        glucose_source
+            - CGM
+            - FINGER_STICK
+
+        dataset_split
+            - train
+            - test
+
+    Pembagian train/test mengikuti file resmi OhioT1DM:
+        *_training.xml -> train
+        *_testing.xml  -> test
+
+    Tidak dilakukan random split.
+
+    Output:
+        data/raw/ohio_t1dm.csv
+
+    File output akan di-overwrite setiap kali parser dijalankan.
+    """
+
     ohio_root = Path(ohio_root_dir)
-    xml_files = sorted(ohio_root.glob("**/[0-9]*-ws-*.xml"))
+    output_path = Path(output_csv)
+
+    xml_files = sorted(
+        ohio_root.glob("**/[0-9]*-ws-*.xml")
+    )
+
     if not xml_files:
         print(f"Tidak ada file XML di {ohio_root}")
         return
 
-    print(f"Memproses {len(xml_files)} file XML dari {ohio_root}")
-    print("\n[1/2] Timeline CGM (5-menit) -> dataset training")
-    cgm = _merge_and_write(parse_ohio_xml, xml_files, Path(output_csv), "CGM merged")
-    print("\n[2/2] Timeline finger_stick (SMBG nyata)")
-    smbg = _merge_and_write(parse_ohio_fingerstick, xml_files, Path(smbg_csv), "SMBG fingerstick")
+    print(
+        f"Memproses {len(xml_files)} file XML "
+        f"dari {ohio_root}"
+    )
 
-    if cgm is not None:
-        nz = {c: round((cgm[c] > 0).mean() * 100, 2) for c in ["carbs", "insulin", "bolus_dose", "basal_rate", "activity", "stress"]}
-        print(f"\nRingkasan CGM (% baris non-nol): {nz}")
+    # =========================================================
+    # PARSE CGM
+    # =========================================================
+
+    print(
+        "\n[1/2] Timeline CGM (5-menit)"
+    )
+
+    cgm_frames = []
+
+    for xml_file in xml_files:
+        try:
+            df = parse_ohio_xml(xml_file)
+
+            if not df.empty:
+                cgm_frames.append(df)
+
+                print(
+                    f"  + CGM  {xml_file.name}: "
+                    f"{len(df)} baris "
+                    f"[{df['dataset_split'].iloc[0]}]"
+                )
+
+        except Exception as exc:
+            print(
+                f"  ! gagal CGM {xml_file.name}: "
+                f"{exc}"
+            )
+
+    # =========================================================
+    # PARSE FINGER-STICK / SMBG
+    # =========================================================
+
+    print(
+        "\n[2/2] Timeline finger_stick (SMBG nyata)"
+    )
+
+    smbg_frames = []
+
+    for xml_file in xml_files:
+        try:
+            df = parse_ohio_fingerstick(xml_file)
+
+            if not df.empty:
+                smbg_frames.append(df)
+
+                print(
+                    f"  + SMBG {xml_file.name}: "
+                    f"{len(df)} baris "
+                    f"[{df['dataset_split'].iloc[0]}]"
+                )
+
+        except Exception as exc:
+            print(
+                f"  ! gagal SMBG {xml_file.name}: "
+                f"{exc}"
+            )
+
+    if not cgm_frames and not smbg_frames:
+        print("Tidak ada data yang berhasil diparse.")
+        return
+
+    # =========================================================
+    # COMBINE CGM + SMBG
+    # =========================================================
+
+    frames = []
+
+    if cgm_frames:
+        frames.extend(cgm_frames)
+
+    if smbg_frames:
+        frames.extend(smbg_frames)
+
+    combined = pd.concat(
+        frames,
+        ignore_index=True,
+    )
+
+    # =========================================================
+    # SORT
+    # =========================================================
+
+    combined = (
+        combined
+        .sort_values(
+            [
+                "patient_id",
+                "timestamp",
+                "glucose_source",
+            ]
+        )
+        .reset_index(drop=True)
+    )
+
+    # =========================================================
+    # WRITE ONE DATASET
+    # =========================================================
+
+    output_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    # Intentional overwrite:
+    # setiap run menghasilkan dataset fresh dari XML.
+    combined.to_csv(
+        output_path,
+        index=False,
+    )
+
+    # =========================================================
+    # SUMMARY
+    # =========================================================
+
+    split_counts = (
+        combined["dataset_split"]
+        .value_counts()
+        .to_dict()
+    )
+
+    source_counts = (
+        combined["glucose_source"]
+        .value_counts()
+        .to_dict()
+    )
+
+    patient_counts = (
+        combined["patient_id"]
+        .nunique()
+    )
+
+    print(
+        "\n=================================================="
+    )
+
+    print(
+        f"Dataset gabungan: {output_path}"
+    )
+
+    print(
+        f"Total rows      : {len(combined):,}"
+    )
+
+    print(
+        f"Total patients  : {patient_counts}"
+    )
+
+    print(
+        f"Glucose source  : {source_counts}"
+    )
+
+    print(
+        f"Dataset split   : {split_counts}"
+    )
+
+    print(
+        "=================================================="
+    )
+
+    # =========================================================
+    # CGM SUMMARY
+    # =========================================================
+
+    if cgm_frames:
+
+        cgm = pd.concat(
+            cgm_frames,
+            ignore_index=True,
+        )
+
+        nz_columns = [
+            "carbs",
+            "insulin",
+            "bolus_dose",
+            "basal_rate",
+            "activity",
+            "stress",
+        ]
+
+        nz = {
+            column: round(
+                (
+                    cgm[column] > 0
+                ).mean() * 100,
+                2,
+            )
+            for column in nz_columns
+        }
+
+        print(
+            "\nRingkasan CGM "
+            "(% baris non-nol):"
+        )
+
+        print(nz)
+
+    # =========================================================
+    # SOURCE/SPLIT CROSS-TAB
+    # =========================================================
+
+    cross_tab = pd.crosstab(
+        combined["glucose_source"],
+        combined["dataset_split"],
+    )
+
+    print(
+        "\nDistribusi source × split:"
+    )
+
+    print(cross_tab)
 
 
 if __name__ == "__main__":

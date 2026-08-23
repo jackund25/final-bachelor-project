@@ -1,0 +1,60 @@
+# Core Data Science
+pip>=24.2
+setuptools>=70.0.0
+wheel>=0.43.0
+numpy==1.26.4
+pandas==2.0.3
+scipy==1.11.1
+
+# Machine Learning
+scikit-learn==1.3.0
+tensorflow==2.15.0
+# torch WAJIB ada (bukan opsional): sentence-transformers memuatnya, dan di Windows
+# ia harus di-import SEBELUM numpy/pyarrow untuk menghindari WinError 1114 pada c10.dll
+# (lihat run_app.py dan header skrip evaluasi).
+torch>=2.0
+
+# RAG Components
+chromadb==1.0.12
+langchain==0.3.25
+langchain-community==0.3.24
+langchain-text-splitters==0.3.8
+langchain-chroma==0.2.4
+langchain-ollama==0.3.3
+langchain-google-genai>=2.0.0
+# Dipakai jalur RAGAS: Gemini diakses lewat endpoint OpenAI-compatible untuk
+# menghindari "Event loop is closed" / skor NaN pada transport gRPC.
+langchain-openai>=0.3.0
+nest-asyncio>=1.5.7
+ollama==0.5.1
+flashrank==0.2.10
+ragas==0.2.6
+sentence-transformers>=3.0.0
+
+# Document Processing
+PyPDF2==3.0.1
+python-docx==0.8.11
+
+# Visualization
+matplotlib==3.7.2
+seaborn==0.12.2
+plotly==5.15.0
+
+# Web App
+streamlit==1.25.0
+
+# Utilities
+pyyaml==6.0.1
+python-dotenv==1.0.0
+tqdm==4.65.0
+
+# rank_bm25 DIPAKAI JALUR PRODUKSI sejak T13/T14. config.yaml menyetel
+# rag.retrieval_mode=hibrida, yang menggabungkan penelusuran vektor dan BM25
+# dengan Reciprocal Rank Fusion. Tanpa paket ini src/rag/retriever.py menurunkan
+# mode ke vektor dan mencatat sebabnya pada _bm25_error.
+# Catatan lama 'TIDAK dipakai jalur produksi' sudah TIDAK BERLAKU.
+rank_bm25==0.2.2
+
+# Testing
+pytest==7.4.0
+pytest-cov==4.1.0

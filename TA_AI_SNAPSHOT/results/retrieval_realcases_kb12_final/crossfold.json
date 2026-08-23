@@ -1,0 +1,338 @@
+{
+  "catatan": "Enam fold lintas-pasien. Pada tiap fold, model regresi dan pengklasifikasi dilatih ulang dari nol pada 10 pasien; retrieval dievaluasi pada 2 pasien yang tak pernah dilihat. Ground truth = kondisi glukosa yang benar-benar terjadi.",
+  "n_fold": 6,
+  "top_k": 5,
+  "n_kasus_per_himpunan_per_fold": 60,
+  "ringkasan_lintas_fold": {
+    "divergen": {
+      "standard": {
+        "mrr_rerata": 0.382,
+        "mrr_sd": 0.009,
+        "hit@1_rerata": 0.328,
+        "hit@1_sd": 0.008
+      },
+      "pc_rag": {
+        "mrr_rerata": 0.433,
+        "mrr_sd": 0.023,
+        "hit@1_rerata": 0.328,
+        "hit@1_sd": 0.017
+      },
+      "pc_rag_classifier": {
+        "mrr_rerata": 0.464,
+        "mrr_sd": 0.036,
+        "hit@1_rerata": 0.386,
+        "hit@1_sd": 0.039
+      },
+      "oracle": {
+        "mrr_rerata": 0.829,
+        "mrr_sd": 0.005,
+        "hit@1_rerata": 0.667,
+        "hit@1_sd": 0.0
+      }
+    },
+    "natural": {
+      "standard": {
+        "mrr_rerata": 0.647,
+        "mrr_sd": 0.068,
+        "hit@1_rerata": 0.367,
+        "hit@1_sd": 0.121
+      },
+      "pc_rag": {
+        "mrr_rerata": 0.648,
+        "mrr_sd": 0.07,
+        "hit@1_rerata": 0.353,
+        "hit@1_sd": 0.127
+      },
+      "pc_rag_classifier": {
+        "mrr_rerata": 0.641,
+        "mrr_sd": 0.068,
+        "hit@1_rerata": 0.361,
+        "hit@1_sd": 0.12
+      },
+      "oracle": {
+        "mrr_rerata": 0.686,
+        "mrr_sd": 0.064,
+        "hit@1_rerata": 0.375,
+        "hit@1_sd": 0.127
+      }
+    }
+  },
+  "per_fold": [
+    {
+      "fold": 0,
+      "pasien_uji": [
+        "ohio_540",
+        "ohio_544"
+      ],
+      "n_divergen_tersedia": 3832,
+      "divergen": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.333,
+          "mrr": 0.383
+        },
+        "pc_rag": {
+          "hit@1": 0.333,
+          "mrr": 0.431
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.4,
+          "mrr": 0.47
+        },
+        "oracle": {
+          "hit@1": 0.667,
+          "mrr": 0.828
+        }
+      },
+      "natural": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.3,
+          "mrr": 0.614
+        },
+        "pc_rag": {
+          "hit@1": 0.3,
+          "mrr": 0.625
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.3,
+          "mrr": 0.608
+        },
+        "oracle": {
+          "hit@1": 0.3,
+          "mrr": 0.65
+        }
+      }
+    },
+    {
+      "fold": 1,
+      "pasien_uji": [
+        "ohio_552",
+        "ohio_559"
+      ],
+      "n_divergen_tersedia": 3106,
+      "divergen": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.333,
+          "mrr": 0.371
+        },
+        "pc_rag": {
+          "hit@1": 0.333,
+          "mrr": 0.441
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.4,
+          "mrr": 0.446
+        },
+        "oracle": {
+          "hit@1": 0.667,
+          "mrr": 0.831
+        }
+      },
+      "natural": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.283,
+          "mrr": 0.596
+        },
+        "pc_rag": {
+          "hit@1": 0.25,
+          "mrr": 0.594
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.283,
+          "mrr": 0.587
+        },
+        "oracle": {
+          "hit@1": 0.317,
+          "mrr": 0.656
+        }
+      }
+    },
+    {
+      "fold": 2,
+      "pasien_uji": [
+        "ohio_563",
+        "ohio_567"
+      ],
+      "n_divergen_tersedia": 3678,
+      "divergen": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.333,
+          "mrr": 0.387
+        },
+        "pc_rag": {
+          "hit@1": 0.35,
+          "mrr": 0.454
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.417,
+          "mrr": 0.516
+        },
+        "oracle": {
+          "hit@1": 0.667,
+          "mrr": 0.819
+        }
+      },
+      "natural": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.283,
+          "mrr": 0.617
+        },
+        "pc_rag": {
+          "hit@1": 0.267,
+          "mrr": 0.606
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.283,
+          "mrr": 0.613
+        },
+        "oracle": {
+          "hit@1": 0.283,
+          "mrr": 0.642
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "pasien_uji": [
+        "ohio_570",
+        "ohio_575"
+      ],
+      "n_divergen_tersedia": 3200,
+      "divergen": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.317,
+          "mrr": 0.372
+        },
+        "pc_rag": {
+          "hit@1": 0.333,
+          "mrr": 0.456
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.367,
+          "mrr": 0.461
+        },
+        "oracle": {
+          "hit@1": 0.667,
+          "mrr": 0.831
+        }
+      },
+      "natural": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.467,
+          "mrr": 0.718
+        },
+        "pc_rag": {
+          "hit@1": 0.45,
+          "mrr": 0.699
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.45,
+          "mrr": 0.687
+        },
+        "oracle": {
+          "hit@1": 0.483,
+          "mrr": 0.739
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "pasien_uji": [
+        "ohio_584",
+        "ohio_588"
+      ],
+      "n_divergen_tersedia": 3888,
+      "divergen": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.317,
+          "mrr": 0.393
+        },
+        "pc_rag": {
+          "hit@1": 0.317,
+          "mrr": 0.418
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.317,
+          "mrr": 0.41
+        },
+        "oracle": {
+          "hit@1": 0.667,
+          "mrr": 0.831
+        }
+      },
+      "natural": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.567,
+          "mrr": 0.747
+        },
+        "pc_rag": {
+          "hit@1": 0.567,
+          "mrr": 0.767
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.567,
+          "mrr": 0.759
+        },
+        "oracle": {
+          "hit@1": 0.583,
+          "mrr": 0.792
+        }
+      }
+    },
+    {
+      "fold": 5,
+      "pasien_uji": [
+        "ohio_591",
+        "ohio_596"
+      ],
+      "n_divergen_tersedia": 3416,
+      "divergen": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.333,
+          "mrr": 0.387
+        },
+        "pc_rag": {
+          "hit@1": 0.3,
+          "mrr": 0.396
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.417,
+          "mrr": 0.484
+        },
+        "oracle": {
+          "hit@1": 0.667,
+          "mrr": 0.831
+        }
+      },
+      "natural": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.3,
+          "mrr": 0.589
+        },
+        "pc_rag": {
+          "hit@1": 0.283,
+          "mrr": 0.6
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.283,
+          "mrr": 0.592
+        },
+        "oracle": {
+          "hit@1": 0.283,
+          "mrr": 0.639
+        }
+      }
+    }
+  ]
+}

@@ -245,7 +245,11 @@ class RAGPipeline:
         # Prediction-conditioned query: numeric prediction → natural language context
         self._last_llm_context = None
         with timer.measure(STAGE_QUERY):
-            user_query = query or self._build_query(patient_state, prediction)
+            user_query = self._build_query(
+                patient_state,
+                prediction,
+                user_question=query,
+            )
         k = top_k or self.top_k
 
         with timer.measure(STAGE_RETRIEVE):
@@ -334,61 +338,117 @@ class RAGPipeline:
             )
         return self.retriever.retrieve(query=query, top_k=top_k)
 
-    def _build_query(self, patient_state: Dict[str, Any], prediction: float) -> str:
-        """Build a prediction-conditioned retrieval query via PredictionConditionedQueryBuilder.
+    def _build_query(
+        self,
+        patient_state: Dict[str, Any],
+        prediction: float,
+        user_question: Optional[str] = None,
+    ) -> str:
+        """Build retrieval query dengan clinical question sebagai anchor.
 
-        The query embeds the numeric ML prediction so that retrieved chunks
-        and the LLM advisory are conditioned on the FORECASTED glucose
-        trajectory — the core novelty vs. static SPARQL-query systems.
+        Prediction dan patient state tidak dimasukkan sebagai narasi panjang.
+        Keduanya hanya digunakan untuk menghasilkan konteks klinis ringkas
+        agar tidak menggeser semantic focus dari pertanyaan pengguna.
         """
         try:
+            from src.constants import classify_glucose_3class, CLASS_NORMAL
+
+            # --------------------------------------------------------------
+            # 1. Clinical question = PRIMARY QUERY
+            # --------------------------------------------------------------
+            question = (user_question or "").strip()
+
+            if not question:
+                question = "Apa tindakan yang sesuai berdasarkan kondisi pasien?"
+
+            # --------------------------------------------------------------
+            # 2. Prediction -> clinical condition
+            # --------------------------------------------------------------
+            condition = classify_glucose_3class(float(prediction))
+
+            context_parts: List[str] = []
+
+            if condition != CLASS_NORMAL:
+                context_parts.append(condition)
+
+            # --------------------------------------------------------------
+            # 3. Hanya tambahkan konteks klinis yang benar-benar relevan.
+            # --------------------------------------------------------------
+            if context_parts:
+                retrieval_query = (
+                    f"{question} "
+                    f"Konteks klinis: {', '.join(context_parts)}."
+                )
+            else:
+                retrieval_query = question
+
+            # --------------------------------------------------------------
+            # 4. Tetap bangun structured context untuk LLM.
+            #    Ini TIDAK dipakai sebagai retrieval query.
+            # --------------------------------------------------------------
             try:
                 from src.patient_state import PatientState
             except ImportError:
                 from ..patient_state import PatientState
 
             def _opt_float(key: str):
-                v = patient_state.get(key)
-                return float(v) if v is not None else None
+                value = patient_state.get(key)
+                return float(value) if value is not None else None
 
             state = PatientState.from_model_output(
-                patient_id=str(patient_state.get("patient_id", "unknown")),
-                current_glucose=float(patient_state.get("current_glucose", 100.0)),
+                patient_id=str(
+                    patient_state.get("patient_id", "unknown")
+                ),
+                current_glucose=float(
+                    patient_state.get("current_glucose", 100.0)
+                ),
                 predicted_glucose=float(prediction),
                 feature_row=patient_state,
-                # Horizon SEBENARNYA, bukan default 60. Sebelum perbaikan ini setiap
-                # kueri produksi menanyakan "60 menit ke depan" padahal bundle
-                # memprediksi 30 menit dan UI menampilkan 30 menit.
                 prediction_horizon_minutes=self.prediction_horizon_minutes,
-                # Kondisi dari pengklasifikasi & batas interval konformal (bila disediakan
-                # pemanggil) mengaktifkan pengondisian kueri yang sadar-ketidakpastian.
-                predicted_condition=patient_state.get("predicted_condition"),
+                predicted_condition=patient_state.get(
+                    "predicted_condition"
+                ),
                 predicted_lower=_opt_float("predicted_lower"),
                 predicted_upper=_opt_float("predicted_upper"),
             )
-            builder = PredictionConditionedQueryBuilder(strategy=QueryStrategy.COMPREHENSIVE)
-            cq = builder.build(state)
-            # Simpan blok konteks klinis terstruktur agar answer() dapat meneruskannya
-            # ke LLM. Sebelumnya blok ini dibangun lalu hilang bersama objek cq.
-            self._last_llm_context = cq.llm_context
-            return cq.primary_query
-        except Exception as exc:
-            logger.warning("PredictionConditionedQueryBuilder failed, using fallback: %s", exc)
-            # Fallback: simple inline query
-            current = patient_state.get("current_glucose", "N/A")
-            stress = patient_state.get("stress_level", "N/A")
-            activity = patient_state.get("activity_level", 0)
-            delta = (
-                f"{prediction - float(current):+.1f} mg/dL"
-                if isinstance(current, (int, float))
-                else "N/A"
+
+            builder = PredictionConditionedQueryBuilder(
+                strategy=QueryStrategy.COMPREHENSIVE
             )
+
+            cq = builder.build(
+                state,
+                user_question=user_question,
+            )
+
+            # Context terstruktur tetap diteruskan ke LLM.
+            self._last_llm_context = cq.llm_context
+
+            logger.debug(
+                "Retrieval query simplified: %s",
+                retrieval_query,
+            )
+
+            return retrieval_query
+
+        except Exception as exc:
+            logger.warning(
+                "Prediction-conditioned query context failed: %s",
+                exc,
+            )
+
+            # --------------------------------------------------------------
+            # Safe fallback:
+            # pertanyaan pengguna tetap menjadi query utama.
+            # --------------------------------------------------------------
+            question = (user_question or "").strip()
+
+            if question:
+                return question
+
             return (
-                f"Pasien diabetes dengan glukosa saat ini {current} mg/dL, "
-                f"stress {stress}/10, aktivitas {activity} menit. "
-                f"Model memprediksi glukosa 1 jam ke depan: {prediction:.1f} mg/dL "
-                f"(perubahan {delta}). "
-                "Berikan penilaian risiko dan tindakan aman yang perlu dipantau dokter."
+                "Apa tindakan klinis yang sesuai "
+                "berdasarkan kondisi pasien?"
             )
 
     def _build_advisory(
