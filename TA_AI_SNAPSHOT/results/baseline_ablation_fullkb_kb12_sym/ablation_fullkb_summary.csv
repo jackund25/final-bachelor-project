@@ -1,3 +1,0 @@
-mode,n,targets_needed(%),hit@1(%),hit@5(%),mrr,precision@5(%),ndcg@5
-prediction_conditioned,6,100.0,100.0,100.0,1.0,56.7,0.648
-standard,6,0.0,50.0,50.0,0.5,20.0,0.249
