@@ -166,7 +166,6 @@ python-docx==0.8.11
 python-dotenv==1.0.0
 pytz==2026.2
 pytz-deprecation-shim==0.1.0.post0
-pywin32==306
 PyYAML==6.0.1
 pyzmq==25.1.1
 ragas==0.2.6
