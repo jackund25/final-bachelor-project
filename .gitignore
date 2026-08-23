@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
+
 ta/
 ta1/
 .ta1/
@@ -35,6 +36,12 @@ data/processed/*.csv
 # Models
 models/*.h5
 models/*.pkl
+
+!models/gbm_cgm_h30m_inference_bundle.pkl
+!models/gbm_cgm_h60m_inference_bundle.pkl
+!models/gbm_finger_stick_h4h_seq8_inference_bundle.pkl
+!models/gbm_condition_classifier_h6.pkl
+
 models/*.gguf
 # vector DB (generated; rebuild via scripts/reingest_kb.py)
 models/chroma_db/
