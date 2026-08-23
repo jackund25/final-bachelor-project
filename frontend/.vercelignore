@@ -1,0 +1,27 @@
+# Dependencies
+node_modules
+
+# Build output (Vercel akan build ulang sendiri)
+.next
+out
+
+# Environment files (jangan pernah upload .env asli!)
+.env
+.env.local
+.env*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor/OS files
+.vscode
+.DS_Store
+
+# Testing
+coverage
+__tests__
+
+# Misc
+.git
+README.md

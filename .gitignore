@@ -155,3 +155,5 @@ arsip/
 
 # Berkas sementara Code Runner pada VS Code
 tempCodeRunnerFile.py
+.vercel
+.env*
