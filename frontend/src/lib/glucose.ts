@@ -182,6 +182,7 @@ export async function getGlucoseObservations(
   const validReadingCount = (readings.data ?? []).filter(
     (reading) => Number.isFinite(Number(reading.glucose)),
   ).length;
+  const minimumRequired = glucoseSource === "FINGER_STICK" ? 8 : 12;
 
   console.info("[Supabase][availability] readings", {
     patientCode,
@@ -189,9 +190,9 @@ export async function getGlucoseObservations(
     sourceId,
     rawReadingCount: readings.data?.length ?? 0,
     validReadingCount,
-    minimumRequired: 12,
-    hasSufficientHistory: validReadingCount >= 12,
-    predictionArtifactAvailable: glucoseSource === "CGM",
+    minimumRequired,
+    hasSufficientHistory: validReadingCount >= minimumRequired,
+    predictionArtifactAvailable: true,
   });
 
   if (firstError) {

@@ -1,5 +1,6 @@
 from pathlib import Path
 import pickle
+import logging
 from typing import Any, Dict, List
 
 import numpy as np
@@ -7,6 +8,10 @@ import pandas as pd
 
 from src.constants import risk_from_condition_class
 from src.conformal import prediction_interval, coverage_achieved
+
+
+logger = logging.getLogger(__name__)
+ROOT = Path(__file__).resolve().parents[2]
 
 
 MODEL_FAMILIES = [
@@ -26,27 +31,39 @@ MODEL_FAMILIES = [
     ),
 ]
 
+SOURCE_DEFAULT_SEQUENCE_LENGTH = {
+    "CGM": 12,
+    "FINGER_STICK": 8,
+}
+
 
 class PredictionService:
 
     def __init__(self):
-        self.horizons = self._load_horizons()
-
-        if not self.horizons:
-            raise RuntimeError("Prediction model belum tersedia.")
-
+        self.horizons = self._load_horizons("CGM")
         self.condition_classifier = self._load_condition_classifier()
 
     def _load_artifacts(self, path: str):
-        bf = Path(path)
+        bf = ROOT / path
 
         if not bf.exists():
             return None
 
-        with open(bf, "rb") as f:
-            b = pickle.load(f)
+        try:
+            with open(bf, "rb") as f:
+                b = pickle.load(f)
+        except Exception as exc:
+            logger.exception("Failed to load prediction artifact %s", bf)
+            return None
+
+        horizon_min = b.get("prediction_horizon_min")
+        horizon_steps = b.get("prediction_horizon")
+        if horizon_min is not None:
+            horizon_min = float(horizon_min)
+            horizon_steps = int(horizon_min / 5)
 
         return {
+            "artifact_path": str(bf),
             "model": b["model"],
             "scaler": b.get("scaler"),
             "features": b.get(
@@ -56,9 +73,8 @@ class PredictionService:
             "sequence_length": int(
                 b.get("sequence_length", 12)
             ),
-            "horizon": int(
-                b.get("prediction_horizon", 6)
-            ),
+            "horizon": int(horizon_steps or 6),
+            "horizon_min": float(horizon_min or (int(horizon_steps or 6) * 5)),
             "use_engineered": bool(
                 b.get("use_engineered", False)
             ),
@@ -80,38 +96,38 @@ class PredictionService:
             ),
         }
 
-    def _load_horizons(self):
-        for _, files in MODEL_FAMILIES:
-            arts = [
-                self._load_artifacts(path)
-                for path in files
+    def _load_horizons(self, glucose_source: str):
+        if glucose_source == "FINGER_STICK":
+            files = [
+                "models/gbm_finger_stick_h4h_seq8_inference_bundle.pkl",
+            ]
+        else:
+            files = [
+                "models/gbm_cgm_h30m_inference_bundle.pkl",
+                "models/gbm_cgm_h60m_inference_bundle.pkl",
             ]
 
-            arts = [
-                art for art in arts
-                if art is not None
-            ]
-
-            if arts:
-                return sorted(
-                    arts,
-                    key=lambda x: x["horizon"],
-                )
-
-        generic = self._load_artifacts(
-            "models/rf_inference_bundle.pkl"
-        )
-
-        return [generic] if generic else []
+        arts = [self._load_artifacts(path) for path in files]
+        arts = [
+            art for art in arts
+            if art is not None
+            and art.get("glucose_source", glucose_source)
+            == glucose_source
+        ]
+        return sorted(arts, key=lambda item: item["horizon"])
 
     def _load_condition_classifier(self):
-        path = Path("models") / "gbm_condition_classifier_h6.pkl"
+        path = ROOT / "models" / "gbm_condition_classifier_h6.pkl"
 
         if not path.exists():
             return None
 
-        with open(path, "rb") as f:
-            bundle = pickle.load(f)
+        try:
+            with open(path, "rb") as f:
+                bundle = pickle.load(f)
+        except Exception as exc:
+            logger.exception("Failed to load condition classifier %s", path)
+            return None
 
         features = list(bundle.get("features", []))
         scaler = bundle.get("scaler")
@@ -312,9 +328,14 @@ class PredictionService:
                 f"Tidak ada observation untuk source {glucose_source}."
             )
 
-        required = self.horizons[0]["sequence_length"]
+        horizons = self._load_horizons(glucose_source)
+        required = (
+            horizons[0]["sequence_length"]
+            if horizons
+            else SOURCE_DEFAULT_SEQUENCE_LENGTH.get(glucose_source, 12)
+        )
 
-        if glucose_source != "CGM":
+        if not horizons:
             current_glucose = float(patient_df["glucose"].iloc[-1])
             return {
                 "status": "MODEL_UNAVAILABLE",
@@ -372,7 +393,7 @@ class PredictionService:
 
         results: List[Dict[str, Any]] = []
 
-        for art in self.horizons:
+        for art in horizons:
 
             window = self._build_window(
                 patient_df,
@@ -397,7 +418,7 @@ class PredictionService:
             )
 
             results.append({
-                "horizon_minutes": art["horizon"] * 5,
+                "horizon_minutes": art["horizon_min"],
                 "prediction": prediction,
                 "std": std,
                 "interval": interval,
@@ -432,7 +453,7 @@ class PredictionService:
                     patient_df,
                     classifier_art,
                 ),
-                self.horizons[0],
+                    horizons[0],
             )
 
         current_glucose = float(
@@ -449,7 +470,23 @@ class PredictionService:
             "has_sufficient_history": True,
             "current_glucose": current_glucose,
             "prediction": primary["prediction"],
-            "prediction_30m": primary["prediction"],
+            "prediction_30m": (
+                primary["prediction"]
+                if glucose_source == "CGM"
+                else None
+            ),
+            "prediction_60m": (
+                next(
+                    (
+                        item["prediction"]
+                        for item in results
+                        if item["horizon_minutes"] == 60
+                    ),
+                    None,
+                )
+                if glucose_source == "CGM"
+                else None
+            ),
             "condition": condition,
             "horizons": results,
         }

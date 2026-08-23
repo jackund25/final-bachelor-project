@@ -128,9 +128,22 @@ export default function Home() {
       (item) => item.horizon_minutes === 60,
     )?.prediction ?? null;
 
+  const primaryHorizon =
+    result?.prediction?.horizons?.[0] ?? null;
+  const isFingerStick = glucoseSource === "FINGER_STICK";
+  const primaryPrediction = isFingerStick
+    ? primaryHorizon?.prediction ?? null
+    : prediction30;
+  const primaryHorizonLabel = isFingerStick
+    ? `${primaryHorizon?.horizon_minutes ?? 240} MIN`
+    : "30 MIN";
+
   const predictionAvailable =
     result?.prediction?.prediction_available ??
     (prediction30 !== null || prediction60 !== null);
+
+  const sourceDefaultMinimum =
+    glucoseSource === "FINGER_STICK" ? 8 : 12;
 
   // =========================================================
   // LOAD ASSESSMENT HISTORY
@@ -278,7 +291,7 @@ export default function Home() {
   }, [uiStateReady, patientId, glucoseSource]);
 
   const minimumRequired =
-    result?.prediction?.minimum_required ?? 12;
+    result?.prediction?.minimum_required ?? sourceDefaultMinimum;
   const validReadingCount = observations.filter(
     (observation) => Number.isFinite(observation.glucose),
   ).length;
@@ -612,7 +625,7 @@ export default function Home() {
                   ? `Belum ada data ${glucoseSource} untuk pasien ini. Input data ${glucoseSource} melalui Logbook untuk melihat data pasien menggunakan sumber ini.`
                   : result?.prediction.reason ??
                   result?.prediction.history?.reason ??
-                  `Insufficient historical ${glucoseSource} observations: ${observations.length}/12.`}
+                  `Insufficient historical ${glucoseSource} observations: ${validReadingCount}/${minimumRequired}.`}
               </p>
 
               <p className="advisory-disclaimer">
@@ -688,12 +701,12 @@ export default function Home() {
                     <div className="forecast-info">
 
                       <span className="forecast-time">
-                        30 MIN
+                        {primaryHorizonLabel}
                       </span>
 
                       <strong>
-                        {prediction30 !== null
-                          ? prediction30.toFixed(1)
+                        {primaryPrediction !== null
+                          ? primaryPrediction.toFixed(1)
                           : "—"}
                       </strong>
 
@@ -706,12 +719,13 @@ export default function Home() {
                   </div>
 
 
-                  <div className="forecast-line" />
+                  {!isFingerStick && (
+                    <>
+                      <div className="forecast-line" />
 
+                      {/* 60 MIN */}
 
-                  {/* 60 MIN */}
-
-                  <div className="forecast-point">
+                      <div className="forecast-point">
 
                     <div className="forecast-dot" />
 
@@ -722,7 +736,7 @@ export default function Home() {
                       </span>
 
                       <strong>
-                        {prediction60 !== null
+                        {!isFingerStick && prediction60 !== null
                           ? prediction60.toFixed(1)
                           : "—"}
                       </strong>
@@ -733,7 +747,9 @@ export default function Home() {
 
                     </div>
 
-                  </div>
+                      </div>
+                    </>
+                  )}
 
                 </div>
 
@@ -762,31 +778,33 @@ export default function Home() {
                   <div>
 
                     <span className="label">
-                      30-minute forecast
+                      {isFingerStick
+                        ? `${primaryHorizon?.horizon_minutes ?? 240}-minute forecast`
+                        : "30-minute forecast"}
                     </span>
 
                     <strong>
-                      {prediction30 !== null
-                        ? `${prediction30.toFixed(1)} mg/dL`
+                      {primaryPrediction !== null
+                        ? `${primaryPrediction.toFixed(1)} mg/dL`
                         : "Not available"}
                     </strong>
 
                   </div>
 
 
-                  <div>
+                  {!isFingerStick && (
+                    <div>
+                      <span className="label">
+                        60-minute forecast
+                      </span>
 
-                    <span className="label">
-                      60-minute forecast
-                    </span>
-
-                    <strong>
-                      {prediction60 !== null
-                        ? `${prediction60.toFixed(1)} mg/dL`
-                        : "Not available"}
-                    </strong>
-
-                  </div>
+                      <strong>
+                        {prediction60 !== null
+                          ? `${prediction60.toFixed(1)} mg/dL`
+                          : "Not available"}
+                      </strong>
+                    </div>
+                  )}
 
                 </div>
 
