@@ -59,7 +59,17 @@ class Observation(BaseModel):
     insulin: float = 0.0
     carbs: float = 0.0
     activity: float = 0.0
-    stress: float = 0.0
+
+    # `stress` DICABUT dari alur, 24 Agustus 2026. Ia tidak pernah menjadi fitur
+    # model (tidak ada pada config.model.engineered_features), dan kanal `stressors`
+    # OhioT1DM hanya memuat 7 event di seluruh 12 pasien sehingga inheren tak
+    # informatif. Meminta dokter mengisinya membuang waktu mereka; lebih buruk lagi,
+    # angka bawaan 5 sempat dicetak balik sebagai "Tingkat stres: 5/10" seolah fakta
+    # terukur (temuan T5).
+    #
+    # Medannya TETAP diterima supaya klien lama tidak putus, tetapi nilainya tidak
+    # diteruskan ke mana pun.
+    stress: float | None = None
 
     glucose_source: GlucoseSource | None = None
 
@@ -316,8 +326,10 @@ def clinical_decision_support(
         patient_state = {
             "patient_code": request.patient_code,
             "current_glucose": float(last.glucose),
-            "stress_level": float(last.stress),
             "activity_level": float(last.activity),
+            # Nilai MENTAH dari observasi terakhir. Keduanya hanya cadangan: bila
+            # prediksi tersedia, keduanya DIGANTI di bawah oleh iob/cob terekayasa
+            # yang sudah meluruh menurut waktu. Lihat blok "fitur terekayasa".
             "insulin_on_board": float(last.insulin),
             "carbs_on_board": float(last.carbs),
         }
@@ -407,16 +419,67 @@ def clinical_decision_support(
         ] = prediction_horizon
 
         # -----------------------------------------------------
+        # 2C. Salurkan seluruh keluaran prediktor ke RAG
+        #
+        # SEBELUMNYA tiga keluaran ini dihitung lalu dibuang di sini, dan itu
+        # membuat advisory jauh lebih dangkal daripada yang mampu dihasilkan
+        # sistem:
+        #
+        #   condition  - kelas dari pengklasifikasi tiga kelas. Regresi yang
+        #                meminimalkan galat kuadrat menyusut ke tengah dan jarang
+        #                berani melewati ambang 70/180, sehingga tanpa ini
+        #                perubahan kondisi kerap tidak tertandai sama sekali.
+        #   interval   - batas interval konformal. Tanpanya bagian "Penilaian"
+        #                tidak dapat menyebut rentang, dan bagian "Yang tidak
+        #                dapat disimpulkan" kehilangan bahan paling konkretnya.
+        #                Ia juga yang menghidupkan pengondisian sadar-ketidakpastian
+        #                pada _primary_query: kondisi berisiko yang masih tercakup
+        #                interval tetap diambilkan dokumennya meski prediksi
+        #                titiknya normal.
+        #
+        # PatientState.from_model_output dan RAGPipeline._build_query SUDAH
+        # menerima ketiga nama medan ini. Tidak ada kode baru di sisi RAG; yang
+        # diperbaiki hanyalah berhenti membuangnya di sini.
+        # -----------------------------------------------------
+
+        patient_state["predicted_condition"] = prediction_result.get("condition")
+
+        interval = primary.get("interval")
+
+        if interval and len(interval) == 2:
+            patient_state["predicted_lower"] = float(interval[0])
+            patient_state["predicted_upper"] = float(interval[1])
+
+        # Fitur terekayasa: iob/cob yang MELURUH menurut waktu, plus laju perubahan
+        # glukosa dan jarak ke pengukuran sebelumnya. Inilah vektor yang benar-benar
+        # dilihat model, jadi inilah pula yang harus dilihat model bahasa. Kolom
+        # mentah `last.insulin` di atas hanya dipakai bila prediktor tidak
+        # mengembalikan fitur terekayasa sama sekali.
+        engineered = prediction_result.get("engineered_last") or {}
+
+        if "iob" in engineered:
+            patient_state["insulin_on_board"] = engineered["iob"]
+        if "cob" in engineered:
+            patient_state["carbs_on_board"] = engineered["cob"]
+
+        for nama in ("glucose_rate", "time_since_prev_glucose"):
+            if nama in engineered:
+                patient_state[nama] = engineered[nama]
+
+        # -----------------------------------------------------
         # 3. Prediction-conditioned clinical RAG
         # -----------------------------------------------------
 
         rag = get_rag_pipeline()
 
+        # top_k dibiarkan bersumber dari config.yaml (rag.top_k_retrieval), sama
+        # seperti seluruh parameter pipeline lainnya. Nilai 5 yang dipatri di sini
+        # membuat config diam-diam tidak berlaku pada satu-satunya jalur yang
+        # benar-benar dipakai dokter.
         rag_result = rag.answer(
             patient_state=patient_state,
             prediction=predicted_glucose,
             query=request.question,
-            top_k=5,
         )
 
         get_data_service().save_assessment(
@@ -464,9 +527,29 @@ def clinical_decision_support(
                     "retrieved_docs",
                     [],
                 ),
+                # Pemeriksaan deterministik: tiap ANGKA yang diberi penanda [S..]
+                # dicek apakah benar ada pada potongan yang ditunjuknya. Sudah
+                # dihitung pipeline sejak 24 Agustus tetapi belum pernah sampai ke
+                # antarmuka, sehingga hasilnya tidak pernah terlihat siapa pun.
+                "verifikasi_sitasi": rag_result.get(
+                    "verifikasi_sitasi",
+                    None,
+                ),
+                # Durasi per tahap. Dipakai antarmuka untuk menunjukkan bahwa
+                # penantian sedang mengerjakan sesuatu, bukan menggantung.
+                "timings": rag_result.get(
+                    "timings",
+                    None,
+                ),
                 "prediction_horizon_minutes":
                     prediction_horizon,
                 "prediction": predicted_glucose,
+                # Kelas dari pengklasifikasi tiga kelas. Ditampilkan sebagai label
+                # utama panel advisory, sejajar dengan angka mg/dL: kondisi adalah
+                # keluaran yang paling didukung data ini, sedangkan nilai regresi
+                # membawa ketidakpastian yang jauh lebih besar.
+                "predicted_condition": prediction_result.get("condition"),
+                "prediction_interval": primary.get("interval"),
                 "recommendation_available": bool(
                     rag_result.get(
                         "grounded",

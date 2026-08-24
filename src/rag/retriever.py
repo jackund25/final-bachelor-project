@@ -700,9 +700,11 @@ class MMRRetriever:
             if kondisi != CLASS_NORMAL:
                 conditions.append(kondisi)
 
-        stress = int(patient_state.get("stress_level", 0))
-        if stress >= 7:
-            conditions.append("stress tinggi")
+        # Cabang "stres tinggi" DICABUT 24 Agustus 2026 bersama variabel stres.
+        # Pencabutan ini TIDAK mengubah kueri produksi: sejak stres tak lagi ada
+        # pada patient_state, `.get("stress_level", 0)` selalu 0 dan cabangnya
+        # tidak pernah terpicu. Penting dicatat karena kueri retrieval sengaja
+        # dibekukan menjelang evaluasi dokter agar hasil sebelum/sesudah sebanding.
 
         if not conditions:
             return query.strip()

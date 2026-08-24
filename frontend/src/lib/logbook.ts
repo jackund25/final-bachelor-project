@@ -9,7 +9,6 @@ export type LogbookEntry = {
   insulin: number;
   carbs: number;
   activity: number;
-  stress: number;
   glucose_source: GlucoseSource;
 };
 
@@ -27,7 +26,6 @@ export async function saveLogbookEntry(
       insulin: entry.insulin,
       carbs: entry.carbs,
       activity: entry.activity,
-      stress: entry.stress,
     }),
   });
 

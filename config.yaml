@@ -470,6 +470,15 @@ rag:
   # Hit@5, MRR, precision@5, dan nDCG@5 yang pernah dilaporkan mengukur kedalaman yang
   # tidak pernah dipakai aplikasi. Menaikkan produksi lebih murah daripada menghitung ulang
   # seluruh angka retrieval, dan menampilkan lima rujukan tidak lebih buruk bagi dokter.
+  #
+  # DIPERTAHANKAN 5 pada 24 Agustus 2026, setelah sempat direncanakan naik ke 8
+  # demi memberi model bahasa lebih banyak bahan. Rencana itu DIBATALKAN: seluruh
+  # skrip evaluasi mengukur Hit@5, MRR, precision@5, dan nDCG@5, sehingga menaikkan
+  # produksi ke 8 akan MENGULANG persis cacat yang baru saja ditutup di paragraf
+  # atas - aplikasi memakai kedalaman yang tidak pernah diukur.
+  #
+  # Bila kelak benar-benar perlu naik, naikkan bersama seluruh skrip evaluasi dan
+  # hitung ulang angkanya, jangan salah satunya saja.
   top_k_retrieval: 5 # jumlah dokumen yang dikembalikan
   fetch_k: 12 # ukuran kolam kandidat sebelum diversifikasi MMR
 
@@ -573,7 +582,15 @@ rag:
     temperature: 0.2
     # Batas panjang keluaran. Sebelum Tugas 4 nilai ini tidak pernah diterapkan;
     # 300 token terlalu ketat untuk nasihat Bahasa Indonesia beserta disclaimer.
-    max_tokens: 1200
+    #
+    # DINAIKKAN 1200 -> 2048 pada 24 Agustus 2026. Keluaran sekarang wajib memuat
+    # LIMA bagian (SBAR + "Yang tidak dapat disimpulkan"), masing-masing dengan
+    # penanda sitasi. Pada 1200 token bagian kelima berisiko terpotong, dan justru
+    # bagian itu yang menyatakan batas kemampuan sistem - satu-satunya bagian yang
+    # tidak dapat ditiru aturan ambang if/else.
+    #
+    # Tidak memengaruhi angka retrieval mana pun: ini batas SISI KELUARAN.
+    max_tokens: 2048
 
 # Evaluation
 evaluation:

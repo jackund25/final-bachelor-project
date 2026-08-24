@@ -472,12 +472,23 @@ class PredictionService:
 
         results: List[Dict[str, Any]] = []
 
+        # Jendela terekayasa horizon UTAMA disimpan untuk dikembalikan ke pemanggil.
+        # Ia memuat iob/cob yang sudah MELURUH menurut waktu (preprocessor.py), bukan
+        # dosis mentah pada satu observasi. Sebelumnya jendela ini hanya hidup di
+        # dalam metode ini lalu dibuang, sehingga clinical.py terpaksa memakai
+        # `last.insulin` dan mengirimkannya ke LLM dengan label "insulin on board" —
+        # dosis 5 unit enam jam lalu terbaca sebagai 5,00 unit insulin aktif.
+        window_utama = None
+
         for art in horizons:
 
             window = self._build_window(
                 patient_df,
                 art,
             )
+
+            if window_utama is None:
+                window_utama = window
 
             prediction = self._predict_next(
                 window,
@@ -568,4 +579,32 @@ class PredictionService:
             ),
             "condition": condition,
             "horizons": results,
+            # Baris TERAKHIR jendela terekayasa horizon utama. Inilah vektor fitur
+            # yang benar-benar dilihat model, jadi inilah pula yang harus dilihat
+            # model bahasa — bukan kolom mentah dari baris logbook terakhir.
+            "engineered_last": self._ringkas_fitur(window_utama),
         }
+
+    @staticmethod
+    def _ringkas_fitur(window) -> Dict[str, Any]:
+        """Ambil fitur turunan yang bermakna klinis dari baris terakhir jendela.
+
+        Hanya medan yang benar-benar ada yang dikembalikan; medan yang tidak dihitung
+        preprocessor SENGAJA tidak diisi nilai bawaan. Mengisi 0.0 untuk fitur yang
+        tak pernah dihitung persis mekanisme kegagalan T4: nilainya masuk ke konteks
+        LLM sebagai fakta pasien, tanpa satu pun galat yang menandainya.
+        """
+        if window is None or len(window) == 0:
+            return {}
+
+        baris = window.iloc[-1]
+        medan = ("iob", "cob", "glucose_rate", "glucose_delta", "time_since_prev_glucose")
+
+        ringkas: Dict[str, Any] = {}
+        for nama in medan:
+            if nama in window.columns:
+                nilai = baris[nama]
+                if pd.notna(nilai):
+                    ringkas[nama] = float(nilai)
+
+        return ringkas

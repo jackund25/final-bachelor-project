@@ -210,11 +210,15 @@ class SupabaseDataService:
                 "duration_min": entry.get("duration_min"),
                 "activity_type": entry.get("activity_type"),
             }),
-            ("stress_events", {
-                "patient_id": patient_id,
-                "timestamp": timestamp,
-                "stress_level": entry["stress"],
-            }),
+            # `stress_events` TIDAK LAGI DITULIS sejak 24 Agustus 2026. Stres bukan
+            # fitur model dan tidak lagi diminta dari dokter, jadi menulisnya hanya
+            # menumpuk baris bernilai bawaan yang kelak disalahartikan sebagai
+            # pengukuran.
+            #
+            # TABELNYA SENGAJA DIBIARKAN UTUH. Baris lama tetap dapat dibaca dan
+            # tidak ada migrasi yang menghapus apa pun; yang berhenti hanyalah
+            # penulisan baru. Menghapus tabel akan membuang data historis demi
+            # kerapian, dan itu pertukaran yang salah arah.
         ]
         for table, payload in event_payloads:
             self._request(table, [], method="POST", payload=payload)

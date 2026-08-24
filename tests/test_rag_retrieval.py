@@ -138,13 +138,33 @@ def test_enhance_query_kedua_mode_simetris_secara_struktur():
     assert hipo.replace("hipoglikemia", "X") == hiper.replace("hiperglikemia", "X")
 
 
-def test_enhance_query_tag_stres_berlaku_pada_kedua_mode():
-    """Stres tidak bergantung pada prediksi, jadi muncul apa pun sumber kondisinya."""
+def test_enhance_query_mengabaikan_stres_sepenuhnya():
+    """Stres TIDAK BOLEH lagi memengaruhi kueri retrieval.
+
+    Kebalikan dari tes sebelumnya, yang menjaga agar tag "stress tinggi" muncul.
+    Variabel stres dicabut pada 24 Agustus 2026: ia bukan fitur model, dan kanal
+    sumbernya di OhioT1DM hanya memuat 7 event untuk 12 pasien.
+
+    Arah tes dibalik, bukan dihapus, karena inilah penjaga yang sekarang bernilai:
+    kueri retrieval sengaja DIBEKUKAN menjelang evaluasi dokter agar hasil sebelum
+    dan sesudah tetap sebanding. Kalau suatu saat stres masuk kembali dan diam-diam
+    menggeser kueri, perbandingan itu batal tanpa ada yang menyadarinya.
+    """
     e = _enhancer()
-    stres = {"current_glucose": 112.0, "stress_level": 8}
 
     for src in (None, 58.0, 112.0, 230.0):
-        assert "stress tinggi" in e._enhance_query("Tindakan apa?", stres, condition_glucose=src)
+        tanpa = e._enhance_query(
+            "Tindakan apa?", {"current_glucose": 112.0}, condition_glucose=src
+        )
+        dengan = e._enhance_query(
+            "Tindakan apa?",
+            {"current_glucose": 112.0, "stress_level": 8},
+            condition_glucose=src,
+        )
+
+        assert "stress" not in dengan.lower()
+        # Kehadiran medan stres tidak mengubah kueri sedikit pun.
+        assert tanpa == dengan
 
 
 class _SpyRetriever:

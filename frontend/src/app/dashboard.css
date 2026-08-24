@@ -1202,3 +1202,252 @@ h2 {
   color: #b42318;
   font-size: 13px;
 }
+
+
+/* =========================================================
+   SBAR — struktur jawaban klinis
+   =========================================================
+
+   Model bahasa diminta menjawab dalam lima bagian berjudul. Sebelum
+   24 Agustus 2026 seluruh jawaban dirender ke SATU elemen <p>, sehingga
+   kelima judul menyatu menjadi satu gumpalan teks dan tanda bintang
+   penebalan ikut terbaca mentah. Struktur yang diminta di prompt hilang
+   tepat di langkah terakhir sebelum sampai ke mata dokter.
+
+   Aturan tampilan di bawah menjaga satu hal: batas antar-bagian harus
+   terlihat sekali pandang, karena manfaat SBAR justru pada urutan tetap
+   yang sudah ada di kepala pembaca. Bagian yang hilang harus langsung
+   terasa; itu mustahil bila semuanya menyatu. */
+
+.sbar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sbar-bagian {
+  padding: 12px 14px;
+
+  border-left: 3px solid #d3dce4;
+  border-radius: 0 6px 6px 0;
+  background: #f7f9fb;
+}
+
+/* Bagian terakhir — batas inferensi — sengaja dibedakan. Ia BUKAN bagian
+   dari SBAR melainkan tambahan atas permintaan DECIDE-AI, dan ia satu-
+   satunya bagian yang tidak dapat ditiru aturan ambang if/else. */
+.sbar-bagian:last-child {
+  border-left-color: #b8860b;
+  background: #fdfaf0;
+}
+
+.sbar-judul {
+  margin: 0 0 6px;
+
+  color: #14212c;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sbar-bagian .advisory-text + .advisory-text {
+  margin-top: 8px;
+}
+
+.sbar-daftar {
+  margin: 8px 0 0;
+  padding-left: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  color: #263746;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Cadangan bila jawaban tidak berbentuk SBAR (jalur templat, atau model
+   tidak patuh). Teks tetap ditampilkan utuh, baris barunya dipertahankan. */
+.advisory-text--praformat {
+  white-space: pre-wrap;
+}
+
+
+/* Penanda sitasi sebagai chip yang dapat diklik. */
+
+.sitasi-chip {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 1px 6px;
+
+  border: 1px solid #c3d2de;
+  border-radius: 999px;
+  background: #eaf2f8;
+
+  color: #1f4e6b;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1.5;
+  vertical-align: baseline;
+
+  cursor: pointer;
+}
+
+.sitasi-chip:hover,
+.sitasi-chip:focus-visible {
+  background: #d6e7f3;
+  border-color: #8fb3cc;
+}
+
+/* Sorotan sesaat pada rujukan yang baru saja dituju sebuah chip. */
+.rujukan-item--disorot {
+  animation: sorot-rujukan 1.6s ease-out;
+}
+
+@keyframes sorot-rujukan {
+  0%   { background: #fff3cd; }
+  100% { background: transparent; }
+}
+
+
+/* =========================================================
+   VERIFIKASI SITASI
+   =========================================================
+
+   Hanya angka yang GAGAL diverifikasi yang ditampilkan, beserta sumber
+   yang diklaim dan kalimatnya. TANPA persentase dan TANPA lencana
+   kepercayaan: sebuah angka "92% terverifikasi" mengundang pembaca
+   memperlakukannya sebagai ukuran mutu klinis, padahal ini semata
+   pencocokan tekstual antara angka dan potongan yang ditunjuk. */
+
+.verifikasi-panel {
+  margin-top: 10px;
+  padding: 10px 12px;
+
+  border-left: 3px solid #c0392b;
+  border-radius: 4px;
+  background: #fdf1f0;
+}
+
+.verifikasi-judul {
+  margin: 0 0 8px;
+
+  color: #7d2c22;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.verifikasi-daftar {
+  margin: 0;
+  padding-left: 18px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  color: #6b3a34;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.verifikasi-kalimat {
+  display: block;
+  margin-top: 3px;
+
+  color: #85564f;
+  font-size: 12px;
+  font-style: italic;
+}
+
+
+/* Durasi per tahap. */
+
+.advisory-timings {
+  margin: 10px 0 0;
+
+  color: #7c8b98;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+
+/* =========================================================
+   PERTANYAAN KLINIS
+   =========================================================
+
+   Pertanyaan bebas dari dokter. Kosong berarti memakai kalimat bawaan. */
+
+.pertanyaan-blok {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  min-width: 0;
+  flex: 1 1 320px;
+  max-width: 460px;
+}
+
+.pertanyaan-label {
+  color: #7c8b98;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pertanyaan-input {
+  width: 100%;
+  padding: 9px 11px;
+
+  border: 1px solid #d3dce4;
+  border-radius: 8px;
+  background: #fff;
+
+  color: #14212c;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.pertanyaan-input:focus {
+  outline: none;
+  border-color: #4a90c2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 194, 0.16);
+}
+
+.pertanyaan-input:disabled {
+  background: #f2f5f8;
+  color: #94a3ae;
+}
+
+.pertanyaan-blok .primary-button {
+  align-self: flex-start;
+}
+
+
+@media (max-width: 640px) {
+  /* Judul bagian dan blok pertanyaan berbagi satu baris flex. Di lebar ponsel
+     keduanya tidak muat berdampingan, dan tanpa pembungkusan input pertanyaan
+     tergencet menjadi sekitar 225px - terlalu sempit untuk mengetik kalimat
+     klinis, padahal justru ponsel yang paling mungkin dipakai dokter. */
+  .section-heading {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .pertanyaan-blok {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .pertanyaan-blok .primary-button {
+    width: 100%;
+  }
+
+  .sbar-bagian {
+    padding: 10px 12px;
+  }
+}

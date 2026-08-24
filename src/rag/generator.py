@@ -125,7 +125,6 @@ class RAGGenerator:
         )
 
         glucose = float(patient_state.get("current_glucose", 100.0))
-        stress = int(patient_state.get("stress_level", 5))
         risk = risk_label_id(classify_glucose_5zone(prediction))
         kondisi = classify_glucose_3class(prediction)
         if kondisi == CLASS_HYPO:
@@ -134,12 +133,6 @@ class RAGGenerator:
             advice = "Pantau ulang glukosa dalam 1 jam dan tinjau asupan serta aktivitas."
         else:
             advice = "Lanjutkan monitoring rutin dan pertahankan pola sehat."
-
-        stress_note = (
-            "Stres tinggi berpotensi meningkatkan glukosa."
-            if stress >= 7
-            else "Tingkat stres relatif terkontrol."
-        )
 
         # Duplikat bug yang sama dengan DiabetesAdvisorChain._template_answer di
         # advisor_chain.py: teks "1 jam" ditulis tetap padahal `prediction` yang
@@ -155,6 +148,6 @@ class RAGGenerator:
         return (
             f"Status: {risk}. Prediksi {horizon_label} {prediction:.1f} mg/dL "
             f"dari kondisi saat ini {glucose:.1f} mg/dL. "
-            f"{stress_note} Rekomendasi: {advice} "
+            f"Rekomendasi: {advice} "
             "Catatan: keputusan medis final tetap pada dokter."
         )

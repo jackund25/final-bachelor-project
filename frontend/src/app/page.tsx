@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./dashboard.css";
 
 import {
@@ -8,6 +8,7 @@ import {
   type Observation,
   type ClinicalResponse,
   type GlucoseSource,
+  type VerifikasiSitasi,
 } from "../lib/api";
 
 import { getAssessmentHistory } from "../lib/assessment";
@@ -71,7 +72,192 @@ type Advisory = {
   // False bila narasi berasal dari templat karena model bahasa tidak tersedia.
   narasiLlm: boolean;
   citations: Citation[];
+  verifikasiSitasi?: VerifikasiSitasi | null;
+  timings?: Record<string, number> | null;
 };
+
+
+// =============================================================
+// RENDER SBAR
+// =============================================================
+//
+// Model bahasa diminta menjawab dalam lima bagian berjudul (src/rag/prompts.py).
+// Sebelum ini seluruh jawaban dijejalkan ke SATU elemen <p>, sehingga kelima judul
+// menyatu menjadi satu gumpalan teks DAN tanda bintang penebalan ikut terbaca
+// mentah oleh dokter. Struktur yang susah payah diminta di prompt hilang tepat di
+// langkah terakhir sebelum sampai ke mata pembaca.
+//
+// Judul di bawah HARUS sama persis dengan yang tertulis pada SYSTEM_PROMPT. Bila
+// prompt diubah, ubah daftar ini juga - keduanya adalah satu kontrak.
+const JUDUL_SBAR = [
+  "Situasi",
+  "Latar",
+  "Penilaian",
+  "Rekomendasi",
+  "Yang tidak dapat disimpulkan dari data ini",
+] as const;
+
+type BagianSBAR = { judul: string; isi: string };
+
+/** Pecah jawaban menjadi bagian-bagian SBAR. Kembalikan null bila polanya tidak ada. */
+function pecahSBAR(teks: string): BagianSBAR[] | null {
+  if (!teks) return null;
+
+  // Judul boleh datang sebagai "**Situasi**" atau "Situasi" di awal baris. Kedua
+  // bentuk ditoleransi: kepatuhan model tidak dijamin, dan kegagalan mengenali
+  // judul TIDAK boleh berujung teks yang hilang — lihat fallback di komponen.
+  const alternatif = JUDUL_SBAR.map((j) =>
+    j.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+  ).join("|");
+
+  const pola = new RegExp(
+    "^\\s*(?:\\*\\*)?\\s*(" + alternatif + ")\\s*(?:\\*\\*)?\\s*:?\\s*$",
+    "i",
+  );
+
+  const bagian: BagianSBAR[] = [];
+  let aktif: BagianSBAR | null = null;
+
+  for (const baris of teks.split(/\r?\n/)) {
+    const cocok = baris.match(pola);
+
+    if (cocok) {
+      aktif = { judul: cocok[1], isi: "" };
+      bagian.push(aktif);
+      continue;
+    }
+
+    if (aktif) aktif.isi += (aktif.isi ? "\n" : "") + baris;
+  }
+
+  // Butuh minimal dua bagian berisi untuk yakin ini memang keluaran SBAR.
+  const berisi = bagian.filter((x) => x.isi.trim().length > 0);
+  return berisi.length >= 2 ? berisi : null;
+}
+
+/** Ubah penanda [S1], [S2] menjadi chip yang menggulir ke rujukannya. */
+function denganChipSitasi(
+  teks: string,
+  keSumber: (n: number) => void,
+): React.ReactNode[] {
+  const potongan: React.ReactNode[] = [];
+  const pola = /\[S(\d+)\]/g;
+
+  let akhir = 0;
+  let cocok: RegExpExecArray | null;
+
+  while ((cocok = pola.exec(teks)) !== null) {
+    if (cocok.index > akhir) potongan.push(teks.slice(akhir, cocok.index));
+
+    const nomor = Number(cocok[1]);
+
+    potongan.push(
+      <button
+        key={`${cocok.index}-S${nomor}`}
+        type="button"
+        className="sitasi-chip"
+        onClick={() => keSumber(nomor)}
+        title={`Buka sumber ${nomor}`}
+      >
+        S{nomor}
+      </button>,
+    );
+
+    akhir = cocok.index + cocok[0].length;
+  }
+
+  if (akhir < teks.length) potongan.push(teks.slice(akhir));
+
+  return potongan;
+}
+
+function IsiBagian({
+  isi,
+  keSumber,
+}: {
+  isi: string;
+  keSumber: (n: number) => void;
+}) {
+  // Daftar berjenjang "a. b. c." pada Rekomendasi dirender sebagai daftar urut.
+  // Sisanya paragraf biasa. Penebalan **...** DILUCUTI, bukan dirender: tanda
+  // bintang mentah itulah cacat yang sedang diperbaiki, dan memasang parser
+  // markdown penuh menjelang evaluasi dokter bukan pertukaran yang sepadan.
+  const baris = isi
+    .split(/\r?\n/)
+    .map((b) => b.replace(/\*\*/g, "").trim())
+    .filter(Boolean);
+
+  const adalahButir = (b: string) => /^[a-z][.)]\s/i.test(b);
+
+  const butir = baris.filter(adalahButir);
+
+  if (butir.length >= 2) {
+    const lain = baris.filter((b) => !adalahButir(b));
+
+    return (
+      <>
+        {lain.map((b, i) => (
+          <p key={`p${i}`} className="advisory-text">
+            {denganChipSitasi(b, keSumber)}
+          </p>
+        ))}
+
+        <ol className="sbar-daftar">
+          {butir.map((b, i) => (
+            <li key={`l${i}`}>
+              {denganChipSitasi(b.replace(/^[a-z][.)]\s*/i, ""), keSumber)}
+            </li>
+          ))}
+        </ol>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {baris.map((b, i) => (
+        <p key={`p${i}`} className="advisory-text">
+          {denganChipSitasi(b, keSumber)}
+        </p>
+      ))}
+    </>
+  );
+}
+
+function AdvisorySBAR({
+  teks,
+  keSumber,
+}: {
+  teks: string;
+  keSumber: (n: number) => void;
+}) {
+  const bagian = pecahSBAR(teks);
+
+  // CADANGAN. Jalur templat tidak berbentuk SBAR, dan model bahasa pun bisa
+  // tidak patuh. Dalam kedua keadaan itu teks ditampilkan APA ADANYA dengan
+  // baris baru dipertahankan. Tidak pernah ada teks yang dibuang hanya karena
+  // bentuknya tidak dikenali — kehilangan isi jauh lebih buruk daripada
+  // kehilangan struktur.
+  if (!bagian) {
+    return (
+      <p className="advisory-text advisory-text--praformat">
+        {denganChipSitasi(teks, keSumber)}
+      </p>
+    );
+  }
+
+  return (
+    <div className="sbar">
+      {bagian.map((x) => (
+        <section key={x.judul} className="sbar-bagian">
+          <h4 className="sbar-judul">{x.judul}</h4>
+          <IsiBagian isi={x.isi} keSumber={keSumber} />
+        </section>
+      ))}
+    </div>
+  );
+}
+
 
 export default function Home() {
   // =========================================================
@@ -113,13 +299,62 @@ export default function Home() {
   const [observations, setObservations] =
     useState<Observation[]>([]);
   const [recentContext, setRecentContext] =
-    useState({ insulin: 0, carbs: 0, activity: 0, stress: 0 });
+    useState({ insulin: 0, carbs: 0, activity: 0 });
 
   // Sakelar "tampilkan potongan dokumen secara utuh". Bawaannya RINGKAS supaya
   // panel rujukan tidak mendominasi layar, tetapi dokter dapat membuka teks penuh
   // ketika ingin memverifikasi sendiri apakah rekomendasi berpijak pada dokumen.
   const [kutipanUtuh, setKutipanUtuh] = useState(false);
   const [rujukanTerbuka, setRujukanTerbuka] = useState(true);
+
+  // Pertanyaan klinis yang diketik dokter. Kosong = pakai kalimat bawaan.
+  // Endpoint sudah menerima `question` sejak awal dan _build_query sudah
+  // memprioritaskannya; yang belum ada hanyalah tempat mengetiknya. Pertanyaan
+  // generik adalah salah satu sebab jawaban terasa generik.
+  const [pertanyaan, setPertanyaan] = useState("");
+
+  // Wadah tiap rujukan, supaya chip [S1] dapat menggulir ke sumbernya.
+  const sumberRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  const keSumber = (nomor: number) => {
+    setRujukanTerbuka(true);
+
+    // Panel rujukan mungkin baru saja dibuka pada baris di atas, jadi penggulirannya
+    // ditunda sampai React selesai memasang elemennya.
+    //
+    // setTimeout, BUKAN requestAnimationFrame. rAF tidak pernah dipanggil ketika
+    // halaman tidak sedang digambar (tab latar, jendela tertutup, pratinjau yang
+    // tidak ditampilkan), sehingga penggulirannya hilang diam-diam persis pada
+    // keadaan yang paling sulit disadari. setTimeout tetap berjalan; ia hanya
+    // diperlambat. Pembaruan state React sendiri dituntaskan pada microtask,
+    // yang selalu selesai sebelum timeout ini berjalan.
+    window.setTimeout(() => {
+      const wadah = sumberRefs.current[nomor - 1];
+
+      if (!wadah) return;
+
+      // Penggulirannya mulus HANYA bila animasi memang dikehendaki dan mungkin.
+      // Animasi mulus tidak berjalan pada halaman yang tidak sedang digambar, dan
+      // tidak dikehendaki oleh pembaca yang menyetel prefers-reduced-motion; pada
+      // kedua keadaan itu lompatan langsung jauh lebih baik daripada tidak
+      // bergerak sama sekali.
+      const mulus =
+        !document.hidden &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      wadah.scrollIntoView({
+        behavior: mulus ? "smooth" : "auto",
+        block: "center",
+      });
+
+      wadah.classList.add("rujukan-item--disorot");
+
+      window.setTimeout(
+        () => wadah.classList.remove("rujukan-item--disorot"),
+        1600,
+      );
+    }, 0);
+  };
 
   // =========================================================
   // CURRENT GLUCOSE / CONTEXT
@@ -136,8 +371,6 @@ export default function Home() {
   const carbs = recentContext.carbs;
 
   const activity = recentContext.activity;
-
-  const stress = recentContext.stress;
 
   // =========================================================
   // FORECAST
@@ -335,7 +568,7 @@ export default function Home() {
     setError(null);
     setObservations([]);
     setGlucoseHistory([]);
-    setRecentContext({ insulin: 0, carbs: 0, activity: 0, stress: 0 });
+    setRecentContext({ insulin: 0, carbs: 0, activity: 0 });
   };
 
   // =========================================================
@@ -357,9 +590,10 @@ export default function Home() {
       const data =
         await runClinicalAssessment(
           patientId,
-          predictionAvailable
-            ? "Berikan rekomendasi klinis berdasarkan hasil prediksi glukosa pasien."
-            : "Bagaimana kondisi pasien saat ini berdasarkan glukosa terakhir?",
+          pertanyaan.trim() ||
+            (predictionAvailable
+              ? "Berikan rekomendasi klinis berdasarkan hasil prediksi glukosa pasien."
+              : "Bagaimana kondisi pasien saat ini berdasarkan glukosa terakhir?"),
             observations,
           glucoseSource,
         );
@@ -408,6 +642,12 @@ export default function Home() {
 
           citations:
             result.clinical_advisory.citations ?? [],
+
+          verifikasiSitasi:
+            result.clinical_advisory.verifikasi_sitasi ?? null,
+
+          timings:
+            result.clinical_advisory.timings ?? null,
         }
     : null;
 
@@ -621,6 +861,30 @@ export default function Home() {
             </div>
 
 
+            <div className="pertanyaan-blok">
+
+              {/*
+                Pertanyaan klinis bebas. Sebelumnya SATU kalimat dipatri untuk
+                setiap pemanggilan, sehingga tiap pasien menghasilkan kueri
+                penelusuran yang nyaris sama dan jawaban yang terasa seragam.
+                Pertanyaan yang spesifik adalah pengungkit terbesar melawan
+                jawaban generik, karena ia mengubah kueri retrieval sekaligus
+                fokus penalaran.
+              */}
+              <label className="pertanyaan-label" htmlFor="pertanyaan">
+                Pertanyaan klinis (opsional)
+              </label>
+
+              <input
+                id="pertanyaan"
+                className="pertanyaan-input"
+                type="text"
+                value={pertanyaan}
+                onChange={(e) => setPertanyaan(e.target.value)}
+                placeholder="mis. Apakah dosis bolus perlu disesuaikan sebelum tidur?"
+                disabled={loading}
+              />
+
             <button
               className="primary-button"
               onClick={handleRunClinical}
@@ -632,6 +896,8 @@ export default function Home() {
                 : "Run Clinical Assessment"}
 
             </button>
+
+            </div>
 
           </div>
 
@@ -895,14 +1161,6 @@ export default function Home() {
               unit="level"
             />
 
-            <ContextCard
-              title="Stress"
-              value={String(
-                stress,
-              )}
-              unit="level"
-            />
-
           </div>
 
         </section>
@@ -1039,9 +1297,10 @@ export default function Home() {
                   Clinical assessment
                 </p>
 
-                <p className="advisory-text">
-                  {advisory.explanation}
-                </p>
+                <AdvisorySBAR
+                  teks={advisory.explanation}
+                  keSumber={keSumber}
+                />
 
               </div>
 
@@ -1077,6 +1336,69 @@ export default function Home() {
                     : "Retrieved evidence is insufficient for a grounded recommendation."}
 
                 </p>
+
+                {/*
+                  Angka ber-penanda yang TIDAK dapat ditemukan pada potongan yang
+                  ditunjuknya. Aturan prompt saja tidak cukup: bila penelusuran
+                  meleset, model mengisi lubang dari ingatannya lalu tetap memberi
+                  penanda, dan dokter yang membuka halaman itu tidak menemukan
+                  apa-apa di sana.
+
+                  DITAMPILKAN APA ADANYA: angka, sumber yang diklaim, kalimatnya.
+                  TANPA persentase dan TANPA lencana kepercayaan - sebuah angka
+                  "92% terverifikasi" mengundang pembaca memperlakukannya sebagai
+                  ukuran mutu klinis, padahal ini hanya pencocokan tekstual.
+                */}
+                {advisory.verifikasiSitasi &&
+                  advisory.verifikasiSitasi.n_tidak_terverifikasi > 0 && (
+                    <div className="verifikasi-panel">
+                      <p className="verifikasi-judul">
+                        Angka berikut diberi penanda sumber, tetapi tidak
+                        ditemukan pada potongan yang ditunjuk. Periksa sendiri
+                        sebelum memakainya.
+                      </p>
+
+                      <ul className="verifikasi-daftar">
+                        {advisory.verifikasiSitasi.temuan
+                          .filter(
+                            (t) => t.status === "TIDAK_TERVERIFIKASI",
+                          )
+                          .map((t, i) => (
+                            <li key={`v${i}`}>
+                              <code>{t.nilai}</code>
+                              {t.penanda_diklaim
+                                ? ` diklaim dari ${t.penanda_diklaim}`
+                                : " tanpa sumber yang jelas"}
+                              <span className="verifikasi-kalimat">
+                                {t.kalimat}
+                              </span>
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
+
+                {/*
+                  Durasi per tahap. Ditampilkan supaya penantian yang panjang
+                  terbaca sebagai kerja yang benar-benar terjadi, dan supaya
+                  terlihat tahap MANA yang lambat.
+                */}
+                {advisory.timings && (
+                  <p className="advisory-timings">
+                    {Object.entries(advisory.timings)
+                      .filter(([nama]) => !nama.startsWith("_"))
+                      .map(
+                        ([nama, detik]) =>
+                          `${nama} ${Number(detik).toFixed(1)} dtk`,
+                      )
+                      .join(" · ")}
+                    {advisory.timings._total != null
+                      ? ` · total ${Number(
+                          advisory.timings._total,
+                        ).toFixed(1)} dtk`
+                      : ""}
+                  </p>
+                )}
 
               </div>
 
@@ -1165,6 +1487,9 @@ export default function Home() {
 
                             <div
                               className="rujukan-item"
+                              ref={(el) => {
+                                sumberRefs.current[index] = el;
+                              }}
                               key={`${
                                 citation.chunk_id ??
                                 citation.kb_id ??

@@ -190,19 +190,12 @@ def build_question_payload(
         'iob', patient_state.get('insulin_on_board', patient_state.get('insulin', 0)))
     carbs = patient_state.get(
         'cob', patient_state.get('carbs_on_board', patient_state.get('carbs', 0)))
-    # Stres tidak termasuk engineered_features, jadi pada produksi ia tidak pernah ada.
-    # Bila tidak ada, barisnya DIHILANGKAN — bukan diisi default 5 yang lalu dibaca
-    # dokter sebagai skor yang benar-benar diukur.
-    stress = patient_state.get('stress', patient_state.get('stress_level'))
-    stress_txt = f"stress={stress}/10, " if stress is not None else ""
-
     horizon_txt = f"{horizon_minutes} menit" if horizon_minutes else "horizon prediksi"
 
     return (
         f"Pertanyaan klinisi: {query}\n"
         f"Data pasien: glukosa={gluc} mg/dL, "
-        f"{stress_txt}"
-        f"aktivitas={activity} (skor intensitas), "
+        f"aktivitas={activity}/10 (skor intensitas, bukan menit), "
         f"insulin_on_board={insulin} unit, "
         f"carbs_on_board={carbs} gram.\n"
         f"Prediksi {horizon_txt}: {pred_glucose} mg/dL, Risiko: {pred_risk}."

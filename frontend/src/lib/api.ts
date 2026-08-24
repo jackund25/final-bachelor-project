@@ -11,7 +11,6 @@ export interface Observation {
   insulin: number;
   carbs: number;
   activity: number;
-  stress: number;
   glucose_source?: GlucoseSource;
 }
 
@@ -57,6 +56,23 @@ export interface Citation {
   kb_id?: string;
 }
 
+// Hasil pemeriksaan deterministik: tiap ANGKA ber-penanda [S..] dicek apakah
+// benar ada pada potongan yang ditunjuknya. Dihitung src/rag/verifikasi_sitasi.py.
+export interface TemuanSitasi {
+  nilai: string;
+  status: string;
+  penanda_diklaim: string | null;
+  ditemukan_pada: string | null;
+  kalimat: string;
+}
+
+export interface VerifikasiSitasi {
+  n_angka_diperiksa: number;
+  n_tidak_terverifikasi: number;
+  proporsi_terverifikasi: number;
+  temuan: TemuanSitasi[];
+}
+
 export interface ClinicalAdvisory {
   mode?: "current_state" | "prediction_conditioned";
   explanation: string;
@@ -73,6 +89,11 @@ export interface ClinicalAdvisory {
   disclaimer?: string;
   source?: GlucoseSource;
   reason?: string;
+  verifikasi_sitasi?: VerifikasiSitasi | null;
+  // Durasi per tahap (detik), termasuk agregat _total/_lokal/_jaringan.
+  timings?: Record<string, number> | null;
+  predicted_condition?: string | null;
+  prediction_interval?: [number, number] | null;
 }
 
 export interface ClinicalResponse {

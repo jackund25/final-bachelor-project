@@ -161,11 +161,16 @@ class PredictionConditionedQueryBuilder:
             "---",
             f"  Insulin on board : {state.insulin_on_board:.2f} unit",
             f"  Carbs on board   : {state.carbs_on_board:.1f} g",
-            f"  Skor aktivitas    : {state.activity_level} (skala intensitas, bukan menit)",
-            # Baris stres HANYA dicetak bila benar-benar diukur. Lihat
-            # PatientState.stress_diketahui.
-            *([f"  Tingkat stres    : {state.stress_level}/10"]
-              if state.stress_diketahui else []),
+            f"  Skor aktivitas   : {state.activity_level}/10 (skala intensitas, bukan menit)",
+            # Laju dan jarak ke pengukuran sebelumnya. Keduanya sudah masuk vektor
+            # fitur model; barisnya HANYA dicetak bila benar-benar ada, sebab 0.0
+            # adalah laju yang sah dan tidak boleh dipakai sebagai penanda "tidak
+            # diketahui".
+            *([f"  Laju perubahan   : {state.glucose_rate:+.2f} mg/dL per menit"]
+              if state.glucose_rate is not None else []),
+            *([f"  Jarak ukur       : {state.time_since_prev_glucose:.0f} menit sejak "
+               f"pengukuran sebelumnya"]
+              if state.time_since_prev_glucose is not None else []),
             "=============================================================",
         ]
         return "\n".join(lines)
@@ -182,12 +187,20 @@ class PredictionConditionedQueryBuilder:
             factors.append(f"insulin aktif {state.insulin_on_board:.1f} unit")
         if state.carbs_on_board >= 10.0:
             factors.append(f"karbohidrat belum terserap {state.carbs_on_board:.0f} g")
-        if state.stress_diketahui and state.stress_level >= 7:
-            factors.append(f"stres tinggi ({state.stress_level}/10)")
-        if state.activity_level < 15:
+        # AMBANG DIPERBAIKI 24 Agustus 2026. Sebelumnya `< 15` dan `>= 60`, warisan
+        # asumsi "aktivitas = menit" yang tidak pernah benar: kanal `activity`
+        # OhioT1DM adalah skor intensitas ordinal dengan HANYA 10 nilai unik pada
+        # 166.533 baris (results/eval_prediksi/feature_importance.json).
+        #
+        # Akibat ambang lama, setiap pasien selalu jatuh ke cabang pertama dan
+        # advisory selalu memuat kalimat "aktivitas fisik rendah" — satu kalimat
+        # generik yang sama untuk semua orang, persis yang dikeluhkan pada evaluasi
+        # dokter. Pita di bawah mengikuti legenda yang dibaca dokter di Logbook:
+        # 1-3 ringan, 4-6 sedang, 7-8 berat.
+        if state.activity_level < 2:
             factors.append("aktivitas fisik rendah")
-        elif state.activity_level >= 60:
-            factors.append(f"aktivitas tinggi (skor {state.activity_level})")
+        elif state.activity_level >= 7:
+            factors.append(f"aktivitas berat (skor {state.activity_level}/10)")
 
         return factors
 
@@ -218,7 +231,17 @@ class PredictionConditionedQueryBuilder:
 
     def _metadata_tags(self, state: PatientState) -> Dict[str, Any]:
         """Build ChromaDB metadata filter hints based on patient risk."""
-        tags: Dict[str, Any] = {"jenis_dm": "dm_tipe2"}
+        # DM TIPE 1. Tag sebelumnya berbunyi "dm_tipe2", peninggalan pembingkaian
+        # lama yang sudah dicabut dari seluruh naskah. Sistem ini dilatih pada
+        # OhioT1DM dan menyasar DM Tipe 1.
+        #
+        # CATATAN: `metadata_filter_tags` dibangun dan disimpan pada ConditionedQuery
+        # tetapi TIDAK dikonsumsi penelusur mana pun — tak ada satu pun pemanggil di
+        # luar berkas ini. Jadi perbaikan ini tidak mengubah hasil retrieval; ia
+        # mencegah pembaca berikutnya mengira sistem menyaring ke pedoman tipe 2.
+        # Bila kelak penyaringan metadata benar-benar dipasang, periksa dulu nilai
+        # `jenis_dm` yang ada pada metadata potongan sebelum mengandalkannya.
+        tags: Dict[str, Any] = {"jenis_dm": "dm_tipe1"}
         if state.risk_level in (RISK_HYPO, RISK_CRITICAL_HYPO):
             tags["topik"] = "hipoglikemia"
         elif state.risk_level in (RISK_HYPER, RISK_CRITICAL_HYPER):

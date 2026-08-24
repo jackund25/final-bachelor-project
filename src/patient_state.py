@@ -36,6 +36,21 @@ from src.constants import (
 # Core dataclass
 # ──────────────────────────────────────────────────────────────
 
+def _opsional(nilai) -> Optional[float]:
+    """float(nilai), atau None bila tidak ada / tidak dapat dibaca.
+
+    Nilai yang hilang TIDAK diganti 0.0. Nol adalah laju yang sah (glukosa datar),
+    sehingga memakainya sebagai penanda "tidak diketahui" membuat kedua keadaan itu
+    tidak dapat dibedakan lagi di hilir - mekanisme yang sama dengan temuan T4.
+    """
+    if nilai is None:
+        return None
+    try:
+        return float(nilai)
+    except (TypeError, ValueError):
+        return None
+
+
 @dataclass
 class PatientState:
     """Canonical patient state derived from ML model output.
@@ -49,7 +64,7 @@ class PatientState:
             patient_id="ohio_559",
             current_glucose=180.0,
             predicted_glucose=195.0,
-            feature_row={"insulin": 0.5, "carbs": 30.0, "activity": 0, "stress": 8},
+            feature_row={"insulin": 0.5, "carbs": 30.0, "activity": 0},
         )
         print(state.risk_level)     # "hyperglycemia"
         print(state.trend_label)    # "rising"
@@ -72,14 +87,12 @@ class PatientState:
     # SKOR INTENSITAS aktivitas dari kanal `exercise` OhioT1DM (atribut `intensity`,
     # skala ordinal), BUKAN menit. Atribut `duration` tidak diekstrak parser.
     activity_level: int = 0
-    stress_level: int = 5           # 1-10 Likert
-    # Apakah stres BENAR-BENAR diukur, atau nilai di atas hanya default.
-    # `stress` TIDAK termasuk config.model.engineered_features, sehingga pada jalur
-    # produksi ia SELALU default 5. Sebelumnya angka itu tetap dicetak ke konteks
-    # LLM sebagai "Tingkat stres: 5/10", dan model meneruskannya ke advisory sebagai
-    # fakta — dokter membaca skor stres yang tidak pernah diukur. Penanda ini membuat
-    # penyaji dapat MENGHILANGKAN barisnya alih-alih mengarang.
-    stress_diketahui: bool = False
+    # `stress_level` DICABUT 24 Agustus 2026, bersama penanda `stress_diketahui`
+    # yang sempat menambalnya. Menandai "tidak diukur" tetap lebih baik daripada
+    # mengarang angka, tetapi medan yang TIDAK PERNAH terisi pada jalur mana pun
+    # lebih baik tidak ada sama sekali: `stress` bukan bagian dari
+    # config.model.engineered_features, dan kanal `stressors` OhioT1DM hanya memuat
+    # 7 event di seluruh 12 pasien. Lihat src/data/ohio_parser.py.
 
     # ── Kondisi masa depan hasil pengklasifikasi (opsional) ────
     # Regresi yang meminimalkan galat kuadrat menyusut ke tengah, sehingga jarang berani
@@ -91,6 +104,15 @@ class PatientState:
     # ── Batas interval prediksi konformal (opsional) ───────────
     # Dipakai untuk pengondisian kueri yang sadar-ketidakpastian: kondisi berisiko yang
     # tercakup interval tetap diambilkan dokumennya meski prediksi titiknya masih normal.
+    # Sinyal laju dari jendela terekayasa (opsional).
+    # Keduanya SUDAH dihitung preprocessor dan ikut masuk vektor fitur model, tetapi
+    # tidak pernah diteruskan ke model bahasa. `time_since_prev_glucose` penting
+    # khusus pada modalitas finger-stick: prediksi dari pengukuran empat jam lalu
+    # menanggung ketidakpastian yang sama sekali berbeda dari CGM lima menit lalu,
+    # dan itu justru bahan bagi bagian "Yang tidak dapat disimpulkan".
+    glucose_rate: Optional[float] = None             # mg/dL per menit
+    time_since_prev_glucose: Optional[float] = None  # menit
+
     predicted_lower: Optional[float] = None        # mg/dL
     predicted_upper: Optional[float] = None        # mg/dL
 
@@ -118,7 +140,6 @@ class PatientState:
         self.insulin_on_board = max(0.0, float(self.insulin_on_board))
         self.carbs_on_board = max(0.0, float(self.carbs_on_board))
         self.activity_level = max(0, int(self.activity_level))
-        self.stress_level = int(np.clip(self.stress_level, 1, 10))
 
         # Trend
         self.glucose_delta = round(self.predicted_glucose - self.current_glucose, 2)
@@ -163,16 +184,20 @@ class PatientState:
         self.anticipated_conditions = sorted(set(conditions), key=lambda c: priority.get(c, 3))
 
         # Urgency.
-        # Cabang "moderate DAN bukan normal" pada versi sebelumnya TIDAK PERNAH
+        # Cabang "moderate DAN bukan normal" pada versi terdahulu TIDAK PERNAH
         # terjangkau: setiap kondisi bukan-normal sudah tertangkap cabang `high` di
-        # atasnya, sehingga satu-satunya jalan menuju `medium` adalah stres tinggi.
-        # Kini `medium` diberi arti yang benar-benar dapat dicapai: kondisi masih
-        # normal tetapi glukosa bergerak moderat menuju batas, atau stres tinggi.
+        # atasnya. Perbaikan berikutnya membuka `medium` lewat dua jalan — tren
+        # moderat, atau stres tinggi.
+        #
+        # Sejak stres dicabut, TINGGAL SATU jalan menuju `medium`: kondisi masih
+        # normal tetapi glukosa bergerak moderat menuju batas. Itu memang arti yang
+        # dimaksud dan tetap dapat dicapai, jadi tingkatannya dipertahankan — tetapi
+        # jangan membaca cabang ini seolah masih menimbang dua faktor.
         if is_critical(self.risk_level):
             self.urgency = "critical"
         elif self.risk_level in (RISK_HYPO, RISK_HYPER) or self.trend_rate == "rapid":
             self.urgency = "high"
-        elif self.trend_rate == "moderate" or self.stress_level >= 8:
+        elif self.trend_rate == "moderate":
             self.urgency = "medium"
         else:
             self.urgency = "low"
@@ -198,7 +223,6 @@ class PatientState:
             "insulin_on_board": self.insulin_on_board,
             "carbs_on_board": self.carbs_on_board,
             "activity_level": self.activity_level,
-            "stress_level": self.stress_level,
             "timestamp": self.timestamp,
         }
 
@@ -212,7 +236,6 @@ class PatientState:
             "insulin_on_board": self.insulin_on_board,
             "carbs_on_board": self.carbs_on_board,
             "activity_level": self.activity_level,
-            "stress_level": self.stress_level,
         }
 
     # ──────────────────────────────────────────────────────────
@@ -237,7 +260,7 @@ class PatientState:
             patient_id: Patient identifier.
             current_glucose: Observed glucose at prediction time (mg/dL).
             predicted_glucose: Model's predicted glucose (mg/dL).
-            feature_row: Dict with keys ``insulin``, ``carbs``, ``activity``, ``stress``
+            feature_row: Dict with keys ``insulin``, ``carbs``, ``activity``
                          from the last row of the feature window.
             prediction_horizon_minutes: Model's forecast horizon (default 60 min / 1 step).
             predicted_condition: Optional condition from the condition classifier
@@ -266,8 +289,8 @@ class PatientState:
             carbs_on_board=float(
                 row.get("cob", row.get("carbs_on_board", row.get("carbs", 0.0)))),
             activity_level=int(float(row.get("activity", row.get("activity_level", 0)))),
-            stress_level=int(float(row.get("stress", row.get("stress_level", 5)))),
-            stress_diketahui=("stress" in row or "stress_level" in row),
+            glucose_rate=_opsional(row.get("glucose_rate")),
+            time_since_prev_glucose=_opsional(row.get("time_since_prev_glucose")),
             predicted_condition=predicted_condition,
             predicted_lower=predicted_lower,
             predicted_upper=predicted_upper,
@@ -284,7 +307,5 @@ class PatientState:
             insulin_on_board=float(data.get("insulin_on_board", 0.0)),
             carbs_on_board=float(data.get("carbs_on_board", 0.0)),
             activity_level=int(data.get("activity_level", 0)),
-            stress_level=int(data.get("stress_level", 5)),
-            stress_diketahui=("stress_level" in data),
             timestamp=str(data.get("timestamp", datetime.now().isoformat())),
         )

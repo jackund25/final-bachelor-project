@@ -242,3 +242,121 @@
     width: 100%;
   }
 }
+
+/* =============================================================
+   VARIABLE GUIDE
+   ============================================================= */
+
+.variable-guide-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.variable-guide {
+  width: 100%;
+}
+
+.variable-guide-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 32px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.variable-guide-summary::-webkit-details-marker {
+  display: none;
+}
+
+.variable-guide-summary h2 {
+  margin: 6px 0 6px;
+  font-size: 26px;
+  color: #17202b;
+}
+
+.variable-guide-subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.variable-guide-chevron {
+  flex: 0 0 auto;
+  margin-top: 18px;
+  color: #397895;
+  font-size: 24px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.variable-guide[open] .variable-guide-chevron {
+  transform: rotate(180deg);
+}
+
+.variable-guide-content {
+  border-top: 1px solid #e2e8f0;
+  padding: 6px 32px 30px;
+}
+
+.variable-guide-item {
+  padding: 22px 0;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.variable-guide-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.variable-guide-item h3 {
+  margin: 0 0 10px;
+  font-size: 17px;
+  line-height: 1.4;
+  color: #17202b;
+}
+
+.variable-guide-item ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #475569;
+}
+
+.variable-guide-item li {
+  margin: 6px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.variable-guide-item code {
+  font-family: inherit;
+  font-weight: 600;
+  color: #334155;
+}
+
+@media (max-width: 700px) {
+  .variable-guide-summary {
+    padding: 22px;
+  }
+
+  .variable-guide-content {
+    padding: 4px 22px 24px;
+  }
+}
+
+/* Catatan kejujuran di dalam legenda: menandai variabel yang dicatat sebagai
+   konteks klinis tetapi hampir tidak menggeser prediksi. Dibedakan dari butir
+   penjelasan biasa supaya tidak terbaca sebagai salah satu pita nilai. */
+.variable-guide-catatan {
+  margin-top: 6px;
+  padding-top: 6px;
+
+  border-top: 1px dashed #d3dce4;
+
+  color: #7c8b98;
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.5;
+  list-style: none;
+}

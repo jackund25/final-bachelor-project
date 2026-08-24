@@ -20,7 +20,6 @@ export type PatientContext = {
   insulin: number;
   carbs: number;
   activity: number;
-  stress: number;
 };
 
 export async function getPatients(): Promise<PatientOption[]> {
@@ -143,7 +142,7 @@ export async function getGlucoseObservations(
     return [];
   }
 
-  const [readings, insulin, meals, activity, stress] = await Promise.all([
+  const [readings, insulin, meals, activity] = await Promise.all([
     supabase
       .from("glucose_readings")
       .select("id, timestamp, glucose")
@@ -164,11 +163,6 @@ export async function getGlucoseObservations(
       .select("timestamp, activity_level")
       .eq("patient_id", activePatientId)
       .order("timestamp", { ascending: true }),
-    supabase
-      .from("stress_events")
-      .select("timestamp, stress_level")
-      .eq("patient_id", activePatientId)
-      .order("timestamp", { ascending: true }),
   ]);
 
   const firstError = [
@@ -176,7 +170,6 @@ export async function getGlucoseObservations(
     insulin.error,
     meals.error,
     activity.error,
-    stress.error,
   ].find(Boolean);
 
   const validReadingCount = (readings.data ?? []).filter(
@@ -205,7 +198,6 @@ export async function getGlucoseObservations(
         ["insulin_events", insulin.error],
         ["meal_events", meals.error],
         ["activity_events", activity.error],
-        ["stress_events", stress.error],
       ].filter(([, queryError]) => queryError),
     });
     throw new Error(`Failed to load patient data: ${firstError.message}`);
@@ -219,7 +211,6 @@ export async function getGlucoseObservations(
     insulinEvents: insulin.data?.length ?? 0,
     mealEvents: meals.data?.length ?? 0,
     activityEvents: activity.data?.length ?? 0,
-    stressEvents: stress.data?.length ?? 0,
   });
 
   const latestBefore = <T extends { timestamp: string }>(
@@ -233,13 +224,11 @@ export async function getGlucoseObservations(
   const insulinEvents = insulin.data ?? [];
   const mealEvents = meals.data ?? [];
   const activityEvents = activity.data ?? [];
-  const stressEvents = stress.data ?? [];
 
   return (readings.data ?? []).map((reading) => {
     const insulinEvent = latestBefore(insulinEvents, reading.timestamp);
     const mealEvent = latestBefore(mealEvents, reading.timestamp);
     const activityEvent = latestBefore(activityEvents, reading.timestamp);
-    const stressEvent = latestBefore(stressEvents, reading.timestamp);
 
     return {
       id: reading.id,
@@ -249,7 +238,6 @@ export async function getGlucoseObservations(
       insulin: Number(insulinEvent?.insulin_units ?? 0),
       carbs: Number(mealEvent?.carbs_grams ?? 0),
       activity: Number(activityEvent?.activity_level ?? 0),
-      stress: Number(stressEvent?.stress_level ?? 0),
       glucose_source: glucoseSource,
     };
   });
@@ -282,7 +270,7 @@ export async function getLatestPatientContext(
 ): Promise<PatientContext> {
   const patient = await getPatientByCode(patientCode);
   if (!patient) {
-    return { insulin: 0, carbs: 0, activity: 0, stress: 0 };
+    return { insulin: 0, carbs: 0, activity: 0 };
   }
 
   const activePatientId = Number(patient.id);
@@ -290,7 +278,7 @@ export async function getLatestPatientContext(
     throw new Error(`Invalid internal patient ID for ${patientCode}.`);
   }
 
-  const [insulin, meals, activity, stress] = await Promise.all([
+  const [insulin, meals, activity] = await Promise.all([
     supabase
       .from("insulin_events")
       .select("timestamp, insulin_units")
@@ -312,20 +300,12 @@ export async function getLatestPatientContext(
       .order("timestamp", { ascending: false })
       .limit(1)
       .maybeSingle(),
-    supabase
-      .from("stress_events")
-      .select("timestamp, stress_level")
-      .eq("patient_id", activePatientId)
-      .order("timestamp", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
   ]);
 
   const firstError = [
     insulin.error,
     meals.error,
     activity.error,
-    stress.error,
   ].find(Boolean);
 
   if (firstError) {
@@ -341,7 +321,6 @@ export async function getLatestPatientContext(
     insulin: Number(insulin.data?.insulin_units ?? 0),
     carbs: Number(meals.data?.carbs_grams ?? 0),
     activity: Number(activity.data?.activity_level ?? 0),
-    stress: Number(stress.data?.stress_level ?? 0),
   };
 
   console.info("[Supabase][recent context] latest events", {
@@ -351,18 +330,15 @@ export async function getLatestPatientContext(
       insulin_events: `patient_id = ${activePatientId}`,
       meal_events: `patient_id = ${activePatientId}`,
       activity_events: `patient_id = ${activePatientId}`,
-      stress_events: `patient_id = ${activePatientId}`,
     },
     rowCounts: {
       insulin_events: insulin.data ? 1 : 0,
       meal_events: meals.data ? 1 : 0,
       activity_events: activity.data ? 1 : 0,
-      stress_events: stress.data ? 1 : 0,
     },
     insulin: { value: context.insulin, timestamp: insulin.data?.timestamp ?? null },
     carbs: { value: context.carbs, timestamp: meals.data?.timestamp ?? null },
     activity: { value: context.activity, timestamp: activity.data?.timestamp ?? null },
-    stress: { value: context.stress, timestamp: stress.data?.timestamp ?? null },
   });
 
   return context;

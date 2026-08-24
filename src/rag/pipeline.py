@@ -282,7 +282,7 @@ class RAGPipeline:
                 ],
                 patient_state=patient_state,
                 prediction=prediction,
-                horizon_minutes=self.prediction_horizon_minutes,
+                horizon_minutes=self._horizon_efektif(patient_state),
                 clinical_context=getattr(self, "_last_llm_context", None),
             )
 
@@ -360,6 +360,44 @@ class RAGPipeline:
             )
         return self.retriever.retrieve(query=query, top_k=top_k)
 
+    def _horizon_efektif(self, patient_state: Dict[str, Any]) -> int:
+        """Horizon yang BENAR-BENAR diprediksi, bukan bawaan config.
+
+        DITEMUKAN 24 Agustus 2026. `self.prediction_horizon_minutes` diturunkan dari
+        config (model.default_horizon x data.sampling_interval_min = 30 menit) dan
+        dipakai untuk menyusun konteks LLM serta payload prompt. Tetapi horizon
+        sesungguhnya milik ARTEFAK, dan artefak finger-stick memprediksi 240 MENIT.
+
+        Akibatnya setiap advisory finger-stick memberi tahu model bahasa "(+30 menit)"
+        padahal angkanya prakiraan EMPAT JAM ke depan. Dokter melihat 240 menit pada
+        panel prakiraan di sebelahnya, lalu membaca teks penilaian yang menyebut 30
+        menit. Lebih buruk lagi, bagian "Yang tidak dapat disimpulkan" jadi tidak
+        pernah menyebut horizon panjang sebagai sumber ketidakpastian utama - padahal
+        di modalitas itu justru itulah keterbatasan yang paling menentukan.
+
+        Ini cacat yang sama dengan yang sudah ditutup pada build_question_payload
+        (lihat src/rag/prompts.py), hanya saja jalur ini terlewat: horizon TIDAK
+        boleh ditebak dari config bila pemanggil sudah mengetahuinya.
+
+        clinical.py menyetel patient_state["prediction_horizon_minutes"] dari
+        artefak yang benar-benar dipakai. Nilai itu yang dimenangkan di sini; config
+        hanya cadangan untuk pemanggil yang tidak menyediakannya (mis. CLI dan tes).
+        """
+        nilai = patient_state.get("prediction_horizon_minutes")
+
+        if nilai is None:
+            return self.prediction_horizon_minutes
+
+        try:
+            menit = int(float(nilai))
+        except (TypeError, ValueError):
+            logger.warning(
+                "prediction_horizon_minutes tidak dapat dibaca (%r); memakai %d menit "
+                "dari config.", nilai, self.prediction_horizon_minutes)
+            return self.prediction_horizon_minutes
+
+        return menit if menit > 0 else self.prediction_horizon_minutes
+
     def _build_query(
         self,
         patient_state: Dict[str, Any],
@@ -426,7 +464,7 @@ class RAGPipeline:
                 ),
                 predicted_glucose=float(prediction),
                 feature_row=patient_state,
-                prediction_horizon_minutes=self.prediction_horizon_minutes,
+                prediction_horizon_minutes=self._horizon_efektif(patient_state),
                 predicted_condition=patient_state.get(
                     "predicted_condition"
                 ),
@@ -480,15 +518,19 @@ class RAGPipeline:
         retrieved_docs: List[RetrievedDocument],
         explanation: str,
     ) -> Dict[str, Any]:
+        # KODE MATI PADA JALUR PRODUKSI. backend/routes/clinical.py hanya membaca
+        # `explanation`; medan `advisory` yang disusun di sini tidak pernah sampai
+        # ke antarmuka mana pun. Ia dipertahankan sementara karena masih dipanggil
+        # tes, dan dijadwalkan dicabut pada Tahap 9 bersama alerts.py/decision_log.py.
+        # Jangan menambah logika baru di sini.
         current_glucose = float(patient_state.get("current_glucose", 100.0))
-        stress = int(patient_state.get("stress_level", 5))
         activity = int(patient_state.get("activity_level", 0))
         risk_level = _risk_level_from_prediction(prediction)
 
         key_factors: List[str] = []
-        if stress >= 7:
-            key_factors.append("stres tinggi")
-        if activity < 15:
+        # Ambang mengikuti skala sebenarnya kanal `activity`: skor intensitas 0-10,
+        # bukan menit. Lihat catatan panjang di conditioned_query._contributing_factors.
+        if activity < 2:
             key_factors.append("aktivitas fisik rendah")
         if current_glucose > 150:
             key_factors.append("glukosa awal tinggi")
@@ -539,8 +581,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--question", default="Apa rekomendasi awal untuk kondisi ini?")
     parser.add_argument("--prediction", type=float, default=160.0, help="Predicted glucose value")
     parser.add_argument("--glucose", type=float, default=150.0)
-    parser.add_argument("--stress", type=int, default=5)
-    parser.add_argument("--activity", type=int, default=20)
+    parser.add_argument("--activity", type=int, default=3)  # skor intensitas 0-10
     parser.add_argument("--reset", action="store_true", help="Reset Chroma collection on ingest")
     parser.add_argument(
         "--provider",
@@ -573,7 +614,6 @@ def main() -> int:
     result = pipeline.answer(
         patient_state={
             "current_glucose": args.glucose,
-            "stress_level": args.stress,
             "activity_level": args.activity,
             "insulin_on_board": 0.0,
             "carbs_on_board": 0.0,
