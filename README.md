@@ -151,6 +151,14 @@ conda activate diabetes-ta
 pip install -r requirements.txt
 ```
 
+Perintah di atas memasang dependensi untuk **menjalankan** sistem. Untuk mereproduksi
+angka laporan dan menjalankan pengujian, diperlukan tambahan (TensorFlow bagi lengan
+pembanding LSTM, RAGAS bagi evaluasi generasi, pytest):
+
+```bash
+pip install -r requirements-dev.txt
+```
+
 Salin `.env.example` menjadi `.env`, lalu isi `GOOGLE_API_KEY` (Google AI Studio) untuk
 mengaktifkan generator rekomendasi.
 

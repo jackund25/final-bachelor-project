@@ -1,0 +1,22 @@
+{
+  "source": "CGM",
+  "horizon_min": 30.0,
+  "sequence_length": 12,
+  "train_samples": 129113,
+  "test_samples": 30281,
+  "target_tolerance_min": 2.5,
+  "max_history_gap_min": 30,
+  "min_history_interval_min": 0.0,
+  "min_target_horizon_min": null,
+  "max_target_horizon_min": null,
+  "split": "official_dataset_split (temporal within-patient)",
+  "RMSE": 21.53330327106657,
+  "MAE": 15.051999252018266,
+  "MAPE": 10.221365212619187,
+  "Clarke_A": 86.76397741157822,
+  "Clarke_B": 7.450216307255375,
+  "Clarke_C": 0.0,
+  "Clarke_D": 2.4834054357517914,
+  "Clarke_E": 3.3024008454146165,
+  "Clarke_A+B": 94.2141937188336
+}

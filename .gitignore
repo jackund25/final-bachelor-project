@@ -58,6 +58,9 @@ models/_jendela_token/
 # Indeks sementara uji model embedding (T9) dan embedding terkelola (T10).
 models/_model_embedding/
 models/_embedding_gemini/
+# Singgahan model ONNX FlashRank (rag.reranker.backend = flashrank). Diunduh
+# otomatis saat retriever pertama kali memuat reranker; tidak perlu masuk repo.
+models/_flashrank/
 # Koleksi PDF paper rujukan (~69 MB). SENGAJA tidak masuk repo: isinya makalah
 # berhak cipta milik penerbit, dan catatan rujukan yang sah sudah ada pada
 # docs/laporan_TA/TA-STI-template-1.0/daftar-pustaka.bib. Berkasnya tetap

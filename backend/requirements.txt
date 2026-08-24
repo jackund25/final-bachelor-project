@@ -1,20 +1,62 @@
+# Dependensi RUNTIME backend CDSS (FastAPI di Render).
+#
+# Berkas ini SENGAJA berbeda dari requirements.txt di root: root memuat pula
+# dependensi reproduksi angka TA (TensorFlow, RAGAS, matplotlib) yang tidak
+# dibutuhkan untuk melayani permintaan.
+#
+# Versi numpy/pandas/scikit-learn WAJIB identik dengan root. scikit-learn 1.3.0
+# khususnya: bundle inferensi .pkl dibuat dengan versi itu dan tidak dapat dibuka
+# oleh versi yang lebih baru.
+
+# --- Web ---
 fastapi==0.115.9
 uvicorn==0.49.0
 pydantic==2.13.4
-pydantic-settings==2.14.2
 python-dotenv==1.0.0
+
+# --- Data & model prediksi ---
 numpy==1.26.4
 pandas==2.0.3
-scipy==1.11.1
 scikit-learn==1.3.0
-python-dateutil==2.9.0.post0
+
+# PyYAML dideklarasikan EKSPLISIT. src/config.py meng-import yaml dan berada pada
+# jalur kritis backend (prediction_service dan clinical route). Sebelum ini paket
+# tersebut hanya ikut terpasang sebagai dependensi transitif langchain-core —
+# artinya backend bergantung pada daftar dependensi paket lain untuk bisa hidup,
+# dan pembaruan langchain dapat mematikannya pada tahap import.
+pyyaml==6.0.1
+
+# --- Penelusuran (jalur produksi: rag.retrieval_mode = bm25) ---
+# ChromaDB dipakai sebagai PENYIMPAN dokumen: _bangun_bm25 dan _hasil_dari_indeks
+# hanya membaca documents/metadatas dari sqlite. Mesin vektornya tidak dijalankan.
 chromadb==1.0.12
-langchain==0.3.25
+rank_bm25==0.2.2
+# Penyusunan ulang kandidat. FlashRank menjalankan model ONNX di CPU tanpa menarik
+# torch, sehingga reranking tetap hidup pada instans kecil. Tanpa paket ini
+# _muat_reranker gagal dan sistem menelusur TANPA reranking.
+flashrank==0.2.10
+
+# --- Generasi ---
+langchain-core==0.3.86
+langchain-google-genai>=2.0.0
+
+# --- Jalur pemulihan (terpasang, TIDAK dimuat pada mode bm25) ---
+# Bila indeks BM25 gagal dibangun, retriever menurunkan mode ke vektor secara
+# eksplisit; barulah ketiga paket ini dipakai. Menghapusnya mengubah kegagalan
+# BM25 dari "turun ke vektor" menjadi "sistem mati", jadi keduanya keputusan yang
+# harus diambil bersama.
+#
+# CATATAN MEMORI: sentence-transformers menarik torch (~1 GB saat dimuat). Pada
+# mode bm25 ia tidak pernah di-import, sehingga membebani DISK saja, bukan RAM.
+langchain-chroma==0.2.4
 langchain-community==0.3.24
 langchain-text-splitters==0.3.8
-langchain-chroma==0.2.4
-langchain-google-genai>=2.0.0
-langchain-openai>=0.3.0
 sentence-transformers>=3.0.0
-rank_bm25==0.2.2
-nest-asyncio>=1.5.7
+
+# DICABUT 23 Agustus 2026, seluruhnya nol referensi di src/ dan backend/:
+#   langchain==0.3.25          paket payung; hanya sub-paketnya yang di-import
+#   langchain-openai>=0.3.0    hanya dipakai skrip RAGAS (pengembangan, bukan runtime)
+#   pydantic-settings==2.14.2  nol import di seluruh repositori
+#   python-dateutil            dibawa pandas
+#   scipy==1.11.1              dibawa scikit-learn
+#   nest-asyncio               hanya dipakai skrip RAGAS

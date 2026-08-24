@@ -418,6 +418,144 @@ h2 {
 }
 
 
+/* =========================================================
+   Panel Sumber Rujukan
+   =========================================================
+   Menggantikan deretan chip yang hanya memuat identitas dokumen.
+   Dokter menilai keterlacakan bukti, sehingga kalimat yang dikutip
+   harus dapat dibaca — bukan hanya nama dokumen dan nomor halaman.
+   ========================================================= */
+
+.rujukan-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+
+  padding: 10px 12px;
+  margin-bottom: 10px;
+
+  border: 1px solid #dce5ea;
+  border-radius: 8px;
+  background: #f8fafb;
+
+  color: #35485a;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rujukan-panel {
+  border: 1px solid #e6edf1;
+  border-radius: 8px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+/* Peringatan kondisi terprediksi — sengaja menonjol. */
+.rujukan-catatan {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+
+  border-left: 3px solid #2f6f8f;
+  border-radius: 4px;
+  background: #eef6fa;
+
+  color: #24455a;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.rujukan-metode {
+  margin: 0 0 12px;
+  color: #6a7c8a;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.rujukan-sakelar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: 14px;
+
+  color: #35485a;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.rujukan-item {
+  padding-top: 14px;
+  margin-top: 14px;
+  border-top: 1px solid #eef2f5;
+}
+
+.rujukan-item:first-of-type {
+  padding-top: 0;
+  margin-top: 0;
+  border-top: none;
+}
+
+.rujukan-judul {
+  margin: 0 0 4px;
+  color: #1f3547;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.rujukan-meta {
+  margin: 0 0 8px;
+  color: #6a7c8a;
+  font-size: 12px;
+}
+
+.rujukan-meta code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #f2f5f7;
+  color: #4a6b52;
+  font-size: 11px;
+}
+
+/* Blok kutipan: batas kiri menandai bahwa ini teks dokumen,
+   bukan kalimat yang disusun sistem. */
+.rujukan-kutipan {
+  margin: 0;
+  padding: 8px 0 8px 14px;
+
+  border-left: 3px solid #dce5ea;
+
+  color: #3d5163;
+  font-size: 13px;
+  line-height: 1.65;
+
+  /* Potongan panjang tidak boleh mendorong lebar halaman. */
+  overflow-wrap: anywhere;
+}
+
+.rujukan-penanda {
+  margin: 6px 0 0;
+  color: #8a97a3;
+  font-size: 11px;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .rujukan-panel {
+    padding: 10px;
+  }
+
+  .rujukan-kutipan {
+    padding-left: 10px;
+    font-size: 12px;
+  }
+}
+
+
 /* Disclaimer */
 
 .advisory-disclaimer {

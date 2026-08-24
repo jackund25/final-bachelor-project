@@ -107,6 +107,11 @@ class MMRRetriever:
         self.reranker_enabled = bool(
             getattr(getattr(cfg, "reranker", None), "enabled", False)
         )
+        self.reranker_backend = str(getattr(
+            getattr(cfg, "reranker", None),
+            "backend",
+            "cross_encoder",
+        )).lower()
         self.reranker_model = getattr(
             getattr(cfg, "reranker", None),
             "model",
@@ -126,65 +131,130 @@ class MMRRetriever:
         self._embeddings = None
         self._bm25 = None
         self._bm25_teks: List[str] = []
+        self._bm25_metas: List[Optional[Dict[str, Any]]] = []
         self._bm25_peta: Dict[str, int] = {}
         self._bm25_error: Optional[str] = None
         self.mode_diminta = self.retrieval_mode
         self._init_error: Optional[str] = None
 
         try:
-            from langchain_chroma import Chroma
+            # Mode "bm25" murni LEKSIKAL: penelusuran tidak pernah menyentuh ruang
+            # vektor. _bangun_bm25 dan _hasil_dari_indeks hanya membaca `documents`
+            # dan `metadatas` dari sqlite koleksi. Membangun fungsi embedding di sini
+            # berarti memuat torch dan model kalimat (~1 GB) yang TIDAK PERNAH dipakai
+            # menelusur — beban mati yang menghabiskan memori instans kecil.
+            #
+            # Jalur vektor dan hibrida tetap membutuhkannya dan tidak berubah.
+            if self.retrieval_mode == "bm25":
+                self._bangun_bm25()
 
-            embeddings = _build_embeddings(
-                self.embed_provider, self.ollama_base_url, self.embed_model,
-                hf_model=cfg.embedding_model, google_model=cfg.google_embedding_model,
-            )
-            self._embeddings = embeddings
+                if self._bm25 is None:
+                    # _bangun_bm25 sudah menurunkan mode ke "vektor" secara eksplisit
+                    # dan menyimpan sebabnya. Penurunan itu hanya bermakna bila ruang
+                    # vektornya benar-benar ada, jadi bangun sekarang.
+                    self._bangun_vector_store(cfg)
+            else:
+                self._bangun_vector_store(cfg)
 
-            self._vector_store = Chroma(
-                collection_name=self.collection_name,
-                embedding_function=embeddings,
-                persist_directory=self.persist_dir,
-            )
+                if self.retrieval_mode == "hibrida":
+                    self._bangun_bm25()
 
-            if self.reranker_enabled:
-                try:
-                    from sentence_transformers import CrossEncoder
-
-                    self._reranker = CrossEncoder(
-                        self.reranker_model,
-                        max_length=self.reranker_max_length,
-                    )
-
-                    logger.info(
-                        "BGE reranker loaded — model=%s candidate_k=%d",
-                        self.reranker_model,
-                        self.reranker_candidate_k,
-                    )
-
-                except Exception as exc:
-                    self._reranker_error = f"{type(exc).__name__}: {exc}"
-                    self._reranker = None
-
-                    logger.warning(
-                        "Reranker gagal dimuat: %s",
-                        self._reranker_error,
-                    )
+            self._muat_reranker()
 
             logger.info(
-                "MMRRetriever connected — collection=%s embed=%s mode=%s",
+                "MMRRetriever connected — collection=%s embed=%s mode=%s vektor=%s",
                 self.collection_name,
-                embed_provider,
+                self.embed_provider,
                 self.retrieval_mode,
+                self._vector_store is not None,
             )
-
-            if self.retrieval_mode in ("bm25", "hibrida"):
-                self._bangun_bm25()
         except Exception as exc:
             self._init_error = str(exc)
             logger.warning(
                 "MMRRetriever unavailable (embed=%s), keyword fallback required: %s",
                 embed_provider,
                 exc,
+            )
+
+    def _bangun_vector_store(self, cfg: Any) -> None:
+        """Bangun fungsi embedding dan koleksi Chroma untuk penelusuran vektor.
+
+        Dipisahkan dari ``__init__`` supaya jalur leksikal dapat melewatinya. Inilah
+        satu-satunya tempat torch dan model kalimat dimuat.
+        """
+        from langchain_chroma import Chroma
+
+        embeddings = _build_embeddings(
+            self.embed_provider, self.ollama_base_url, self.embed_model,
+            hf_model=cfg.embedding_model, google_model=cfg.google_embedding_model,
+        )
+        self._embeddings = embeddings
+
+        self._vector_store = Chroma(
+            collection_name=self.collection_name,
+            embedding_function=embeddings,
+            persist_directory=self.persist_dir,
+        )
+
+    def _muat_reranker(self) -> None:
+        """Muat cross-encoder HANYA bila jalur yang aktif benar-benar memakainya.
+
+        Sebelumnya pemuatan dijaga oleh ``reranker_enabled`` saja, tanpa memeriksa
+        mode. Akibatnya model sebesar BAAI/bge-reranker-v2-m3 (XLM-RoBERTa-large)
+        diunduh dan dimuat pada SETIAP startup, termasuk ketika jalur yang berjalan
+        tidak pernah memanggilnya — cukup untuk mematikan instans 512 MB.
+
+        ``_rerank`` dipanggil dari jalur leksikal dan hibrida. Jalur vektor murni
+        mengembalikan hasil MMR apa adanya, jadi tidak memerlukan reranker.
+        """
+        if not self.reranker_enabled:
+            return
+
+        if self.retrieval_mode not in ("bm25", "hibrida"):
+            logger.info(
+                "Reranker dilewati: mode=%s tidak memanggil _rerank",
+                self.retrieval_mode,
+            )
+            return
+
+        try:
+            if self.reranker_backend == "flashrank":
+                from flashrank import Ranker
+
+                # cache_dir WAJIB diisi: bawaan FlashRank adalah "/tmp", yang tidak
+                # bermakna di Windows dan tidak bertahan antarrestart di kontainer.
+                from pathlib import Path as _Path
+                cache_dir = str(_Path(self.persist_dir).parent / "_flashrank")
+
+                self._reranker = Ranker(
+                    model_name=self.reranker_model,
+                    cache_dir=cache_dir,
+                    max_length=self.reranker_max_length,
+                    log_level="WARNING",
+                )
+            else:
+                from sentence_transformers import CrossEncoder
+
+                self._reranker = CrossEncoder(
+                    self.reranker_model,
+                    max_length=self.reranker_max_length,
+                )
+
+            logger.info(
+                "Reranker loaded — backend=%s model=%s candidate_k=%d mode=%s",
+                self.reranker_backend,
+                self.reranker_model,
+                self.reranker_candidate_k,
+                self.retrieval_mode,
+            )
+
+        except Exception as exc:
+            self._reranker_error = f"{type(exc).__name__}: {exc}"
+            self._reranker = None
+
+            logger.warning(
+                "Reranker gagal dimuat: %s",
+                self._reranker_error,
             )
 
     def _bangun_bm25(self) -> None:
@@ -211,7 +281,13 @@ class MMRRetriever:
 
             col = chromadb.PersistentClient(path=self.persist_dir).get_collection(
                 self.collection_name)
-            self._bm25_teks = col.get(include=["documents"])["documents"]
+            # Dokumen DAN metadata diambil satu kali di sini, lalu dipakai ulang dari
+            # memori oleh _hasil_dari_indeks. Sebelumnya metadata dibaca ulang dari
+            # sqlite pada SETIAP kueri — seluruh korpus dimuat hanya untuk menyusun
+            # lima baris hasil.
+            r = col.get(include=["documents", "metadatas"])
+            self._bm25_teks = r["documents"]
+            self._bm25_metas = r["metadatas"]
             self._bm25_peta = {t: i for i, t in enumerate(self._bm25_teks)}
             self._bm25 = BM25Okapi([_tokenize(t) for t in self._bm25_teks])
             logger.info("Indeks BM25 dibangun atas %d potongan (mode=%s)",
@@ -254,12 +330,21 @@ class MMRRetriever:
         return [i for i, _ in sorted(skor.items(), key=lambda kv: -kv[1])]
 
     def _hasil_dari_indeks(self, indeks: List[int]) -> List[Dict[str, Any]]:
-        """Susun baris hasil dari indeks korpus, lengkap dengan metadatanya."""
-        import chromadb
-        col = chromadb.PersistentClient(path=self.persist_dir).get_collection(
-            self.collection_name)
-        r = col.get(include=["documents", "metadatas"])
-        docs, metas = r["documents"], r["metadatas"]
+        """Susun baris hasil dari indeks korpus, lengkap dengan metadatanya.
+
+        Korpus dibaca dari salinan memori yang disiapkan ``_bangun_bm25``. Indeks yang
+        dipakai di sini BERASAL dari daftar yang sama, sehingga keduanya wajib merujuk
+        urutan korpus yang identik — karena itu tidak boleh dibaca ulang dari sqlite
+        secara terpisah.
+        """
+        docs, metas = self._bm25_teks, self._bm25_metas
+        if not docs:
+            # Jalur pemulihan: dipanggil tanpa indeks BM25 terbangun.
+            import chromadb
+            col = chromadb.PersistentClient(path=self.persist_dir).get_collection(
+                self.collection_name)
+            r = col.get(include=["documents", "metadatas"])
+            docs, metas = r["documents"], r["metadatas"]
         keluar: List[Dict[str, Any]] = []
         for peringkat, i in enumerate(indeks, start=1):
             meta = dict(metas[i] or {})
@@ -275,19 +360,65 @@ class MMRRetriever:
             })
         return keluar
 
+    def _skor_reranker(
+        self,
+        query: str,
+        candidates: List[Dict[str, Any]],
+    ) -> List[float]:
+        """Skor relevansi kueri-terhadap-kandidat, searah dengan urutan ``candidates``.
+
+        Dua backend menghitungnya dengan cara berbeda, tetapi keduanya WAJIB
+        mengembalikan daftar sepanjang dan seurutan ``candidates`` — pemanggilnya
+        memasangkan skor dengan kandidat lewat ``zip``. FlashRank mengembalikan
+        kandidat yang sudah TERURUT, sehingga pemetaan balik ke urutan semula
+        dilakukan di sini, bukan diserahkan ke pemanggil.
+        """
+        teks = [str(candidate.get("text", "")) for candidate in candidates]
+
+        if self.reranker_backend == "flashrank":
+            from flashrank import RerankRequest
+
+            passages = [
+                {"id": idx, "text": isi}
+                for idx, isi in enumerate(teks)
+            ]
+
+            hasil = self._reranker.rerank(
+                RerankRequest(query=query, passages=passages)
+            )
+
+            skor = [0.0] * len(teks)
+            for baris in hasil:
+                skor[int(baris["id"])] = float(baris.get("score", 0.0))
+            return skor
+
+        return [
+            float(nilai)
+            for nilai in self._reranker.predict(
+                [[query, isi] for isi in teks],
+                batch_size=8,
+                show_progress_bar=False,
+            )
+        ]
+
     def _rerank(
         self,
         query: str,
         candidates: List[Dict[str, Any]],
         top_k: int,
     ) -> List[Dict[str, Any]]:
-        """Rerank kandidat retrieval menggunakan BGE Cross-Encoder.
+        """Susun ulang kandidat retrieval dengan cross-encoder.
 
         Alur:
-            Hybrid/RRF -> candidate_k -> BGE reranker -> top_k
+            BM25 (leksikal)   -> candidate_k -> cross-encoder -> top_k
+            BM25+Vektor (RRF) -> candidate_k -> cross-encoder -> top_k
 
-        Reranker hanya digunakan untuk mengurutkan kandidat yang sudah
-        ditemukan oleh tahap retrieval. Ia tidak mencari dokumen baru.
+        Reranker hanya mengurutkan kandidat yang sudah ditemukan tahap penelusuran.
+        Ia TIDAK mencari dokumen baru, sehingga dokumen yang tidak masuk kolam
+        kandidat tetap tak terjangkau berapa pun mutu rerankernya.
+
+        Backend yang dipakai ditentukan ``reranker.backend``; lihat
+        ``_skor_reranker``.
         """
         if not candidates:
             return []
@@ -299,17 +430,8 @@ class MMRRetriever:
             )
             return candidates[:top_k]
 
-        pairs = [
-            [query, str(candidate.get("text", ""))]
-            for candidate in candidates
-        ]
-
         try:
-            scores = self._reranker.predict(
-                pairs,
-                batch_size=8,
-                show_progress_bar=False,
-            )
+            scores = self._skor_reranker(query, candidates)
 
             # Tambahkan skor reranker ke setiap kandidat.
             reranked = []
@@ -319,7 +441,7 @@ class MMRRetriever:
                 row["reranker_score"] = float(score)
                 reranked.append(row)
 
-            # Skor BGE semakin tinggi = semakin relevan.
+            # Kedua backend sepakat: skor lebih tinggi = lebih relevan.
             reranked.sort(
                 key=lambda item: item["reranker_score"],
                 reverse=True,
@@ -347,7 +469,14 @@ class MMRRetriever:
 
     @property
     def is_ready(self) -> bool:
-        return self._vector_store is not None
+        """Siap bila ADA jalur penelusuran yang dapat melayani kueri.
+
+        Mode leksikal murni sengaja tidak membangun ruang vektor, sehingga syarat
+        lama ``_vector_store is not None`` akan menyatakan retriever tidak siap dan
+        membuat RAGPipeline mundur DIAM-DIAM ke potongan cadangan yang jauh lebih
+        sempit daripada korpus penuh.
+        """
+        return self._vector_store is not None or self._bm25 is not None
 
     @staticmethod
     def _doc_key(doc: Any) -> str:
@@ -375,7 +504,7 @@ class MMRRetriever:
         BUKAN objektif MMR (yang mengurangi penalti redundansi). Karena itu urutan
         rank tidak selalu menurun monoton terhadap skor.
         """
-        if not self._vector_store:
+        if not self.is_ready:
             raise RuntimeError(f"MMR retriever is not ready: {self._init_error}")
 
         top_k = top_k if top_k is not None else self.top_k
@@ -387,16 +516,48 @@ class MMRRetriever:
         # vektor di bawahnya tidak berubah satu baris pun dan angka era-vektor tetap
         # dapat direproduksi persis.
         if self._bm25 is not None and self.retrieval_mode in ("bm25", "hibrida"):
+            # Kolam BM25 jalur hibrida SENGAJA tetap rrf_pool. Mengubahnya akan
+            # mengubah masukan RRF dan membuat angka T13/T14 tidak dapat direproduksi.
+            # Jalur leksikal mengambil kolamnya sendiri di bawah.
             urut_bm = self._peringkat_bm25(
                 query,
                 self.rrf_pool,
             )
 
             if self.retrieval_mode == "bm25":
-                results = self._hasil_dari_indeks(
-                    urut_bm[:top_k]
+                # ============================================================
+                # LEXICAL RETRIEVAL
+                # BM25 -> candidate pool -> cross-encoder -> top_k
+                # ============================================================
+                #
+                # Sebelumnya cabang ini mengembalikan urut_bm[:top_k] apa adanya,
+                # sehingga _rerank TIDAK PERNAH dipanggil pada jalur produksi meski
+                # reranker.enabled bernilai true. Kolam kandidat kini disusun sama
+                # seperti jalur hibrida agar cross-encoder dapat mengangkat dokumen
+                # relevan yang terlempar jauh oleh pencocokan leksikal.
+                if self._reranker is None:
+                    # Tanpa reranker, perilaku sama persis dengan sebelumnya.
+                    return self._hasil_dari_indeks(urut_bm[:top_k])
+
+                candidate_k = max(top_k, self.reranker_candidate_k)
+
+                # Kolam diambil ulang bila candidate_k melampaui rrf_pool, supaya
+                # kandidat tidak terpotong diam-diam oleh ukuran kolam jalur hibrida.
+                urut_kandidat = (
+                    urut_bm
+                    if candidate_k <= len(urut_bm)
+                    else self._peringkat_bm25(query, candidate_k)
                 )
-                return results
+
+                candidates = self._hasil_dari_indeks(
+                    urut_kandidat[:candidate_k]
+                )
+
+                return self._rerank(
+                    query,
+                    candidates,
+                    top_k,
+                )
 
             # ============================================================
             # HYBRID RETRIEVAL

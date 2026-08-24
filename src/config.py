@@ -238,6 +238,15 @@ def _load_rag_config_cached(path_str: Optional[str]) -> RagConfig:
                 cast=bool,
                 path=path,
             ),
+            backend=resolve(
+                "reranker.backend",
+                None,
+                None,
+                "rag.reranker.backend",
+                "cross_encoder",
+                cast=str,
+                path=path,
+            ),
             model=resolve(
                 "reranker.model",
                 None,
@@ -282,6 +291,11 @@ def clear_cache() -> None:
 @dataclass(frozen=True)
 class RerankerConfig:
     enabled: bool
+    # "cross_encoder" memuat sentence-transformers (menarik torch); "flashrank"
+    # menjalankan model ONNX di CPU tanpa torch sama sekali. Pilihan backend
+    # menentukan arti `model`: nama repositori HuggingFace bagi cross_encoder,
+    # nama model FlashRank bagi flashrank.
+    backend: str
     model: str
     candidate_k: int
     max_length: int

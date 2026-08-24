@@ -33,8 +33,18 @@ SKENARIO_A = [
 ]
 
 
-def _logbook(nama: str, mulai: datetime, baris, menit: int = 5) -> pd.DataFrame:
-    """Susun catatan logbook seperti yang ditulis halaman Input Logbook."""
+def _logbook(nama: str, mulai: datetime, baris, menit: int = 5,
+             sumber: str = "CGM") -> pd.DataFrame:
+    """Susun catatan logbook seperti yang ditulis halaman Input Logbook.
+
+    ``glucose_source`` WAJIB ikut sejak parser OhioT1DM disatukan: kontrak data
+    menolak bingkai tanpa kolom itu, dan pembentukan jendela mengelompokkan per
+    (pasien, modalitas). Jalur produksi sudah memenuhinya — ``POST /api/logbook``
+    memvalidasi nilainya terhadap {CGM, FINGER_STICK} — sehingga penambahan di sini
+    menyelaraskan uji dengan perilaku yang sebenarnya berjalan.
+
+    Skenario A memakai jendela nyata ohio_570 berjarak 5 menit, yaitu cadence CGM.
+    """
     return pd.DataFrame({
         "timestamp": [mulai + timedelta(minutes=menit * i) for i in range(len(baris))],
         "patient_id": nama,
@@ -42,6 +52,7 @@ def _logbook(nama: str, mulai: datetime, baris, menit: int = 5) -> pd.DataFrame:
         "carbs": [float(b[1]) for b in baris],
         "insulin": [float(b[2]) for b in baris],
         "activity": [int(b[3]) for b in baris],
+        "glucose_source": sumber,
     })
 
 

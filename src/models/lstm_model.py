@@ -1,9 +1,8 @@
-"""Minimal LSTM model for glucose prediction (comparison baseline against RF).
+"""LSTM minimal sebagai lengan pembanding prediksi glukosa.
 
-Architecture: Stacked LSTM (2 layers) → Dense(1).
-No attention mechanism — this is intentionally minimal so that any accuracy
-gap vs the RF model is attributable to architecture differences, not auxiliary
-components.
+Arsitektur: Stacked LSTM (2 lapis) → Dense(1). Tanpa mekanisme atensi — kesederhanaan
+ini disengaja supaya selisih akurasi terhadap RF dan GBM dapat diatribusikan ke
+perbedaan arsitektur, bukan ke komponen tambahan.
 """
 
 from __future__ import annotations
@@ -138,114 +137,144 @@ class LSTMGlucoseModel(BaseGlucoseModel):
 def train_lstm_from_config(
     config_path: str = "config.yaml",
     data_source: str = "auto",
-    smbg_downsample: bool = False,
+    source: str = "CGM",
+    horizon_min: Optional[float] = None,
+    simpan_model: bool = False,
 ) -> Dict:
-    """Train the LSTM model using dataset and config, then save bundle + metrics.
+    """Latih LSTM sebagai lengan pembanding, lalu simpan metriknya.
 
-    Args:
-        config_path: Path to config.yaml.
-        data_source: 'auto' | 'ohio_t1dm' | 'latest'.
-        smbg_downsample: Legacy experiment path. If True, downsample CGM data to an
-            SMBG-like cadence (config.data.smbg_interval_min). Not used by any result
-            reported in the thesis: the SMBG scenario is evaluated on the REAL
-            finger_stick timeline (data/raw/ohio_t1dm_smbg.csv), not on downsampled CGM.
+    PERLAKUAN YANG IDENTIK. Pemuatan, pembersihan, rekayasa fitur, pembagian resmi,
+    dan pembentukan jendela didelegasikan ke ``src.models.persiapan_data`` — modul
+    yang sama yang dipakai jalur GBM dan RF. Sebelumnya jalur LSTM berbeda dari
+    keduanya dalam empat hal sekaligus, sehingga selisih angkanya tidak dapat
+    diatribusikan ke arsitektur:
 
-    Returns:
-        Evaluation metrics dict.
+    * memakai fitur dasar (4 kolom), bukan fitur hasil rekayasa (9 kolom);
+    * tidak memakai target delta, sedangkan RF dan GBM memakainya;
+    * membagi dengan menyisihkan dua pasien terakhir, bukan pembagian resmi;
+    * memanggil ``create_sequences`` tanpa horizon, sehingga sebenarnya memprediksi
+      satu langkah (+5 menit), bukan +30 menit seperti lengan lain.
+
+    Argumen ``horizon_min`` dinyatakan dalam MENIT.
+
+    JALUR SMBG WARISAN DICABUT. Parameter ``smbg_downsample`` menurunkan cadence CGM
+    secara buatan untuk menirukan SMBG. Ia sudah tidak dapat dijalankan sejak parser
+    disatukan, dan tidak pernah dipakai hasil mana pun di laporan. Skenario SMBG yang
+    sah memakai modalitas FINGER_STICK sungguhan lewat ``--source FINGER_STICK``,
+    yang parameter temporalnya diambil dari ``config.model.source_profiles``.
     """
-    from src.data.loader import DiabetesDataLoader
-    from src.data.preprocessor import DataPreprocessor
+    from src.models.persiapan_data import (
+        bentuk_jendela,
+        siapkan_data,
+        simpan_prediksi,
+    )
 
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
-    loader = DiabetesDataLoader(config["data"]["output_dir"])
-    if data_source == "auto":
-        primary = config.get("data", {}).get("primary_source", "ohio_t1dm")
-        fallback = config.get("data", {}).get("fallback_source", "latest_generated")
-        df, used_source = loader.load_preferred_dataset(primary, fallback)
-    elif data_source == "ohio_t1dm":
-        df = loader.load_csv("ohio_t1dm_merged.csv")
-        used_source = "ohio_t1dm"
-    else:
-        df = loader.load_latest_dataset()
-        used_source = "latest_generated"
+    siap = siapkan_data(
+        config,
+        sumber=source,
+        data_source=data_source,
+        horizon_min=horizon_min,
+    )
 
-    df = df.sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
-    print(f"Data source  : {used_source}")
+    print(f"Data source : {siap.sumber_data}")
+    print(f"Modalitas   : {source}")
 
-    preprocessor = DataPreprocessor(config)
-    df = preprocessor.handle_missing_values(df)
-
-    if smbg_downsample:
-        interval = config.get("data", {}).get("smbg_interval_min", 240)
-        df = preprocessor.downsample_smbg(df, interval_minutes=interval)
-        # With 240-min cadence: seq_len=6 covers ~1 day of SMBG history
-        sequence_length = config["model"].get("smbg_sequence_length", 6)
-        mode_tag = "smbg"
-    else:
-        sequence_length = config["model"].get("sequence_length", 12)
-        mode_tag = "cgm"
-
-    patient_ids = sorted(df["patient_id"].unique().tolist())
-    if len(patient_ids) < 2:
-        raise ValueError("Need at least 2 patients for train/test split")
-
-    test_patients = patient_ids[-2:]
-    train_df, test_df = preprocessor.split_by_patient(df, test_patients)
-
-    X_train, y_train = preprocessor.create_sequences(train_df, sequence_length=sequence_length)
-    X_test, y_test = preprocessor.create_sequences(test_df, sequence_length=sequence_length)
-    X_train_s, X_test_s = preprocessor.normalize_data(X_train, X_test)
-
-    model = LSTMGlucoseModel(config)
-    model.train(X_train_s, y_train)
-
-    y_pred = model.predict(X_test_s)
-    metrics = calculate_all_metrics(y_test, y_pred)
-
-    # --- Save bundle (Keras model dir + scaler + metadata) ---
-    bundle_dir = Path("models") / "lstm_bundle"
-    bundle_dir.mkdir(parents=True, exist_ok=True)
-
-    keras_dir = bundle_dir / "keras_model"
-    model.save(str(keras_dir))
-
-    meta_bundle = {
-        "scaler": preprocessor.scaler,
-        "features": config["model"]["features"],
-        "sequence_length": sequence_length,
-        "mode": mode_tag,
-    }
-    with open(bundle_dir / "meta.pkl", "wb") as f:
-        pickle.dump(meta_bundle, f)
-
-    # --- Save metrics ---
     results_dir = Path("results")
     results_dir.mkdir(parents=True, exist_ok=True)
-    metrics_path = results_dir / f"lstm_{mode_tag}_metrics.json"
-    with open(metrics_path, "w", encoding="utf-8") as f:
-        json.dump({k: float(v) for k, v in metrics.items()}, f, indent=2)
 
-    print("=" * 60)
-    print(f"LSTM TRAINING ({mode_tag.upper()} mode, seq_len={sequence_length})")
-    print("=" * 60)
-    print(f"Train patients: {train_df['patient_id'].nunique()}")
-    print(f"Test patients : {test_df['patient_id'].nunique()}")
-    print(f"Train samples : {len(y_train)}")
-    print(f"Test samples  : {len(y_test)}")
-    print("-" * 60)
-    for key, value in metrics.items():
-        print(f"{key:12s}: {value:.4f}")
-    print("-" * 60)
-    print(f"Bundle saved  : {bundle_dir}")
-    print(f"Metrics saved : {metrics_path}")
+    seluruh_metrik: Dict[str, Dict] = {}
 
-    return metrics
+    for horizon in siap.profil.horizons_min:
+        X_train, y_train, anc_train, X_test, y_test, anc_test = bentuk_jendela(
+            siap, horizon
+        )
+
+        if len(y_train) == 0 or len(y_test) == 0:
+            raise ValueError(
+                f"Tidak ada jendela sah pada horizon {horizon:g} menit untuk {source}."
+            )
+
+        X_train_s, X_test_s = siap.preprocessor.normalize_data(X_train, X_test)
+
+        y_train_fit = (y_train - anc_train) if siap.predict_delta else y_train
+
+        model = LSTMGlucoseModel(config)
+        model.train(X_train_s, y_train_fit)
+
+        pred_fit = model.predict(X_test_s)
+        y_pred = (pred_fit + anc_test) if siap.predict_delta else pred_fit
+
+        metrics = calculate_all_metrics(y_test, y_pred)
+
+        # Vektor prediksi disimpan supaya Clarke Error Grid dapat digambar tanpa
+        # melatih ulang, dan dijamin berasal dari model yang SAMA dengan tabelnya.
+        jalur_pred = simpan_prediksi("lstm", source, horizon, y_test, y_pred, anc_test)
+
+        label = f"h{int(horizon)}m"
+        prefix = f"lstm_{source.lower()}_{label}"
+
+        catatan = {
+            "source": source,
+            "horizon_min": float(horizon),
+            "sequence_length": siap.profil.sequence_length,
+            "train_samples": int(len(y_train)),
+            "test_samples": int(len(y_test)),
+            "target_tolerance_min": siap.profil.target_tolerance_min,
+            "max_history_gap_min": siap.profil.max_history_gap_min,
+            "min_history_interval_min": siap.profil.min_history_interval_min,
+            "min_target_horizon_min": siap.profil.min_target_horizon_min,
+            "max_target_horizon_min": siap.profil.max_target_horizon_min,
+            # Pembagian resmi OhioT1DM bersifat TEMPORAL DALAM-PASIEN.
+            "split": "official_dataset_split (temporal within-patient)",
+            **{k: float(v) for k, v in metrics.items()},
+        }
+
+        metrics_path = results_dir / f"{prefix}_metrics.json"
+        with open(metrics_path, "w", encoding="utf-8") as f:
+            json.dump(catatan, f, indent=2)
+
+        if simpan_model:
+            bundle_dir = Path("models") / f"{prefix}_bundle"
+            bundle_dir.mkdir(parents=True, exist_ok=True)
+            model.save(str(bundle_dir / "keras_model"))
+
+            with open(bundle_dir / "meta.pkl", "wb") as f:
+                pickle.dump(
+                    {
+                        "scaler": siap.preprocessor.scaler,
+                        "features": siap.feature_list,
+                        "sequence_length": siap.profil.sequence_length,
+                        "prediction_horizon_min": float(horizon),
+                        "predict_delta": siap.predict_delta,
+                        "glucose_source": source,
+                    },
+                    f,
+                )
+
+        seluruh_metrik[label] = catatan
+
+        print("=" * 60)
+        print(f"LSTM — {source} +{horizon:g} menit")
+        print("=" * 60)
+        print(f"Sampel latih : {len(y_train)}")
+        print(f"Sampel uji   : {len(y_test)}")
+        print("-" * 60)
+        for key, value in metrics.items():
+            print(f"{key:12s}: {value:.4f}")
+        print("-" * 60)
+        print(f"Metrik       : {metrics_path}")
+        print(f"Prediksi     : {jalur_pred}")
+
+    return seluruh_metrik
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Train minimal LSTM glucose model")
+    parser = argparse.ArgumentParser(
+        description="Latih LSTM sebagai lengan pembanding"
+    )
     parser.add_argument("--config", default="config.yaml")
     parser.add_argument(
         "--data_source",
@@ -253,12 +282,34 @@ def main() -> None:
         choices=["auto", "latest", "ohio_t1dm"],
     )
     parser.add_argument(
-        "--smbg",
+        "--source",
+        default="CGM",
+        choices=["CGM", "FINGER_STICK"],
+        help="Modalitas observasi glukosa",
+    )
+    parser.add_argument(
+        "--horizon-min",
+        type=float,
+        default=None,
+        help=(
+            "Horizon prediksi dalam MENIT. Bawaan: seluruh horizon pada "
+            "config.model.source_profiles[<source>].prediction_horizons_min"
+        ),
+    )
+    parser.add_argument(
+        "--simpan-model",
         action="store_true",
-        help="Downsample to SMBG cadence before training",
+        help="Simpan bundle Keras. Bawaan: hanya metrik.",
     )
     args = parser.parse_args()
-    train_lstm_from_config(args.config, args.data_source, args.smbg)
+
+    train_lstm_from_config(
+        args.config,
+        args.data_source,
+        args.source,
+        args.horizon_min,
+        args.simpan_model,
+    )
 
 
 if __name__ == "__main__":

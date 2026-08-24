@@ -324,10 +324,38 @@ rag:
   persist_dir: "models/chroma_db"
   collection_name: "diabetes_kb"
 
+  # Penyusunan ulang kandidat oleh cross-encoder, SESUDAH penelusuran awal.
+  #
+  # BERLAKU  : aktif pada mode "bm25" dan "hibrida"; jalur vektor murni tidak
+  #            memanggilnya, sehingga modelnya pun tidak dimuat.
+  # ALASAN   : penelusuran leksikal punya kasus yang jawabannya benar tetapi
+  #            peringkatnya jauh. Pada kasus diagnostik E02 dokumen sasaran berada
+  #            di peringkat 8 (BM25) dan naik ke 2 setelah reranking.
+  # DIUBAH   : backend ONNX dipakai menggantikan cross-encoder berbasis torch.
+  # SEMENTARA: pilihan model belum final. Perbandingan tiga lengan
+  #            (tanpa-reranker / ringan / BGE-v2-m3) belum dijalankan; sampai itu
+  #            selesai, nilai di bawah adalah pilihan operasional, bukan hasil
+  #            pengukuran. Jangan mengutipnya di Bab VI sebagai keputusan berbukti.
+  #
+  # CATATAN MEMORI. BAAI/bge-reranker-v2-m3 berbasis XLM-RoBERTa-large (~568 juta
+  # parameter). Sebelum perubahan ini ia dimuat pada SETIAP startup — termasuk pada
+  # mode "bm25" yang tidak pernah memanggil _rerank — dan itu cukup untuk mematikan
+  # instans kecil. Sekarang pemuatannya mengikuti mode; lihat _muat_reranker pada
+  # src/rag/retriever.py.
   reranker:
     enabled: true
-    model: "BAAI/bge-reranker-v2-m3"
-    candidate_k: 50
+    # cross_encoder = sentence-transformers (menarik torch)
+    # flashrank     = ONNX di CPU, tanpa torch
+    backend: "flashrank"
+    # Nama model mengikuti backend. Untuk flashrank, daftar yang sah ada pada
+    # flashrank/Config.py. MultiBERT dipilih karena korpus ini campuran Indonesia
+    # dan Inggris (8 dari 12 dokumen berbahasa Inggris); model reranking yang hanya
+    # berbahasa Inggris akan mengulang ketidakcocokan bahasa yang sudah menjatuhkan
+    # penelusuran padat pada T9/T13/T14.
+    model: "ms-marco-MultiBERT-L-12"
+    # Kolam kandidat sebelum penyusunan ulang. Diturunkan dari 50 karena korpusnya
+    # hanya 2.233 potongan dan biaya reranking berbanding lurus dengan nilai ini.
+    candidate_k: 20
     max_length: 512
 
   # Chunking dokumen pedoman (per halaman PDF)

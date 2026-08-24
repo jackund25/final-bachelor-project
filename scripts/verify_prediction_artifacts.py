@@ -1,16 +1,26 @@
 #!/usr/bin/env python3
-"""Verifikasi artefak prediksi: apakah model tersimpan MEREPRODUKSI angka laporan.
+"""Verifikasi artefak prediksi: apakah bundle tersimpan MEREPRODUKSI angka laporan.
 
-Skrip ini merealisasikan "Verifikasi Fungsional" (Bab V.9). Berbeda dari sekadar
-mengecek keberadaan berkas, skrip ini memuat bundle inferensi yang benar-benar dipakai
-aplikasi, menjalankannya ulang pada split hold-out yang sama, lalu membandingkan
-metriknya terhadap metrik yang tercatat (models/rf_metrics_h{6,12}.json) dan terhadap
-angka yang dilaporkan pada Bab VI. Perbedaan sekecil apa pun akan ditandai GAGAL.
+Skrip ini merealisasikan "Verifikasi Fungsional" (Bab V). Berbeda dari sekadar mengecek
+keberadaan berkas, skrip ini memuat bundle inferensi yang benar-benar dipakai backend,
+menjalankannya ulang pada pembagian uji yang sama, lalu membandingkan metriknya
+terhadap metrik yang tercatat di sebelah bundle DAN terhadap angka yang tertulis pada
+naskah. Perbedaan sekecil apa pun ditandai GAGAL.
 
-Jalankan pada environment proyek (conda: diabetes-ta) agar versi pustaka sesuai
-Tabel V.2 (scikit-learn 1.3.0): model di-pickle dengan versi tersebut.
+Jalankan pada environment proyek (conda: diabetes-ta) agar versi pustaka sesuai:
+bundle di-pickle dengan scikit-learn 1.3.0 dan tidak dapat dibuka versi yang lebih baru.
 
     python scripts/verify_prediction_artifacts.py
+
+DIPERBARUI 24 Agustus 2026 mengikuti penyatuan parser OhioT1DM. Yang berubah:
+
+* sumber data menjadi satu berkas gabungan ``data/raw/ohio_t1dm.csv`` yang disaring
+  menurut ``glucose_source``;
+* pembagian uji memakai ``dataset_split`` resmi, bukan menyisihkan dua pasien terakhir;
+* jendela dibentuk dari WAKTU NYATA lewat ``src.models.persiapan_data``, modul yang
+  sama yang dipakai pelatihan — sehingga verifikasi ini tidak dapat lolos karena
+  kebetulan memakai perlakuan yang berbeda;
+* penamaan bundle mengikuti modalitas dan horizon dalam menit.
 """
 from __future__ import annotations
 
@@ -20,145 +30,168 @@ import pickle
 import sys
 from pathlib import Path
 
-import pandas as pd
 import yaml
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.data.preprocessor import DataPreprocessor  # noqa: E402
+from src.models.persiapan_data import (  # noqa: E402
+    bentuk_jendela_bagian,
+    muat_dataset_modalitas,
+)
 from src.utils.metrics import calculate_all_metrics  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 MODELS_DIR = PROJECT_ROOT / "models"
-DATA_CSV = PROJECT_ROOT / "data" / "raw" / "ohio_t1dm_merged.csv"
 
-# Awalan berkas bundle mengikuti keluarga model produksi di config.yaml.
-# Sebelumnya "rf_" ditulis langsung, sehingga skrip ini tetap memverifikasi Random
-# Forest meskipun aplikasi sudah memuat bundle GBM — yaitu memverifikasi artefak
-# yang bukan artefak produksi.
-PREFIX_KELUARGA = {"GradientBoosting": "gbm", "RandomForest": "rf"}
-
-# Angka yang dilaporkan pada Bab VI (Tabel VI.1). Toleransi ketat: artefak harus
-# mereproduksi metrik ini, bukan sekadar mendekatinya.
+# ---------------------------------------------------------------------------
+# ANGKA YANG WAJIB SAMA DENGAN NASKAH.
 #
-# DIPERBARUI 13 Agustus 2026 mengikuti penggantian prediktor ke GBM. Nilai lama
-# (h6 RMSE 22,60 · h12 34,24) TIDAK PERNAH DAPAT LOLOS karena dua sebab yang keduanya
-# cacat skrip ini sendiri, bukan cacat artefaknya:
-#   1. create_sequences() dipanggil TANPA max_gap_steps, sedangkan pelatihan produksi
-#      memakainya sejak Tugas 5. Jendela yang melintasi jeda sensor ikut terhitung,
-#      sehingga RMSE-nya lebih buruk daripada metrik tersimpan (21,12 pada h6).
-#   2. Akibatnya kedua pemeriksaan skrip ini saling bertentangan: tidak mungkin cocok
-#      dengan metrik tersimpan DAN dengan REPORTED sekaligus.
-# Keduanya diperbaiki bersamaan dengan penggantian model.
+# Berkas ini SENGAJA dikopel ke naskah: bila Bab VI berubah, berkas ini ikut berubah,
+# dan bila artefaknya menyimpang keduanya ketahuan. Itulah gunanya.
 #
-# ANGKA DI BAWAH WAJIB SAMA dengan yang ditulis di Bab VI. Bila naskah berubah,
-# berkas ini ikut berubah — itulah gunanya.
-REPORTED = {
-    6:  {"RMSE": 20.81, "MAE": 14.09, "Clarke_A+B": 95.19},
-    12: {"RMSE": 32.24, "MAE": 23.46, "Clarke_A+B": 88.07},
+# PERINGATAN — NASKAH BELUM DISELARASKAN. Angka di bawah adalah hasil pipeline
+# tersatukan (24 Agustus 2026). Bab VI dan README saat ini masih memuat angka pipeline
+# LAMA, yang diukur dengan pembagian LINTAS-PASIEN dan target berbasis langkah:
+#
+#     lama (lintas-pasien)      h6  RMSE 20,81 · MAE 14,09 · A+B 95,19
+#                               h12 RMSE 32,24 · MAE 23,46 · A+B 88,07
+#
+# Kedua kelompok angka TIDAK SEBANDING: rancangan pembagiannya berbeda. Pembagian
+# resmi OhioT1DM bersifat TEMPORAL DALAM-PASIEN — seluruh 12 pasien muncul di kedua
+# sisi — sehingga ia lebih ringan daripada pembagian lintas-pasien, dan klaim README
+# tentang "pembagian lintas-pasien yang lebih berat" tidak berlaku bagi angka ini.
+# ---------------------------------------------------------------------------
+DILAPORKAN = {
+    ("CGM", 30.0): {"RMSE": 18.67, "MAE": 13.19, "Clarke_A+B": 95.87},
+    ("CGM", 60.0): {"RMSE": 31.18, "MAE": 22.96, "Clarke_A+B": 87.49},
+    # Finger-stick +4 jam sengaja ikut diverifikasi meski mutunya rendah. Angka yang
+    # buruk tetap harus dapat direproduksi; menyembunyikannya dari verifikasi justru
+    # membuatnya tak terpantau ketika dokter mengujinya pada Skenario 2.
+    ("FINGER_STICK", 240.0): {"RMSE": 68.24, "MAE": 55.62, "Clarke_A+B": 52.52},
 }
+
 TOL = 0.05  # mg/dL / poin persen
 
 
-def evaluate_horizon(horizon: int, cfg: dict, prefix: str) -> dict:
-    """Muat bundle inferensi, jalankan pada hold-out, kembalikan metrik."""
-    mc = cfg["model"]
-    df = pd.read_csv(DATA_CSV, parse_dates=["timestamp"])
+def _stem(sumber: str, horizon_min: float) -> str:
+    """Penamaan artefak mengikuti yang ditulis src/models/gbm_model.py."""
+    if sumber == "FINGER_STICK":
+        return "gbm_finger_stick_h4h_seq8"
+    return f"gbm_{sumber.lower()}_h{int(horizon_min)}m"
 
-    pre = DataPreprocessor(cfg)
-    df = pre.handle_missing_values(df)
-    df = pre.engineer_features(df, **mc["feature_engineering"])
-    pre.feature_columns = list(mc["engineered_features"])
 
-    patients = sorted(df["patient_id"].unique())
-    _, test_df = pre.split_by_patient(df, patients[-2:])
+def evaluasi(cfg: dict, sumber: str, horizon_min: float) -> dict:
+    """Muat bundle, jalankan pada pembagian uji resmi, kembalikan metrik."""
+    modal = muat_dataset_modalitas(cfg, sumber=sumber, horizon_min=horizon_min)
 
-    # max_gap_steps WAJIB sama dengan pelatihan produksi. Tanpa ini jendela yang
-    # melintasi jeda sensor ikut dievaluasi, sehingga metriknya mengukur himpunan
-    # uji yang berbeda dari yang menghasilkan metrik tersimpan.
-    X, y, anchor = pre.create_sequences(
-        test_df, mc["sequence_length"], horizon, return_anchor=True,
-        max_gap_steps=mc.get("max_gap_steps"),
-        source_interval_min=float(cfg.get("data", {}).get("sampling_interval_min", 5)),
-    )
+    uji = modal.df[modal.df["dataset_split"] == "test"]
+    X, y, anchor = bentuk_jendela_bagian(modal, uji, horizon_min)
 
-    with open(MODELS_DIR / f"{prefix}_inference_bundle_h{horizon}.pkl", "rb") as f:
+    with open(MODELS_DIR / f"{_stem(sumber, horizon_min)}_inference_bundle.pkl", "rb") as f:
         bundle = pickle.load(f)
 
     n, seq, n_feat = X.shape
     X_scaled = bundle["scaler"].transform(X.reshape(-1, n_feat)).reshape(n, seq * n_feat)
+
     pred = bundle["model"].predict(X_scaled)
-    if bundle["predict_delta"]:
+    if bundle.get("predict_delta"):
         pred = pred + anchor
 
-    return calculate_all_metrics(y, pred)
+    metrik = calculate_all_metrics(y, pred)
+    metrik["Clarke_A+B"] = metrik["Clarke_A"] + metrik["Clarke_B"]
+    metrik["_n_uji"] = float(len(y))
+    return metrik
 
 
 def main() -> int:
     cfg = yaml.safe_load((PROJECT_ROOT / "config.yaml").read_text(encoding="utf-8"))
-    ok = True
-
-    if not DATA_CSV.exists():
-        logger.error(f"Dataset tidak ditemukan: {DATA_CSV}")
-        return 1
 
     keluarga = cfg["model"].get("name", "GradientBoosting")
-    prefix = PREFIX_KELUARGA.get(keluarga)
-    if prefix is None:
-        logger.error(f"config.model.name '{keluarga}' tidak punya bundle yang dikenal. "
-                     f"Pilihan: {', '.join(PREFIX_KELUARGA)}")
+    if keluarga != "GradientBoosting":
+        logger.error(
+            f"config.model.name = '{keluarga}'. Skrip ini memverifikasi bundle GBM, "
+            "yaitu keluarga yang dipakai backend produksi."
+        )
         return 1
-    logger.info(f"Keluarga model produksi: {keluarga} (bundle '{prefix}_*')")
 
-    for horizon, reported in REPORTED.items():
-        label = f"h{horizon} (+{horizon * 5} menit)"
-        bundle_path = MODELS_DIR / f"{prefix}_inference_bundle_h{horizon}.pkl"
-        metrics_path = MODELS_DIR / f"{prefix}_metrics_h{horizon}.json"
+    berkas_data = (
+        PROJECT_ROOT / "data" / "raw"
+        / cfg["data"].get("unified_dataset", "ohio_t1dm.csv")
+    )
+    if not berkas_data.exists():
+        logger.error(
+            f"Dataset gabungan tidak ditemukan: {berkas_data}. "
+            "Jalankan `python -m src.data.ohio_parser` lebih dulu."
+        )
+        return 1
+
+    ok = True
+
+    for (sumber, horizon_min), dilaporkan in DILAPORKAN.items():
+        label = f"{sumber} +{horizon_min:g} menit"
+        stem = _stem(sumber, horizon_min)
+
+        bundle_path = MODELS_DIR / f"{stem}_inference_bundle.pkl"
+        metrics_path = MODELS_DIR / f"{stem}_metrics.json"
 
         if not bundle_path.exists():
             logger.error(f"[{label}] bundle hilang: {bundle_path.name}")
             ok = False
             continue
 
-        actual = evaluate_horizon(horizon, cfg, prefix)
-        actual["Clarke_A+B"] = actual["Clarke_A"] + actual["Clarke_B"]
+        try:
+            aktual = evaluasi(cfg, sumber, horizon_min)
+        except Exception as exc:  # noqa: BLE001
+            logger.error(f"[{label}] gagal dievaluasi: {type(exc).__name__}: {exc}")
+            ok = False
+            continue
 
         logger.info(
-            f"[{label}] reproduksi: RMSE {actual['RMSE']:.2f} | "
-            f"MAE {actual['MAE']:.2f} | Clarke A+B {actual['Clarke_A+B']:.2f}%"
+            f"[{label}] reproduksi atas {int(aktual['_n_uji'])} jendela: "
+            f"RMSE {aktual['RMSE']:.2f} | MAE {aktual['MAE']:.2f} | "
+            f"Clarke A+B {aktual['Clarke_A+B']:.2f}%"
         )
 
         # 1) Cocok dengan metrik yang tersimpan saat pelatihan?
         if metrics_path.exists():
-            saved = json.loads(metrics_path.read_text(encoding="utf-8"))
-            for key in ("RMSE", "MAE", "Clarke_A+B"):
-                if abs(actual[key] - saved[key]) > TOL:
+            tersimpan = json.loads(metrics_path.read_text(encoding="utf-8"))
+            tersimpan.setdefault(
+                "Clarke_A+B", tersimpan.get("Clarke_A", 0) + tersimpan.get("Clarke_B", 0)
+            )
+            for kunci in ("RMSE", "MAE", "Clarke_A+B"):
+                if abs(aktual[kunci] - tersimpan[kunci]) > TOL:
                     logger.error(
-                        f"[{label}] {key}: reproduksi {actual[key]:.2f} != "
-                        f"tersimpan {saved[key]:.2f}"
+                        f"[{label}] {kunci}: reproduksi {aktual[kunci]:.2f} != "
+                        f"tersimpan {tersimpan[kunci]:.2f}"
                     )
                     ok = False
         else:
             logger.error(f"[{label}] metrik tersimpan hilang: {metrics_path.name}")
             ok = False
 
-        # 2) Cocok dengan angka yang DILAPORKAN di Bab VI?
-        for key, expected in reported.items():
-            if abs(actual[key] - expected) > TOL:
+        # 2) Cocok dengan angka yang DILAPORKAN di naskah?
+        for kunci, diharapkan in dilaporkan.items():
+            if abs(aktual[kunci] - diharapkan) > TOL:
                 logger.error(
-                    f"[{label}] {key}: reproduksi {actual[key]:.2f} != "
-                    f"laporan {expected:.2f}"
+                    f"[{label}] {kunci}: reproduksi {aktual[kunci]:.2f} != "
+                    f"naskah {diharapkan:.2f}"
                 )
                 ok = False
 
-    logger.info("=" * 66)
+    logger.info("=" * 70)
     if ok:
-        logger.info("HASIL: artefak mereproduksi seluruh angka Bab VI. VERIFIED.")
+        logger.info("HASIL: bundle mereproduksi seluruh angka yang dilaporkan. VERIFIED.")
+        logger.warning(
+            "CATATAN: angka di atas berasal dari pembagian RESMI OhioT1DM, yang bersifat "
+            "temporal dalam-pasien. Bab VI dan README masih memuat angka pipeline lama "
+            "berbasis pembagian lintas-pasien. Keduanya tidak sebanding."
+        )
         return 0
-    logger.error("HASIL: artefak TIDAK mereproduksi angka laporan. FAILED.")
+
+    logger.error("HASIL: bundle TIDAK mereproduksi angka laporan. FAILED.")
     return 1
 
 

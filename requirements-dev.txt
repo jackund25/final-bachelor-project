@@ -1,0 +1,43 @@
+# Dependensi untuk MEREPRODUKSI angka laporan dan MENJALANKAN pengujian.
+#
+#     pip install -r requirements-dev.txt
+#
+# Memuat seluruh dependensi runtime lebih dulu, lalu menambahkan yang hanya
+# dibutuhkan skrip evaluasi, pembangunan indeks, dan pengujian.
+
+-r requirements.txt
+
+# --- Lengan pembanding model prediksi ---
+# TensorFlow dipakai HANYA oleh src/models/lstm_model.py. LSTM adalah lengan
+# pembanding terhadap GBM dan RF; kodenya wajib tetap dapat dijalankan karena
+# perbandingan tiga model menjadi bagian pembahasan laporan, tetapi ia bukan
+# dependensi untuk menjalankan sistem.
+tensorflow==2.15.0
+
+# --- Uji statistik pada skrip evaluasi ---
+# Wilcoxon, korelasi Spearman, dan sejenisnya. scikit-learn sudah membawa scipy,
+# tetapi skrip meng-import-nya langsung sehingga dipatok eksplisit.
+scipy==1.11.1
+
+# --- Evaluasi RAG ---
+# RAGAS diakses lewat endpoint OpenAI-compatible milik Gemini (klien httpx, BUKAN
+# gRPC) untuk menghindari "Event loop is closed" dan skor NaN pada transport gRPC.
+# Karena itu langchain-openai muncul di sini meski sistem tidak memakai OpenAI.
+ragas==0.2.6
+langchain-openai>=0.3.0
+nest-asyncio>=1.5.7
+
+# --- Pembangunan indeks pengetahuan ---
+# scripts/reingest_kb.py membaca PDF pedoman per halaman beserta manifest.csv.
+PyPDF2==3.0.1
+
+# --- Jalur LLM lokal (alternatif Gemini, tidak dipakai produksi) ---
+langchain-ollama==0.3.3
+ollama==0.5.1
+
+# --- Gambar untuk laporan ---
+matplotlib==3.7.2
+
+# --- Pengujian ---
+pytest==7.4.0
+pytest-cov==4.1.0

@@ -10,6 +10,10 @@ Yang dijaga berkas ini:
 4. Kegagalan BM25 menurunkan mode secara EKSPLISIT, tidak diam-diam.
 5. `similarity` bernilai None pada jalur leksikal, supaya UI tidak menampilkan
    peringkat RRF seolah-olah skor kemiripan kosinus.
+6. Jalur leksikal TIDAK membangun ruang vektor, dan tetap dinyatakan siap — sebab
+   syarat kesiapan yang hanya memeriksa vector store membuat pipeline mundur
+   diam-diam ke potongan cadangan.
+7. Cross-encoder hanya dimuat oleh mode yang benar-benar memanggilnya.
 """
 
 import pytest
@@ -71,6 +75,91 @@ def test_bm25_dibangun_dari_korpus_yang_sama(mode):
     col = chromadb.PersistentClient(path=r.persist_dir).get_collection(r.collection_name)
 
     assert len(r._bm25_teks) == col.count()
+
+
+def test_mode_leksikal_tidak_membangun_ruang_vektor():
+    """Jalur bm25 tidak pernah memakai embedding; memuatnya adalah beban mati.
+
+    _bangun_bm25 dan _hasil_dari_indeks hanya membaca documents/metadatas dari
+    sqlite. Membangun fungsi embedding berarti menarik torch dan model kalimat
+    (~1 GB) yang tidak pernah dipakai menelusur — cukup untuk mematikan instans
+    kecil pada produksi.
+    """
+    pytest.importorskip("rank_bm25")
+
+    r = MMRRetriever(retrieval_mode="bm25")
+
+    if r._bm25 is None:
+        pytest.skip(f"BM25 tidak terbangun: sebab={r._bm25_error}")
+
+    assert r._vector_store is None, "mode bm25 tidak boleh membangun vector store"
+    assert r._embeddings is None, "mode bm25 tidak boleh memuat model embedding"
+
+
+def test_leksikal_tanpa_vector_store_tetap_siap():
+    """Kesiapan harus berarti "ada jalur yang dapat melayani kueri".
+
+    Syarat lama `_vector_store is not None` membuat RAGPipeline menyimpulkan
+    retriever tidak siap, lalu mundur DIAM-DIAM ke potongan cadangan yang jauh
+    lebih sempit daripada korpus penuh.
+    """
+    pytest.importorskip("rank_bm25")
+
+    r = MMRRetriever(retrieval_mode="bm25")
+
+    if r._bm25 is None:
+        pytest.skip(f"BM25 tidak terbangun: sebab={r._bm25_error}")
+
+    assert r.is_ready, "indeks BM25 terbangun tetapi retriever dinyatakan tidak siap"
+
+
+def test_jalur_bm25_benar_benar_memanggil_reranker():
+    """Cabang bm25 dahulu mengembalikan urut_bm[:top_k] lalu keluar.
+
+    Akibatnya _rerank TIDAK PERNAH dipanggil pada jalur produksi meski
+    reranker.enabled bernilai true — modelnya dimuat, memakan memori, dan tidak
+    menyentuh satu pun hasil.
+    """
+    pytest.importorskip("rank_bm25")
+
+    r = MMRRetriever(retrieval_mode="bm25")
+
+    if r._bm25 is None:
+        pytest.skip(f"BM25 tidak terbangun: sebab={r._bm25_error}")
+
+    class _PembalikUrutan:
+        """Menskor kandidat terbalik: yang terakhir jadi paling relevan."""
+
+        def predict(self, pairs, batch_size=8, show_progress_bar=False):
+            return [float(i) for i in range(len(pairs))]
+
+    r.reranker_backend = "cross_encoder"
+    r._reranker = _PembalikUrutan()
+    r.reranker_candidate_k = 10
+
+    hasil = r.retrieve("hipoglikemia insulin basal", top_k=3)
+
+    assert hasil, "retrieve tidak mengembalikan hasil"
+    assert all("reranker_score" in baris for baris in hasil), (
+        "jalur bm25 melewati _rerank"
+    )
+    assert [baris["rank"] for baris in hasil] == [1, 2, 3], (
+        "rank wajib disusun ulang SESUDAH reranking"
+    )
+    skor = [baris["reranker_score"] for baris in hasil]
+    assert skor == sorted(skor, reverse=True), "hasil tidak terurut menurut skor"
+
+
+def test_reranker_tidak_dimuat_pada_mode_yang_tidak_memanggilnya():
+    """Jalur vektor murni mengembalikan hasil MMR apa adanya.
+
+    Sebelum perbaikan ini pemuatan hanya dijaga oleh reranker.enabled tanpa
+    memeriksa mode, sehingga model sebesar XLM-RoBERTa-large diunduh dan dimuat
+    pada setiap startup meski _rerank tidak pernah dipanggil.
+    """
+    r = MMRRetriever(retrieval_mode="vektor")
+
+    assert r._reranker is None
 
 
 def test_rrf_menggabungkan_menurut_peringkat_bukan_skor():

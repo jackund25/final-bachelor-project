@@ -1,0 +1,7 @@
+source,horizon_min,model,RMSE,MAE,MAPE,Clarke_A,Clarke_A+B,split
+CGM,30.0,Gradient Boosting,18.672,13.194,8.994,89.9,95.87,official_dataset_split (temporal within-patient)
+CGM,30.0,Random Forest,19.07,13.432,9.152,89.44,95.6,official_dataset_split (temporal within-patient)
+CGM,30.0,LSTM,21.533,15.052,10.221,86.76,94.21,official_dataset_split (temporal within-patient)
+CGM,60.0,Gradient Boosting,31.175,22.964,15.896,72.59,87.49,official_dataset_split (temporal within-patient)
+CGM,60.0,Random Forest,32.1,23.554,16.267,72.35,87.27,official_dataset_split (temporal within-patient)
+CGM,60.0,LSTM,37.386,27.387,18.498,66.96,83.06,official_dataset_split (temporal within-patient)

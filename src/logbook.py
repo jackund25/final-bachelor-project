@@ -46,6 +46,10 @@ SUMBER_MANUAL = "manual"
 LAYAK = "layak"
 LUAR_SEBARAN = "luar_sebaran"
 TIDAK_CUKUP = "tidak_cukup"
+# Observasi terlalu berdekatan sehingga dianggap near-duplicate. Pelatihan membuang
+# jendela semacam ini lewat min_history_interval_min; tanpa penjaga yang sama di sisi
+# penyajian, model diberi jendela yang tidak pernah ia lihat.
+TERLALU_RAPAT = "terlalu_rapat"
 
 
 @dataclass
@@ -59,6 +63,12 @@ class KelayakanJendela:
     jeda_maks_langkah: Optional[float] = None
     batas_langkah: Optional[int] = None
     alasan: str = ""
+    # Satuan menit — dipakai jalur modalitas (CGM/finger-stick) yang cadence-nya
+    # berbeda, sehingga "langkah" tidak lagi bermakna sama di kedua jalur.
+    jeda_maks_menit: Optional[float] = None
+    batas_jeda_menit: Optional[float] = None
+    interval_min_menit: Optional[float] = None
+    batas_interval_menit: Optional[float] = None
 
     @property
     def boleh_diprediksi(self) -> bool:
@@ -162,18 +172,25 @@ def gabung_dengan_dataset(
     )
 
 
-def periksa_kelayakan(
+def periksa_kelayakan_menit(
     jendela_df: pd.DataFrame,
     sequence_length: int,
-    max_gap_steps: Optional[int],
-    cadence_min: float = 5.0,
+    max_gap_min: Optional[float],
+    min_interval_min: float = 0.0,
 ) -> KelayakanJendela:
     """Apakah jendela ini sepadan dengan jendela yang dipakai melatih model produksi?
 
-    Memakai kriteria yang IDENTIK dengan ``create_sequences(max_gap_steps=...)``: jarak
-    antar-baris berturut-turut tidak boleh melampaui ``max_gap_steps`` langkah. Kalau
-    kriteria di sini lebih longgar daripada kriteria pelatihan, aplikasi akan menyajikan
-    prediksi atas jendela yang modelnya tidak pernah lihat, tanpa tanda apa pun.
+    Bekerja dalam MENIT, sehingga berlaku untuk semua modalitas: CGM yang cadence-nya
+    padat maupun finger-stick yang tidak teratur. Kriterianya harus IDENTIK dengan yang
+    dipakai ``create_time_horizon_sequences`` saat membentuk jendela pelatihan:
+
+    * ``max_gap_min``       — jeda terpanjang di dalam jendela riwayat;
+    * ``min_interval_min``  — jarak minimum antar-observasi, untuk membuang pembacaan
+      near-duplicate yang lazim pada finger-stick.
+
+    Kalau kriteria di sini lebih longgar daripada kriteria pelatihan, aplikasi akan
+    menyajikan prediksi atas jendela yang modelnya tidak pernah lihat — tanpa tanda apa
+    pun bagi dokter. Itu kegagalan senyap, jenis yang paling mahal pada alat klinis.
     """
     n = len(jendela_df)
     if n < sequence_length:
@@ -185,29 +202,75 @@ def periksa_kelayakan(
     w = jendela_df.tail(sequence_length)
     n_manual = int((w.get("sumber") == SUMBER_MANUAL).sum()) if "sumber" in w else 0
 
-    if max_gap_steps is None:
+    if max_gap_min is None:
         return KelayakanJendela(
             verdict=LUAR_SEBARAN, n_baris=n, n_dibutuhkan=sequence_length,
             n_manual=n_manual,
-            alasan="max_gap_steps tidak diketahui, kelayakan jendela tidak dapat dipastikan",
+            alasan="batas jeda tidak diketahui, kelayakan jendela tidak dapat dipastikan",
         )
 
     ts = pd.to_datetime(w["timestamp"])
-    selisih_menit = ts.diff().dt.total_seconds().div(60.0).dropna()
-    jeda_langkah = (selisih_menit / float(cadence_min)) if len(selisih_menit) else selisih_menit
-    jeda_maks = float(jeda_langkah.max()) if len(jeda_langkah) else 0.0
+    selisih = ts.diff().dt.total_seconds().div(60.0).dropna()
 
-    if jeda_maks > float(max_gap_steps):
+    jeda_maks = float(selisih.max()) if len(selisih) else 0.0
+    interval_min = float(selisih.min()) if len(selisih) else 0.0
+
+    if jeda_maks > float(max_gap_min):
         return KelayakanJendela(
             verdict=LUAR_SEBARAN, n_baris=n, n_dibutuhkan=sequence_length,
-            n_manual=n_manual, jeda_maks_langkah=round(jeda_maks, 2),
-            batas_langkah=int(max_gap_steps),
-            alasan=(f"jeda terpanjang {jeda_maks * cadence_min:.0f} menit melampaui batas "
-                    f"{max_gap_steps * cadence_min:.0f} menit yang dipakai saat pelatihan"),
+            n_manual=n_manual,
+            jeda_maks_menit=round(jeda_maks, 2), batas_jeda_menit=float(max_gap_min),
+            alasan=(f"jeda terpanjang {jeda_maks:.0f} menit melampaui batas "
+                    f"{float(max_gap_min):.0f} menit yang dipakai saat pelatihan"),
+        )
+
+    if min_interval_min > 0 and len(selisih) and interval_min < float(min_interval_min):
+        return KelayakanJendela(
+            verdict=TERLALU_RAPAT, n_baris=n, n_dibutuhkan=sequence_length,
+            n_manual=n_manual,
+            jeda_maks_menit=round(jeda_maks, 2), batas_jeda_menit=float(max_gap_min),
+            interval_min_menit=round(interval_min, 2),
+            batas_interval_menit=float(min_interval_min),
+            alasan=(f"terdapat observasi berjarak {interval_min:.0f} menit, lebih rapat "
+                    f"daripada batas {float(min_interval_min):.0f} menit saat pelatihan"),
         )
 
     return KelayakanJendela(
         verdict=LAYAK, n_baris=n, n_dibutuhkan=sequence_length, n_manual=n_manual,
-        jeda_maks_langkah=round(jeda_maks, 2), batas_langkah=int(max_gap_steps),
+        jeda_maks_menit=round(jeda_maks, 2), batas_jeda_menit=float(max_gap_min),
+        interval_min_menit=round(interval_min, 2) if len(selisih) else None,
+        batas_interval_menit=float(min_interval_min) if min_interval_min else None,
         alasan="jarak antar-baris sepadan dengan jendela pelatihan",
     )
+
+
+def periksa_kelayakan(
+    jendela_df: pd.DataFrame,
+    sequence_length: int,
+    max_gap_steps: Optional[int],
+    cadence_min: float = 5.0,
+) -> KelayakanJendela:
+    """Pembungkus berbasis LANGKAH atas ``periksa_kelayakan_menit``.
+
+    Dipertahankan karena jalur berbasis langkah masih dipakai pengujian dan skrip era
+    sebelum parser disatukan. Ia hanya mengubah satuan lalu mendelegasikan, sehingga
+    tidak ada dua salinan aturan kelayakan yang dapat menyimpang diam-diam.
+    """
+    hasil = periksa_kelayakan_menit(
+        jendela_df,
+        sequence_length=sequence_length,
+        max_gap_min=(None if max_gap_steps is None
+                     else float(max_gap_steps) * float(cadence_min)),
+    )
+
+    # Medan berbasis langkah diisi ulang supaya pemanggil lama tetap terlayani.
+    if hasil.jeda_maks_menit is not None:
+        hasil.jeda_maks_langkah = round(hasil.jeda_maks_menit / float(cadence_min), 2)
+    if max_gap_steps is not None:
+        hasil.batas_langkah = int(max_gap_steps)
+    if hasil.verdict == LUAR_SEBARAN and max_gap_steps is None:
+        hasil.alasan = (
+            "max_gap_steps tidak diketahui, kelayakan jendela tidak dapat dipastikan"
+        )
+
+    return hasil

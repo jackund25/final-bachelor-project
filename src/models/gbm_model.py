@@ -588,6 +588,20 @@ def train_gbm_from_config(
             y_pred,
         )
 
+        # Vektor prediksi disimpan supaya Clarke Error Grid dapat digambar tanpa
+        # melatih ulang, dan dijamin berasal dari model yang SAMA dengan tabelnya.
+        # Impor lokal agar modul ini tidak bergantung siklik pada persiapan_data.
+        from src.models.persiapan_data import simpan_prediksi
+
+        simpan_prediksi(
+            "gbm",
+            source,
+            current_horizon,
+            y_test,
+            y_pred,
+            anc_test,
+        )
+
         label = (
             f"h{int(current_horizon)}m"
         )

@@ -84,15 +84,22 @@ def test_predict_std_none_tanpa_model_kuantil():
     assert model.predict_std(rng.normal(size=(10, 6, 4))) is None
 
 
-def test_bundle_memuat_model_kuantil_dan_jauh_lebih_kecil_dari_rf(tmp_path):
-    """Bundle produksi wajib membawa model kuantil, kalau tidak UI kehilangan interval."""
+def test_bundle_memuat_model_kuantil(tmp_path):
+    """Bundle produksi wajib membawa model kuantil, kalau tidak UI kehilangan interval.
+
+    Kontrak artefaknya berubah ketika parser OhioT1DM disatukan: penamaan kini
+    memuat modalitas dan horizon dalam MENIT (``gbm_cgm_h30m_*``), bukan jumlah
+    langkah (``gbm_*_h6``), dan kembalian fungsi dipetakan per horizon.
+    """
     data_dir = tmp_path / "raw"
     data_dir.mkdir(parents=True, exist_ok=True)
 
     timestamps = np.arange("2024-01-01T00:00", "2024-01-02T00:00", dtype="datetime64[5m]")
+    batas_latih = int(len(timestamps) * 0.7)
+
     rows = []
     for idx, patient_id in enumerate(["P001", "P002", "P003", "P004"]):
-        for t in timestamps:
+        for pos, t in enumerate(timestamps):
             rows.append({
                 "patient_id": patient_id,
                 "timestamp": str(t),
@@ -101,16 +108,32 @@ def test_bundle_memuat_model_kuantil_dan_jauh_lebih_kecil_dari_rf(tmp_path):
                 "insulin": float((len(rows) % 6 == 0) * 3),
                 "activity": int(len(rows) % 4 == 0) * 15,
                 "stress": int(4 + (len(rows) % 3)),
+                # Metadata wajib dari parser gabungan.
+                "glucose_source": "CGM",
+                "dataset_split": "train" if pos < batas_latih else "test",
             })
-    pd.DataFrame(rows).to_csv(data_dir / "training_data_complete.csv", index=False)
+    pd.DataFrame(rows).to_csv(data_dir / "ohio_t1dm.csv", index=False)
 
     config = {
-        "data": {"output_dir": str(data_dir), "seed": 42},
+        "data": {
+            "output_dir": str(data_dir),
+            "seed": 42,
+            "unified_dataset": "ohio_t1dm.csv",
+        },
         "model": {
             "sequence_length": 12,
-            "default_horizon": 6,
+            "predict_delta": False,
             "features": ["glucose", "carbs", "insulin", "activity", "stress"],
             "gradient_boosting": {"random_state": 42},
+            "source_profiles": {
+                "CGM": {
+                    "sequence_length": 12,
+                    "prediction_horizons_min": [30],
+                    "target_tolerance_min": 2.5,
+                    "max_history_gap_min": 30,
+                    "min_history_interval_min": 0,
+                }
+            },
         },
     }
     cfg_path = tmp_path / "config.yaml"
@@ -125,9 +148,10 @@ def test_bundle_memuat_model_kuantil_dan_jauh_lebih_kecil_dari_rf(tmp_path):
     finally:
         os.chdir(cwd)
 
-    assert "RMSE" in metrics
+    assert "h30m" in metrics
+    assert "RMSE" in metrics["h30m"]
 
-    bundle_path = tmp_path / "models" / "gbm_inference_bundle_h6.pkl"
+    bundle_path = tmp_path / "models" / "gbm_cgm_h30m_inference_bundle.pkl"
     assert bundle_path.exists()
 
     import pickle
@@ -139,5 +163,5 @@ def test_bundle_memuat_model_kuantil_dan_jauh_lebih_kecil_dari_rf(tmp_path):
     assert bundle["model_family"] == "HistGradientBoostingRegressor"
 
     metrics_json = json.loads(
-        (tmp_path / "models" / "gbm_metrics_h6.json").read_text(encoding="utf-8"))
+        (tmp_path / "models" / "gbm_cgm_h30m_metrics.json").read_text(encoding="utf-8"))
     assert "Clarke_A+B" in metrics_json

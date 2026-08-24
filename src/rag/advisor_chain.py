@@ -142,34 +142,57 @@ class DiabetesAdvisorChain:
         }
 
     def _extract_sources(self, retrieved_docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Ringkasan sumber terstruktur.
+        """Ringkasan sumber terstruktur, LENGKAP dengan teks yang dikutip.
 
         Membaca skema metadata halaman yang baru (kb_id/lembaga/halaman_cetak) dengan
         fallback ke kunci lama (sumber/judul/halaman) agar chunk manual_kb tetap jalan.
+
+        DIPERBARUI 24 Agustus 2026. Sebelumnya fungsi ini hanya mengembalikan lima medan
+        identitas, sehingga antarmuka hanya dapat menampilkan "PERKENI · 2021 · hal. 33"
+        tanpa satu pun kalimat yang dikutip. Dokter tidak dapat menilai apakah rekomendasi
+        benar-benar berpijak pada dokumen — padahal keterlacakan bukti justru salah satu
+        aspek yang mereka nilai.
+
+        Pemotongan TIDAK dihitung di sini melainkan didelegasikan ke ``build_source_list``,
+        yang memotong pada batas KALIMAT dengan empat penjaga (mis. agar "PERKENI 2021
+        hal. 12" tidak terpotong menjadi "... hal.") dan diuji di
+        ``tests/test_citations_snippet.py``. Menyalin aturannya ke tempat lain — apalagi
+        ke TypeScript di frontend — akan memunculkan kembali cacat yang sudah ditutup,
+        dan tesnya tidak akan menangkapnya.
         """
-        from .citations import format_page_label
+        from .citations import build_source_list
 
         output: List[Dict[str, Any]] = []
-        for row in retrieved_docs:
-            metadata = dict(row.get("metadata", {}))
-            fallback_name = row.get("source", "Manual KB")
+
+        for row in build_source_list(retrieved_docs):
             output.append(
                 {
-                    "source": (
-                        metadata.get("lembaga")
-                        or metadata.get("sumber")
-                        or fallback_name
-                    ),
-                    "title": (
-                        metadata.get("judul_lengkap")
-                        or metadata.get("judul")
-                        or fallback_name
-                    ),
-                    "year": metadata.get("tahun", "N/A"),
-                    "page": format_page_label(metadata),
-                    "kb_id": metadata.get("kb_id", ""),
+                    # --- Medan lama, dipertahankan agar pemanggil tidak putus ---
+                    "source": row["lembaga"] or row["nama_dokumen"],
+                    "title": row["judul_lengkap"] or row["nama_dokumen"],
+                    "year": row["tahun"] or "N/A",
+                    "page": row["page_label"],
+                    "kb_id": row["kb_id"],
+                    # --- Medan baru: isi kutipan dan provenansinya ---
+                    "rank": row["rank"],
+                    "nama_dokumen": row["nama_dokumen"],
+                    # Kutipan tampilan, sudah berhenti di batas kalimat.
+                    "snippet": row["snippet"],
+                    # Potongan utuh, untuk sakelar "tampilkan secara utuh".
+                    "teks_lengkap": row["teks_lengkap"],
+                    "n_char": row["n_char"],
+                    # Membedakan "potongan memang sependek itu" dari "tampilannya
+                    # yang memotong" — pembedaan yang diperlukan saat memeriksa
+                    # keluhan teks terpotong.
+                    "snippet_terpotong": row["snippet_terpotong"],
+                    "cara_potong": row["cara_potong"],
+                    # Menggambarkan POTONGAN ASLI hasil pengindeksan, bukan tampilan.
+                    "mulai_kalimat_utuh": row["mulai_kalimat_utuh"],
+                    "akhir_kalimat_utuh": row["akhir_kalimat_utuh"],
+                    "chunk_id": row["chunk_id"],
                 }
             )
+
         return output
 
     def _template_answer(

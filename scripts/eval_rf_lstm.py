@@ -1,15 +1,25 @@
-"""Evaluasi komparatif model prakiraan — RMSE, MAE, Clarke Error Grid.
+"""Gambar komparatif model prakiraan — Clarke Error Grid dan batang metrik.
 
-Tiga model dilatih pada pembagian yang sama lalu dinilai dengan metrik yang sama:
-*gradient boosting* sebagai model produksi, serta hutan acak dan LSTM sebagai pembanding
-yang dilaporkan pada Bab VI. Melatih ketiganya dalam satu jalan membuat seluruh angka
-perbandingan berasal dari satu prosedur, bukan dirangkai dari catatan hasil yang berbeda.
+Skrip ini TIDAK MELATIH apa pun. Ia menggambar dari vektor prediksi yang disimpan
+masing-masing modul model pada saat pelatihan.
 
-Jalankan:
-    python scripts/eval_rf_lstm.py                  # pakai ohio_t1dm (default)
-    python scripts/eval_rf_lstm.py --smbg           # downsample ke SMBG cadence dulu
+MENGAPA BEGITU (24 Agustus 2026). Sebelumnya skrip ini melatih ulang ketiga model,
+terpisah dari pelatihan yang menghasilkan tabel metrik. Dua jalur pelatihan untuk satu
+klaim membuka celah yang pernah benar-benar terjadi di proyek ini: gambar Clarke Error
+Grid memperlihatkan model yang BUKAN model produksi, dan itu tidak ketahuan karena
+angkanya tak pernah dibandingkan langsung. Dengan menggambar dari vektor prediksi yang
+tersimpan, gambar dan tabel dijamin berasal dari model yang sama — dan gambarnya dapat
+dibuat ulang kapan pun tanpa biaya komputasi.
 
-Output per horizon, di results/eval_prediksi/h<langkah>/:
+Prasyarat: latih lebih dulu lengan yang ingin digambar.
+
+    python -m src.models.gbm_model  --source CGM
+    python -m src.models.rf_model   --source CGM
+    python -m src.models.lstm_model --source CGM
+
+    python scripts/eval_rf_lstm.py --source CGM
+
+Output per horizon, di results/eval_prediksi/h<menit>m/:
     comparison_metrics.csv
     clarke_grid_gbm.png     <- model produksi
     clarke_grid_rf.png
@@ -151,140 +161,122 @@ def plot_comparison_bar(hasil: "list[tuple[str, dict]]", out_path: Path,
 # Main evaluation routine
 # ---------------------------------------------------------------------------
 
-def _evaluate_one_horizon(config, df_clean, seq_len, horizon, out_root, feature_list, predict_delta):
-    """Latih & evaluasi GBM, RF, dan LSTM pada satu horizon.
+LENGAN = [
+    ("gbm", "Gradient Boosting"),
+    ("rf", "Random Forest"),
+    ("lstm", "LSTM"),
+]
 
-    Return daftar ``(nama, metrik)`` berurutan mulai dari model produksi.
 
-    MENGAPA GBM ditambahkan (17 Agustus 2026). Sebelumnya fungsi ini hanya melatih
-    RandomForestGlucoseModel dan LSTMGlucoseModel, sehingga Gambar VI.1--VI.3 pada
-    laporan memperlihatkan Clarke Error Grid milik model yang BUKAN model produksi:
-    jalur produksi sudah berpindah ke HistGradientBoostingRegressor
-    (config.model.name = GradientBoosting).
+def _gambar_satu_horizon(source, horizon_min, out_root):
+    """Gambar Clarke grid tiap lengan pada satu horizon, dari prediksi tersimpan.
 
-    RF dan LSTM SENGAJA tetap dilatih di sini. Keduanya pembanding yang dilaporkan pada
-    Bab VI, dan mempertahankannya berarti seluruh angka perbandingan dapat dihitung ulang
-    dari satu jalan yang sama, bukan dirangkai dari catatan hasil yang berbeda-beda.
+    Lengan yang belum dilatih DILEWATI dengan peringatan alih-alih menggagalkan
+    skrip: seseorang boleh saja hanya ingin menggambar model produksi.
     """
-    from src.data.preprocessor import DataPreprocessor
-    from src.models.gbm_model import GBMGlucoseModel
-    from src.models.rf_model import RandomForestGlucoseModel
-    from src.models.lstm_model import LSTMGlucoseModel
+    from src.models.persiapan_data import berkas_prediksi
     from src.utils.metrics import calculate_all_metrics
 
-    minutes = horizon * 5
-    print("\n" + "=" * 60)
-    print(f"HORIZON {horizon} langkah (+{minutes} menit) | fitur={len(feature_list)} | delta={predict_delta}")
-    print("=" * 60)
-
-    prep = DataPreprocessor(config)  # scaler baru per horizon
-    prep.feature_columns = list(feature_list)
-    pids = sorted(df_clean["patient_id"].unique().tolist())
-    train_df, test_df = prep.split_by_patient(df_clean, pids[-2:])
-
-    X_train, y_train, anc_train = prep.create_sequences(train_df, seq_len, horizon, return_anchor=True)
-    X_test, y_test, anc_test = prep.create_sequences(test_df, seq_len, horizon, return_anchor=True)
-    X_train_s, X_test_s = prep.normalize_data(X_train, X_test)
-
-    # Target: absolut, atau delta (selisih dari glukosa terakhir di window) lalu direkonstruksi
-    y_train_fit = (y_train - anc_train) if predict_delta else y_train
-    y_test_fit = (y_test - anc_test) if predict_delta else y_test
-
-    out_dir = out_root / f"h{horizon}"
+    minutes = horizon_min
+    out_dir = out_root / f"h{int(horizon_min)}m"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    print("[1/3] Gradient Boosting (model produksi)...")
-    # with_uncertainty=False: dua model kuantil hanya diperlukan untuk interval, sedangkan
-    # di sini yang dinilai prediksi titik. Mematikannya memangkas waktu latih tiga kali
-    # lipat tanpa mengubah satu pun angka pada gambar maupun tabel yang dihasilkan.
-    gbm = GBMGlucoseModel(config, with_uncertainty=False)
-    gbm.train(X_train_s, y_train_fit)
-    gbm_pred = gbm.predict(X_test_s)
-    if predict_delta:
-        gbm_pred = gbm_pred + anc_test
-    gbm_m = calculate_all_metrics(y_test, gbm_pred)
-    print(f"  GBM  RMSE={gbm_m['RMSE']:.3f}  MAE={gbm_m['MAE']:.3f}  Clarke-A+B={gbm_m['Clarke_A+B']:.2f}%")
-    plot_clarke_grid(y_test, gbm_pred, gbm_m,
-                     f"Clarke Error Grid — Gradient Boosting (+{minutes} mnt)",
-                     out_dir / "clarke_grid_gbm.png")
+    print("\n" + "=" * 60)
+    print(f"{source} +{minutes:g} menit")
+    print("=" * 60)
 
-    print("[2/3] Random Forest (pembanding)...")
-    rf = RandomForestGlucoseModel(config)
-    rf.train(X_train_s, y_train_fit)
-    rf_pred = rf.predict(X_test_s)
-    if predict_delta:
-        rf_pred = rf_pred + anc_test
-    rf_m = calculate_all_metrics(y_test, rf_pred)
-    print(f"  RF   RMSE={rf_m['RMSE']:.3f}  MAE={rf_m['MAE']:.3f}  Clarke-A+B={rf_m['Clarke_A+B']:.2f}%")
-    plot_clarke_grid(y_test, rf_pred, rf_m, f"Clarke Error Grid — Random Forest (+{minutes} mnt)",
-                     out_dir / "clarke_grid_rf.png")
+    hasil = []
+    jumlah = set()
 
-    print("[3/3] LSTM (pembanding)...")
-    lstm = LSTMGlucoseModel(config)
-    lstm.train(X_train_s, y_train_fit, X_test_s, y_test_fit)
-    lstm_pred = lstm.predict(X_test_s)
-    if predict_delta:
-        lstm_pred = lstm_pred + anc_test
-    lstm_m = calculate_all_metrics(y_test, lstm_pred)
-    print(f"  LSTM RMSE={lstm_m['RMSE']:.3f}  MAE={lstm_m['MAE']:.3f}  Clarke-A+B={lstm_m['Clarke_A+B']:.2f}%")
-    plot_clarke_grid(y_test, lstm_pred, lstm_m, f"Clarke Error Grid — LSTM (+{minutes} mnt)",
-                     out_dir / "clarke_grid_lstm.png")
+    for kunci, nama in LENGAN:
+        jalur = berkas_prediksi(kunci, source, horizon_min)
 
-    hasil = [("Gradient Boosting", gbm_m), ("Random Forest", rf_m), ("LSTM", lstm_m)]
-    plot_comparison_bar(hasil, out_dir / "comparison_bar.png",
-                        judul=f"Perbandingan Metrik Antar-Model (+{minutes} mnt)")
+        if not jalur.exists():
+            print(f"  [lewat] {nama}: prediksi belum ada -> {jalur.name}")
+            continue
 
-    rows = [{"metric": k, "GBM": gbm_m[k], "RF": rf_m[k], "LSTM": lstm_m[k]}
-            for k in ["RMSE", "MAE", "MAPE", "Clarke_A", "Clarke_B", "Clarke_C", "Clarke_D", "Clarke_E", "Clarke_A+B"]]
-    pd.DataFrame(rows).to_csv(out_dir / "comparison_metrics.csv", index=False, float_format="%.4f")
+        with np.load(jalur) as d:
+            y_true, y_pred = d["y_true"], d["y_pred"]
+
+        jumlah.add(len(y_true))
+
+        m = calculate_all_metrics(y_true, y_pred)
+        hasil.append((nama, m))
+
+        print(
+            f"  {nama:18s} n={len(y_true):6d}  RMSE={m['RMSE']:.3f}  "
+            f"MAE={m['MAE']:.3f}  Clarke-A+B={m['Clarke_A+B']:.2f}%"
+        )
+
+        plot_clarke_grid(
+            y_true, y_pred, m,
+            f"Clarke Error Grid — {nama} ({source} +{minutes:g} mnt)",
+            out_dir / f"clarke_grid_{kunci}.png",
+        )
+
+    if not hasil:
+        print("  Tidak ada lengan yang dapat digambar pada horizon ini.")
+        return []
+
+    # Seluruh lengan WAJIB dinilai pada jumlah jendela yang sama. Bila tidak, tabel
+    # dan gambarnya membandingkan himpunan uji yang berbeda — persis jenis
+    # ketidaksebandingan senyap yang menjadi alasan berkas ini ditulis ulang.
+    if len(jumlah) > 1:
+        print(
+            f"  PERINGATAN: jumlah jendela berbeda antar-lengan {sorted(jumlah)}. "
+            "Angka ini TIDAK sebanding; latih ulang dari konfigurasi yang sama."
+        )
+
+    plot_comparison_bar(
+        hasil, out_dir / "comparison_bar.png",
+        judul=f"Perbandingan Metrik Antar-Model ({source} +{minutes:g} mnt)",
+    )
+
+    rows = [
+        {"metric": k, **{nama: m[k] for nama, m in hasil}}
+        for k in ["RMSE", "MAE", "MAPE", "Clarke_A", "Clarke_B",
+                  "Clarke_C", "Clarke_D", "Clarke_E", "Clarke_A+B"]
+    ]
+    pd.DataFrame(rows).to_csv(
+        out_dir / "comparison_metrics.csv", index=False, float_format="%.4f"
+    )
     return hasil
 
 
-def evaluate_both_models(config_path: str = "config.yaml") -> None:
-    from src.data.loader import DiabetesDataLoader
-    from src.data.preprocessor import DataPreprocessor
+def gambar_perbandingan(config_path: str = "config.yaml", source: str = "CGM") -> None:
+    from src.models.persiapan_data import resolve_profil_sumber
 
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
-    loader = DiabetesDataLoader(config["data"]["output_dir"])
-    primary = config.get("data", {}).get("primary_source", "ohio_t1dm")
-    fallback = config.get("data", {}).get("fallback_source", "latest_generated")
-    df, used_source = loader.load_preferred_dataset(primary, fallback)
-    df = df.sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
-    print(f"Data source   : {used_source}")
+    profil = resolve_profil_sumber(config, source)
 
-    df_clean = DataPreprocessor(config).handle_missing_values(df)
-    seq_len = config["model"].get("sequence_length", 12)
-    horizons = config["model"].get("prediction_horizons", [config["model"].get("default_horizon", 1)])
-
-    # Feature engineering (opsional, dari config)
-    use_eng = config["model"].get("use_engineered", False)
-    predict_delta = config["model"].get("predict_delta", False)
-    if use_eng:
-        fe = config["model"].get("feature_engineering", {})
-        df_clean = DataPreprocessor(config).engineer_features(df_clean, **fe)
-        feature_list = config["model"]["engineered_features"]
-        print(f"Mode fitur    : ENGINEERED ({len(feature_list)} fitur) | predict_delta={predict_delta}")
-    else:
-        feature_list = config["model"]["features"]
-        print(f"Mode fitur    : BASELINE ({len(feature_list)} fitur) | predict_delta={predict_delta}")
+    print(f"Modalitas   : {source}")
+    print(f"Horizon     : {', '.join(f'+{h:g} mnt' for h in profil.horizons_min)}")
+    print("Sumber angka: vektor prediksi tersimpan (TIDAK melatih ulang)")
 
     out_root = Path("results") / "eval_prediksi"
     out_root.mkdir(parents=True, exist_ok=True)
 
     summary = []
-    for h in horizons:
-        hasil = _evaluate_one_horizon(config, df_clean, seq_len, h, out_root, feature_list, predict_delta)
+    for h in profil.horizons_min:
+        hasil = _gambar_satu_horizon(source, h, out_root)
         for model_name, m in hasil:
             summary.append({
-                "horizon_steps": h, "horizon_min": h * 5, "model": model_name,
+                "source": source, "horizon_min": h, "model": model_name,
                 "RMSE": round(m["RMSE"], 3), "MAE": round(m["MAE"], 3), "MAPE": round(m["MAPE"], 3),
                 "Clarke_A": round(m["Clarke_A"], 2), "Clarke_A+B": round(m["Clarke_A+B"], 2),
+                "split": "official_dataset_split (temporal within-patient)",
             })
 
+    if not summary:
+        raise SystemExit(
+            "Tidak ada prediksi tersimpan. Latih lengan yang diinginkan lebih dulu, "
+            "misalnya `python -m src.models.gbm_model --source CGM`."
+        )
+
     summary_df = pd.DataFrame(summary)
-    summary_path = out_root / "summary_all_horizons.csv"
+    summary_path = out_root / f"summary_{source.lower()}.csv"
     summary_df.to_csv(summary_path, index=False)
 
     print("\n" + "=" * 60)
@@ -292,12 +284,18 @@ def evaluate_both_models(config_path: str = "config.yaml") -> None:
     print("=" * 60)
     print(summary_df.to_string(index=False))
     print(f"\nRingkasan -> {summary_path}")
-    print(f"Detail per horizon -> {out_root}/h<langkah>/")
+    print(f"Detail per horizon -> {out_root}/h<menit>m/")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Evaluasi komparatif GBM, RF, dan LSTM lintas horizon")
+        description="Gambar perbandingan GBM, RF, dan LSTM dari prediksi tersimpan")
     parser.add_argument("--config", default="config.yaml")
+    parser.add_argument(
+        "--source",
+        default="CGM",
+        choices=["CGM", "FINGER_STICK"],
+        help="Modalitas observasi glukosa",
+    )
     args = parser.parse_args()
-    evaluate_both_models(args.config)
+    gambar_perbandingan(args.config, args.source)

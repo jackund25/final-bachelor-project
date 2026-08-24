@@ -31,6 +31,23 @@ type Citation = {
   year?: number | string;
   page?: number | string;
   kb_id?: string;
+  // Medan di bawah dikirim backend sejak 24 Agustus 2026 supaya dokter dapat
+  // membaca kalimat yang benar-benar dikutip, bukan hanya identitas dokumen.
+  //
+  // PENTING: `snippet` SUDAH dipotong di sisi Python oleh
+  // src/rag/citations.py (batas kalimat, empat penjaga, teruji). JANGAN memotong
+  // ulang di sini — aturan yang disalin akan menyimpang dan tesnya tidak akan
+  // menangkapnya.
+  rank?: number;
+  nama_dokumen?: string;
+  snippet?: string;
+  teks_lengkap?: string;
+  n_char?: number;
+  snippet_terpotong?: boolean;
+  cara_potong?: string;
+  mulai_kalimat_utuh?: boolean;
+  akhir_kalimat_utuh?: boolean;
+  chunk_id?: string;
 };
 
 type AssessmentHistoryItem = {
@@ -95,6 +112,12 @@ export default function Home() {
     useState<Observation[]>([]);
   const [recentContext, setRecentContext] =
     useState({ insulin: 0, carbs: 0, activity: 0, stress: 0 });
+
+  // Sakelar "tampilkan potongan dokumen secara utuh". Bawaannya RINGKAS supaya
+  // panel rujukan tidak mendominasi layar, tetapi dokter dapat membuka teks penuh
+  // ketika ingin memverifikasi sendiri apakah rekomendasi berpijak pada dokumen.
+  const [kutipanUtuh, setKutipanUtuh] = useState(false);
+  const [rujukanTerbuka, setRujukanTerbuka] = useState(true);
 
   // =========================================================
   // CURRENT GLUCOSE / CONTEXT
@@ -1038,49 +1061,144 @@ export default function Home() {
               {/* Sources */}
 
               {advisory.citations &&
-                advisory.citations.length >
-                  0 && (
+                advisory.citations.length > 0 && (
 
                   <div className="advisory-section">
 
-                    <p className="advisory-label">
-                      Sources
-                    </p>
+                    <button
+                      type="button"
+                      className="rujukan-toggle"
+                      onClick={() =>
+                        setRujukanTerbuka((v) => !v)
+                      }
+                      aria-expanded={rujukanTerbuka}
+                    >
+                      Sumber Rujukan ({advisory.citations.length} dokumen)
+                      <span aria-hidden="true">
+                        {rujukanTerbuka ? " ⌃" : " ⌄"}
+                      </span>
+                    </button>
 
+                    {rujukanTerbuka && (
+                      <div className="rujukan-panel">
 
-                    <div className="source-list">
+                        {/*
+                          Peringatan ini INTI kejujuran sistem: potongan ditelusur
+                          untuk kondisi TERPREDIKSI, bukan kondisi terkini. Bila
+                          prediksinya keliru, pedoman yang dirujuk ikut keliru
+                          sasaran — dan dokter berhak tahu itu sebelum membacanya.
+                        */}
+                        <p className="rujukan-catatan">
+                          Seluruh potongan di bawah ditelusur untuk{" "}
+                          <strong>
+                            kondisi terprediksi: {advisory.risk_level}
+                          </strong>
+                          , bukan untuk kondisi terkini
+                          {result?.prediction?.current_glucose != null
+                            ? ` (${result.prediction.current_glucose} mg/dL)`
+                            : ""}
+                          . Bila kondisi terprediksi keliru, pedoman yang dirujuk
+                          pun keliru sasaran.
+                        </p>
 
-                      {advisory.citations.map(
-                        (
-                          citation,
-                          index,
-                        ) => (
+                        {/*
+                          Keterangan cara menelusur. Teks lama menyebut fusi
+                          vektor + BM25 dengan RRF — sudah TIDAK BERLAKU sejak
+                          jalur produksi dibekukan ke BM25 dan ditambah
+                          penyusunan ulang oleh cross-encoder.
+                        */}
+                        <p className="rujukan-metode">
+                          Rujukan diperoleh dengan pencocokan istilah (BM25) atas
+                          korpus pedoman, lalu disusun ulang oleh cross-encoder
+                          sebelum lima teratas ditampilkan. Karena peringkat akhir
+                          berasal dari penyusunan ulang, tidak ada satu angka
+                          kemiripan yang dapat ditampilkan.
+                        </p>
 
-                          <span
-                            className="source-chip"
-                            key={`${
-                              citation.kb_id ??
-                              citation.source ??
-                              "source"
-                            }-${index}`}
-                          >
+                        <label className="rujukan-sakelar">
+                          <input
+                            type="checkbox"
+                            checked={kutipanUtuh}
+                            onChange={(e) =>
+                              setKutipanUtuh(e.target.checked)
+                            }
+                          />
+                          Tampilkan potongan dokumen secara utuh
+                        </label>
 
-                            {citation.source ?? citation.title ?? "Clinical knowledge source"}
+                        {advisory.citations.map(
+                          (citation, index) => (
 
-                            {citation.year
-                              ? ` · ${citation.year}`
-                              : ""}
+                            <div
+                              className="rujukan-item"
+                              key={`${
+                                citation.chunk_id ??
+                                citation.kb_id ??
+                                "source"
+                              }-${index}`}
+                            >
 
-                            {citation.page
-                              ? ` · p. ${citation.page}`
-                              : ""}
+                              <p className="rujukan-judul">
+                                #{citation.rank ?? index + 1} ·{" "}
+                                {citation.title ??
+                                  citation.source ??
+                                  "Dokumen pedoman klinis"}
+                              </p>
 
-                          </span>
+                              <p className="rujukan-meta">
+                                {citation.source}
+                                {citation.year ? ` (${citation.year})` : ""}
+                                {citation.page ? ` · ${citation.page}` : ""}
+                                {citation.nama_dokumen ? " · " : ""}
+                                {citation.nama_dokumen && (
+                                  <code>{citation.nama_dokumen}</code>
+                                )}
+                              </p>
 
-                        ),
-                      )}
+                              {(citation.snippet ||
+                                citation.teks_lengkap) && (
+                                <blockquote className="rujukan-kutipan">
+                                  {kutipanUtuh
+                                    ? citation.teks_lengkap ??
+                                      citation.snippet
+                                    : citation.snippet ??
+                                      citation.teks_lengkap}
+                                </blockquote>
+                              )}
 
-                    </div>
+                              {/*
+                                Membedakan "potongan memang sependek itu" dari
+                                "tampilannya yang memotong". Tanpa penanda ini,
+                                keluhan teks terpotong tidak dapat ditelusuri
+                                sebabnya.
+                              */}
+                              {!kutipanUtuh &&
+                                citation.snippet_terpotong && (
+                                  <p className="rujukan-penanda">
+                                    Kutipan dipangkas untuk tampilan
+                                    {citation.cara_potong === "batas_kalimat"
+                                      ? " pada batas kalimat"
+                                      : citation.cara_potong === "batas_kata"
+                                        ? " pada batas kata"
+                                        : ""}
+                                    . Centang di atas untuk membaca utuh.
+                                  </p>
+                                )}
+
+                              {citation.mulai_kalimat_utuh === false && (
+                                <p className="rujukan-penanda">
+                                  Potongan ini dimulai di tengah kalimat sejak
+                                  proses pengindeksan, bukan karena tampilan.
+                                </p>
+                              )}
+
+                            </div>
+
+                          ),
+                        )}
+
+                      </div>
+                    )}
 
                   </div>
 

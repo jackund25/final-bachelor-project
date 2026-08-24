@@ -75,6 +75,13 @@ class PredictionService:
             ),
             "horizon": int(horizon_steps or 6),
             "horizon_min": float(horizon_min or (int(horizon_steps or 6) * 5)),
+            # Batas temporal yang dipakai SAAT PELATIHAN, dibawa ikut di dalam bundle.
+            # Penjaga kelayakan memakai angka yang sama persis, sehingga jendela yang
+            # ditolak pelatihan juga ditolak saat penyajian.
+            "max_history_gap_min": b.get("max_history_gap_min"),
+            "min_history_interval_min": float(
+                b.get("min_history_interval_min", 0.0) or 0.0
+            ),
             "use_engineered": bool(
                 b.get("use_engineered", False)
             ),
@@ -145,6 +152,31 @@ class PredictionService:
             )
 
         return bundle
+
+    def _periksa_kelayakan(
+        self,
+        patient_df: pd.DataFrame,
+        art: Dict[str, Any],
+    ):
+        """Apakah jendela terakhir sepadan dengan jendela pelatihan model ini?
+
+        Aturannya TIDAK ditulis ulang di sini melainkan didelegasikan ke
+        ``src.logbook.periksa_kelayakan_menit`` — satu-satunya tempat kriteria
+        kelayakan hidup, supaya sisi pelatihan dan sisi penyajian tidak dapat
+        menyimpang diam-diam.
+
+        Batasnya diambil dari bundle model, bukan dari config: bundle merekam nilai
+        yang benar-benar dipakai ketika model itu dilatih, sedangkan config dapat
+        sudah berubah sesudahnya.
+        """
+        from src.logbook import periksa_kelayakan_menit
+
+        return periksa_kelayakan_menit(
+            patient_df,
+            sequence_length=art["sequence_length"],
+            max_gap_min=art.get("max_history_gap_min"),
+            min_interval_min=art.get("min_history_interval_min", 0.0),
+        )
 
     def _build_window(
         self,
@@ -389,6 +421,53 @@ class PredictionService:
                 "raw_reading_count": len(patient_df),
                 "valid_reading_count": len(patient_df),
                 "has_sufficient_history": False,
+            }
+
+        # -----------------------------------------------------------------
+        # PENJAGA KELAYAKAN TEMPORAL (M5.7 clinical readiness rules)
+        #
+        # Jumlah baris yang cukup TIDAK cukup. Pelatihan juga membuang jendela
+        # yang memuat jeda terlalu lebar atau observasi terlalu rapat. Tanpa
+        # penjaga yang sama di sini, model diberi jendela yang tidak pernah ia
+        # lihat dan tetap mengeluarkan angka — kegagalan senyap yang paling
+        # berbahaya pada alat bantu klinis.
+        #
+        # Batasnya dibaca dari BUNDLE, bukan dari config, supaya selalu sama
+        # persis dengan yang dipakai saat model itu dilatih.
+        # -----------------------------------------------------------------
+        kelayakan = self._periksa_kelayakan(patient_df, horizons[0])
+
+        if not kelayakan.boleh_diprediksi:
+            current_glucose = float(patient_df["glucose"].iloc[-1])
+            return {
+                "status": "WINDOW_NOT_ELIGIBLE",
+                "mode": "current_state",
+                "prediction_available": False,
+                "current_glucose": current_glucose,
+                "prediction": None,
+                "prediction_30m": None,
+                "prediction_60m": None,
+                "condition": None,
+                "horizons": [],
+                "history": {
+                    "available": True,
+                    "history_observations": len(patient_df),
+                    "history_required": required,
+                },
+                "reason": kelayakan.alasan,
+                "eligibility": {
+                    "verdict": kelayakan.verdict,
+                    "alasan": kelayakan.alasan,
+                    "jeda_maks_menit": kelayakan.jeda_maks_menit,
+                    "batas_jeda_menit": kelayakan.batas_jeda_menit,
+                    "interval_min_menit": kelayakan.interval_min_menit,
+                    "batas_interval_menit": kelayakan.batas_interval_menit,
+                },
+                "prediction_artifact_available": True,
+                "minimum_required": required,
+                "raw_reading_count": len(patient_df),
+                "valid_reading_count": len(patient_df),
+                "has_sufficient_history": True,
             }
 
         results: List[Dict[str, Any]] = []
