@@ -13,6 +13,7 @@ from .conditioned_query import PredictionConditionedQueryBuilder, QueryStrategy
 from .generator import RAGGenerator
 from .knowledge_base import MedicalKnowledgeBase
 from .retriever import MMRRetriever, SimpleKeywordRetriever
+from .verifikasi_sitasi import verifikasi_angka_bersitasi
 
 logger = logging.getLogger(__name__)
 
@@ -318,6 +319,18 @@ class RAGPipeline:
             # atas rujukan itu templat, bukan penalaran atas dokumen. Membiarkannya
             # mengira sebaliknya lebih buruk daripada tidak menampilkan apa pun.
             "narasi_llm": bool(advisory_payload.get("narasi_llm", True)),
+            # Verifikasi sitasi: apakah tiap ANGKA yang diberi penanda [S..] benar-benar
+            # ada pada potongan yang ditunjuknya. Aturan prompt saja tidak cukup —
+            # bila penelusuran meleset, model mengisi lubang dari ingatannya lalu tetap
+            # memberi penanda. Pemeriksaan ini deterministik dan tidak bergantung
+            # kepatuhan model. Ia MELAPORKAN, tidak menyunting jawaban.
+            "verifikasi_sitasi": verifikasi_angka_bersitasi(
+                jawaban=explanation,
+                potongan=[
+                    {"text": doc.text, "metadata": doc.metadata} for doc in retrieved_docs
+                ],
+                konteks_pasien=getattr(self, "_last_llm_context", None),
+            ).as_dict(),
             # Durasi per tahap (detik) + agregat _total/_lokal/_jaringan.
             "timings": timer.as_dict(),
         }

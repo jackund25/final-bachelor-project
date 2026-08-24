@@ -66,6 +66,17 @@ Aturan:
    dengan jawaban generik. Jika terdapat beberapa nilai yang berbeda, jelaskan
    perbedaannya berdasarkan konteks dan jangan memilih angka tanpa dasar.
 7. Gunakan Bahasa Indonesia yang ringkas, jelas, dan actionable.
+8. Penanda [S...] hanya boleh dilekatkan pada pernyataan yang isinya BENAR-BENAR
+   ada pada blok konteks bernomor itu. Bila suatu angka, ambang, klasifikasi, atau
+   tata laksana TIDAK ada pada blok manapun, JANGAN memberinya penanda: tulis
+   tanpa penanda dan nyatakan bahwa panduan yang terambil tidak memuatnya, atau
+   hilangkan pernyataan itu. Menempelkan penanda pada pengetahuan yang berasal
+   dari luar konteks adalah sitasi palsu dan merusak keterlacakan bukti — dokter
+   akan membuka halaman yang ditunjuk dan tidak menemukan isinya di sana.
+9. Tulis notasi matematika sebagai teks biasa. Pakai "kurang dari atau sama
+   dengan 70 mg/dL" atau "<= 70 mg/dL". JANGAN memakai LaTeX, tanda dolar, atau
+   markup rumus — tampilan tidak merendernya dan dokter akan melihat kodenya
+   mentah.
 
 Bentuk jawaban:
 Susun jawaban dalam lima bagian berikut, dengan judul persis seperti tertulis,
@@ -108,6 +119,10 @@ Aturan pengisian bagian:
   dan JANGAN mengarang ambang atau dosis.
 - JANGAN menghapus judul bagian mana pun, termasuk ketika isinya menyatakan
   ketiadaan informasi.
+- JANGAN menutup jawaban dengan disclaimer, catatan penutup, atau kalimat yang
+  menyatakan keputusan ada pada dokter. Sistem menambahkan catatan itu sendiri
+  dengan kata-kata baku; menuliskannya sendiri membuat disclaimer muncul DUA KALI
+  pada jawaban yang dibaca dokter.
 """
 
 
@@ -168,17 +183,25 @@ def build_question_payload(
 
     # Support both key conventions
     gluc = patient_state.get('glucose', patient_state.get('current_glucose', 'N/A'))
-    stress = patient_state.get('stress', patient_state.get('stress_level', 5))
     activity = patient_state.get('activity', patient_state.get('activity_level', 0))
-    insulin = patient_state.get('insulin', patient_state.get('insulin_on_board', 0))
-    carbs = patient_state.get('carbs', patient_state.get('carbs_on_board', 0))
+    # `iob`/`cob` didahulukan — itu nama fitur pada jalur produksi. Membaca
+    # 'insulin'/'carbs' lebih dulu membuat nilainya selalu 0 tanpa error.
+    insulin = patient_state.get(
+        'iob', patient_state.get('insulin_on_board', patient_state.get('insulin', 0)))
+    carbs = patient_state.get(
+        'cob', patient_state.get('carbs_on_board', patient_state.get('carbs', 0)))
+    # Stres tidak termasuk engineered_features, jadi pada produksi ia tidak pernah ada.
+    # Bila tidak ada, barisnya DIHILANGKAN — bukan diisi default 5 yang lalu dibaca
+    # dokter sebagai skor yang benar-benar diukur.
+    stress = patient_state.get('stress', patient_state.get('stress_level'))
+    stress_txt = f"stress={stress}/10, " if stress is not None else ""
 
     horizon_txt = f"{horizon_minutes} menit" if horizon_minutes else "horizon prediksi"
 
     return (
         f"Pertanyaan klinisi: {query}\n"
         f"Data pasien: glukosa={gluc} mg/dL, "
-        f"stress={stress}/10, "
+        f"{stress_txt}"
         f"aktivitas={activity} (skor intensitas), "
         f"insulin_on_board={insulin} unit, "
         f"carbs_on_board={carbs} gram.\n"

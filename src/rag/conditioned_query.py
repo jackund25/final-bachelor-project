@@ -162,7 +162,10 @@ class PredictionConditionedQueryBuilder:
             f"  Insulin on board : {state.insulin_on_board:.2f} unit",
             f"  Carbs on board   : {state.carbs_on_board:.1f} g",
             f"  Skor aktivitas    : {state.activity_level} (skala intensitas, bukan menit)",
-            f"  Tingkat stres    : {state.stress_level}/10",
+            # Baris stres HANYA dicetak bila benar-benar diukur. Lihat
+            # PatientState.stress_diketahui.
+            *([f"  Tingkat stres    : {state.stress_level}/10"]
+              if state.stress_diketahui else []),
             "=============================================================",
         ]
         return "\n".join(lines)
@@ -179,7 +182,7 @@ class PredictionConditionedQueryBuilder:
             factors.append(f"insulin aktif {state.insulin_on_board:.1f} unit")
         if state.carbs_on_board >= 10.0:
             factors.append(f"karbohidrat belum terserap {state.carbs_on_board:.0f} g")
-        if state.stress_level >= 7:
+        if state.stress_diketahui and state.stress_level >= 7:
             factors.append(f"stres tinggi ({state.stress_level}/10)")
         if state.activity_level < 15:
             factors.append("aktivitas fisik rendah")

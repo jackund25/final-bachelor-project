@@ -73,6 +73,13 @@ class PatientState:
     # skala ordinal), BUKAN menit. Atribut `duration` tidak diekstrak parser.
     activity_level: int = 0
     stress_level: int = 5           # 1-10 Likert
+    # Apakah stres BENAR-BENAR diukur, atau nilai di atas hanya default.
+    # `stress` TIDAK termasuk config.model.engineered_features, sehingga pada jalur
+    # produksi ia SELALU default 5. Sebelumnya angka itu tetap dicetak ke konteks
+    # LLM sebagai "Tingkat stres: 5/10", dan model meneruskannya ke advisory sebagai
+    # fakta — dokter membaca skor stres yang tidak pernah diukur. Penanda ini membuat
+    # penyaji dapat MENGHILANGKAN barisnya alih-alih mengarang.
+    stress_diketahui: bool = False
 
     # ── Kondisi masa depan hasil pengklasifikasi (opsional) ────
     # Regresi yang meminimalkan galat kuadrat menyusut ke tengah, sehingga jarang berani
@@ -245,10 +252,22 @@ class PatientState:
             current_glucose=current_glucose,
             predicted_glucose=predicted_glucose,
             prediction_horizon_minutes=prediction_horizon_minutes,
-            insulin_on_board=float(row.get("insulin", row.get("insulin_on_board", 0.0))),
-            carbs_on_board=float(row.get("carbs", row.get("carbs_on_board", 0.0))),
+            # `iob`/`cob` DIDAHULUKAN: itulah nama fitur pada jalur produksi
+            # (config.model.engineered_features; disetel di preprocessor.py). Sebelumnya
+            # baris ini hanya membaca "insulin"/"carbs", sehingga kunci tidak pernah cocok
+            # dan nilainya jatuh ke 0.0 TANPA error — konteks LLM selalu berbunyi
+            # "Insulin on board : 0.00 unit" berapa pun insulin aktif sesungguhnya.
+            # Pada kasus hipoglikemia justru insulin aktif pendorong utamanya, jadi
+            # sistem menyembunyikan penyebab dari model penalarnya sendiri.
+            # "insulin"/"carbs" dipertahankan sebagai cadangan: keduanya fitur MENTAH
+            # (dosis dan asupan pada satu observasi), bukan akumulasi meluruh.
+            insulin_on_board=float(
+                row.get("iob", row.get("insulin_on_board", row.get("insulin", 0.0)))),
+            carbs_on_board=float(
+                row.get("cob", row.get("carbs_on_board", row.get("carbs", 0.0)))),
             activity_level=int(float(row.get("activity", row.get("activity_level", 0)))),
             stress_level=int(float(row.get("stress", row.get("stress_level", 5)))),
+            stress_diketahui=("stress" in row or "stress_level" in row),
             predicted_condition=predicted_condition,
             predicted_lower=predicted_lower,
             predicted_upper=predicted_upper,
@@ -266,5 +285,6 @@ class PatientState:
             carbs_on_board=float(data.get("carbs_on_board", 0.0)),
             activity_level=int(data.get("activity_level", 0)),
             stress_level=int(data.get("stress_level", 5)),
+            stress_diketahui=("stress_level" in data),
             timestamp=str(data.get("timestamp", datetime.now().isoformat())),
         )
