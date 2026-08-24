@@ -573,7 +573,7 @@ rag:
     temperature: 0.2
     # Batas panjang keluaran. Sebelum Tugas 4 nilai ini tidak pernah diterapkan;
     # 300 token terlalu ketat untuk nasihat Bahasa Indonesia beserta disclaimer.
-    max_tokens: 700
+    max_tokens: 1200
 
 # Evaluation
 evaluation:

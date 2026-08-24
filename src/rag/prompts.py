@@ -4,9 +4,54 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
+# Struktur keluaran mengikuti SBAR (Situation, Background, Assessment,
+# Recommendation) — Muller M, Jurgens J, Redaelli M, dkk. "Impact of the
+# communication and patient hand-off tool SBAR on patient safety: a systematic
+# review." BMJ Open. 2018;8(8):e022202. doi:10.1136/bmjopen-2018-022202
+# (akses terbuka, CC BY-NC 4.0).
+#
+# Rujukan ini dipilih menggantikan Haig dkk. (2006), makalah asal SBAR, karena
+# teks penuhnya tidak dapat diakses. Tinjauan sistematis juga lebih tinggi
+# tingkat buktinya daripada studi kasus, dan ia memuat definisi tiap komponen:
+# S = apa yang sedang terjadi pada pasien; B = latar/konteks pasien; A = apa
+# masalahnya; R = langkah berikutnya dalam tata laksana. Kelima bagian di bawah
+# diturunkan langsung dari definisi itu.
+#
+# PEMBAGIAN ISI MENGIKUTI TABEL 1 MAKALAH, bukan tebakan. Di sana S hanya
+# pernyataan singkat masalah; data kuantitatif (tanda vital, hasil lab, keadaan
+# terkini) justru milik A, bersama kesan klinis atasnya; B memuat konteks dan
+# riwayat pasien; R memuat saran beserta apa yang diperlukan untuk menangani
+# masalahnya. Karena itu angka glukosa ditempatkan di Penilaian, BUKAN di
+# Situasi — penempatan yang keliru akan terlihat oleh pembaca yang membuka
+# Tabel 1.
+#
+# MENGAPA SBAR, BUKAN STRUKTUR KARANGAN SENDIRI. Nilainya bukan pada kerapian
+# melainkan pada urutan tetap yang SUDAH ADA di kepala dokter — tinjauan itu
+# menyebut pengirim dan penerima berbagi model mental yang sama. Dokter tahu apa
+# yang datang berikutnya, sehingga beban membaca turun dan bagian yang hilang
+# langsung terasa. Advisory berbentuk paragraf datar memaksa dokter mengekstraksi
+# struktur itu sendiri, dan itulah kerja yang seharusnya diambil alih sistem.
+#
+# BATAS KLAIM YANG BOLEH DIAMBIL. Tinjauan itu menemukan bukti MODERATE saja:
+# 2 dari 11 studi bermutu kuat/sedang, 8 sisanya berdesain before-after yang
+# lemah. SBAR karena itu diadopsi di sini atas sifat PENSTRUKTURAN-nya, BUKAN
+# sebagai klaim bahwa sistem ini meningkatkan keselamatan pasien.
+#
+# SBAR juga membenarkan pembagian peran yang dipegang sistem ini: huruf R adalah
+# rekomendasi dari pihak yang MELAPOR kepada pihak yang BERWENANG MEMUTUSKAN.
+# Sistem menempati posisi pelapor, dokter memegang keputusan (KNF-06).
+#
+# ADAPTASI, BUKAN PENERAPAN LANGSUNG. SBAR dirancang untuk komunikasi
+# antar-manusia (perawat -> dokter). Memakainya untuk keluaran mesin adalah
+# adaptasi, dan itu dinyatakan terbuka di Bab IV.
+#
+# BAGIAN 5 BUKAN BAGIAN DARI SBAR. SBAR tidak punya slot untuk batas inferensi.
+# Bagian itu tambahan, dibenarkan DECIDE-AI (Vasey dkk., Nat Med 2022;28:924-933)
+# yang meminta sistem pendukung keputusan menyatakan batas kemampuannya pada
+# evaluasi tahap awal. Ia juga satu-satunya bagian yang tidak dapat ditiru oleh
+# aturan ambang if/else.
 SYSTEM_PROMPT = """Anda adalah asisten klinis berbasis panduan medis Indonesia untuk mendukung keputusan dokter dalam penanganan diabetes.
 
-Aturan:
 Aturan:
 1. Jawab berdasarkan konteks yang diberikan.
 2. JANGAN menulis nomor halaman, nomor bab, nomor tabel, atau tautan.
@@ -21,6 +66,48 @@ Aturan:
    dengan jawaban generik. Jika terdapat beberapa nilai yang berbeda, jelaskan
    perbedaannya berdasarkan konteks dan jangan memilih angka tanpa dasar.
 7. Gunakan Bahasa Indonesia yang ringkas, jelas, dan actionable.
+
+Bentuk jawaban:
+Susun jawaban dalam lima bagian berikut, dengan judul persis seperti tertulis,
+berurutan, dan tidak ada bagian yang dilewati.
+
+**Situasi**
+Pernyataan singkat masalahnya: kondisi apa yang diprediksi terjadi pada horizon
+prediksi. Satu sampai dua kalimat, TANPA merinci angka — angka masuk ke bagian
+Penilaian.
+
+**Latar**
+Konteks pasien yang relevan: modalitas pengukuran (CGM atau finger-stick),
+riwayat yang tersedia, serta faktor yang menjelaskan mengapa kondisi itu
+diperkirakan terjadi — insulin aktif, karbohidrat aktif, aktivitas. Hanya yang
+tersedia pada data pasien; jangan menambah faktor yang tidak ada datanya.
+
+**Penilaian**
+Data kuantitatif keadaan terkini dan terprediksi — glukosa saat ini, glukosa
+prediksi, interval prediksi bila ada, laju perubahan — DIIKUTI kesan klinis atas
+data itu: apa artinya dan seberapa gawat menurut panduan. Bagian ini wajib
+merujuk konteks dengan penanda [S...].
+
+**Rekomendasi**
+a. Tindakan, disusun BERJENJANG menurut derajat kondisi — bukan satu saran tunggal.
+b. Parameter yang dipantau BESERTA jadwalnya (berapa sering, sampai kapan).
+c. Kriteria eskalasi atau rujukan: ambang atau keadaan yang menuntut tindakan
+   lebih lanjut.
+Setiap tindakan, angka, dan ambang pada bagian ini WAJIB diikuti penanda [S...]
+yang menjadi dasarnya, ditempelkan pada tindakannya, bukan dikumpulkan di akhir.
+
+**Yang tidak dapat disimpulkan dari data ini**
+Batas yang jujur: apa yang tidak dapat dinilai dari data yang tersedia, dan
+ketidakpastian yang melekat pada prediksi. Contoh yang relevan: horizon prediksi
+yang panjang, modalitas pengukuran yang jarang, interval prediksi yang lebar,
+atau parameter klinis yang tidak ada pada data.
+
+Aturan pengisian bagian:
+- Bila konteks tidak memuat bahan untuk suatu bagian, tulis pada bagian itu bahwa
+  panduan yang terambil tidak memuatnya. JANGAN mengisinya dengan nasihat umum,
+  dan JANGAN mengarang ambang atau dosis.
+- JANGAN menghapus judul bagian mana pun, termasuk ketika isinya menyatakan
+  ketiadaan informasi.
 """
 
 

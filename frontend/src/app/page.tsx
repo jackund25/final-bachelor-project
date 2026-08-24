@@ -1125,17 +1125,28 @@ export default function Home() {
                         </p>
 
                         {/*
-                          Keterangan cara menelusur. Teks lama menyebut fusi
-                          vektor + BM25 dengan RRF — sudah TIDAK BERLAKU sejak
-                          jalur produksi dibekukan ke BM25 dan ditambah
-                          penyusunan ulang oleh cross-encoder.
+                          Keterangan cara menelusur. DUA KALI teks ini pernah
+                          salah, dan keduanya karena jalur produksi berubah tanpa
+                          teksnya ikut berubah:
+                            1. menyebut fusi vektor + BM25 dengan RRF, padahal
+                               produksi dibekukan ke BM25 murni sejak T14;
+                            2. menyebut penyusunan ulang oleh cross-encoder,
+                               padahal rag.reranker.enabled disetel false pada
+                               24 Agustus 2026 (batas memori instans 512 MB).
+                          Yang dibaca dokter harus menggambarkan apa yang BENAR-
+                          BENAR berjalan. Bila reranker dihidupkan lagi, kalimat
+                          di bawah HARUS ikut diubah.
                         */}
                         <p className="rujukan-metode">
                           Rujukan diperoleh dengan pencocokan istilah (BM25) atas
-                          korpus pedoman, lalu disusun ulang oleh cross-encoder
-                          sebelum lima teratas ditampilkan. Karena peringkat akhir
-                          berasal dari penyusunan ulang, tidak ada satu angka
-                          kemiripan yang dapat ditampilkan.
+                          korpus pedoman, dan lima teratas menurut skor BM25
+                          ditampilkan apa adanya. Penyusunan ulang oleh
+                          cross-encoder tersedia pada sistem tetapi dimatikan
+                          pada penerapan ini karena batas memori server, sehingga
+                          urutan yang Anda lihat sepenuhnya berasal dari
+                          pencocokan istilah. Skor BM25 tidak ditampilkan karena
+                          nilainya tidak sebanding antar-pertanyaan dan mudah
+                          disalahartikan sebagai derajat kebenaran klinis.
                         </p>
 
                         <label className="rujukan-sakelar">
