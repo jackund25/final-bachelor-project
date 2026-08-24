@@ -132,13 +132,22 @@ class DiabetesAdvisorChain:
                 return {
                     "answer": answer.strip(),
                     "sources": self._extract_sources(retrieved_docs),
+                    "narasi_llm": True,
                 }
             except Exception as exc:
                 logger.warning("Advisor chain invocation failed, using template: %s", exc)
 
+        # Jalur cadangan KEDUA. generator.py menangani kasus "rantai LLM tidak pernah
+        # dibangun" (self._chain is None sejak __init__). Cabang ini menangani kasus
+        # yang berbeda: rantai ADA tapi invoke() gagal saat runtime (kuota habis,
+        # jaringan, respons tidak valid). Keduanya harus menghasilkan narasi_llm=False
+        # dengan alasan yang sama — dokter tidak boleh mengira templat ini penalaran
+        # LLM. Sebelumnya kunci ini tidak pernah disetel di sini, sehingga default
+        # `True` pada pipeline.py membuat kegagalan runtime tampil seolah sukses.
         return {
             "answer": self._template_answer(patient_state, prediction, retrieved_docs),
             "sources": self._extract_sources(retrieved_docs),
+            "narasi_llm": False,
         }
 
     @staticmethod
@@ -221,10 +230,32 @@ class DiabetesAdvisorChain:
         else:
             action = "Pertahankan pola makan dan monitoring rutin."
 
+        # SEBELUMNYA teks "1 jam" ditulis tetap di sini, tidak peduli horizon mana
+        # yang sebenarnya diprediksi. `predicted_glucose` yang dikirim clinical.py
+        # SENGAJA mengambil horizon TERDEKAT (mis. 30 menit, bukan 60), supaya risiko
+        # jangka pendek — yang paling mendesak, terutama untuk hipoglikemia — menjadi
+        # dasar advisory. Label tetap "1 jam" berarti dokter membaca "56.0 -> 67.9
+        # mg/dL dalam 1 jam" padahal panel FORECAST di sebelahnya sudah menunjukkan
+        # 67.9 adalah nilai 30 MENIT, bukan 60. Horizonnya sendiri sudah tersimpan di
+        # patient_state["prediction_horizon_minutes"] sejak clinical.py — di sini
+        # hanya perlu dibaca, bukan ditebak ulang.
+        horizon = patient_state.get("prediction_horizon_minutes")
+        horizon_label = (
+            "1 jam" if horizon == 60
+            else f"{int(horizon)} menit" if horizon is not None
+            else "berikut"  # horizon tidak diketahui — jangan mengarang angka
+        )
+
         source_count = len(retrieved_docs)
+        # Kata-katanya HARUS sama persis dengan substring yang dicek
+        # RAGPipeline._ensure_disclaimer() ("keputusan medis final tetap pada
+        # dokter"). Sebelumnya kalimat di sini berbunyi "keputusan KLINIS final
+        # tetap MEMERLUKAN PENILAIAN dokter" — beda kata, sehingga pengecekan
+        # gagal mengenalinya sebagai disclaimer yang sudah ada, dan
+        # _ensure_disclaimer menambahkan kalimat KEDUA di akhir jawaban.
         return (
-            f"Status risiko: {risk}. Prediksi glukosa 1 jam adalah {prediction:.1f} mg/dL "
-            f"dari kondisi saat ini {glucose:.1f} mg/dL. "
+            f"Status risiko: {risk}. Prediksi glukosa {horizon_label} adalah "
+            f"{prediction:.1f} mg/dL dari kondisi saat ini {glucose:.1f} mg/dL. "
             f"Rekomendasi awal: {action} Konteks yang digunakan: {source_count} sumber. "
-            "Catatan: keputusan klinis final tetap memerlukan penilaian dokter."
+            "Catatan: keputusan medis final tetap pada dokter."
         )

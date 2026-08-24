@@ -141,8 +141,19 @@ class RAGGenerator:
             else "Tingkat stres relatif terkontrol."
         )
 
+        # Duplikat bug yang sama dengan DiabetesAdvisorChain._template_answer di
+        # advisor_chain.py: teks "1 jam" ditulis tetap padahal `prediction` yang
+        # diteruskan clinical.py adalah horizon TERDEKAT (mis. 30 menit), bukan
+        # selalu 60. Horizonnya sudah ada di patient_state — dibaca, bukan ditebak.
+        horizon = patient_state.get("prediction_horizon_minutes")
+        horizon_label = (
+            "1 jam ke depan" if horizon == 60
+            else f"{int(horizon)} menit ke depan" if horizon is not None
+            else "ke depan"
+        )
+
         return (
-            f"Status: {risk}. Prediksi 1 jam ke depan {prediction:.1f} mg/dL "
+            f"Status: {risk}. Prediksi {horizon_label} {prediction:.1f} mg/dL "
             f"dari kondisi saat ini {glucose:.1f} mg/dL. "
             f"{stress_note} Rekomendasi: {advice} "
             "Catatan: keputusan medis final tetap pada dokter."
