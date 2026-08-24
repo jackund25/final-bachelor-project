@@ -1,3 +1,4 @@
+import threading
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List
@@ -87,20 +88,73 @@ _prediction_service = None
 _rag_pipeline = None
 _data_service = None
 
+# Satu-satunya pembangun yang boleh berjalan pada satu waktu.
+#
+# SEBAB (24 Agustus 2026, sesudah deploy pertama). Instans produksi ter-OOM dan
+# restart berulang setiap kali /api/clinical dipanggil. Rantainya:
+#
+#   1. Pemanasan menetapkan _rag_pipeline SEBELUM .build() selesai.
+#   2. Permintaan yang datang melihat globalnya sudah terisi, lalu memakai
+#      pipeline yang masih setengah jadi.
+#   3. RAGPipeline.answer() melihat self._ready masih False dan memanggil
+#      .build() LAGI, kali ini di thread permintaan.
+#   4. Dua indeks BM25 atas 2.233 potongan dibangun BERSAMAAN pada instans
+#      512 MB. Prosesnya dibunuh, klien menerima 502, dan karena respons 502
+#      tidak membawa header CORS browser melaporkannya sebagai galat CORS —
+#      gejala yang menyesatkan, jauh dari sebabnya.
+#
+# Kunci ini beserta pola "bangun dulu, publikasikan kemudian" di bawah membuat
+# pembangunan kedua mustahil terjadi.
+_kunci_bangun = threading.Lock()
+
+# Kunci TERPISAH untuk layanan prediksi. Kalau ia ikut memakai _kunci_bangun, sebuah
+# permintaan akan terblokir di belakang pembangunan indeks RAG yang memakan menit,
+# padahal artefak prediksi hanya beberapa ratus kilobyte dan siap dalam hitungan
+# detik. Menunggu sesuatu yang tidak ada hubungannya persis cara membuat batas waktu
+# Render terlampaui, dan itu memunculkan kembali 502 yang sedang diperbaiki.
+_kunci_prediksi = threading.Lock()
+
+# Berapa lama permintaan bersedia menunggu pemanasan selesai sebelum menyerah.
+# Lebih pendek daripada batas waktu permintaan Render, supaya yang diterima
+# dokter adalah pesan yang menjelaskan keadaan, bukan 502 tanpa keterangan.
+_BATAS_TUNGGU_DETIK = 75
+
 
 def get_prediction_service():
     global _prediction_service
 
-    if _prediction_service is None:
-        _prediction_service = PredictionService()
+    with _kunci_prediksi:
+        if _prediction_service is None:
+            _prediction_service = PredictionService()
 
     return _prediction_service
+
+
+class SedangDisiapkan(Exception):
+    """Pemanasan belum selesai dan penantiannya sudah melewati batas."""
 
 
 def get_rag_pipeline():
     global _rag_pipeline
 
-    if _rag_pipeline is None:
+    if _rag_pipeline is not None:
+        return _rag_pipeline
+
+    # MENUNGGU, BUKAN MEMBANGUN SENDIRI. Bila pemanasan sedang berjalan, kunci ini
+    # dipegang thread pemanasan; permintaan menunggu sampai ia selesai lalu memakai
+    # pipeline yang sama. Membangun sendiri secara paralel adalah yang membunuh
+    # instans 512 MB pada deploy pertama.
+    if not _kunci_bangun.acquire(timeout=_BATAS_TUNGGU_DETIK):
+        raise SedangDisiapkan(
+            "Sistem masih menyiapkan basis pengetahuan (indeks penelusuran atas "
+            "2.233 potongan pedoman). Proses ini hanya berjalan sekali setelah "
+            "server dinyalakan. Silakan coba lagi satu sampai dua menit lagi."
+        )
+
+    try:
+        if _rag_pipeline is not None:
+            return _rag_pipeline
+
         from src.rag.pipeline import RAGPipeline
 
         # Seluruh parameter dibiarkan diambil dari config.yaml.
@@ -125,13 +179,22 @@ def get_rag_pipeline():
         # rag.collection_name = diabetes_kb). Membiarkannya bersumber dari satu
         # tempat mencegah lingkungan penyajian menyimpang diam-diam dari lingkungan
         # yang membangun indeksnya.
-        _rag_pipeline = RAGPipeline()
+        # DIBANGUN KE VARIABEL LOKAL DULU. Menetapkan global sebelum .build()
+        # selesai membuat pemanggil lain menerima pipeline setengah jadi, dan
+        # RAGPipeline.answer() akan membangunnya ulang — dua indeks sekaligus di
+        # instans 512 MB. Globalnya baru dipublikasikan setelah benar-benar siap.
+        pipeline = RAGPipeline()
 
-        _rag_pipeline.build()
+        pipeline.build()
 
-        _peringatkan_bila_mundur(_rag_pipeline)
+        _peringatkan_bila_mundur(pipeline)
 
-    return _rag_pipeline
+        _rag_pipeline = pipeline
+
+        return _rag_pipeline
+
+    finally:
+        _kunci_bangun.release()
 
 
 def _peringatkan_bila_mundur(pipeline) -> None:
@@ -564,6 +627,16 @@ def clinical_decision_support(
                 ),
             },
         }
+
+    except SedangDisiapkan as exc:
+        # 503, BUKAN 500. Ini keadaan sementara yang akan hilang sendiri, dan
+        # pesannya memberi tahu dokter persis apa yang harus dilakukan: tunggu
+        # sebentar lalu ulangi. Sebelumnya keadaan ini muncul sebagai 502 tanpa
+        # keterangan apa pun karena prosesnya keburu mati.
+        raise HTTPException(
+            status_code=503,
+            detail=str(exc),
+        ) from exc
 
     except ValueError as exc:
         raise HTTPException(

@@ -23,13 +23,20 @@ logger = logging.getLogger(__name__)
 # Pemanasan dijalankan sebagai task LATAR, bukan ditunggu. Alasannya operasional:
 # Render menganggap instans gagal bila port tidak dibuka dalam batas waktunya. Bila
 # pemanasan ditunggu di dalam lifespan, startup yang lambat berubah menjadi deploy
-# yang gagal. Dengan task latar, port terbuka seketika dan permintaan yang datang
-# lebih awal tetap dilayani — hanya saja ia membangun sendiri seperti dahulu.
-_status_pemanasan: dict = {"selesai": False, "galat": None}
+# yang gagal. Dengan task latar, port terbuka seketika.
+#
+# Permintaan yang datang SEBELUM pemanasan tuntas akan MENUNGGU pekerjaan yang sama
+# itu, bukan memulai pekerjaan kedua. Pembedaan ini bukan detail: pada deploy
+# pertama, permintaan yang membangun sendiri secara paralel membuat dua indeks BM25
+# atas 2.233 potongan hidup bersamaan di instans 512 MB, dan prosesnya dibunuh
+# berulang kali. Penjaganya ada di backend/routes/clinical.py (_kunci_bangun).
+_status_pemanasan: dict = {"selesai": False, "berjalan": False, "galat": None}
 
 
 def _panaskan() -> None:
     from backend.routes.clinical import get_prediction_service, get_rag_pipeline
+
+    _status_pemanasan["berjalan"] = True
 
     try:
         get_prediction_service()
@@ -41,6 +48,9 @@ def _panaskan() -> None:
         # akan mencoba membangun ulang dan memunculkan galat yang sebenarnya.
         _status_pemanasan["galat"] = str(exc)
         logger.exception("Pemanasan gagal; pembangunan ditunda ke permintaan pertama.")
+
+    finally:
+        _status_pemanasan["berjalan"] = False
 
 
 @asynccontextmanager
@@ -102,7 +112,16 @@ def health_check():
     retriever = getattr(pipeline, "retriever", None) if pipeline else None
 
     if pipeline is None:
-        retrieval = {"siap": False, "keterangan": "belum dibangun"}
+        # Globalnya SENGAJA baru dipublikasikan setelah .build() tuntas, jadi None
+        # di sini berarti "belum siap" — bukan lagi "mungkin setengah jadi".
+        retrieval = {
+            "siap": False,
+            "keterangan": (
+                "sedang dibangun"
+                if _status_pemanasan.get("berjalan")
+                else "belum dibangun"
+            ),
+        }
     else:
         nama = type(retriever).__name__
         mundur = nama == "SimpleKeywordRetriever"
