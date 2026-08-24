@@ -342,8 +342,36 @@ rag:
   # mode "bm25" yang tidak pernah memanggil _rerank — dan itu cukup untuk mematikan
   # instans kecil. Sekarang pemuatannya mengikuti mode; lihat _muat_reranker pada
   # src/rag/retriever.py.
+  # DIMATIKAN 24 Agustus 2026 — keputusan OPERASIONAL, bukan temuan eksperimen.
+  #
+  # SEBAB. Instans produksi berbatas 512 MB. Ketika penjaga kelayakan meloloskan
+  # sebuah jendela, pipeline RAG dibangun di dalam permintaan HTTP: klien ChromaDB,
+  # indeks BM25 atas 2.233 potongan, lalu pengunduhan dan pemuatan model reranker
+  # (~99 MB terkompresi, ~150 MB termuat). Terukur di produksi: permintaan berjalan
+  # 133 detik lalu prosesnya dimatikan, dan seluruh permintaan berikutnya menjawab
+  # 502 secara instan sampai instans hidup kembali.
+  #
+  # MENGAPA RERANKER YANG DILEPAS, BUKAN KORPUSNYA. Perbaikan dari 36 potongan
+  # cadangan menjadi 2.233 potongan korpus adalah bedanya antara menjawab dari 1,6%
+  # pedoman versus seluruhnya. Reranking hanya menyusun ulang 20 kandidat yang sudah
+  # ditemukan BM25. Bila salah satu harus dikorbankan pada memori yang terbatas,
+  # yang dilepas adalah yang dampaknya paling kecil.
+  #
+  # DAN IA BELUM TERUKUR. Perbandingan tiga lengan (tanpa-reranker / ringan / BGE)
+  # belum dijalankan, sehingga tidak ada bukti bahwa reranking memperbaiki mutu pada
+  # korpus ini. Mengirim komponen yang belum terukur ke pengujian dokter, dengan
+  # biaya mengorbankan korpus, adalah pertukaran yang salah arah.
+  #
+  # MENGHIDUPKANNYA KEMBALI. Nyalakan `enabled: true` untuk percobaan lokal — di
+  # sana memori bukan kendala. Untuk produksi, ia layak dinyalakan hanya setelah
+  # pengukuran menunjukkan manfaatnya, dan itu sekaligus menjadi dasar menaikkan
+  # instans ke 2 GB.
+  #
+  # JANGAN mengganti ke model ms-marco yang berbahasa Inggris saja demi menghemat
+  # memori (TinyBERT ~4 MB). Korpus ini campuran Indonesia-Inggris, dan
+  # ketidakcocokan bahasa itu sudah menjatuhkan penelusuran padat pada T9/T13/T14.
   reranker:
-    enabled: true
+    enabled: false
     # cross_encoder = sentence-transformers (menarik torch)
     # flashrank     = ONNX di CPU, tanpa torch
     backend: "flashrank"
