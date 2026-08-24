@@ -141,8 +141,13 @@ class DiabetesAdvisorChain:
             "sources": self._extract_sources(retrieved_docs),
         }
 
-    def _extract_sources(self, retrieved_docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    @staticmethod
+    def _extract_sources(retrieved_docs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Ringkasan sumber terstruktur, LENGKAP dengan teks yang dikutip.
+
+        Dijadikan ``staticmethod`` karena tidak bergantung pada keadaan rantai mana pun.
+        Itu memungkinkan jalur cadangan di ``generator.py`` — yang berjalan justru ketika
+        rantai LLM TIDAK ada — tetap menyusun daftar rujukan yang sama persis.
 
         Membaca skema metadata halaman yang baru (kb_id/lembaga/halaman_cetak) dengan
         fallback ke kunci lama (sumber/judul/halaman) agar chunk manual_kb tetap jalan.

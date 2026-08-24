@@ -79,9 +79,34 @@ class RAGGenerator:
         clinical_context: Optional[str] = None,
     ) -> Dict[str, Any]:
         if self.chain is None:
+            # JALUR CADANGAN: model bahasa tidak tersedia (kunci API kosong, kuota
+            # habis, atau jaringan gagal). Jawaban disusun dari templat.
+            #
+            # Rujukan TETAP DIKEMBALIKAN. Sebelumnya medan ini dikosongkan, sehingga
+            # ketika LLM gagal sistem menyajikan nasihat TANPA satu pun sumber —
+            # persis keadaan ketika dokter paling perlu memeriksa sendiri dasarnya.
+            # Potongan yang diambil penelusur tidak ikut gagal hanya karena model
+            # bahasa gagal; menyembunyikannya membuang bukti yang sudah ada di tangan.
+            #
+            # Narasinya memang bukan hasil LLM, dan itu ditandai lewat
+            # ``narasi_llm=False`` supaya antarmuka dapat menyatakannya terus terang
+            # alih-alih membiarkan dokter mengira teks templat itu hasil penalaran
+            # atas dokumen.
+            sources: List[Dict[str, Any]] = []
+
+            if retrieved_docs:
+                try:
+                    from .advisor_chain import DiabetesAdvisorChain
+
+                    sources = DiabetesAdvisorChain._extract_sources(retrieved_docs)
+                except Exception:  # noqa: BLE001
+                    # Kegagalan menyusun sitasi tidak boleh menjatuhkan jawaban.
+                    sources = []
+
             return {
                 "answer": self._template_answer(patient_state=patient_state, prediction=prediction),
-                "sources": [],
+                "sources": sources,
+                "narasi_llm": False,
             }
 
         return self.chain.generate(

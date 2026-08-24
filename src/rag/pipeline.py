@@ -309,6 +309,15 @@ class RAGPipeline:
             # Apakah jawaban benar-benar ditopang dokumen. UI wajib memakai ini
             # agar tidak menyajikan rekomendasi tanpa rujukan seolah-olah bersumber.
             "grounded": bool(retrieved_docs),
+            # Apakah narasinya benar-benar disusun model bahasa atas dokumen, atau
+            # berasal dari templat karena model bahasa tidak tersedia (kunci API
+            # kosong, kuota habis, jaringan gagal).
+            #
+            # Rujukan TETAP disajikan pada keadaan itu — penelusuran tidak ikut gagal
+            # hanya karena model bahasa gagal. Tetapi dokter harus tahu bahwa teks di
+            # atas rujukan itu templat, bukan penalaran atas dokumen. Membiarkannya
+            # mengira sebaliknya lebih buruk daripada tidak menampilkan apa pun.
+            "narasi_llm": bool(advisory_payload.get("narasi_llm", True)),
             # Durasi per tahap (detik) + agregat _total/_lokal/_jaringan.
             "timings": timer.as_dict(),
         }

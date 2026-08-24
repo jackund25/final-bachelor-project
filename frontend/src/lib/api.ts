@@ -62,6 +62,9 @@ export interface ClinicalAdvisory {
   explanation: string;
   risk_level: string;
   grounded: boolean;
+  // False bila narasi berasal dari templat karena model bahasa tidak tersedia.
+  // Rujukannya tetap sah; yang berubah hanya asal-usul kalimat penjelasnya.
+  narasi_llm?: boolean;
   citations: Citation[];
   retrieved_docs: unknown[];
   recommendation_available?: boolean;

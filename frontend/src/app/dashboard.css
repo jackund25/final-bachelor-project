@@ -418,6 +418,23 @@ h2 {
 }
 
 
+/* Peringatan bahwa narasi berasal dari templat, bukan model bahasa.
+   Sengaja memakai warna peringatan (amber), bukan bahaya (merah): rujukannya
+   tetap sah, yang berubah hanya asal-usul kalimat penjelasnya. */
+.advisory-peringatan-templat {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+
+  border-left: 3px solid #b8860b;
+  border-radius: 4px;
+  background: #fdf6e3;
+
+  color: #6b5312;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+
 /* =========================================================
    Panel Sumber Rujukan
    =========================================================

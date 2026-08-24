@@ -93,15 +93,61 @@ def get_rag_pipeline():
     if _rag_pipeline is None:
         from src.rag.pipeline import RAGPipeline
 
-        _rag_pipeline = RAGPipeline(
-            chroma_persist_dir="models/chroma_db_eval",
-            collection_name="diabetes_kb_eval",
-            llm_provider="gemini",
-        )
+        # Seluruh parameter dibiarkan diambil dari config.yaml.
+        #
+        # SEBELUMNYA tiga nilai dipatri di sini, dan salah satunya menunjuk indeks
+        # yang KOSONG: chroma_persist_dir="models/chroma_db_eval" dengan
+        # collection_name="diabetes_kb_eval". Koleksi itu tidak pernah ada, sehingga
+        # tiap permintaan melewati rantai kegagalan berikut TANPA satu pun galat
+        # sampai ke pemanggil:
+        #
+        #   koleksi tidak ada -> indeks BM25 gagal dibangun
+        #   -> mode turun ke vektor -> ruang vektor pun kosong
+        #   -> RAGPipeline mundur ke SimpleKeywordRetriever
+        #   -> penelusuran dilayani 36 potongan cadangan, bukan 2.233 potongan korpus
+        #
+        # Jawabannya tetap keluar, sitasinya tetap membawa nomor halaman sungguhan,
+        # dan tidak ada yang tampak salah. Hanya 1,6% korpus yang benar-benar
+        # terjangkau. Inilah jenis kegagalan yang paling mahal pada alat klinis:
+        # sistem yang keliru tanpa terlihat keliru.
+        #
+        # Nilai produksi ada di config.yaml (rag.persist_dir = models/chroma_db,
+        # rag.collection_name = diabetes_kb). Membiarkannya bersumber dari satu
+        # tempat mencegah lingkungan penyajian menyimpang diam-diam dari lingkungan
+        # yang membangun indeksnya.
+        _rag_pipeline = RAGPipeline()
 
         _rag_pipeline.build()
 
+        _peringatkan_bila_mundur(_rag_pipeline)
+
     return _rag_pipeline
+
+
+def _peringatkan_bila_mundur(pipeline) -> None:
+    """Catat dengan keras bila penelusuran tidak dilayani korpus penuh.
+
+    Penurunan ke potongan cadangan bersifat SENYAP menurut rancangan — sistem tetap
+    menjawab supaya layanan tidak mati total. Justru karena itu ia harus berteriak di
+    log, kalau tidak ia hanya akan ketahuan ketika seorang dokter mempertanyakan
+    rujukan yang terasa tidak nyambung.
+    """
+    import logging
+
+    logger = logging.getLogger(__name__)
+    retriever = getattr(pipeline, "retriever", None)
+    n_bm25 = len(getattr(retriever, "_bm25_teks", []) or [])
+
+    if type(retriever).__name__ == "SimpleKeywordRetriever":
+        logger.error(
+            "PENELUSURAN TERDEGRADASI: memakai %d potongan cadangan, bukan korpus "
+            "penuh. Periksa keberadaan %s dan koleksi %s.",
+            len(getattr(retriever, "chunks", []) or []),
+            getattr(pipeline, "chroma_persist_dir", "?"),
+            getattr(pipeline, "collection_name", "?"),
+        )
+    elif n_bm25:
+        logger.info("Penelusuran siap atas %d potongan korpus.", n_bm25)
 
 
 def get_data_service():
@@ -404,6 +450,12 @@ def clinical_decision_support(
                 "grounded": rag_result[
                     "grounded"
                 ],
+                # False bila narasinya dari templat karena model bahasa tidak
+                # tersedia. Rujukannya tetap sah dan tetap ditampilkan; yang tidak
+                # sah adalah membiarkan dokter mengira teksnya hasil penalaran LLM.
+                "narasi_llm": bool(
+                    rag_result.get("narasi_llm", True)
+                ),
                 "citations": rag_result.get(
                     "citations",
                     [],

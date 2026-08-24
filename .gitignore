@@ -44,7 +44,26 @@ models/*.pkl
 
 models/*.gguf
 # vector DB (generated; rebuild via scripts/reingest_kb.py)
-models/chroma_db/
+#
+# Polanya `models/chroma_db/*` dan BUKAN `models/chroma_db/`, karena git tidak dapat
+# mengikutkan kembali sebuah berkas bila DIREKTORI induknya yang dikecualikan.
+# Mengecualikan isinya membuat pengecualian di bawah dapat bekerja.
+models/chroma_db/*
+
+# KECUALI berkas sqlite-nya. Jalur produksi (rag.retrieval_mode = bm25) memakai
+# ChromaDB HANYA sebagai penyimpan dokumen: _bangun_bm25 dan _hasil_dari_indeks
+# membaca `documents` dan `metadatas` dari sqlite, dan mesin vektornya tidak pernah
+# dijalankan. Terbukti: memuat sqlite ini SENDIRIAN menghasilkan 2.233 potongan
+# lengkap dengan metadata halaman, dan penelusuran berjalan normal.
+#
+# Tanpa berkas ini di lingkungan produksi, RAGPipeline mundur DIAM-DIAM ke
+# fallback_chunks.json yang hanya berisi 36 potongan (lihat src/rag/pipeline.py).
+# Kegagalan itu tidak memunculkan error apa pun — sistem tetap menjawab, hanya
+# dengan 1,6% korpus.
+#
+# Yang TETAP diabaikan: direktori segmen HNSW (data_level0.bin, ~32 MB) yang
+# hanya dipakai jalur vektor eksperimen.
+!models/chroma_db/chroma.sqlite3
 models/chroma_db_multilingual/
 # Indeks sementara sapuan ukuran potongan (B4) — dibangun ulang oleh
 # scripts/eval_chunk_size.py, tidak perlu masuk repo.

@@ -68,6 +68,8 @@ type Advisory = {
   risk_level: string;
   explanation: string;
   grounded: boolean;
+  // False bila narasi berasal dari templat karena model bahasa tidak tersedia.
+  narasiLlm: boolean;
   citations: Citation[];
 };
 
@@ -398,6 +400,11 @@ export default function Home() {
 
           grounded:
             result.clinical_advisory.grounded,
+
+          // Bawaan true supaya respons lama (tanpa medan ini) tidak salah
+          // dilaporkan sebagai templat.
+          narasiLlm:
+            result.clinical_advisory.narasi_llm ?? true,
 
           citations:
             result.clinical_advisory.citations ?? [],
@@ -1046,6 +1053,22 @@ export default function Home() {
                 <p className="advisory-label">
                   Evidence status
                 </p>
+
+                {/*
+                  Peringatan asal-usul narasi. Rujukan di bawah tetap sah — penelusuran
+                  tidak ikut gagal ketika model bahasa gagal — tetapi kalimat penjelas
+                  di atasnya berasal dari templat, bukan penalaran atas dokumen.
+                  Membiarkan dokter mengira sebaliknya lebih buruk daripada tidak
+                  menampilkan apa pun.
+                */}
+                {!advisory.narasiLlm && (
+                  <p className="advisory-peringatan-templat">
+                    Model bahasa sedang tidak tersedia. Teks penilaian di atas disusun
+                    dari templat, <strong>bukan</strong> hasil penalaran atas dokumen.
+                    Rujukan di bawah tetap berasal dari penelusuran pedoman dan dapat
+                    dibaca sendiri.
+                  </p>
+                )}
 
                 <p className="advisory-text">
 
