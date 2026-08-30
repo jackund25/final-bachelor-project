@@ -87,11 +87,13 @@ model:
   # -----------------------------------------------------------
   # BASE FEATURES
   # -----------------------------------------------------------
-  # Stress tidak digunakan sebagai predictor produksi karena event
-  # stress pada OhioT1DM sangat terbatas.
+  # Stress tidak digunakan sebagai predictor: kanal `stressors` OhioT1DM
+  # hanya memuat 7 event di seluruh 12 pasien.
   #
-  # Variabel stress tetap dapat dipertahankan sebagai bagian dari
-  # Digital Twin / patient logbook.
+  # Kolom `stress` TETAP dihasilkan parser sebagai bagian dataset, lalu
+  # disaring di sini — ia tidak ada pada engineered_features sehingga tidak
+  # pernah sampai ke model. Yang dicabut adalah sisi APLIKASI: CDSS produksi
+  # tidak lagi mengumpulkan, menyimpan, maupun membacanya.
   # -----------------------------------------------------------
 
   features:

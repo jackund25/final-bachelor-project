@@ -13,8 +13,8 @@
   "lengan": {
     "vektor": {
       "rerata": {
-        "context_precision": 0.1667,
-        "context_recall": 0.2
+        "context_precision": 0.025,
+        "context_recall": 0.1
       },
       "per_kasus": [
         {
@@ -24,7 +24,7 @@
         },
         {
           "id": "E02",
-          "context_precision": 0.8333333332916666,
+          "context_precision": 0.0,
           "context_recall": 0.0
         },
         {
@@ -44,7 +44,7 @@
         },
         {
           "id": "E06",
-          "context_precision": 0.49999999995,
+          "context_precision": 0.249999999975,
           "context_recall": 1.0
         },
         {
@@ -54,8 +54,8 @@
         },
         {
           "id": "E08",
-          "context_precision": 0.3333333333,
-          "context_recall": 1.0
+          "context_precision": 0.0,
+          "context_recall": 0.0
         },
         {
           "id": "E09",
@@ -71,8 +71,8 @@
     },
     "bm25": {
       "rerata": {
-        "context_precision": 0.6422,
-        "context_recall": 0.8
+        "context_precision": 0.8033,
+        "context_recall": 0.9
       },
       "per_kasus": [
         {
@@ -82,8 +82,8 @@
         },
         {
           "id": "E02",
-          "context_precision": 0.3333333333,
-          "context_recall": 1.0
+          "context_precision": 0.0,
+          "context_recall": 0.0
         },
         {
           "id": "E03",
@@ -97,8 +97,8 @@
         },
         {
           "id": "E05",
-          "context_precision": 0.0,
-          "context_recall": 0.0
+          "context_precision": 0.9999999999,
+          "context_recall": 1.0
         },
         {
           "id": "E06",
@@ -112,40 +112,40 @@
         },
         {
           "id": "E08",
-          "context_precision": 0.7555555555303703,
+          "context_precision": 0.8333333332916666,
           "context_recall": 1.0
         },
         {
           "id": "E09",
-          "context_precision": 0.0,
-          "context_recall": 0.0
+          "context_precision": 0.9999999999,
+          "context_recall": 1.0
         },
         {
           "id": "E10",
-          "context_precision": 0.3333333333,
+          "context_precision": 0.19999999998,
           "context_recall": 1.0
         }
       ]
     },
     "hibrida": {
       "rerata": {
-        "context_precision": 0.2593,
-        "context_recall": 0.55
+        "context_precision": 0.5417,
+        "context_recall": 0.7
       },
       "per_kasus": [
         {
           "id": "E01",
-          "context_precision": 0.0,
-          "context_recall": 0.0
+          "context_precision": 0.49999999995,
+          "context_recall": 1.0
         },
         {
           "id": "E02",
           "context_precision": 0.0,
-          "context_recall": 0.5
+          "context_recall": 0.0
         },
         {
           "id": "E03",
-          "context_precision": 0.49999999995,
+          "context_precision": 0.9999999999,
           "context_recall": 1.0
         },
         {
@@ -165,22 +165,22 @@
         },
         {
           "id": "E07",
-          "context_precision": NaN,
+          "context_precision": 0.9999999999,
           "context_recall": 1.0
         },
         {
           "id": "E08",
-          "context_precision": 0.5833333333041666,
+          "context_precision": 0.4166666666458333,
           "context_recall": 1.0
         },
         {
           "id": "E09",
-          "context_precision": 0.0,
-          "context_recall": 0.0
+          "context_precision": 0.49999999995,
+          "context_recall": 1.0
         },
         {
           "id": "E10",
-          "context_precision": 0.249999999975,
+          "context_precision": 0.9999999999,
           "context_recall": 1.0
         }
       ]
@@ -188,18 +188,18 @@
   },
   "selisih_terhadap_vektor": {
     "bm25": {
-      "context_precision": 0.4755,
-      "context_recall": 0.6
+      "context_precision": 0.7783,
+      "context_recall": 0.8
     },
     "hibrida": {
-      "context_precision": 0.0926,
-      "context_recall": 0.35
+      "context_precision": 0.5167,
+      "context_recall": 0.6
     }
   },
   "context_recall_per_lengan": {
-    "vektor": 0.2,
-    "bm25": 0.8,
-    "hibrida": 0.55
+    "vektor": 0.1,
+    "bm25": 0.9,
+    "hibrida": 0.7
   },
   "lengan_terbaik_context_recall": "bm25",
   "aturan4_bm25_mengungguli_hibrida": true,

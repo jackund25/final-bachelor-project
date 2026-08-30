@@ -109,7 +109,16 @@ def build_interval_query(pred: float, lo: float, hi: float) -> str:
 def collect_cases(cfg: dict) -> pd.DataFrame:
     """Ambil jendela nyata dari pasien hold-out: current, prediksi RF, dan masa depan aktual."""
     mc = cfg["model"]
-    df = pd.read_csv(ROOT / "data/raw/ohio_t1dm_merged.csv", parse_dates=["timestamp"])
+    # Dataset produksi (config.data.unified_dataset), disaring ke kanal CGM.
+    # Berkas lama ohio_t1dm_merged.csv tidak dipakai lagi karena tidak memuat
+    # kolom glucose_source yang kini diwajibkan kontrak data, sehingga skrip ini
+    # gagal pada engineer_features bila masih membacanya.
+    #
+    # Penggantian ini NETRAL terhadap hasil: subset CGM pada ohio_t1dm.csv identik
+    # dengan isi ohio_t1dm_merged.csv (166.533 baris, 12 pasien, rentang waktu dan
+    # cacah glukosa non-null yang sama persis; diperiksa 25 Agustus 2026).
+    df = pd.read_csv(ROOT / "data/raw/ohio_t1dm.csv", parse_dates=["timestamp"])
+    df = df[df["glucose_source"] == "CGM"].copy()
 
     pre = DataPreprocessor(cfg)
     df = pre.handle_missing_values(df)

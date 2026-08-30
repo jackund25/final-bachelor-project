@@ -1,7 +1,7 @@
 {
   "rerata": {
-    "context_precision": 0.6422,
-    "context_recall": 0.8
+    "context_precision": 0.8033,
+    "context_recall": 0.9
   },
   "per_kasus": [
     {
@@ -11,8 +11,8 @@
     },
     {
       "id": "E02",
-      "context_precision": 0.3333333333,
-      "context_recall": 1.0
+      "context_precision": 0.0,
+      "context_recall": 0.0
     },
     {
       "id": "E03",
@@ -26,8 +26,8 @@
     },
     {
       "id": "E05",
-      "context_precision": 0.0,
-      "context_recall": 0.0
+      "context_precision": 0.9999999999,
+      "context_recall": 1.0
     },
     {
       "id": "E06",
@@ -41,17 +41,17 @@
     },
     {
       "id": "E08",
-      "context_precision": 0.7555555555303703,
+      "context_precision": 0.8333333332916666,
       "context_recall": 1.0
     },
     {
       "id": "E09",
-      "context_precision": 0.0,
-      "context_recall": 0.0
+      "context_precision": 0.9999999999,
+      "context_recall": 1.0
     },
     {
       "id": "E10",
-      "context_precision": 0.3333333333,
+      "context_precision": 0.19999999998,
       "context_recall": 1.0
     }
   ]

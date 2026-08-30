@@ -1,0 +1,45 @@
+% Pemenuhan kebutuhan nonfungsional. Aturan kolomnya sama dengan tabel KF:
+% status tidak boleh dinyatakan tanpa bukti berangka dan tanpa lokasi buktinya.
+% KNF-01: 65,1 ms / 484 MB dari results/benchmark/deployability.json (25 Agustus 2026).
+% KNF-10: satu rekomendasi utuh 2,6 detik, bukan 8,3 detik. Angka 8,3 detik pada versi
+% terdahulu berasal dari pengukuran atas korpus dan jalur penelusuran yang sudah dicabut.
+\begin{longtable}{@{}p{1.3cm}>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{5.4cm}>{\raggedright\arraybackslash}p{2.9cm}@{}}
+\caption{Pemenuhan kebutuhan nonfungsional beserta bukti yang mendasarinya.}
+\label{tab:pemenuhan-knf} \\
+\toprule
+\textbf{Kode} & \textbf{Status} & \textbf{Bukti} & \textbf{Lokasi bukti} \\
+\midrule
+\endfirsthead
+
+\multicolumn{4}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Kode} & \textbf{Status} & \textbf{Bukti} & \textbf{Lokasi bukti} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+KNF-01 & Tercapai, terukur & Seluruh komputasi lokal, yakni rekayasa fitur, prediksi beserta intervalnya, dan penelusuran atas 2.233 potongan, selesai dalam 65,1~ms dengan jejak memori 484~MB pada perangkat tanpa akselerator grafis. & \S\ref{sec:benchmark}, Tabel~\ref{tab:benchmark} \\[2pt]
+
+KNF-02 & Tercapai sebagian & Rekomendasi tertelusur ke dokumen sumbernya, dan bentuk keterjelasan inilah yang sampai kepada dokter. Kontribusi fitur dianalisis luring atas implementasi hutan acak, sehingga tidak berlaku bagi model produksi maupun tampil di antarmuka. & \S\ref{sec:model-impl} \\[2pt]
+
+KNF-03 & Tercapai, dengan catatan & Keluaran dibumikan pada dokumen dengan \texttt{temperature}=0,2. Pada enam kasus uji: 100\% besaran klinis tertelusur, nol tindakan berlawanan arah, seluruh keluaran memuat penyangkalan. \textbf{Catatan}: satu dari empat penilai ahli menilai rekomendasi hipoglikemia kurang sesuai pedoman dan berpotensi berisiko, sehingga lolosnya pemeriksaan otomatis tidak menjamin ketepatan klinis. & \S\ref{sec:safety-llm}, \S\ref{subsec:hasil-ahli} \\[2pt]
+
+KNF-04 & Tercapai, dengan catatan & Mekanisme cadangan berlapis pada lapisan data, penelusuran, dan pembangkitan; penolakan memprediksi ditegakkan di lapis layanan ketika riwayat tidak memenuhi syarat kerapatan. \textbf{Catatan}: kejelasan penolakan itu memperoleh rentang penilaian ahli terlebar, yaitu 1--4. & \S\ref{sec:rag-impl}, \S\ref{subsec:ui-penurunan}, \S\ref{subsec:hasil-ahli} \\[2pt]
+
+KNF-05 & Tercapai & Seluruh keluaran sistem menggunakan bahasa Indonesia. & \S\ref{sec:rag-impl} \\[2pt]
+
+KNF-06 & Tercapai & Sistem berperan sebagai pendukung keputusan dengan dokter sebagai penentu akhir; penyangkalan klinis disertakan pada setiap keluaran. & \S\ref{subsec:ui-dokter} \\[2pt]
+
+KNF-07 & Tercapai & Pemisahan logika domain (\texttt{src/}) dari lapis layanan (\texttt{backend/}) dan lapis tampilan (\texttt{frontend/}). & \S\ref{sec:ui-impl}, Tabel~\ref{tab:struktur-modul} \\[2pt]
+
+KNF-08 & Tercapai & Tiap potongan menyimpan identitas dokumen beserta nomor halaman berkas dan nomor halaman cetak; korpusnya seluruhnya terbitan resmi ber-penunjuk halaman. & \S\ref{sec:rag-impl} \\[2pt]
+
+KNF-09 & Tercapai & Seluruh komponen bersumber terbuka atau berjenjang gratis; tidak ada peladen khusus yang dibutuhkan. & \S\ref{sec:ui-impl} \\[2pt]
+
+KNF-10 & Tercapai, terukur & Satu rekomendasi utuh tersaji dalam $\sim$2,6~detik, yang sekitar 97\% di antaranya adalah panggilan model bahasa; beban lokalnya sendiri 65,1~ms. & \S\ref{sec:benchmark} \\
+
+\end{longtable}
+
+\noindent\tabnotestyle Dua catatan pada KNF-03 dan KNF-04 berasal dari penilaian ahli dan \textbf{tidak} membatalkan hasil pengujian otomatis yang mendahuluinya. Keduanya mengukur hal yang berbeda: pengujian otomatis memeriksa apakah keluaran tertelusur dan tidak berlawanan arah, sedangkan penilaian ahli memeriksa apakah keluaran itu tepat dan terbaca. Status ``tercapai sebagian'' pada KNF-02 dinyatakan terbuka dan diteruskan menjadi saran pengembangan.

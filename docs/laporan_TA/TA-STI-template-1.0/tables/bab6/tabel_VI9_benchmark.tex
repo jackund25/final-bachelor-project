@@ -1,0 +1,45 @@
+% Sumber angka: results/benchmark/deployability.json, diukur ulang 25 Agustus 2026
+% pada KONFIGURASI PRODUKSI: korpus 2.233 potongan (900/120) dan rag.retrieval_mode
+% = bm25. Median atas ulangan yang dicatat berkas itu: 10 untuk rekayasa fitur,
+% 30 untuk prediksi, 20 untuk penelusuran.
+%
+% ANGKA SEBELUMNYA DICABUT. Pengukuran 17--18 Agustus 2026 dijalankan atas korpus
+% 4.038 potongan (varian 500/67) DAN atas jalur penelusuran vektor (MMR), padahal
+% keduanya bukan konfigurasi final. Berkas hasilnya sendiri mencatat keterangan
+% "pencarian MMR", sedangkan tabel ini melabelinya "Pembobotan BM25" — sehingga
+% angka 284,3 ms yang dahulu dilaporkan sebagai biaya penelusuran leksikal
+% sesungguhnya adalah biaya penelusuran vektor.
+%
+% Akibatnya satu kesimpulan lama TERBALIK: penelusuran leksikal ternyata JAUH
+% LEBIH CEPAT daripada pencarian vektor (11,1 ms lawan 284,3 ms), bukan lebih
+% lambat. Catatan kaki yang menerangkan sebaliknya sudah dihapus.
+\begin{table}[htbp]
+\centering
+\caption{Hasil pengukuran kelayakan penerapan sistem.}
+\label{tab:benchmark}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}X r@{}}
+\toprule
+\textbf{Tahap} & \textbf{Keterangan} & \textbf{Waktu} \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Sekali saat aplikasi dinyalakan (di-cache, tidak dirasakan per konsultasi)}} \\
+\midrule
+Muat artefak & Model prakiraan, pengklasifikasi kondisi, penyimpan potongan, dan indeks leksikal & 1,6 s \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Per siklus konsultasi}} \\
+\midrule
+Rekayasa fitur & Jendela \emph{logbook} $\rightarrow$ vektor fitur (IOB, COB, tren, diurnal) & 45,5 ms \\
+Prediksi & Regresi, pengklasifikasi kondisi, dan interval dari lebar antar-kuantil & 8,5 ms \\
+Penelusuran & Pembobotan BM25 atas 2.233 potongan & 11,1 ms \\
+\midrule
+\textbf{Subtotal lokal} & \textbf{Seluruh komputasi yang berjalan di perangkat} & \textbf{65,1 ms} \\
+\midrule
+Generasi & Satu panggilan model bahasa (jaringan + inferensi \emph{cloud}) & 2,5 s \\
+\midrule
+\textbf{Total} & \textbf{Satu rekomendasi klinis utuh} & \textbf{$\approx$2,6 s} \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.4em}
+{\tabnotestyle Jejak memori setelah seluruh artefak dimuat: 484,2~MB, dengan ukuran penyimpan potongan 55,4~MB. Seluruh angka diukur pada prosesor. Pada mode penelusuran leksikal, model \emph{embedding} tidak pernah dimuat, sehingga baik waktu penyalaan maupun jejak memorinya jauh di bawah konfigurasi yang memakai jalur vektor. Waktu tunggu yang dirasakan dokter praktis seluruhnya berasal dari panggilan model bahasa, yang sekitar 39 kali lebih besar daripada seluruh komputasi lokal digabung.\par}
+\end{table}

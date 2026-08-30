@@ -1,4 +1,4 @@
-import type { GlucoseSource } from "./api";
+import { API_BASE_URL, headerApi, type GlucoseSource } from "./api";
 import { getGlucoseObservations } from "./glucose";
 
 export type LogbookEntry = {
@@ -15,9 +15,13 @@ export type LogbookEntry = {
 export async function saveLogbookEntry(
   entry: LogbookEntry,
 ) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/api/logbook`, {
+  // Memakai API_BASE_URL bersama, bukan menyalin ulang logikanya. Salinan yang
+  // dulu ada di sini memakai `||`, sehingga mode satu-asal (string kosong) jatuh
+  // kembali ke 127.0.0.1 — dan penyimpanan logbook akan menembak localhost dari
+  // peramban dokter, yang di sana berarti mesin DOKTER, bukan server.
+  const response = await fetch(`${API_BASE_URL}/api/logbook`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: headerApi({ "Content-Type": "application/json" }),
     body: JSON.stringify({
       patient_code: entry.patient_id,
       glucose_source: entry.glucose_source,

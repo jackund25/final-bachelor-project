@@ -1,0 +1,54 @@
+% Sumber angka: results/evaluasi_ahli/ringkasan.json, dihasilkan
+% scripts/skor_evaluasi_ahli.py dari berkas tanggapan Google Forms pada docs/arsip/.
+% Median dan rentang dari empat penilai. Dilaporkan sebagai median, BUKAN rerata,
+% karena skalanya empat titik dan bersifat ordinal.
+%
+% Butir kategoris kesesuaian pedoman DIPISAH ke tabel_VI17_pedoman.tex: barisnya
+% menuntut multicolumn selebar tabel yang tidak pernah membungkus (keluar margin
+% 91,3 pt), sekaligus membuat float ini melampaui tinggi halaman.
+\begin{table}[p]
+\centering
+\caption{Penilaian ahli per butir berskala, dilaporkan sebagai median beserta rentangnya atas empat penilai pada skala empat titik. Kolom terakhir menyatakan kebutuhan yang diuji butir tersebut.}
+\label{tab:hasil-ahli}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}LccL@{}}
+\toprule
+\textbf{Butir} & \textbf{Median} & \textbf{Rentang} & \textbf{Kebutuhan} \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{(a) Skenario terarah}} \\
+\midrule
+Konsistensi prediksi dan status kondisi terhadap konteks pasien (CGM, P001) & 3,0 & 3--4 & KF-03, KF-07 \\
+Relevansi prediksi sekaligus kejelasan penyampaian batas data (\emph{finger-stick}, P007) & 3,5 & 3--4 & KF-02, KNF-04 \\
+Kejelasan penolakan memprediksi dan pembedaannya dari kondisi normal (P008) & 3,0 & \textbf{1--4} & KNF-04 \\
+Pengendalian kesan kepastian ketika data pasien terbatas (P008) & 3,0 & 2--4 & KNF-03 \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{(b) Kisi empat kriteria pada rekomendasi, per kondisi}} \\
+\midrule
+Kondisi stabil (P004): relevansi & 3,0 & 2--4 & KF-04, KF-06 \\
+\quad kejelasan & 3,5 & 2--4 & KF-06 \\
+\quad kecukupan konteks & 3,0 & 3--4 & KF-05 \\
+\quad batasan keputusan & 3,0 & 2--4 & KF-08 \\
+\addlinespace
+Hipoglikemia (P003): relevansi & 3,0 & 2--4 & KF-04, KF-06 \\
+\quad kejelasan & 3,0 & 3--4 & KF-06 \\
+\quad kecukupan konteks & 3,0 & 3--3 & KF-05 \\
+\quad batasan keputusan & 3,0 & 3--3 & KF-08 \\
+\addlinespace
+Hiperglikemia (P002): relevansi & 3,0 & 3--4 & KF-04, KF-06 \\
+\quad kejelasan & 3,0 & 3--4 & KF-06 \\
+\quad kecukupan konteks & 3,0 & 2--4 & KF-05 \\
+\quad batasan keputusan & 3,0 & 2--3 & KF-08 \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{(c) Penilaian menyeluruh}} \\
+\midrule
+Keterwakilan populasi sumber data bagi pasien DMT1 Indonesia & 3,5 & 2--4 & Batasan~2, 9 \\
+Sistem menjaga otonomi dokter dan tidak berpotensi bias & 3,5 & 3--4 & KF-08, KNF-06 \\
+Mekanisme persetujuan dan keamanan data sudah memadai & 3,0 & 3--4 & \S\ref{sec:etika-keamanan} \\
+Dasar rekomendasi cukup jelas untuk membangun kepercayaan klinis & 3,0 & 2--4 & KF-05, KNF-08 \\
+Alur kerja realistis diterapkan pada praktik klinis di Indonesia & 3,0 & 3--4 & Batasan~4 \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.4em}
+{\tabnotestyle Skala empat titik tanpa titik tengah netral; 1 berarti sangat tidak setuju dan 4 sangat setuju. Median dilaporkan alih-alih rerata karena skalanya ordinal, dan rentang dilaporkan berdampingan karena dengan empat penilai median saja menyembunyikan perbedaan pendapat yang justru paling informatif. Rentang \textbf{1--4} pada butir penolakan memprediksi menandai perbedaan pendapat terlebar pada seluruh instrumen: satu dokter spesialis sangat tidak setuju bahwa alasan prediksi tidak tersedia tersampaikan dengan jelas. Butir kategoris kesesuaian rekomendasi terhadap pedoman disajikan terpisah pada Tabel~\ref{tab:pedoman-ahli}.\par}
+\end{table}

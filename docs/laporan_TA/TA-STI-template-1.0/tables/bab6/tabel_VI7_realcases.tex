@@ -1,0 +1,50 @@
+% Sumber angka: results/retrieval_realcases_kb12_gbm_bm25_v2/ (18 Agustus 2026).
+% Konfigurasi produksi: prediktor gradient boosting, penelusuran leksikal BM25, top_k=5,
+% korpus pedoman terbitan resmi.
+% BELUM TERVERIFIKASI (25 Agustus 2026): results/retrieval_realcases_kb12/summary.json
+% TIDAK mencatat chunk_size/chunk_overlap, sehingga konfigurasi korpus saat angka ini
+% diukur tidak dapat dipastikan dari artefaknya. Berkas bertanggal 22 Agustus 2026.
+% Jalankan ulang skripnya, atau pastikan konfigurasinya, sebelum angka ini dipertahankan.
+% Selang kepercayaan dari bootstrap 2.000 ulangan atas per_case_*.csv.
+% Lengan berderau dan lengan acak SENGAJA dilaporkan; hasilnya berlawanan dengan dugaan
+% dan dibahas pada badan subbab sebagai bukti bahwa yang menjadi leher botol adalah
+% prediktornya, bukan mekanismenya.
+%
+% FORMAT (25 Agustus 2026): tabular -> tabularx selebar \textwidth. Sebelumnya keluar
+% margin 77,0 pt karena kolom mode kueri bertipe l sehingga tidak pernah membungkus.
+% Judul kedua bagian dipendekkan agar barisnya pun muat.
+\begin{table}[htbp]
+\centering
+\caption{Evaluasi penelusuran pada kasus nyata dari dua pasien \emph{hold-out}. Kondisi relevan ditetapkan dari kadar glukosa yang \textbf{benar-benar terjadi} pada $t+30$ menit, bukan dari nilai prediksi, sehingga kesalahan prediksi dihukum. ``Kondisi benar'' adalah proporsi kasus yang kuerinya menargetkan kondisi masa depan yang sesungguhnya. Nilai $p$ dari uji Wilcoxon berpasangan terhadap RAG standar.}
+\label{tab:realcases}
+\small
+\begin{tabularx}{\textwidth}{@{}Lrrlr@{}}
+\toprule
+\textbf{Mode kueri} & \textbf{Kondisi benar} & \textbf{Hit@1} & \textbf{MRR [CI 95\%]} & \textbf{$p$} \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{(a) Himpunan divergen, kelas diseimbangkan (n=120)}} \\
+\midrule
+Acak (kendali kewarasan)          & 24,2\% & 0,142 & 0,294 [0,235--0,357] & $4{,}5\times10^{-12}$ \\
+RAG standar                       & 0,0\%  & 0,000 & 0,062 [0,047--0,078] & -- \\
+RAG terkondisi-prediksi (regresi) & 16,7\% & 0,133 & 0,208 [0,150--0,268] & $2{,}5\times10^{-5}$ \\
+\quad + derau ringan              & 25,0\% & 0,192 & 0,281 [0,219--0,350] & $1{,}7\times10^{-7}$ \\
+\quad + derau menengah            & 29,2\% & 0,242 & 0,312 [0,241--0,385] & $4{,}7\times10^{-8}$ \\
+\quad + derau berat               & 28,3\% & 0,192 & 0,298 [0,234--0,365] & $2{,}6\times10^{-8}$ \\
+RAG terkondisi-prediksi + interval & 74,2\% & 0,267 & \textbf{0,389} [0,316--0,463] & $2{,}3\times10^{-14}$ \\
+RAG terkondisi-prediksi + pengklasifikasi & 12,5\% & 0,100 & 0,164 [0,111--0,223] & $3{,}9\times10^{-4}$ \\
+\emph{Oracle} (prediksi sempurna) & 100\%  & 0,667 & \textbf{0,833} [0,792--0,875] & $5{,}4\times10^{-22}$ \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{(b) Himpunan natural, sampel acak seluruh jendela (n=120)}} \\
+\midrule
+Acak (kendali kewarasan)          & 30,8\% & 0,308 & 0,342 [0,264--0,422] & $5{,}5\times10^{-11}$ \\
+\textbf{RAG standar}              & 85,0\% & 0,692 & 0,770 [0,696--0,835] & -- \\
+\textbf{RAG terkondisi-prediksi (regresi)} & 85,8\% & 0,683 & 0,771 [0,706--0,832] & 0,60 (t.s.) \\
+RAG terkondisi-prediksi + interval & 91,7\% & 0,033 & 0,205 [0,164--0,247] & $2{,}2\times10^{-16}$ \\
+RAG terkondisi-prediksi + pengklasifikasi & 88,3\% & 0,708 & 0,796 [0,730--0,856] & 0,12 (t.s.) \\
+\emph{Oracle} (prediksi sempurna) & 100\%  & 0,775 & 0,887 [0,850--0,925] & $6{,}6\times10^{-5}$ \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.4em}
+{\tabnotestyle t.s. = tidak signifikan pada $\alpha=0{,}05$. Bagian (a) memuat jendela yang kondisi terkininya berbeda dari kondisi masa depannya, sedangkan bagian (b) memuat sampel acak seluruh jendela. Konfigurasi bercetak tebal pada bagian (b) adalah yang dipakai aplikasi. Pada bagian (a), kendali acak \textbf{tidak} dapat dipakai sebagai pembanding kesahihan metrik, sebab RAG standar keliru menurut konstruksi himpunan itu (0\% kondisi benar); peran kendali acak dijalankan pada bagian (b). Satu hasil dilaporkan terbuka justru karena merugikan: pada bagian (a), kendali acak (0,294) \textbf{mengungguli} kedua jalur pengondisian yang diuji, sebab tebakan acak menargetkan kondisi masa depan yang benar pada 24,2\% kasus sedangkan regresi hanya 16,7\% dan pengklasifikasi 12,5\%. Pada kasus tersulit, prediktornya karena itu kalah dari tebakan acak, dan inilah bentuk paling telanjang dari temuan pokok bab ini. Perhatikan bahwa \emph{oracle} tetap mencapai 0,833, sehingga yang gagal adalah prediktornya dan bukan mekanismenya. Kesimpulan naskah bersandar pada validasi silang enam \emph{fold} (Tabel~\ref{tab:crossfold-retrieval}), yang satuan analisisnya \emph{fold} dan karena itu tidak terpengaruh keragaman satu pembagian tunggal.\par}
+\end{table}

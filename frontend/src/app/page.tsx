@@ -25,6 +25,13 @@ import {
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import PatientSwitcher from "../components/PatientSwitcher";
+import CatatanSumberData from "../components/CatatanSumberData";
+
+import {
+  bacaPasienAktif,
+  simpanPasienAktif,
+} from "../lib/patientState";
 
 type Citation = {
   source?: string;
@@ -435,9 +442,7 @@ export default function Home() {
       const patients = patientRecords.map((item) => item.patient_code);
       setPatientOptions(patients);
 
-      const storedPatient = window.localStorage.getItem(
-        "last_patient_id",
-      );
+      const storedPatient = bacaPasienAktif();
       const nextPatient =
         patientId && patients.includes(patientId)
           ? patientId
@@ -499,13 +504,36 @@ export default function Home() {
   };
 
   // =========================================================
+  // GANTI PASIEN
+  // =========================================================
+
+  // Sumber daya yang menempel pada pasien lama harus dikosongkan pada saat yang
+  // sama dengan penggantian, bukan ditunggu sampai pemuatan berikutnya selesai.
+  // Kalau tidak, panel penilaian masih memperlihatkan rekomendasi pasien
+  // sebelumnya di bawah kode pasien yang sudah berganti.
+  const gantiPasien = (kode: string) => {
+    if (!kode || kode === patientId) return;
+
+    setPatientId(kode);
+    setSourceOptions([]);
+    clearAssessmentContext();
+  };
+
+  // Pemuatan ulang daftar pasien tidak dipanggil di sini: perubahan `patientId`
+  // sudah memicu useEffect di bawah, yang menjalankan loadPatientsAndObservations
+  // dengan nilai terbaru. Memanggilnya langsung justru memakai nilai lama.
+  const pakaiPasienBaru = (kode: string) => {
+    setPatientId(kode);
+    setSourceOptions([]);
+    clearAssessmentContext();
+  };
+
+  // =========================================================
   // LOAD DATA ON PAGE LOAD
   // =========================================================
 
   useEffect(() => {
-    const storedPatient = window.localStorage.getItem(
-      "last_patient_id",
-    );
+    const storedPatient = bacaPasienAktif();
     const storedSource = window.localStorage.getItem(
       "last_glucose_source",
     );
@@ -530,10 +558,9 @@ export default function Home() {
     }
 
     if (patientId) {
-      window.localStorage.setItem(
-        "last_patient_id",
-        patientId,
-      );
+      // Lewat simpanPasienAktif, bukan localStorage langsung, supaya lencana pasien
+      // di Navbar ikut berubah pada saat yang sama.
+      simpanPasienAktif(patientId);
     }
     window.localStorage.setItem(
       "last_glucose_source",
@@ -695,11 +722,21 @@ export default function Home() {
 
             <span className="status-dot" />
 
-            Patient {patientId}
+            Pasien {patientId}
 
           </div>
 
         </header>
+
+
+        <CatatanSumberData />
+
+        <PatientSwitcher
+          pasienAktif={patientId}
+          daftarPasien={patientOptions}
+          onPilih={gantiPasien}
+          onPasienBaru={pakaiPasienBaru}
+        />
 
 
         {/* =================================================
@@ -728,24 +765,9 @@ export default function Home() {
               marginBottom: 16,
             }}
           >
-            <label htmlFor="patient-selector">
-              Patient
-            </label>
-            <select
-              id="patient-selector"
-              value={patientId}
-              onChange={(event) => {
-                setPatientId(event.target.value);
-                setSourceOptions([]);
-                clearAssessmentContext();
-              }}
-            >
-              {patientOptions.map((id) => (
-                <option key={id} value={id}>
-                  {id}
-                </option>
-              ))}
-            </select>
+            {/* Pemilih pasien dipindahkan ke PatientSwitcher di atas. Di sini ia
+                tidak berjudul dan tenggelam di antara pilihan sumber glukosa,
+                sehingga dokter penilai tidak menemukannya. */}
             <span className="muted">
               Data availability · {dataAvailability}
             </span>

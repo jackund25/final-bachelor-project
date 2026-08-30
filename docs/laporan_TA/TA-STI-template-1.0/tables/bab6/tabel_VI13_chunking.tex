@@ -1,0 +1,30 @@
+% Sumber angka: docs/ANALISIS_CHUNKING_T7.md dan results/eval_rag/ (16 Agustus 2026).
+%
+% DIKOREKSI 25 Agustus 2026. Versi terdahulu menyatakan "V2 adalah varian yang diadopsi
+% ke produksi" dan "korpus produksi berisi 4.038 potongan". KEDUANYA KELIRU terhadap
+% artefak yang berlaku: config.yaml baris 405-406 menetapkan chunk_size 900 dan
+% chunk_overlap 120 (yakni varian V1), dan models/chroma_db/chroma.sqlite3 memuat
+% 2.233 potongan. Badan Subbab 6.6.1 sudah menyebut V1 sejak awal, sehingga tabel inilah
+% yang bertentangan dengan naskahnya sendiri. Cetak tebal dipindah dari V2 ke V1.
+%
+% FORMAT (25 Agustus 2026): tabular -> tabularx selebar \textwidth. Sebelumnya keluar
+% margin 61,1 pt karena kolom rancangan bertipe l sehingga tidak pernah membungkus.
+\begin{table}[htbp]
+\centering
+\caption{Perbandingan empat strategi pemecahan dokumen atas korpus yang sama. ``Token terbuang'' adalah proporsi token korpus yang tidak pernah masuk ke vektor karena melewati jendela 256 token model \emph{embedding}. ``Akhir utuh'' adalah proporsi potongan yang berakhir pada kalimat lengkap.}
+\label{tab:strategi-chunking}
+\small
+\begin{tabularx}{\textwidth}{@{}lLrrrrr@{}}
+\toprule
+\textbf{Varian} & \textbf{Rancangan} & \textbf{Potongan} & \textbf{MRR} & \textbf{Hit@1} & \textbf{Token terbuang} & \textbf{Akhir utuh} \\
+\midrule
+V0 & 900 kar., kontrol & 2.061 & 0,492 & 29,2\% & 8,23\% & 19,7\% \\
+\textbf{V1} & \textbf{900 kar., batas kalimat} & \textbf{2.248} & 0,468 & 29,2\% & 6,14\% & \textbf{83,5\%} \\
+V2 & 500 kar., batas kalimat & 4.063 & 0,507 & 34,2\% & 0,00\% & 85,3\% \\
+V3 & 256 token, batas kalimat & 2.587 & 0,150 & 3,3\% & 0,00\% & 80,4\% \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.4em}
+{\tabnotestyle ``kar.'' berarti karakter. \textbf{V1 adalah varian yang diadopsi ke produksi}, yakni potongan 900 karakter dengan tumpang-tindih 120 yang dipotong pada batas kalimat. \textbf{Jumlah potongan pada tabel ini dihitung sebelum dokumen kurasi manual dicabut}, sehingga tiap varian memuat 15 potongan yang kini tidak lagi diindeks; korpus produksi yang berlaku berisi \textbf{2.233} potongan. Angka itu dipertahankan apa adanya karena keempat varian diukur pada korpus yang sama, sehingga perbandingan antar-varian tetap sah; yang tidak sah adalah membandingkannya langsung dengan angka korpus produksi pada bab ini. Dasar adopsi V1 \textbf{bukan} MRR-nya, yang justru sedikit di bawah kontrol, melainkan \textbf{integritas korpus dan keterbacaan sitasi}: proporsi potongan yang berakhir pada kalimat utuh naik dari 19,7\% menjadi 83,5\%, dan potongan itulah yang ditampilkan sebagai rujukan pada antarmuka. Varian V2 menuntaskan token terbuang sampai 0,00\%, tetapi memecah konteks klinis menjadi potongan 500 karakter; pengujian sensitivitas pada Subbab~\ref{sec:eval-retrieval} menunjukkan ukuran 900 karakter memberi mutu penelusuran terbaik, sehingga panjang potongan produksi dipertahankan pada 900. Kolom MRR pada tabel ini \textbf{tidak dapat dipakai membandingkan antar-varian}, sebab label kebenaran metrik itu diturunkan dari teks potongan sehingga ikut bergerak ketika panjang potongan diubah. Uraiannya pada Subbab~\ref{sec:eval-chunking}.\par}
+\end{table}

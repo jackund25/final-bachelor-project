@@ -25,7 +25,6 @@ DEFAULT_CLINICAL_STATE: Dict[str, Any] = {
 	"last_meal_time": None,
 	"last_insulin_time": None,
 	"activity_level": 0,
-	"stress_level": 5,
 	"timestamp": None,
 }
 

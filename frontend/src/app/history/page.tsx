@@ -148,9 +148,9 @@ export default function HistoryPage() {
                   </div>
 
                   <div className="history-values">
-                    <span>Current <strong>{item.current_glucose ?? "—"}</strong> mg/dL</span>
-                    <span>30m <strong>{item.prediction_30m ?? "—"}</strong> mg/dL</span>
-                    <span>60m <strong>{item.prediction_60m ?? "—"}</strong> mg/dL</span>
+                    <span>Current <strong>{item.current_glucose?.toFixed(1) ?? "—"}</strong> mg/dL</span>
+                    <span>30m <strong>{item.prediction_30m?.toFixed(1) ?? "—"}</strong> mg/dL</span>
+                    <span>60m <strong>{item.prediction_60m?.toFixed(1) ?? "—"}</strong> mg/dL</span>
                   </div>
 
                   {item.recommendation && (

@@ -52,7 +52,20 @@ class SupabaseDataService:
         try:
             with urlopen(request, timeout=20) as response:
                 return json.loads(response.read().decode("utf-8"))
-        except (HTTPError, URLError) as exc:
+        except HTTPError as exc:
+            # Badan respons PostgREST memuat sebab sebenarnya (kolom NOT NULL yang
+            # tidak diisi, pelanggaran unique, kebijakan RLS). Tanpa membacanya,
+            # penyebab gagal membuat pasien baru hanya tampak sebagai "400" dan
+            # tidak dapat ditindaklanjuti dokter maupun operator.
+            try:
+                detail = exc.read().decode("utf-8").strip()
+            except Exception:  # pragma: no cover - badan respons tidak selalu ada
+                detail = ""
+            pesan = f"Supabase request failed for {table}: {exc}"
+            if detail:
+                pesan = f"{pesan} - {detail}"
+            raise RuntimeError(pesan) from exc
+        except URLError as exc:
             raise RuntimeError(f"Supabase request failed for {table}: {exc}") from exc
 
     def patient(self, patient_code: str) -> dict[str, Any] | None:
@@ -61,6 +74,58 @@ class SupabaseDataService:
             [("select", "id,patient_code"), ("patient_code", f"eq.{patient_code}")],
         )
         return rows[0] if rows else None
+
+    def list_patients(self) -> list[dict[str, Any]]:
+        """Daftar seluruh pasien terdaftar, terurut menurut kode."""
+        return self._request(
+            "patients",
+            [("select", "id,patient_code"), ("order", "patient_code.asc")],
+        )
+
+    def create_patient(
+        self,
+        patient_code: str,
+        source_types: list[str],
+    ) -> dict[str, Any]:
+        """Daftarkan pasien baru beserta kanal glukosa yang akan dicatat.
+
+        Kanal dibuat bersamaan dengan pasien karena `save_logbook` menolak entri
+        yang kanalnya belum ada. Membuat pasien tanpa kanal akan menghasilkan
+        pasien yang tampak terdaftar tetapi menolak setiap pencatatan.
+        """
+        if self.patient(patient_code) is not None:
+            raise ValueError(f"Pasien {patient_code} sudah terdaftar.")
+
+        rows = self._request(
+            "patients",
+            [],
+            method="POST",
+            payload={"patient_code": patient_code},
+        )
+        if not rows:
+            raise RuntimeError(
+                f"Supabase tidak mengembalikan baris pasien untuk {patient_code}."
+            )
+        patient = rows[0]
+
+        dibuat: list[str] = []
+        for source_type in source_types:
+            self._request(
+                "glucose_sources",
+                [],
+                method="POST",
+                payload={
+                    "patient_id": patient["id"],
+                    "source_type": source_type,
+                },
+            )
+            dibuat.append(source_type)
+
+        return {
+            "id": patient["id"],
+            "patient_code": patient["patient_code"],
+            "glucose_sources": dibuat,
+        }
 
     def source(
         self,
@@ -102,7 +167,6 @@ class SupabaseDataService:
             "insulin": ("insulin_events", "insulin_units"),
             "carbs": ("meal_events", "carbs_grams"),
             "activity": ("activity_events", "activity_level"),
-            "stress": ("stress_events", "stress_level"),
         }
         events: dict[str, list[dict[str, Any]]] = {}
         for name, (table, value_column) in event_specs.items():
@@ -130,7 +194,6 @@ class SupabaseDataService:
             insulin = latest_before(events["insulin"], timestamp)
             carbs = latest_before(events["carbs"], timestamp)
             activity = latest_before(events["activity"], timestamp)
-            stress = latest_before(events["stress"], timestamp)
             normalized.append({
                 "patient_id": patient_code,
                 "timestamp": timestamp,
@@ -138,7 +201,6 @@ class SupabaseDataService:
                 "insulin": float((insulin or {}).get("insulin_units", 0) or 0),
                 "carbs": float((carbs or {}).get("carbs_grams", 0) or 0),
                 "activity": float((activity or {}).get("activity_level", 0) or 0),
-                "stress": float((stress or {}).get("stress_level", 0) or 0),
                 "glucose_source": source_type,
             })
 
@@ -210,15 +272,14 @@ class SupabaseDataService:
                 "duration_min": entry.get("duration_min"),
                 "activity_type": entry.get("activity_type"),
             }),
-            # `stress_events` TIDAK LAGI DITULIS sejak 24 Agustus 2026. Stres bukan
-            # fitur model dan tidak lagi diminta dari dokter, jadi menulisnya hanya
-            # menumpuk baris bernilai bawaan yang kelak disalahartikan sebagai
-            # pengukuran.
+            # Variabel `stress` DICABUT SEPENUHNYA. Ia tidak pernah menjadi fitur
+            # model, dan kanal `stressors` OhioT1DM hanya memuat 7 event di seluruh
+            # 12 pasien sehingga inheren tak informatif.
             #
-            # TABELNYA SENGAJA DIBIARKAN UTUH. Baris lama tetap dapat dibaca dan
-            # tidak ada migrasi yang menghapus apa pun; yang berhenti hanyalah
-            # penulisan baru. Menghapus tabel akan membuang data historis demi
-            # kerapian, dan itu pertukaran yang salah arah.
+            # Tabel `stress_events` sudah tidak ada: penulisannya berhenti lebih
+            # dulu, lalu jalur bacanya dicabut di sini, barulah tabelnya di-drop.
+            # Urutan itu mengikat — mencabut tabel sebelum jalur bacanya hilang
+            # akan mematikan penilaian klinis.
         ]
         for table, payload in event_payloads:
             self._request(table, [], method="POST", payload=payload)

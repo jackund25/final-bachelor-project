@@ -1,0 +1,26 @@
+% Sumber angka: results/evaluasi_ahli/ringkasan.json, dihasilkan
+% scripts/skor_evaluasi_ahli.py dari berkas tanggapan Google Forms pada
+% docs/arsip/ (unduhan 25 Agustus 2026, empat tanggapan).
+% Nama dan surel penilai TIDAK dicantumkan; identitas diganti kode P1-P4.
+% Skor SUS memakai algoritma Brooke (1996), dihitung ulang oleh skrip di atas.
+\begin{table}[htbp]
+\centering
+\caption{Profil keempat penilai beserta skor \emph{System Usability Scale} masing-masing. Identitas diganti kode agar tanggapan tidak dapat dikaitkan kembali kepada orangnya.}
+\label{tab:penilai-ahli}
+\small
+\begin{tabularx}{\textwidth}{@{}llLccr@{}}
+\toprule
+\textbf{Kode} & \textbf{Profesi} & \textbf{Bidang} & \textbf{Pernah CDSS} & \textbf{Pasien CGM} & \textbf{SUS} \\
+\midrule
+P1 & Dokter muda & Dokter umum & Belum & Belum pernah & 50,0$^{\dagger}$ \\
+P2 & Dokter & Penyakit dalam & Belum & Ya & 50,0$^{\dagger}$ \\
+P3 & Dokter spesialis & Penyakit dalam & Belum & Belum pernah & 40,0 \\
+P4 & Dokter spesialis & Penyakit dalam & Sudah & Belum pernah & 52,5 \\
+\midrule
+\multicolumn{5}{@{}l}{\textbf{Rerata skor SUS (rentang 40,0--52,5)}} & \textbf{48,1} \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.4em}
+{\tabnotestyle $^{\dagger}$~Penilai yang memberi \textbf{nilai yang sama persis pada kesepuluh butir SUS}, termasuk pada butir yang berkalimat negatif. Karena penyekoran SUS mengurangkan butir genap dari lima, tanggapan seragam pada nilai berapa pun selalu menghasilkan tepat 50,0; kedua angka itu karena itu \textbf{tidak memuat informasi} tentang kebergunaan sistem dan tidak boleh dibaca sebagai penilaian ``sedang''. Uraiannya pada Subbab~\ref{subsec:sus-ahli}. Kolom ``pernah CDSS'' menyatakan pengalaman memakai sistem pendukung keputusan klinis atau aplikasi kesehatan digital sebelumnya; P4 menyebut MedCalc dan Calculate. Kolom ``pasien CGM'' menyatakan pengalaman menangani pasien diabetes yang memakai pemantau glukosa sinambung.\par}
+\end{table}

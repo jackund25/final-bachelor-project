@@ -1,4 +1,11 @@
-# Dependensi RUNTIME backend CDSS (FastAPI di Render).
+# Dependensi RUNTIME backend CDSS (FastAPI).
+#
+# CATATAN PENERAPAN. Berkas ini disusun untuk instans awan (Render) yang kemudian
+# TIDAK dipakai; evaluasi dokter dijalankan dari laptop lewat ngrok, dengan
+# lingkungan conda proyek — lihat docs/DEPLOY_LOKAL_NGROK.md. Daftar di bawah
+# karena itu memerikan lingkungan penyajian MINIMAL yang cukup, bukan lingkungan
+# yang benar-benar melayani evaluasi 25 Agustus 2026. Angka jejak memori pada
+# Tabel VI.9 diukur pada lingkungan conda tersebut, bukan pada daftar ini.
 #
 # Berkas ini SENGAJA berbeda dari requirements.txt di root: root memuat pula
 # dependensi reproduksi angka TA (TensorFlow, RAGAS, matplotlib) yang tidak
@@ -31,27 +38,41 @@ pyyaml==6.0.1
 # hanya membaca documents/metadatas dari sqlite. Mesin vektornya tidak dijalankan.
 chromadb==1.0.12
 rank_bm25==0.2.2
-# Penyusunan ulang kandidat. FlashRank menjalankan model ONNX di CPU tanpa menarik
-# torch, sehingga reranking tetap hidup pada instans kecil. Tanpa paket ini
-# _muat_reranker gagal dan sistem menelusur TANPA reranking.
-flashrank==0.2.10
 
 # --- Generasi ---
 langchain-core==0.3.86
 langchain-google-genai>=2.0.0
 
-# --- Jalur pemulihan (terpasang, TIDAK dimuat pada mode bm25) ---
-# Bila indeks BM25 gagal dibangun, retriever menurunkan mode ke vektor secara
-# eksplisit; barulah ketiga paket ini dipakai. Menghapusnya mengubah kegagalan
-# BM25 dari "turun ke vektor" menjadi "sistem mati", jadi keduanya keputusan yang
-# harus diambil bersama.
+# DICABUT 25 Agustus 2026 — jalur vektor dan penyusunan ulang tidak dipakai
+# produksi, dan ketiadaannya di sini TIDAK mengubah satu baris pun kode.
 #
-# CATATAN MEMORI: sentence-transformers menarik torch (~1 GB saat dimuat). Pada
-# mode bm25 ia tidak pernah di-import, sehingga membebani DISK saja, bukan RAM.
-langchain-chroma==0.2.4
-langchain-community==0.3.24
-langchain-text-splitters==0.3.8
-sentence-transformers>=3.0.0
+#   flashrank==0.2.10            rag.reranker.enabled = false, dan _muat_reranker
+#                                mengembalikan nilai pada penjaga `if not
+#                                self.reranker_enabled` SEBELUM `from flashrank
+#                                import Ranker`. Paket ini tidak pernah disentuh.
+#                                Komentar lama yang menyebut "tanpa paket ini
+#                                sistem menelusur TANPA reranking" sudah keliru.
+#
+#   langchain-chroma==0.2.4      Jalur vektor/MMR. Ditelusuri dengan jejak impor
+#   langchain-community==0.3.24  pada konfigurasi produksi (bm25): keempatnya
+#   langchain-text-splitters     TIDAK PERNAH di-import saat melayani permintaan.
+#   sentence-transformers        Kodenya TETAP ADA di src/rag/retriever.py sebagai
+#                                kontrol eksperimen Tabel VI.3; yang dicabut hanya
+#                                dependensinya dari lingkungan penyajian.
+#
+# KONSEKUENSI YANG DIPILIH SADAR. Bila indeks BM25 gagal dibangun, retriever tidak
+# lagi dapat turun ke jalur vektor. Ia turun ke SimpleKeywordRetriever atas 36
+# potongan cadangan — jalur yang sudah terimplementasi, sudah membawa identitas
+# dokumen dan nomor halaman, dan sudah mencatat peringatan keras. Yang hilang satu
+# tingkat degradasi, bukan ketersediaan.
+#
+# EFEK SAMPING YANG DIHARAPKAN. langchain-core menyelidik `from transformers import
+# GPT2TokenizerFast` di dalam try/except. Selama sentence-transformers terpasang,
+# penyelidikan itu berhasil dan menyeret torch (~1 GB) ke dalam proses meski tidak
+# ada satu pun jalur yang memakainya. Tanpa paket ini, ia mundur bersih.
+#
+# UNTUK MEMBANGUN ULANG INDEKS, pakai requirements.txt di root: scripts/reingest_kb.py
+# dan MedicalKnowledgeBase.save_to_chroma() TETAP membutuhkan keempatnya.
 
 # DICABUT 23 Agustus 2026, seluruhnya nol referensi di src/ dan backend/:
 #   langchain==0.3.25          paket payung; hanya sub-paketnya yang di-import

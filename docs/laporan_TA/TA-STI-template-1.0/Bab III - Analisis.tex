@@ -1,199 +1,301 @@
 \cleardoublepage
-\chapter{ANALISIS}
+\chapter{ANALISIS MASALAH}
 \label{chap:analisis-masalah}
 
-Bab ini memaparkan analisis kondisi pengelolaan diabetes melitus tipe 1 yang berlaku saat ini, analisis kebutuhan sistem yang diusulkan, analisis data dan metodologi yang mendasarinya, serta analisis pemilihan solusi beserta justifikasinya. Bab ini merupakan realisasi aktivitas kedua pada kerangka DSRM, yaitu perumusan tujuan solusi, sebagaimana dipaparkan pada Subbab~\ref{sec:metodologi-penelitian}. Keputusan yang dihasilkan pada bab ini menjadi masukan langsung bagi perancangan pada Bab~\ref{chap:perancangan}.
+Bab ini memaparkan analisis kondisi pengelolaan diabetes melitus tipe 1 yang berlaku saat ini, analisis kebutuhan sistem yang diusulkan, analisis data yang mendasarinya, serta 
+analisis pemilihan solusi beserta justifikasinya. Bab ini merupakan realisasi aktivitas kedua pada kerangka DSRM, yaitu perumusan tujuan solusi, sebagaimana dipaparkan pada 
+Subbab~\ref{sec:bab1-metodologi}. Keluaran bab ini berupa sehimpunan kebutuhan beserta keputusan teknis yang telah dijustifikasi, yang selanjutnya menjadi dasar bagi 
+perancangan sistem.
 
 \section{Analisis Kondisi Saat Ini}
 \label{sec:kondisi-saat-ini}
 
 \subsection{Model Konseptual Alur Perawatan}
-\label{subsec:model-konseptual}
+\label{subsec:bab3-model-alur-perawatan}
 
-Pengelolaan DMT1 di Indonesia berjalan melalui alur yang berbeda dari pengelolaan diabetes tipe 2. Diagnosis awal kerap terjadi pada keadaan gawat, karena kesadaran mengenai DMT1 yang masih rendah di kalangan masyarakat maupun tenaga kesehatan menyebabkan banyak pasien baru dikenali setelah mengalami ketoasidosis diabetik \autocite{pulungan2021}. Setelah diagnosis ditegakkan, pengelolaan berlanjut melalui layanan rujukan yang ditangani dokter spesialis, bukan melalui layanan primer sebagaimana lazimnya penyakit kronis lain \autocite{faizi2025}.
+Pengelolaan diabetes melitus tipe 1 (DMT1) dalam konteks penelitian ini berlangsung melalui rangkaian pemantauan mandiri, pencatatan hasil pemantauan, kunjungan kontrol, penafsiran 
+oleh dokter, dan penggunaan pedoman klinis. Pasien dan keluarga melakukan pemantauan kadar glukosa secara mandiri dan mencatat hasilnya secara periodik pada \textit{logbook}. 
+Catatan tersebut kemudian dibawa pada kunjungan kontrol sebagai bahan peninjauan oleh dokter. Dokter menafsirkan pola pemantauan yang telah terkumpul dan menggunakan pedoman 
+klinis sebagai salah satu dasar dalam menentukan penyesuaian tata laksana.
 
-Alur perawatan yang berlaku dapat digambarkan sebagai interaksi antara lima komponen. Komponen pertama adalah pasien beserta keluarga, yang menjalankan pemantauan glukosa mandiri melalui tusuk jari dan mencatatnya pada \emph{logbook} secara periodik. Komponen kedua adalah catatan \emph{logbook} itu sendiri, yang menjadi satu-satunya rekaman kondisi glikemik di antara dua kunjungan. Komponen ketiga adalah kunjungan kontrol berkala, yang menjadi titik temu antara pasien dan dokter. Komponen keempat adalah dokter spesialis yang menafsirkan catatan tersebut secara manual pada saat kunjungan. Komponen kelima adalah pedoman klinis yang dirujuk dokter untuk menetapkan penyesuaian terapi. Alur kerja kelima komponen tersebut ditunjukkan pada Gambar~\ref{fig:alur-perawatan}.
+Alur kondisi saat ini melibatkan lima komponen utama, yaitu pasien dan keluarga, catatan \textit{logbook}, kunjungan kontrol, dokter spesialis, dan pedoman klinis. Hubungan 
+antar-komponen tersebut ditunjukkan pada Gambar~\ref{fig:fig3.1_model_alur_perawatan}.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.95\textwidth]{images/Gambar_III1_AlurPerawatanDMT1.png}
-\caption{Model konseptual alur perawatan DMT1 saat ini.}
-\label{fig:alur-perawatan}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.90\textwidth]{images/bab3/fig3.1_model_alur_perawatan.png}
+    \caption{Model konseptual alur perawatan DMT1 saat ini.}
+    \label{fig:fig3.1_model_alur_perawatan}
+    \noindent \textit{Sumber: Disusun penulis berdasarkan Ikatan Dokter Anak Indonesia (2015), Perkumpulan Endokrinologi Indonesia (2021a), Pulungan dkk. (2021), dan Faizi dkk. (2025).}
 \end{figure}
 
-Gambar~\ref{fig:alur-perawatan} memperlihatkan bahwa alur berjalan secara berurutan dan searah. Pasien mencatat data, catatan dibawa pada kunjungan berikutnya, dokter menafsirkannya secara manual, kemudian terapi disesuaikan. Sifat berurutan inilah yang menjadi sumber persoalan yang diuraikan pada subbab berikutnya, karena tidak terdapat mekanisme yang bekerja pada rentang waktu di antara dua kunjungan.
+Gambar~\ref{fig:fig3.1_model_alur_perawatan} memperlihatkan bahwa proses berlangsung secara berurutan dari pemantauan oleh pasien hingga peninjauan dan penyesuaian tata laksana 
+oleh dokter. Catatan yang dikumpulkan selama pemantauan menjadi bahan utama pada kunjungan berikutnya. Dengan demikian, proses penilaian klinis terutama terpusat pada titik 
+kunjungan dan belum memiliki mekanisme pendukung yang bekerja secara sistematis di antara dua kunjungan.
 
-Perlu ditegaskan bahwa alur tersebut memuat \textbf{dua lingkar keputusan yang berbeda skala waktu}. Pembedaan itulah yang menentukan seluruh rancangan sistem. Lingkar pertama adalah lingkar harian yang dijalankan penderita sendiri beberapa kali sehari, mencakup pemberian bolus koreksi, penyesuaian asupan karbohidrat, dan keputusan mengenai aktivitas fisik. Konsensus IDAI menyatakan bahwa dosis insulin bolus untuk koreksi hiperglikemia saat makan \emph{diaktifkan oleh penderita}, sedangkan pemantauan glukosa mandiri di rumah dianjurkan justru untuk memudahkan penyesuaian tersebut \autocite{idai2015}. Lingkar kedua adalah lingkar kontrol yang dijalankan dokter pada kunjungan berkala, mencakup penyesuaian regimen berupa perbandingan insulin kerja pendek dan kerja menengah. Perbandingan tersebut ditetapkan dokter dengan menggunakan hasil pemantauan mandiri di rumah \emph{selama beberapa hari secara berturutan} \autocite{idai2015}, yaitu dari pola retrospektif dan bukan dari satu pembacaan tunggal. Mekanisme penyerahan catatan itu sendiri telah baku, yaitu penderita membawa dan mendiskusikan hasil pemantauan mandiri pada saat kontrol \autocite{perkeni2021pgdm}.
+Selain alur utama tersebut, terdapat dua skala keputusan yang berjalan secara berbeda, yaitu keputusan harian yang dilakukan pasien terkait pemantauan, insulin, asupan, dan 
+aktivitas, serta keputusan berkala yang dilakukan dokter pada saat kunjungan kontrol. Perbedaan skala waktu tersebut penting karena menunjukkan bahwa informasi tersedia secara 
+periodik tetapi keputusan klinis utama tetap berlangsung pada titik kunjungan.
 
 \subsection{Identifikasi Persoalan}
-\label{subsec:identifikasi-persoalan}
+\label{subsec:bab3-identifikasi-persoalan}
 
 Dari model konseptual tersebut teridentifikasi empat persoalan utama.
 
 \begin{enumerate}
-    \item \textbf{Pengelolaan bersifat reaktif.} Penyesuaian terapi baru dilakukan setelah kadar glukosa terbukti menyimpang dari rentang sasaran pada catatan yang dibawa saat kunjungan. Dengan jarak antarkunjungan yang terhitung dalam minggu atau bulan, fluktuasi yang terjadi di antaranya tidak memperoleh tanggapan. Sifat reaktif ini bertentangan dengan tuntutan pengelolaan DMT1 yang telah diuraikan pada Subbab~\ref{sec:dmt1}, yaitu menjaga kadar glukosa dalam rentang sempit tanpa melewati batas bawah.
-    \item \textbf{Penafsiran catatan bersifat manual dan tidak antisipatif.} Dokter menafsirkan deretan angka hasil pemantauan mandiri tanpa alat bantu, dalam waktu konsultasi yang terbatas. Penafsiran tersebut dapat mengenali pola yang telah terjadi, tetapi tidak menghasilkan taksiran mengenai kondisi yang akan datang. Padahal nilai klinis dari antisipasi justru meningkat ketika pemantauan berlangsung jarang.
-    \item \textbf{Prediksi terputus dari rekomendasi.} Sekalipun taksiran kadar glukosa tersedia, penelitian terdahulu umumnya menyajikannya sebagai angka yang berdiri sendiri, tanpa keterkaitan eksplisit dengan panduan tata laksana yang relevan terhadap kondisi yang ditaksir. Pola ini telah diuraikan pada Subbab~\ref{sec:penelitian-terkait}. Akibatnya, penerjemahan dari angka prediksi menjadi tindakan tetap dibebankan sepenuhnya kepada dokter.
-    \item \textbf{Solusi berinfrastruktur berat tidak dapat diterapkan.} Kerangka berbasis \emph{personal health knowledge graph} yang dikembangkan \textcite{rad2024} menunjukkan efektivitas yang tinggi, tetapi mensyaratkan interoperabilitas HL7 FHIR, penelusuran SPARQL di atas ontologi formal, serta aliran data pemantauan kontinu. Ketiganya tidak tersedia pada lingkungan dengan sumber daya terbatas yang menjadi sasaran penelitian ini.
+    \item \textbf{Pengelolaan bersifat reaktif.} Penyesuaian terapi baru dilakukan setelah kadar glukosa terbukti menyimpang dari rentang sasaran pada catatan yang dibawa saat 
+    kunjungan. Dengan jarak antarkunjungan yang terhitung dalam minggu atau bulan, fluktuasi yang terjadi di antaranya tidak memperoleh tanggapan. Sifat reaktif ini bertentangan 
+    dengan tuntutan pengelolaan DMT1 yang telah diuraikan pada Subbab~\ref{sec:bab2-dmt1}, yaitu menjaga kadar glukosa dalam rentang sempit tanpa melewati batas bawah.
+    \item \textbf{Penafsiran catatan bersifat manual dan tidak antisipatif.} Dokter menafsirkan deretan angka hasil pemantauan mandiri tanpa alat bantu, dalam waktu konsultasi 
+    yang terbatas. Penafsiran tersebut dapat mengenali pola yang telah terjadi, tetapi tidak menghasilkan taksiran mengenai kondisi yang akan datang. Padahal nilai klinis dari 
+    antisipasi justru meningkat ketika pemantauan berlangsung jarang.
+    \item \textbf{Prediksi terputus dari rekomendasi.} Sekalipun taksiran kadar glukosa tersedia, penelitian terdahulu umumnya menyajikannya sebagai angka yang berdiri sendiri, 
+    tanpa keterkaitan eksplisit dengan panduan tata laksana yang relevan terhadap kondisi yang ditaksir. Pola ini telah diuraikan pada Subbab~\ref{sec:bab2-penelitian-terkait}. 
+    Akibatnya, penerjemahan dari angka prediksi menjadi tindakan tetap dibebankan sepenuhnya kepada dokter.
+    \item \textbf{Solusi berinfrastruktur berat tidak dapat diterapkan.} Kerangka berbasis \emph{personal health knowledge graph} yang dikembangkan \textcite{rad2024} menunjukkan 
+    efektivitas yang tinggi, tetapi mensyaratkan interoperabilitas HL7 FHIR, penelusuran SPARQL di atas ontologi formal, serta aliran data pemantauan kontinu. Ketiganya tidak 
+    tersedia pada lingkungan dengan sumber daya terbatas yang menjadi sasaran penelitian ini.
 \end{enumerate}
 
-Keempat persoalan tersebut menegaskan adanya jarak antara kemampuan yang telah dicapai penelitian terdahulu dan kemampuan yang dapat diterapkan pada konteks sasaran. Jarak inilah yang menjadi ruang persoalan tugas akhir ini.
+Keempat persoalan tersebut menegaskan adanya jarak antara kemampuan yang telah dicapai penelitian terdahulu dan kemampuan yang dapat diterapkan pada konteks sasaran.
 
 \section{Analisis Kebutuhan}
-\label{sec:kebutuhan-sistem}
+\label{sec:bab3-analisis-kebutuhan}
+Analisis kebutuhan dilakukan untuk menerjemahkan persoalan yang telah diidentifikasi pada Subbab~\ref{subsec:bab3-identifikasi-persoalan} menjadi kebutuhan sistem yang dapat menjadi
+dasar perancangan. Kebutuhan dibedakan menjadi kebutuhan pengguna, kebutuhan fungsional, dan kebutuhan nonfungsional agar fungsi yang harus disediakan sistem dapat dipisahkan dari
+atribut mutu yang harus dipenuhi.
 
 \subsection{Identifikasi Kebutuhan Pengguna}
-\label{subsec:kebutuhan-pengguna}
+\label{subsec:bab3-identifikasi-kebutuhan-pengguna}
+Pengguna utama sistem adalah dokter atau tenaga medis yang menangani pasien DMT1. Pasien menerima keluaran sistem secara tidak langsung melalui alur \textit{doctor-mediated}, yaitu
+setelah rekomendasi divalidasi oleh dokter.
 
-Pengguna utama sistem adalah dokter atau tenaga medis yang menangani pasien DMT1. Pasien menerima keluaran sistem secara tidak langsung melalui alur \emph{doctor-mediated}, yaitu setelah rekomendasi divalidasi oleh dokter.
+Bagi dokter, kebutuhan yang belum terpenuhi mencakup tiga hal. Pertama, alat bantu yang mengubah catatan \textit{logbook} mentah menjadi taksiran kadar glukosa jangka pendek. Kedua,
+peringatan dini terhadap risiko yang diperkirakan akan terjadi. Ketiga, rekomendasi yang dapat ditelusuri sampai ke dokumen pedoman sumbernya. Ketiga kebutuhan tersebut perlu tersedia
+dalam waktu konsultasi yang singkat dan tanpa perangkat tambahan yang mahal.
 
-Bagi dokter, kebutuhan yang belum terpenuhi mencakup tiga hal. Pertama, alat bantu yang mengubah catatan \emph{logbook} mentah menjadi taksiran kadar glukosa jangka pendek. Kedua, peringatan dini terhadap risiko yang diperkirakan akan terjadi. Ketiga, rekomendasi yang dapat ditelusuri sampai ke dokumen pedoman sumbernya. Ketiga hal tersebut harus dapat diperoleh dalam waktu konsultasi yang singkat dan tanpa perangkat tambahan yang mahal.
+Bagi pasien, kebutuhan utamanya adalah memperoleh umpan balik yang bersifat antisipatif tetapi tetap aman karena rekomendasi telah melewati penilaian klinis. Kebutuhan tersebut juga
+perlu dipenuhi tanpa mensyaratkan kepemilikan perangkat pemantauan glukosa kontinu, sesuai dengan konteks penerapan yang ditetapkan pada penelitian ini.
 
-Bagi pasien, kebutuhannya adalah umpan balik yang bersifat antisipatif tetapi tetap aman karena telah melewati penilaian klinis, tanpa mensyaratkan kepemilikan perangkat pemantauan kontinu.
-
-Dari kedua sudut pandang tersebut dapat disarikan tiga sifat yang harus dimiliki sistem. Sistem harus \textbf{antisipatif}, yaitu mengolah kondisi yang diperkirakan akan terjadi dan bukan hanya kondisi yang telah terjadi. Sistem harus \textbf{dapat diterapkan}, yaitu berjalan tanpa akselerator grafis, tanpa perangkat pemantauan kontinu, dan tanpa integrasi rekam medis elektronik. Sistem harus \textbf{aman}, yaitu menempatkan dokter sebagai penentu akhir dan menyediakan penelusuran ke dokumen sumber.
+Dari kedua sudut pandang tersebut dapat disarikan tiga sifat utama yang harus dimiliki sistem. Sistem harus \textbf{antisipatif}, yaitu mengolah kondisi yang diperkirakan akan terjadi
+dan bukan hanya kondisi yang telah terjadi. Sistem harus \textbf{dapat diterapkan}, yaitu dapat berjalan tanpa akselerator grafis, perangkat pemantauan kontinu, dan integrasi rekam
+medis elektronik. Sistem juga harus \textbf{aman}, yaitu menempatkan dokter sebagai penentu akhir dan menyediakan penelusuran ke dokumen sumber.
 
 \subsection{Kebutuhan Fungsional}
-\label{subsec:kebutuhan-fungsional}
+\label{subsec:bab3-kebutuhan-fungsional}
+Kebutuhan fungsional mendefinisikan kemampuan yang harus disediakan oleh artefak untuk menjawab persoalan pada Subbab~\ref{subsec:bab3-identifikasi-persoalan}. Delapan kebutuhan
+fungsional yang dihasilkan beserta hubungan masing-masing dengan persoalan dan tujuan penelitian dirangkum pada Tabel~\ref{tab:tab3.1_kebutuhan_fungsional}.
 
-Kebutuhan fungsional sistem dirangkum pada Tabel~\ref{tab:kebutuhan-fungsional}.
+\input{tables/bab3/tab3.1_kebutuhan_fungsional.tex}
 
-\input{tables/tabel_III1_KF.tex}
+Tabel~\ref{tab:tab3.1_kebutuhan_fungsional} memperlihatkan bahwa kedelapan kebutuhan membentuk satu rangkaian dari penerimaan data hingga validasi klinis. KF-01 dan KF-02 menyediakan
+representasi yang diperlukan sebelum prediksi dilakukan, sedangkan KF-03 menghasilkan taksiran kondisi masa depan. KF-04 kemudian menggunakan kondisi terprediksi sebagai dasar
+pembentukan kueri, yang menjadi penghubung antara modul prediksi dan penelusuran. KF-05 dan KF-06 menyediakan konteks pedoman serta rekomendasi tertelusur, sementara KF-07 dan KF-08
+mengatur penyajian kondisi serta validasi oleh dokter.
 
-Tabel~\ref{tab:kebutuhan-fungsional} memperlihatkan bahwa kedelapan kebutuhan fungsional membentuk satu rangkaian yang utuh, mulai dari penerimaan data pada KF-01, pengolahan menjadi taksiran pada KF-02 dan KF-03, pengondisian penelusuran pada KF-04, penyusunan rekomendasi pada KF-05 dan KF-06, hingga penyajian peringatan dan validasi klinis pada KF-07 dan KF-08. Dua kolom terakhir pada tabel tersebut menunjukkan penelusuran dua arah, yaitu ke persoalan yang melatarbelakangi setiap kebutuhan dan ke tujuan penelitian yang hendak dicapai, sehingga tidak terdapat kebutuhan yang muncul tanpa dasar maupun tujuan yang tidak memiliki kebutuhan pendukung. Perlu dicatat bahwa KF-04 merupakan kebutuhan yang membedakan sistem ini dari sistem pendukung keputusan berbasis RAG pada umumnya, karena kebutuhan tersebut menetapkan sumber kueri penelusuran berasal dari kondisi terprediksi dan bukan dari kondisi yang sedang berlaku.
+Kolom asal dan tujuan pada Tabel~\ref{tab:tab3.1_kebutuhan_fungsional} membentuk penelusuran dua arah. Kolom asal menghubungkan setiap kebutuhan dengan persoalan P1--P4, sedangkan kolom
+tujuan menghubungkannya dengan tujuan penelitian T1--T3. Dengan demikian, kebutuhan fungsional tidak ditetapkan secara terpisah dari persoalan dan tujuan penelitian.
+
+Secara khusus, KF-04 merupakan kebutuhan yang membedakan alur yang dirancang dari RAG yang menggunakan kueri berbasis kondisi saat ini. Kebutuhan tersebut menetapkan bahwa sumber
+pengondisian kueri adalah kadar glukosa terprediksi sehingga proses penelusuran dapat diarahkan pada kondisi yang akan datang.
 
 \subsection{Kebutuhan Nonfungsional}
-\label{subsec:kebutuhan-nonfungsional}
+\label{subsec:bab3-kebutuhan-nonfungsional}
+Kebutuhan nonfungsional menetapkan atribut mutu yang harus dipenuhi sistem agar dapat digunakan sesuai konteks penelitian. Sepuluh kebutuhan nonfungsional yang dirumuskan mencakup
+keterterapan, keterjelasan, keamanan konten, ketahanan, bahasa, keamanan klinis, keterpeliharaan, keterlacakan sitasi, biaya dan keterpindahan, serta waktu tanggap. Seluruh kebutuhan
+tersebut dirangkum pada Tabel~\ref{tab:tab3.2_kebutuhan_nonfungsional}.
 
-Kebutuhan nonfungsional menetapkan atribut mutu yang harus dipenuhi sistem, dirangkum pada Tabel~\ref{tab:kebutuhan-nonfungsional}.
+\input{tables/bab3/tab3.2_kebutuhan_nonfungsional.tex}
 
-\input{tables/tabel_III2_KNF.tex}
+Tabel~\ref{tab:tab3.2_kebutuhan_nonfungsional} menunjukkan bahwa atribut mutu diturunkan dari batasan dan kebutuhan konteks penerapan. KNF-01 dan KNF-09 berkaitan dengan keterbatasan
+perangkat dan pembiayaan, sedangkan KNF-02 dan KNF-08 berkaitan dengan kebutuhan pengguna untuk memeriksa dasar keluaran sistem. KNF-03, KNF-04, dan KNF-06 berkaitan dengan pengendalian
+risiko keluaran model bahasa, sedangkan KNF-05, KNF-07, dan KNF-10 menetapkan karakteristik operasional dan pemeliharaan sistem.
 
-Tabel~\ref{tab:kebutuhan-nonfungsional} memperlihatkan bahwa kesepuluh atribut mutu tersebut tidak berdiri sendiri, melainkan diturunkan dari keterbatasan konteks penerapan yang telah diuraikan pada Bab~\ref{chap:pendahuluan}. KNF-01 dan KNF-09 diturunkan dari keterbatasan perangkat dan pembiayaan. KNF-02 dan KNF-08 diturunkan dari kebutuhan dokter untuk dapat menilai dasar suatu rekomendasi sebelum menyetujuinya. KNF-03, KNF-04, dan KNF-06 diturunkan dari sifat keluaran model bahasa yang tidak dapat dijamin kebenarannya, sehingga memerlukan pembatasan berlapis. KNF-08 secara khusus menanggapi kebutuhan penelusuran sampai ke nomor halaman dokumen sumber, yang menuntut penyimpanan metadata pada setiap potongan dokumen sebagaimana diuraikan pada Subbab~\ref{subsec:pengolahan-korpus}. KNF-10 diturunkan dari keterbatasan waktu konsultasi yang telah disebutkan pada Subbab~\ref{subsec:kebutuhan-pengguna}, sehingga kebutuhan tersebut tidak berhenti sebagai pernyataan kualitatif melainkan menjadi atribut yang diukur.
+\section{Analisis Data} 
+\label{sec:bab3-analisis-data}
 
-\section{Analisis Data dan Metodologi}
-\label{sec:analisis-data}
+\subsection{Ketersediaan dan Pemilihan Dataset} 
+\label{subsec:bab3-ketersediaan-pemilihan-dataset}
 
-Subbab ini menganalisis pilihan data dan metodologi yang mendasari solusi. Rincian realisasinya dipaparkan pada Bab~\ref{chap:implementasi}, sedangkan pada bagian ini yang ditekankan adalah justifikasi atas setiap pilihan.
+Penyusunan data logbook DMT1 dari rekam medis nyata tidak memungkinkan dalam lingkup tugas akhir ini karena keterbatasan akses terhadap data dan persyaratan etik penelitian. Penelitian
+ini karena itu menggunakan dataset publik OhioT1DM sebagai sumber data utama \parencite{marling2020}.
 
-\subsection{Ketersediaan dan Pemilihan Dataset}
-\label{subsec:pemilihan-dataset}
+Pemilihan OhioT1DM didasarkan pada tiga pertimbangan. Pertama, dataset memuat data dari dua belas penyandang DMT1 pengguna pompa insulin sehingga sesuai dengan populasi yang menjadi
+cakupan penelitian. Kedua, dataset menyediakan kanal kadar glukosa serta catatan insulin, asupan karbohidrat, dan aktivitas yang diperlukan untuk membentuk representasi keadaan pasien.
+Ketiga, OhioT1DM merupakan benchmark yang digunakan dalam penelitian prediksi glukosa sehingga hasil eksperimen dapat dibandingkan dengan penelitian terdahulu \parencite{marling2020}.
 
-Penyusunan data \emph{logbook} DMT1 berkonteks Indonesia dari rekam medis nyata tidak memungkinkan dalam lingkup tugas akhir ini, baik karena keterbatasan akses maupun karena persyaratan etik penelitian yang menyertainya. Penelitian ini karena itu menggunakan dataset publik OhioT1DM \autocite{marling2020}.
+Hasil eksplorasi dataset menunjukkan terdapat 171.099 baris dari 12 pasien tanpa nilai hilang. Sebanyak 166.533 baris merupakan pengukuran continuous glucose monitoring (CGM), sedangkan
+4.566 baris merupakan pengukuran finger-stick. Ringkasan karakteristik kedua kanal disajikan pada Tabel~\ref{tab:tab3.3_karakteristik_dataset}.
 
-Pemilihan dataset tersebut didasarkan pada tiga pertimbangan. Pertama, dataset berisi data penyandang DMT1, sehingga sesuai dengan populasi yang menjadi cakupan penelitian ini. Kesesuaian populasi ini merupakan konsekuensi langsung dari penyempitan cakupan sebagaimana ditetapkan pada Batasan~1 di Subbab~\ref{sec:batasan-masalah}. Kedua, dataset memuat kanal data yang lengkap, mencakup kadar glukosa, pemberian insulin, asupan karbohidrat, serta kejadian gaya hidup, sehingga memungkinkan penyusunan fitur multimoda. Ketiga, dataset merupakan tolok ukur baku pada komunitas penelitian prediksi glukosa, sehingga hasil yang diperoleh dapat diperbandingkan dengan penelitian terdahulu.
+\input{tables/bab3/tab3.3_karakteristik_dataset.tex}
 
-Dataset tersebut memuat dua kanal pengukuran kadar glukosa yang berbeda. Kanal pertama adalah pemantauan kontinu dengan selang lima menit, sedangkan kanal kedua adalah pembacaan tusuk jari yang tercatat secara periodik. Keberadaan kedua kanal ini memungkinkan penelitian ini menempuh dua kondisi evaluasi tanpa membangkitkan data buatan.
+Perbedaan kepadatan kedua kanal merupakan pertimbangan penting dalam rancangan penelitian. Median selang antar-pengukuran CGM adalah 5,0 menit, sedangkan median selang finger-stick
+adalah 124,8 menit. Dengan demikian, kedua kanal tidak dapat diperlakukan sebagai deret pengamatan dengan struktur temporal yang identik. Kanal CGM menyediakan jumlah observasi yang
+jauh lebih besar sehingga dipilih sebagai dasar pelatihan model, sedangkan finger-stick digunakan untuk merepresentasikan kondisi pemantauan mandiri dengan pembacaan yang benar-benar
+tersedia pada dataset.
 
-Model dilatih pada kanal pemantauan kontinu. Pilihan ini didasarkan pada volume dan keteraturan data yang memadai untuk melatih model prediktif, sedangkan kanal tusuk jari terlalu jarang untuk keperluan pelatihan. Adapun skenario penerapan pada kondisi pemantauan mandiri dievaluasi menggunakan pembacaan tusuk jari yang benar-benar tersedia pada dataset, bukan hasil penjarangan buatan dari kanal pemantauan kontinu. Keputusan ini penting bagi keabsahan hasil. Apabila data pemantauan mandiri yang nyata telah tersedia, membangkitkan tiruannya justru menambah asumsi tanpa menambah keabsahan.
+Model prediksi dilatih menggunakan kanal CGM karena kepadatan dan keteraturan pengukurannya lebih memadai untuk pembelajaran. Skenario pemantauan mandiri kemudian dievaluasi menggunakan
+pembacaan finger-stick yang tersedia secara nyata, bukan hasil penjarangan buatan dari kanal CGM. Keputusan tersebut menghindari penambahan asumsi sintetis ketika data pemantauan
+mandiri yang nyata telah tersedia.
 
-Perlu dicatat bahwa kedua kanal tersebut mengukur besaran fisiologis yang berbeda, yaitu kadar glukosa cairan interstisial pada pemantauan kontinu dan kadar glukosa darah kapiler pada pembacaan tusuk jari, sebagaimana diuraikan pada Subbab~\ref{sec:pemantauan-glukosa}. Penyetaraan keduanya pada evaluasi skenario pemantauan mandiri merupakan asumsi metodologis yang disadari. Konsekuensinya dibahas pada Bab~\ref{chap:evaluasi}.
+Perlu diperhatikan bahwa CGM dan finger-stick mengukur besaran fisiologis pada media yang berbeda. Karena itu, penyamaan keduanya sebagai dasar evaluasi pada skenario pemantauan mandiri
+merupakan asumsi metodologis yang perlu dinyatakan dan dipertimbangkan ketika hasil diinterpretasikan.
 
-\subsection{Analisis Pemilihan Fitur}
-\label{subsec:pemilihan-fitur}
+\subsection{Analisis Pemilihan Fitur} 
+\label{subsec:bab3-analisis-pemilihan-fitur}
 
-Pemilihan fitur dilandasi dua basis, yaitu basis fisiologis dan basis empiris.
+Pemilihan fitur didasarkan pada dua pertimbangan, yaitu basis fisiologis dan basis empiris. Secara fisiologis, dinamika kadar glukosa dipengaruhi oleh interaksi antara kadar glukosa,
+insulin, dan asupan karbohidrat, sedangkan aktivitas fisik menjadi faktor pendukung yang turut memengaruhi keadaan glukosa \parencite{bergman1979,dallaman2014,colberg2016}.
 
-Secara fisiologis, dinamika kadar glukosa dimodelkan dari interaksi antara glukosa, insulin, dan karbohidrat sebagaimana dirumuskan pada \emph{minimal model} \textcite{bergman1979} dan pengembangannya \autocite{dallaman2014}, dengan aktivitas fisik sebagai faktor sekunder. Pencatatan mentah atas pemberian insulin dan asupan karbohidrat menyimpan persoalan yang telah diuraikan pada Subbab~\ref{subsec:efek-residual}, yaitu nilainya bernilai nol pada seluruh titik waktu di luar kejadian, sehingga pengaruh yang masih berlangsung tidak terwakili. Penelitian ini karena itu menggunakan representasi berbasis fisiologi berupa besaran \emph{insulin on board} dan \emph{carbohydrate on board}, disertai kadar glukosa, laju perubahannya, tingkat aktivitas, serta penyandian siklis waktu dalam hari.
+Pencatatan mentah kejadian insulin dan karbohidrat memiliki keterbatasan untuk merepresentasikan pengaruh yang masih berlangsung karena nilai kejadian bernilai nol di luar waktu
+kejadian. Oleh karena itu, penelitian menggunakan representasi insulin-on-board (IOB) dan carbohydrate-on-board (COB) untuk mempertahankan informasi mengenai efek residual, disertai
+kadar glukosa, laju perubahan glukosa, aktivitas fisik, serta penyandian siklis waktu.
 
-Secara empiris, perubahan representasi tersebut terbukti meningkatkan kontribusi insulin dan karbohidrat terhadap prediksi secara berarti. Bukti kuantitatifnya berupa kontribusi fitur disajikan pada Bab~\ref{chap:evaluasi}.
+Selain pertimbangan fisiologis, kelayakan representasi fitur dinilai berdasarkan kerapatan pengisian kanal dan kontribusinya terhadap prediksi. Penelaahan awal terhadap kerapatan
+pengisian kanal kejadian pada OhioT1DM ditunjukkan pada Gambar~\ref{fig:fig3.2_kerapatan_kanal}.
 
-Dasar empiris bagi keputusan representasi tersebut diperoleh dari penelaahan awal atas kerapatan pengisian setiap kanal, sebagaimana disajikan pada Gambar~\ref{fig:sparsity-kanal}.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.92\textwidth]{images/Gambar_III3_SparsityKanal.png}
-\caption{Proporsi baris dengan nilai lebih besar dari nol pada setiap kanal kejadian dataset OhioT1DM.}
-\label{fig:sparsity-kanal}
+\begin{figure}[h] 
+    \centering 
+    \includegraphics[width=0.88\textwidth]{images/bab3/fig3.2_kerapatan_kanal.png} 
+    \caption{Proporsi baris dengan nilai lebih besar dari nol pada setiap kanal kejadian dataset OhioT1DM.} 
+    \label{fig:fig3.2_kerapatan_kanal} 
+    \noindent 
+    \textit{Sumber: Disusun penulis berdasarkan pengolahan dataset OhioT1DM (Marling dan Bunescu, 2020).} 
 \end{figure}
 
-Gambar~\ref{fig:sparsity-kanal} memperlihatkan tiga pola yang masing-masing berujung pada satu keputusan rancangan. Pertama, kanal \texttt{carbs} hanya terisi pada 1,15\% baris, yang wajar bagi kejadian makan tiga sampai lima kali sehari, sehingga pemakaian nilai mentahnya akan membuat model kehilangan informasi pada 98,85\% titik waktu lainnya. Pola ini mendasari pemakaian besaran \emph{carbohydrate on board}. Kedua, kanal \texttt{insulin} justru terisi pada 99,48\% baris. Kerapatan itu bukan karena pemberian insulin berlangsung terus-menerus sebagai kejadian, melainkan karena kanal tersebut memuat laju basal yang diinfus tanpa henti. Komponen yang benar-benar bersifat sesaat adalah bolus, sehingga komponen itulah yang direpresentasikan sebagai \emph{insulin on board}, sebagaimana diuraikan pada Subbab~\ref{subsec:insulin}. Ketiga, kanal \texttt{stress}, \texttt{sleep}, \texttt{work}, dan \texttt{illness} praktis kosong, dengan proporsi yang membulat menjadi nol persen.
+Gambar~\ref{fig:fig3.2_kerapatan_kanal} memperlihatkan bahwa kerapatan setiap kanal kejadian berbeda jauh. Pada kanal CGM, insulin dan basal rate hadir hampir pada seluruh baris,
+sedangkan carbs, bolus dose, dan activity hanya muncul pada sebagian kecil baris. Kanal stress sangat jarang, sedangkan sleep, work, dan illness tidak memiliki nilai lebih besar dari
+nol pada kanal CGM. Kondisi tersebut menjadi dasar untuk membedakan variabel yang dapat dipertahankan sebagai masukan model dari variabel yang terlalu jarang untuk digunakan secara
+andal.
 
-Variabel stres dikeluarkan dari himpunan fitur prediktor. Alasannya bersifat empiris, yaitu jumlah kejadian stres yang tercatat pada keseluruhan dataset terlalu sedikit untuk menghasilkan varians yang informatif. Variabel tersebut tetap dipertahankan sebagai bagian dari catatan \emph{logbook} karena relevansinya pada saat penerapan, sebagaimana didukung temuan \textcite{velasco2022} yang telah diuraikan pada Subbab~\ref{subsec:faktor-psikologis}.
+Representasi IOB dan COB dipilih untuk mempertahankan efek residual insulin dan karbohidrat yang tidak tercermin jika kejadian hanya dicatat pada saat terjadinya. Aktivitas tetap
+dipertahankan sebagai konteks pendukung karena masih tersedia pada sebagian kecil pengamatan. Sebaliknya, stress tidak digunakan sebagai predictor final karena hanya muncul pada enam
+baris kanal CGM, sedangkan sleep, work, dan illness tidak muncul pada kanal tersebut.
 
-\subsection{Analisis Horizon dan Skema Prediksi}
-\label{subsec:horizon-prediksi}
+Kontribusi fitur tidak dianggap sebagai hasil yang telah diketahui pada tahap analisis. Kontribusi tersebut menjadi bagian dari evaluasi yang dilakukan setelah model dibangun sehingga
+keputusan awal mengenai fitur dapat diverifikasi secara empiris.
 
-Horizon prediksi ditetapkan pada 30 menit dan 60 menit. Penetapan ini bersandar pada dua dasar yang berdiri sendiri.
+\subsection{Analisis Horizon dan Skema Prediksi} 
+\label{subsec:bab3-analisis-horizon-skema-prediksi}
 
-Dasar pertama bersifat klinis. Horizon prediksi tidak boleh lebih pendek daripada lingkar tindakan klinisnya. Setelah tatalaksana hipoglikemia awal diberikan, kadar glukosa darah diperiksa ulang dalam 15 menit, dan karbohidrat kerja cepat menaikkan kadar glukosa dalam rentang 10 hingga 15 menit setelah pemberian. Insulin analog kerja cepat memiliki awitan 5 hingga 15 menit dengan puncak kerja 30 hingga 90 menit \autocite{idai2015}. Dengan demikian, horizon 30 menit merupakan rentang terpendek yang masih menyisakan waktu untuk mengambil tindakan sekaligus memverifikasi hasilnya, sedangkan horizon 60 menit membentang tepat pada puncak kerja insulin kerja cepat, yaitu jendela ketika koreksi berlebihan berubah menjadi hipoglikemia.
+Horizon prediksi ditetapkan untuk merepresentasikan rentang waktu yang memiliki nilai antisipatif sekaligus masih dapat didukung oleh informasi pada data yang tersedia. Konfigurasi
+produksi pada kanal CGM menggunakan horizon +30 menit dan +60 menit. Dua horizon tersebut digunakan untuk mewakili prediksi jangka pendek pada dua jarak waktu tanpa memperluas sasaran
+penelitian ke horizon yang lebih panjang.
 
-Dasar kedua bersifat keterbandingan. Kedua horizon tersebut lazim digunakan pada penelitian prediksi glukosa di atas dataset OhioT1DM, sehingga hasil penelitian ini dapat disandingkan dengan penelitian terdahulu.
+Untuk skenario pemantauan mandiri berbasis finger-stick, konfigurasi produksi menggunakan horizon +240 menit dengan panjang sekuens delapan. Konfigurasi ini dipisahkan dari konfigurasi
+CGM karena median selang pengamatan finger-stick jauh lebih panjang dan pengamatannya tidak teratur. Penggunaan panjang sekuens delapan juga ditetapkan sebagai bagian dari konfigurasi
+produksi pada skenario tersebut.
 
-Horizon lima menit tidak digunakan meskipun sesuai dengan selang perekaman dataset. Alasannya bersifat ganda. Secara statistik, pada horizon sependek itu kadar glukosa nyaris tidak berubah sehingga tugas prediksi menjadi setara dengan menyalin nilai terakhir dan fitur multimoda tidak berkontribusi. Secara klinis, pada rentang tersebut belum ada tindakan apa pun yang sempat memberikan efek.
-
-Horizon yang lebih panjang juga dipertimbangkan dan ditolak. Alasan penolakannya beserta bukti pengukurannya dibahas pada Bab~\ref{chap:evaluasi}.
-
-Skema prediksi menggunakan prediksi langsung pada horizon tetap, bukan penggulungan rekursif banyak langkah. Pilihan ini menghindari akumulasi galat yang terjadi ketika keluaran suatu langkah dijadikan masukan langkah berikutnya.
-
-Pembagian data latih dan data uji dilakukan per pasien, bukan per baris. Pembagian per baris akan menempatkan potongan deret waktu dari pasien yang sama pada kedua himpunan, sehingga model dapat memanfaatkan pola yang seharusnya belum dikenalnya. Penormalan fitur juga hanya disesuaikan pada data latih, dengan parameter yang sama diterapkan pada data uji.
-
-\subsection{Kurasi Basis Pengetahuan}
-\label{subsec:kurasi-kb}
-
-Basis pengetahuan menentukan batas kemampuan sistem, karena rekomendasi yang dihasilkan tidak dapat melampaui isi dokumen yang tersedia untuk ditelusuri. Kurasi korpus karena itu diperlakukan sebagai keputusan rancangan tersendiri, bukan sebagai pengumpulan dokumen yang bersifat sekadarnya.
-
-Kriteria yang digunakan pada penelitian ini disebut kriteria keterpicuan, yaitu sebuah topik hanya disertakan apabila dapat dipicu oleh variabel yang benar-benar teramati pada dataset penelitian. Kriteria ini menggantikan pendekatan yang mengumpulkan sebanyak mungkin dokumen pedoman, dengan dua alasan. Pertama, topik yang tidak dapat dipicu oleh variabel mana pun tidak akan pernah muncul pada hasil penelusuran, sehingga keberadaannya hanya menambah beban pengindeksan. Kedua, kriteria yang eksplisit memungkinkan cakupan korpus dinilai secara terukur, dan bukan berdasarkan penilaian yang bersifat pribadi.
-
-Penerapan kriteria tersebut menghasilkan pemetaan dari variabel dataset ke topik pedoman sebagaimana disajikan pada Tabel~\ref{tab:pemetaan-variabel}.
-
-\input{tables/tabel_III3_pemetaan.tex}
-
-Tabel~\ref{tab:pemetaan-variabel} memperlihatkan bahwa sembilan topik dapat dipicu oleh variabel yang tersedia, sedangkan sejumlah topik lain yang secara klinis penting tidak dapat dipicu karena variabel penandanya tidak terekam pada dataset. Topik yang dikecualikan beserta alasannya perlu dinyatakan secara terbuka. Topik puasa keagamaan dikecualikan karena proses penyamaran identitas pada dataset menggeser bulan pada seluruh catatan waktu, sehingga dokumentasi dataset menyatakan sendiri bahwa pengaruh musim maupun hari besar tidak dapat ditelaah \autocite{marling2020}. Topik kehamilan dikecualikan karena tidak terdapat penanda kehamilan pada dataset. Topik penapisan komplikasi dan penyakit penyerta dikecualikan karena tidak tersedia data laboratorium pendukung. Topik penentuan stadium DMT1 dikecualikan karena tidak tersedia data autoantibodi maupun kadar C-peptida.
-
-Korpus yang dihasilkan dari penerapan kriteria tersebut terdiri atas dua belas dokumen dengan total 543 halaman, sebagaimana dirinci pada Tabel~\ref{tab:korpus-kb}. Dari jumlah itu, \textbf{494 halaman} yang benar-benar diindeks: 45 halaman depan berupa sampul, kata pengantar, dan daftar isi sengaja disaring karena padat kata kunci topik tanpa isi klinis sehingga mencemari hasil penelusuran, sedangkan 4 halaman lainnya berisi teks yang terlalu pendek untuk menghasilkan potongan bermakna. Angka 494 inilah yang menjadi dasar seluruh pengukuran penelusuran pada Bab~\ref{chap:evaluasi}.
-
-\input{tables/tabel_III4_korpus.tex}
-
-Tabel~\ref{tab:korpus-kb} memperlihatkan komposisi yang disengaja, yaitu empat dokumen berkonteks Indonesia untuk memastikan keselarasan dengan ketersediaan terapi setempat, dua konsensus internasional untuk DMT1 dewasa yang sesuai dengan rentang usia kontributor dataset, serta enam bab pedoman ISPAD yang menyediakan tata laksana spesifik per kondisi. Satu dokumen pada korpus tersebut, yaitu KB-12 mengenai pengelolaan pada lingkungan dengan sumber daya terbatas, disertakan atas dasar yang berbeda dari kriteria keterpicuan. Dokumen tersebut tidak memuat tata laksana yang terikat pada satu kondisi tertentu, melainkan pertimbangan penyesuaian tata laksana ketika ketersediaan perangkat dan obat terbatas. Perannya karena itu bersifat lintas kondisi, yaitu melengkapi dokumen lain ketika tata laksana baku tidak dapat dijalankan sepenuhnya. Dokumen ini tidak dipetakan pada Tabel~\ref{tab:pemetaan-variabel} karena tidak dipicu oleh variabel tunggal mana pun. Penyertaannya dinyatakan secara terbuka agar penerapan kriteria keterpicuan tetap konsisten.
-
-Dua keterbatasan pada korpus tersebut perlu dinyatakan. Pertama, keenam bab ISPAD ditujukan bagi anak dan remaja, sedangkan kontributor dataset seluruhnya berusia dewasa. Bab-bab tersebut tetap disertakan karena isi operasionalnya, seperti ambang penanganan hipoglikemia dan aturan pengelolaan pada hari sakit, sebagian besar tidak bergantung pada usia, dan karena tidak tersedia padanan berbahasa Indonesia untuk topik-topik tersebut. Kedua, pemetaan topik pada Tabel~\ref{tab:pemetaan-variabel} disusun melalui penelaahan kepadatan istilah pada setiap dokumen, kemudian divalidasi secara manual. Pendekatan leksikal tersebut dapat melewatkan pembahasan yang menggunakan istilah berbeda, sehingga validasi manual menjadi bagian yang tidak terpisahkan dari prosedurnya.
+Pemilihan konfigurasi horizon dan sekuens merupakan keputusan metodologis karena keduanya menentukan informasi historis yang diberikan kepada model dan jarak prediksi yang harus
+dicapai. Eksperimen lama atau konfigurasi percobaan lain tidak diposisikan sebagai konfigurasi produksi final. Dengan demikian, konfigurasi produksi ditetapkan secara eksplisit sebelum
+hasil evaluasi digunakan untuk menilai kinerja model.
 
 \section{Analisis Pemilihan Solusi}
-\label{sec:pemilihan-solusi}
+\label{sec:bab3-analisis-pemilihan-solusi}
 
-\subsection{Alternatif Solusi}
-\label{subsec:alternatif-solusi}
+Setelah kebutuhan dan karakteristik data ditetapkan, tahap berikutnya adalah memilih pendekatan yang paling sesuai dengan persoalan dan batasan penelitian. Analisis dilakukan dalam dua
+tingkat. Tingkat pertama membandingkan alternatif pendekatan pada level konseptual, sedangkan tingkat kedua menentukan keputusan teknis yang digunakan untuk mewujudkan pendekatan 
+terpilih. Pemisahan tersebut diperlukan agar keputusan mengenai cara mengatasi persoalan tidak tercampur dengan keputusan mengenai komponen teknis yang digunakan.
 
-Untuk setiap keputusan rancangan utama dipertimbangkan sejumlah alternatif konkret sebagai berikut.
+\subsection{Alternatif Pendekatan}
+\label{subsec:bab3-alternatif-pendekatan}
+
+Enam alternatif pendekatan dipertimbangkan untuk menjawab kebutuhan antisipasi, keterhubungan dengan pengetahuan klinis, keterlacakan, keterterapan, dan keamanan. Keenam alternatif
+tersebut mewakili rentang solusi dari pemantauan berbasis aturan hingga integrasi prediksi dan retrieval.
 
 \begin{enumerate}
-    \item \textbf{Model prediksi.} \emph{Random Forest}, \emph{Long Short-Term Memory}, atau \emph{Gradient Boosting Machine}.
-    \item \textbf{Model bahasa.} Layanan awan Google Gemini atau model lokal yang dijalankan melalui Ollama.
-    \item \textbf{Model \emph{embedding}.} Model \emph{sentence-transformers} yang dijalankan secara lokal, layanan \emph{embedding} berbasis awan, atau model \emph{embedding} lokal melalui Ollama.
-    \item \textbf{Kerangka antarmuka.} Streamlit, Gradio, atau kerangka aplikasi web umum.
-    \item \textbf{Skema pengambilan pengetahuan.} Penelusuran berbasis RAG di atas korpus dokumen tak terstruktur, atau penelusuran SPARQL di atas graf pengetahuan sebagaimana pendekatan \textcite{rad2024}.
-    \item \textbf{Pengklasifikasi kondisi.} Penetapan ambang langsung atas nilai keluaran regresi, atau pengklasifikasi terpisah yang dilatih khusus untuk mengenali kondisi.
-    \item \textbf{Orkestrasi alur.} Penulisan alur sebagai kode program, atau perangkaian melalui perkakas alur kerja visual.
+    \item \textbf{P1 --- Pemantauan manual berbasis ambang.} Kadar glukosa dibandingkan terhadap ambang tetap, kemudian tindakan ditentukan melalui aturan yang disusun sebelumnya.
+    Pendekatan ini sederhana dan deterministik, tetapi hanya menanggapi keadaan yang telah teramati dan tidak memanfaatkan hubungan nonlinear antarfaktor.
+
+    \item \textbf{P2 --- Model prediksi tanpa penelusuran.} Model pembelajaran mesin digunakan untuk memetakan riwayat pemantauan menjadi taksiran kadar glukosa pada horizon tertentu.
+    Pendekatan ini menyediakan kemampuan antisipatif, tetapi keluaran prediksi tetap berdiri sendiri tanpa penelusuran pengetahuan klinis.
+
+    \item \textbf{P3 --- Model bahasa besar tanpa penelusuran.} Pertanyaan diberikan langsung kepada model bahasa besar dan jawaban dihasilkan dari pengetahuan yang tersimpan pada parameter
+    model. Pendekatan ini dapat menghasilkan bahasa yang mudah dipahami, tetapi tidak memberikan grounding pada dokumen sumber dan tidak menghubungkan keluaran dengan keadaan pasien.
+
+    \item \textbf{P4 --- RAG dengan kueri statis.} Model bahasa besar dilengkapi penelusuran pada korpus pedoman klinis dengan kueri yang disusun dari pertanyaan pengguna atau keadaan yang
+    sedang berlaku. Pendekatan ini menyediakan keterlacakan ke dokumen sumber, tetapi masih merespons keadaan yang telah diamati.
+
+    \item \textbf{P5 --- Model fisiologis mekanistik.} Dinamika glukosa dimodelkan melalui hubungan fisiologis yang dirumuskan secara eksplisit, seperti pendekatan Bergman dkk. (1979) dan
+    Dalla Man dkk. (2014). Pendekatan ini memiliki dasar fisiologis yang kuat, tetapi memerlukan pengukuran dan parameterisasi yang lebih lengkap daripada yang tersedia dalam konteks penelitian.
+
+    \item \textbf{P6 --- RAG dengan kueri terkondisi-prediksi.} Taksiran kadar glukosa pada horizon tertentu diterjemahkan menjadi keadaan klinis terstruktur, kemudian keadaan tersebut
+    digunakan untuk membentuk kueri penelusuran. Pendekatan ini menghubungkan kemampuan prediktif dengan pengetahuan klinis sehingga retrieval diarahkan pada keadaan yang diperkirakan 
+    akan terjadi.
 \end{enumerate}
 
-\subsection{Analisis Penentuan Solusi}
-\label{subsec:penentuan-solusi}
+Keenam alternatif tersebut selanjutnya dinilai menggunakan kriteria yang diturunkan dari kebutuhan sistem pada Subbab~\ref{sec:bab3-analisis-kebutuhan}.
 
-Penentuan solusi dilakukan melalui dua langkah. Langkah pertama menilai setiap alternatif terhadap kebutuhan yang telah ditetapkan pada Subbab~\ref{sec:kebutuhan-sistem}, sebagaimana disajikan pada matriks Tabel~\ref{tab:matriks-solusi}.
+\subsection{Kriteria Penilaian dan Pembobotan}
+\label{subsec:bab3-kriteria-penilaian-pembobotan}
 
-\input{tables/tabel_III5_matriks.tex}
+Kriteria penilaian diturunkan dari kebutuhan fungsional dan nonfungsional agar proses pemilihan dapat ditelusuri kembali ke persoalan yang mendasarinya, bukan hanya pada preferensi
+penulis. Lima kriteria dan bobot yang digunakan disajikan pada Tabel~\ref{tab:tab3.4_kriteria_penilaian}.
 
-Tabel~\ref{tab:matriks-solusi} menegaskan bahwa keputusan rancangan diturunkan dari kebutuhan dan bukan dari preferensi, karena setiap sel dapat ditelusuri ke kebutuhan yang bersangkutan. Perlu dicatat bahwa matriks tersebut bukan sekadar dokumentasi atas keputusan yang telah diambil sejak awal. Salah satu barisnya, yaitu pengklasifikasi kondisi, justru merupakan keputusan yang berubah setelah bukti empiris diperoleh. Penetapan ambang langsung atas nilai keluaran regresi semula digunakan, kemudian ditinggalkan setelah terbukti hanya menangkap sebagian kecil kejadian hipoglikemia. Perubahan tersebut merupakan penerapan siklus DSRM sebagaimana dimaksud \textcite{peffers2007}, yaitu hasil evaluasi mengumpanbalik ke tahap perancangan.
+\input{tables/bab3/tab3.4_kriteria_penilaian.tex}
 
-Langkah kedua merangkum alasan pemilihan beserta kelemahan yang diakui pada setiap keputusan, sebagaimana disajikan pada Tabel~\ref{tab:penentuan-solusi}.
+Bobot ditetapkan sebelum penilaian alternatif dilakukan dan dinormalisasi sehingga jumlahnya 1,00. C1 dan C2 memperoleh bobot terbesar karena secara langsung menjawab kebutuhan
+antisipatif dan kebutuhan pengondisian rekomendasi pada kondisi terprediksi. C3 dan C4 memperoleh bobot menengah karena keterlacakan serta keterterapan merupakan prasyarat penting 
+bagi konteks penggunaan penelitian. C5 memperoleh bobot lebih kecil karena keamanan klinis dalam rancangan ini terutama ditegakkan melalui alur \textit{doctor-mediated} dan 
+pembatasan keluaran.
 
-\input{tables/tabel_III6_alasan.tex}
+\subsection{Penilaian Alternatif Pendekatan dengan \textit{Weighted Sum Model}}
+\label{subsec:bab3-penilaian-wsm}
 
-Tabel~\ref{tab:penentuan-solusi} menyertakan kolom kelemahan secara sengaja, karena tidak terdapat alternatif yang unggul pada seluruh kriteria, sehingga setiap pemilihan merupakan pertukaran yang perlu dinyatakan secara terbuka.
+Penilaian keenam alternatif dilakukan menggunakan \textit{Weighted Sum Model} (WSM), yaitu metode pengambilan keputusan multikriteria yang menghitung skor alternatif melalui penjumlahan
+nilai setiap kriteria yang telah dikalikan dengan bobotnya. Formulasi WSM yang digunakan adalah:
 
-\subsection{Gambaran Umum Solusi Terpilih}
-\label{subsec:gambaran-umum-solusi}
+\begin{equation}
+S_i = \sum_{j=1}^{N} a_{ij}w_j,
+\label{eq:bab3-wsm}
+\end{equation}
 
-Hasil analisis pada subbab sebelumnya menghasilkan rancangan sistem yang alurnya digambarkan secara umum pada Gambar~\ref{fig:gambaran-umum-sistem}.
+dengan $S_i$ menyatakan skor alternatif ke-$i$, $a_{ij}$ menyatakan skor alternatif ke-$i$ pada kriteria ke-$j$, $w_j$ menyatakan bobot kriteria ke-$j$, dan $N$ menyatakan jumlah
+kriteria. Seluruh kriteria dinilai pada skala ordinal 1 sampai 5 sehingga hasil dapat dijumlahkan secara konsisten \parencite{triantaphyllous1989}.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{images/Gambar_III2_GambaranUmumSistem.png}
-\caption{Gambaran umum alur sistem yang diusulkan.}
-\label{fig:gambaran-umum-sistem}
-\end{figure}
+WSM digunakan sebagai alat bantu analisis pemilihan, bukan sebagai bukti performa sistem. Skor dan bobot merupakan keputusan analitis yang bergantung pada karakteristik persoalan dan
+kebutuhan penelitian. Hasil penilaian keenam alternatif disajikan pada Tabel~\ref{tab:tab3.5_penilaian_wsm}.
 
-Gambar~\ref{fig:gambaran-umum-sistem} memperlihatkan bahwa sistem bekerja dalam lima tahap yang berurutan. Tahap pertama menerima catatan \emph{logbook} dan mengubahnya menjadi vektor fitur melalui rekayasa fitur, mencakup perhitungan besaran \emph{insulin on board} dan \emph{carbohydrate on board} sebagaimana diuraikan pada Subbab~\ref{subsec:pemilihan-fitur}. Tahap kedua menghasilkan taksiran kadar glukosa pada horizon 30 dan 60 menit beserta selang ketidakpastiannya. Tahap ketiga menerjemahkan taksiran tersebut menjadi kondisi klinis terstruktur berupa tingkat risiko, arah perubahan, dan tingkat kegentingan. Tahap keempat menyusun kueri penelusuran dari kondisi terstruktur tersebut, lalu menelusuri korpus pedoman dan menyusun rekomendasi berbahasa Indonesia yang disertai penunjuk dokumen dan halaman sumbernya. Tahap kelima menyerahkan rekomendasi kepada dokter untuk divalidasi sebelum diteruskan kepada pasien.
+\input{tables/bab3/tab3.5_penilaian_wsm.tex}
 
-Perbedaan pokok terhadap sistem berbasis RAG pada umumnya terletak pada tahap keempat. Pada sistem yang lazim, kueri penelusuran disusun dari kondisi yang sedang berlaku atau dari pertanyaan pengguna, sehingga panduan yang diperoleh menanggapi keadaan yang telah teramati. Pada sistem yang diusulkan, kueri disusun dari keluaran tahap ketiga, yaitu kondisi yang diperkirakan akan terjadi. Strategi inilah yang disebut \emph{query transformation} terkondisi-prediksi sebagaimana diperkenalkan pada Subbab~\ref{sec:kontribusi-penelitian}, sedangkan realisasinya menjadi pemenuhan KF-04 pada Tabel~\ref{tab:kebutuhan-fungsional}. Rancangan rinci setiap tahap beserta antarmuka antarmodulnya dipaparkan pada Bab~\ref{chap:perancangan}.
+Tabel~\ref{tab:tab3.5_penilaian_wsm} menunjukkan bahwa P6 memperoleh skor tertinggi, yaitu 4,50, sehingga dipilih sebagai pendekatan utama. P5 memperoleh skor kedua tertinggi sebesar
+3,10, tetapi memiliki keterterapan yang lebih rendah pada konteks penelitian. P1 sampai P4 memperoleh skor lebih rendah karena masing-masing tidak memenuhi sekurang-kurangnya 
+salah satu kebutuhan utama. Dengan demikian, P6 dipilih bukan karena diasumsikan paling baik secara umum, melainkan karena paling sesuai dengan kombinasi kebutuhan yang telah 
+ditetapkan pada penelitian ini.
+
+\subsection{Alternatif Keputusan Teknis}
+\label{subsec:bab3-alternatif-keputusan-teknis}
+
+Setelah pendekatan P6 ditetapkan, keputusan selanjutnya adalah memilih komponen teknis yang mewujudkan pendekatan tersebut. Alternatif dipertimbangkan untuk model prediksi, model
+bahasa, model embedding, strategi pengambilan pengetahuan, pengklasifikasi kondisi, dan orkestrasi alur.
+
+Untuk model prediksi, alternatif yang dipertimbangkan adalah Random Forest, Long Short-Term Memory, dan Gradient Boosting Machine. Untuk model bahasa, alternatifnya adalah layanan model
+bahasa besar berbasis awan atau model bahasa yang dijalankan secara lokal. Untuk embedding, alternatifnya adalah model lokal atau layanan embedding berbasis awan. Untuk pengambilan 
+pengetahuan, alternatifnya adalah RAG di atas korpus dokumen tidak terstruktur atau penelusuran SPARQL di atas graf pengetahuan. Pengklasifikasi kondisi dibandingkan antara 
+penetapan ambang langsung atas keluaran regresi dan pengklasifikasi terpisah. Sementara itu, orkestrasi alur dibandingkan antara penulisan sebagai kode program dan penggunaan perkakas 
+alur kerja visual.
+
+\subsection{Penentuan Keputusan Teknis}
+\label{subsec:bab3-penentuan-keputusan-teknis}
+
+Penentuan keputusan teknis dilakukan dengan menilai setiap alternatif terhadap kebutuhan yang paling relevan pada implementasinya. Matriks penilaian disajikan pada
+Tabel~\ref{tab:tab3.6_matriks_keputusan_teknis}. Tanda pada matriks menunjukkan tingkat kesesuaian alternatif terhadap kriteria: ``++'' memenuhi penuh, ``+'' memenuhi, ``$\circ$'' 
+memenuhi sebagian, dan ``--'' tidak memenuhi. Tanda tebal menunjukkan alternatif yang dipilih.
+
+\input{tables/bab3/tab3.6_matriks_keputusan_teknis.tex}
+
+Matriks tersebut menunjukkan bahwa Gradient Boosting dipilih untuk model prediksi karena memenuhi keterterapan dan memberikan keluaran yang sesuai untuk pembentukan kondisi, sedangkan
+LSTM gugur terutama karena keterterapan pada batasan lingkungan penelitian. Layanan model bahasa berbasis awan dipilih karena tidak membebani perangkat lokal, sementara model 
+embedding lokal dipilih karena tidak memerlukan biaya per permintaan dan dapat berjalan pada lingkungan komputasi penelitian.
+
+Untuk pengambilan pengetahuan, RAG di atas korpus dokumen tidak terstruktur dipilih karena tidak memerlukan pembangunan ontologi dan integrasi rekam medis. Pengklasifikasi kondisi
+terpisah dipilih karena kelas kondisi dapat dioptimalkan langsung untuk kebutuhan pembentukan kueri. Orkestrasi melalui kode program dipilih karena mendukung pemisahan logika domain 
+dan dapat berjalan tanpa server khusus.
+
+Alasan pemilihan serta kelemahan yang tetap diakui dirangkum pada Tabel~\ref{tab:tab3.7_alasan_keputusan_teknis}. Penyajian kelemahan secara eksplisit diperlukan karena tidak ada
+alternatif yang unggul pada seluruh kriteria.
+
+\input{tables/bab3/tab3.7_alasan_keputusan_teknis.tex}
+
+Keputusan teknis pada tahap ini merupakan hasil analisis kebutuhan dan pertimbangan terhadap keterbatasan penelitian. Keputusan tersebut kemudian menjadi dasar bagi perancangan
+arsitektur, modul prediksi, mekanisme RAG terkondisi-prediksi, dan integrasi pada sistem \textit{doctor-mediated}.

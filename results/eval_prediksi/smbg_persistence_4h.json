@@ -1,0 +1,120 @@
+{
+  "catatan": "Persistence = glukosa tidak berubah dari pembacaan terakhir (prediksi = nilai anchor). Jendela dibentuk lewat jalur penyiapan data yang sama persis dengan train_gbm_from_config, sehingga himpunan sampel dan splitnya identik dengan model produksi.",
+  "sumber_data": "ohio_t1dm.csv",
+  "split": "official_train_test",
+  "hasil": {
+    "FINGER_STICK_+240": {
+      "sequence_length": 8,
+      "horizon_min": 240.0,
+      "min_target_horizon_min": 180,
+      "max_target_horizon_min": 300,
+      "train": {
+        "n": 894,
+        "persistence": {
+          "RMSE": 91.2,
+          "MAE": 71.56,
+          "MAPE": 52.88,
+          "Clarke_A": 27.96,
+          "Clarke_B": 17.79,
+          "Clarke_C": 3.8,
+          "Clarke_D": 21.14,
+          "Clarke_E": 29.31,
+          "Clarke_A+B": 45.75
+        },
+        "perubahan_sebenarnya_mg_dl": {
+          "mean_abs": 71.56,
+          "median_abs": 60.0,
+          "p90_abs": 147.0,
+          "maks_abs": 346.0,
+          "sd": 91.16
+        }
+      },
+      "test": {
+        "n": 139,
+        "persistence": {
+          "RMSE": 95.69,
+          "MAE": 77.6,
+          "MAPE": 49.79,
+          "Clarke_A": 28.78,
+          "Clarke_B": 10.07,
+          "Clarke_C": 2.88,
+          "Clarke_D": 20.86,
+          "Clarke_E": 37.41,
+          "Clarke_A+B": 38.85
+        },
+        "perubahan_sebenarnya_mg_dl": {
+          "mean_abs": 77.6,
+          "median_abs": 71.0,
+          "p90_abs": 161.8,
+          "maks_abs": 309.0,
+          "sd": 95.66
+        }
+      }
+    }
+  },
+  "pembanding_model_produksi": {
+    "FINGER_STICK_+240": {
+      "source": "FINGER_STICK",
+      "horizon_min": 240.0,
+      "sequence_length": 8,
+      "train_samples": 894,
+      "test_samples": 139,
+      "target_tolerance_min": 0.0,
+      "min_target_horizon_min": 180,
+      "max_target_horizon_min": 300,
+      "min_history_interval_min": 5.0,
+      "max_history_gap_min": 720,
+      "RMSE": 68.2361142607191,
+      "MAE": 55.6152169581706,
+      "MAPE": 33.12248331261052,
+      "Clarke_A": 37.410071942446045,
+      "Clarke_B": 15.107913669064748,
+      "Clarke_C": 0.0,
+      "Clarke_D": 24.46043165467626,
+      "Clarke_E": 23.021582733812952,
+      "Clarke_A+B": 52.517985611510795
+    },
+    "CGM_+30": {
+      "source": "CGM",
+      "horizon_min": 30.0,
+      "sequence_length": 12,
+      "train_samples": 129113,
+      "test_samples": 30281,
+      "target_tolerance_min": 2.5,
+      "min_target_horizon_min": null,
+      "max_target_horizon_min": null,
+      "min_history_interval_min": 0.0,
+      "max_history_gap_min": 30,
+      "RMSE": 18.67189905819944,
+      "MAE": 13.193594930981732,
+      "MAPE": 8.994477533362854,
+      "Clarke_A": 89.9012582147221,
+      "Clarke_B": 5.964135926818797,
+      "Clarke_C": 0.0,
+      "Clarke_D": 2.3017733892539876,
+      "Clarke_E": 1.8328324692051121,
+      "Clarke_A+B": 95.8653941415409
+    },
+    "CGM_+60": {
+      "source": "CGM",
+      "horizon_min": 60.0,
+      "sequence_length": 12,
+      "train_samples": 127579,
+      "test_samples": 29880,
+      "target_tolerance_min": 2.5,
+      "min_target_horizon_min": null,
+      "max_target_horizon_min": null,
+      "min_history_interval_min": 0.0,
+      "max_history_gap_min": 30,
+      "RMSE": 31.175314972273277,
+      "MAE": 22.964118206940483,
+      "MAPE": 15.89612968044481,
+      "Clarke_A": 72.59370816599731,
+      "Clarke_B": 14.899598393574298,
+      "Clarke_C": 0.006693440428380187,
+      "Clarke_D": 6.897590361445784,
+      "Clarke_E": 5.602409638554217,
+      "Clarke_A+B": 87.49330655957161
+    }
+  }
+}

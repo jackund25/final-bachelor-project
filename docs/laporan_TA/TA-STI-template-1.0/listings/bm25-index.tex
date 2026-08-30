@@ -1,0 +1,19 @@
+def _bangun_bm25(self) -> None:
+    # (docstring dipangkas untuk keringkasan)
+    try:
+        import chromadb
+        from rank_bm25 import BM25Okapi
+
+        col = chromadb.PersistentClient(path=self.persist_dir).get_collection(
+            self.collection_name)
+        # Dokumen DAN metadata diambil satu kali di sini, lalu dipakai ulang dari
+        # memori oleh _hasil_dari_indeks. Sebelumnya metadata dibaca ulang dari
+        # sqlite pada SETIAP kueri — seluruh korpus dimuat hanya untuk menyusun
+        # lima baris hasil.
+        r = col.get(include=["documents", "metadatas"])
+        self._bm25_teks = r["documents"]
+        self._bm25_metas = r["metadatas"]
+        self._bm25_peta = {t: i for i, t in enumerate(self._bm25_teks)}
+        self._bm25 = BM25Okapi([_tokenize(t) for t in self._bm25_teks])
+        logger.info("Indeks BM25 dibangun atas %d potongan (mode=%s)",
+                    len(self._bm25_teks), self.retrieval_mode)

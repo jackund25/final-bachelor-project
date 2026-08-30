@@ -1,0 +1,15 @@
+except Exception as exc:  # noqa: BLE001
+    # Gagal membangun BM25 TIDAK boleh mematikan retriever: jalur vektor
+    # tetap sah. Tetapi mode diturunkan secara EKSPLISIT dan dicatat, supaya
+    # sistem tidak diam-diam menelusur dengan cara yang berbeda dari yang
+    # dinyatakan config — persis jenis penyimpangan senyap yang menjadi
+    # pokok penyelidikan T7-T14.
+    logger.warning("Indeks BM25 gagal dibangun (%s); mode %s -> vektor",
+                   exc, self.retrieval_mode)
+    # Sebabnya DISIMPAN, bukan hanya dicatat ke log. Log mudah terlewat,
+    # sedangkan penurunan mode mengubah cara sistem menelusur — operator
+    # dan tes harus dapat menanyakannya langsung.
+    self._bm25_error = f"{type(exc).__name__}: {exc}"
+    self.mode_diminta = self.retrieval_mode
+    self.retrieval_mode = "vektor"
+    self._bm25 = None

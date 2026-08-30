@@ -18,10 +18,8 @@ class LogbookRequest(BaseModel):
     insulin: float = 0.0
     carbs: float = 0.0
     activity: float = 0.0
-    # DICABUT 24 Agustus 2026 — bukan fitur model, dan kanal sumbernya di OhioT1DM
-    # praktis kosong (7 event / 12 pasien). Medannya tetap diterima agar klien lama
-    # tidak putus, tetapi tidak lagi disimpan. Lihat backend/routes/clinical.py.
-    stress: float | None = None
+    # `stress` DICABUT SEPENUHNYA — bukan fitur model, dan kanal sumbernya di
+    # OhioT1DM praktis kosong (7 event / 12 pasien). Lihat backend/routes/clinical.py.
     insulin_type: str | None = None
     meal_type: str | None = None
     duration_min: float | None = None

@@ -1,0 +1,25 @@
+% Sumber angka: results/evaluasi_ahli/ringkasan.json -> agregat.pedoman,
+% dihasilkan scripts/skor_evaluasi_ahli.py. Cacah dari empat penilai pada dua kondisi,
+% sehingga totalnya delapan penilaian.
+% Butir ini kategoris, bukan berskala, sehingga tidak boleh dirata-ratakan.
+\begin{table}[htbp]
+\centering
+\caption{Penilaian ahli atas kesesuaian rekomendasi terhadap pedoman, dilaporkan sebagai cacah penilai. Butir ini bersifat kategoris dan hanya ditanyakan pada dua kondisi yang menuntut tindakan.}
+\label{tab:pedoman-ahli}
+\small
+\begin{tabularx}{\textwidth}{@{}Lcc@{}}
+\toprule
+\textbf{Penilaian} & \textbf{Hipoglikemia (P003)} & \textbf{Hiperglikemia (P002)} \\
+\midrule
+Sesuai pedoman dan aman diikuti & \textbf{0} & \textbf{0} \\
+Sesuai pedoman, tetapi perlu verifikasi dokter & 3 & 4 \\
+Kurang sesuai pedoman, berpotensi berisiko & \textbf{1} & 0 \\
+Tidak sesuai pedoman & 0 & 0 \\
+\midrule
+\textbf{Jumlah penilai} & \textbf{4} & \textbf{4} \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.4em}
+{\tabnotestyle Dari delapan penilaian, \textbf{tidak satu pun} menyatakan rekomendasi sistem aman diikuti tanpa verifikasi. Tujuh menuntut verifikasi dokter, yang merupakan keluaran yang memang dirancang pada alur \emph{doctor-mediated}, dan satu menilai rekomendasi pada kondisi hipoglikemia kurang sesuai pedoman serta berpotensi berisiko. Penilaian terakhir itu tidak terdeteksi oleh pemeriksaan keamanan otomatis pada Subbab~\ref{sec:safety-llm}, yang melaporkan 100\% besaran klinis tertelusur dan nol tindakan berlawanan arah; keduanya tetap sahih, sebab keduanya mengukur hal yang berbeda. Kondisi stabil (P004) tidak memuat butir ini karena di sana tidak ada tindakan yang perlu diadjudikasi.\par}
+\end{table}

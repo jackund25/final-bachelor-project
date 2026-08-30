@@ -34,7 +34,6 @@ class Observation(BaseModel):
     insulin: float = 0.0
     carbs: float = 0.0
     activity: float = 0.0
-    stress: float = 0.0
 
     # Optional at observation level.
     # The request-level glucose_source is the authoritative

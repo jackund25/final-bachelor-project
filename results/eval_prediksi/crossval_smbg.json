@@ -1,0 +1,380 @@
+{
+  "sumber": "FINGER_STICK",
+  "k_fold": 6,
+  "pembagian": "per pasien (pids[i::K]) — BUKAN dataset_split resmi",
+  "catatan": "Model dan persistence dinilai pada himpunan uji yang sama tiap fold, sehingga galatnya berpasangan. Split per pasien menguji generalisasi ke pasien baru; angkanya tidak sebanding dengan hasil split resmi.",
+  "konfigurasi": {
+    "produksi_seq8_4j": {
+      "folds": [
+        {
+          "fold": 0,
+          "pasien_uji": [
+            "ohio_540",
+            "ohio_570"
+          ],
+          "n_latih": 891,
+          "n_uji": 157,
+          "model": {
+            "RMSE": 81.43,
+            "MAE": 67.67,
+            "Clarke_A": 26.11,
+            "Clarke_A+B": 45.86,
+            "Clarke_E": 22.93
+          },
+          "persistence": {
+            "RMSE": 90.48,
+            "MAE": 68.99,
+            "Clarke_A": 35.03,
+            "Clarke_A+B": 47.77,
+            "Clarke_E": 35.67
+          }
+        },
+        {
+          "fold": 1,
+          "pasien_uji": [
+            "ohio_544",
+            "ohio_575"
+          ],
+          "n_latih": 1014,
+          "n_uji": 34,
+          "model": {
+            "RMSE": 86.32,
+            "MAE": 69.41,
+            "Clarke_A": 29.41,
+            "Clarke_A+B": 55.88,
+            "Clarke_E": 14.71
+          },
+          "persistence": {
+            "RMSE": 120.64,
+            "MAE": 94.32,
+            "Clarke_A": 23.53,
+            "Clarke_A+B": 41.18,
+            "Clarke_E": 29.41
+          }
+        },
+        {
+          "fold": 2,
+          "pasien_uji": [
+            "ohio_552",
+            "ohio_584"
+          ],
+          "n_latih": 1033,
+          "n_uji": 15,
+          "model": {
+            "RMSE": 53.44,
+            "MAE": 45.57,
+            "Clarke_A": 40.0,
+            "Clarke_A+B": 46.67,
+            "Clarke_E": 20.0
+          },
+          "persistence": {
+            "RMSE": 96.05,
+            "MAE": 69.27,
+            "Clarke_A": 53.33,
+            "Clarke_A+B": 66.67,
+            "Clarke_E": 13.33
+          }
+        },
+        {
+          "fold": 3,
+          "pasien_uji": [
+            "ohio_559",
+            "ohio_588"
+          ],
+          "n_latih": 852,
+          "n_uji": 196,
+          "model": {
+            "RMSE": 68.24,
+            "MAE": 53.5,
+            "Clarke_A": 34.18,
+            "Clarke_A+B": 68.37,
+            "Clarke_E": 10.2
+          },
+          "persistence": {
+            "RMSE": 79.96,
+            "MAE": 60.96,
+            "Clarke_A": 28.06,
+            "Clarke_A+B": 58.16,
+            "Clarke_E": 24.49
+          }
+        },
+        {
+          "fold": 4,
+          "pasien_uji": [
+            "ohio_563",
+            "ohio_591"
+          ],
+          "n_latih": 599,
+          "n_uji": 449,
+          "model": {
+            "RMSE": 71.03,
+            "MAE": 58.56,
+            "Clarke_A": 32.52,
+            "Clarke_A+B": 51.0,
+            "Clarke_E": 22.49
+          },
+          "persistence": {
+            "RMSE": 94.72,
+            "MAE": 77.74,
+            "Clarke_A": 22.94,
+            "Clarke_A+B": 36.75,
+            "Clarke_E": 32.96
+          }
+        },
+        {
+          "fold": 5,
+          "pasien_uji": [
+            "ohio_567",
+            "ohio_596"
+          ],
+          "n_latih": 851,
+          "n_uji": 197,
+          "model": {
+            "RMSE": 69.13,
+            "MAE": 55.12,
+            "Clarke_A": 38.07,
+            "Clarke_A+B": 58.38,
+            "Clarke_E": 18.78
+          },
+          "persistence": {
+            "RMSE": 90.0,
+            "MAE": 69.83,
+            "Clarke_A": 35.03,
+            "Clarke_A+B": 47.21,
+            "Clarke_E": 27.92
+          }
+        }
+      ],
+      "n_fold_sah": 6,
+      "rerata_lintas_fold": {
+        "model": {
+          "RMSE": {
+            "rerata": 71.6,
+            "sd": 11.5,
+            "min": 53.44,
+            "maks": 86.32
+          },
+          "Clarke_A+B": {
+            "rerata": 54.36,
+            "sd": 8.45,
+            "min": 45.86,
+            "maks": 68.37
+          }
+        },
+        "persistence": {
+          "RMSE": {
+            "rerata": 95.31,
+            "sd": 13.64,
+            "min": 79.96,
+            "maks": 120.64
+          },
+          "Clarke_A+B": {
+            "rerata": 49.62,
+            "sd": 11.04,
+            "min": 36.75,
+            "maks": 66.67
+          }
+        }
+      },
+      "uji_berpasangan_RMSE": {
+        "selisih_pers_minus_model": {
+          "rerata": 23.71,
+          "sd": 12.93,
+          "min": 9.05,
+          "maks": 42.61
+        },
+        "fold_model_menang": 6,
+        "n_fold": 6,
+        "wilcoxon_p": 0.0312,
+        "ttest_rel_p": 0.0065,
+        "catatan_p": "K=6 → p minimum Wilcoxon dua sisi = 0,03125"
+      }
+    },
+    "seq5_4j": {
+      "folds": [
+        {
+          "fold": 0,
+          "pasien_uji": [
+            "ohio_540",
+            "ohio_570"
+          ],
+          "n_latih": 1148,
+          "n_uji": 196,
+          "model": {
+            "RMSE": 77.52,
+            "MAE": 62.79,
+            "Clarke_A": 31.63,
+            "Clarke_A+B": 48.98,
+            "Clarke_E": 19.9
+          },
+          "persistence": {
+            "RMSE": 87.68,
+            "MAE": 66.92,
+            "Clarke_A": 33.16,
+            "Clarke_A+B": 49.49,
+            "Clarke_E": 31.63
+          }
+        },
+        {
+          "fold": 1,
+          "pasien_uji": [
+            "ohio_544",
+            "ohio_575"
+          ],
+          "n_latih": 1272,
+          "n_uji": 72,
+          "model": {
+            "RMSE": 89.28,
+            "MAE": 69.56,
+            "Clarke_A": 26.39,
+            "Clarke_A+B": 63.89,
+            "Clarke_E": 16.67
+          },
+          "persistence": {
+            "RMSE": 113.49,
+            "MAE": 83.88,
+            "Clarke_A": 22.22,
+            "Clarke_A+B": 48.61,
+            "Clarke_E": 25.0
+          }
+        },
+        {
+          "fold": 2,
+          "pasien_uji": [
+            "ohio_552",
+            "ohio_584"
+          ],
+          "n_latih": 1325,
+          "n_uji": 19,
+          "model": {
+            "RMSE": 72.29,
+            "MAE": 53.8,
+            "Clarke_A": 52.63,
+            "Clarke_A+B": 57.89,
+            "Clarke_E": 15.79
+          },
+          "persistence": {
+            "RMSE": 94.13,
+            "MAE": 68.37,
+            "Clarke_A": 52.63,
+            "Clarke_A+B": 63.16,
+            "Clarke_E": 21.05
+          }
+        },
+        {
+          "fold": 3,
+          "pasien_uji": [
+            "ohio_559",
+            "ohio_588"
+          ],
+          "n_latih": 1060,
+          "n_uji": 284,
+          "model": {
+            "RMSE": 71.24,
+            "MAE": 56.5,
+            "Clarke_A": 31.34,
+            "Clarke_A+B": 63.03,
+            "Clarke_E": 17.25
+          },
+          "persistence": {
+            "RMSE": 83.37,
+            "MAE": 64.08,
+            "Clarke_A": 28.52,
+            "Clarke_A+B": 57.39,
+            "Clarke_E": 23.24
+          }
+        },
+        {
+          "fold": 4,
+          "pasien_uji": [
+            "ohio_563",
+            "ohio_591"
+          ],
+          "n_latih": 794,
+          "n_uji": 550,
+          "model": {
+            "RMSE": 71.79,
+            "MAE": 58.74,
+            "Clarke_A": 34.55,
+            "Clarke_A+B": 54.18,
+            "Clarke_E": 21.27
+          },
+          "persistence": {
+            "RMSE": 97.77,
+            "MAE": 79.88,
+            "Clarke_A": 22.0,
+            "Clarke_A+B": 36.91,
+            "Clarke_E": 33.09
+          }
+        },
+        {
+          "fold": 5,
+          "pasien_uji": [
+            "ohio_567",
+            "ohio_596"
+          ],
+          "n_latih": 1121,
+          "n_uji": 223,
+          "model": {
+            "RMSE": 67.99,
+            "MAE": 53.58,
+            "Clarke_A": 42.15,
+            "Clarke_A+B": 58.3,
+            "Clarke_E": 21.52
+          },
+          "persistence": {
+            "RMSE": 90.06,
+            "MAE": 70.29,
+            "Clarke_A": 34.08,
+            "Clarke_A+B": 45.74,
+            "Clarke_E": 29.15
+          }
+        }
+      ],
+      "n_fold_sah": 6,
+      "rerata_lintas_fold": {
+        "model": {
+          "RMSE": {
+            "rerata": 75.02,
+            "sd": 7.63,
+            "min": 67.99,
+            "maks": 89.28
+          },
+          "Clarke_A+B": {
+            "rerata": 57.71,
+            "sd": 5.58,
+            "min": 48.98,
+            "maks": 63.89
+          }
+        },
+        "persistence": {
+          "RMSE": {
+            "rerata": 94.42,
+            "sd": 10.6,
+            "min": 83.37,
+            "maks": 113.49
+          },
+          "Clarke_A+B": {
+            "rerata": 50.22,
+            "sd": 9.16,
+            "min": 36.91,
+            "maks": 63.16
+          }
+        }
+      },
+      "uji_berpasangan_RMSE": {
+        "selisih_pers_minus_model": {
+          "rerata": 19.4,
+          "sd": 6.6,
+          "min": 10.16,
+          "maks": 25.98
+        },
+        "fold_model_menang": 6,
+        "n_fold": 6,
+        "wilcoxon_p": 0.0312,
+        "ttest_rel_p": 0.0008,
+        "catatan_p": "K=6 → p minimum Wilcoxon dua sisi = 0,03125"
+      }
+    }
+  }
+}

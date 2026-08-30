@@ -1,0 +1,67 @@
+\begin{table}[ht]
+    \centering
+    \caption{Kerangka evaluasi komponen prediksi dan RAG dalam sistem pendukung keputusan.}
+    \label{tab:bab2.4-kerangka-evaluasi}
+
+    \begin{tabular}{p{3.2cm} p{4.2cm} p{5.0cm}}
+        \hline
+        \textbf{Komponen}
+        & \textbf{Metrik/Instrumen}
+        & \textbf{Aspek yang Diukur} \\
+        \hline
+
+        Prediksi glukosa
+        &
+        RMSE, MAE, MAPE
+        &
+        Besarnya kesalahan numerik antara nilai prediksi dan nilai aktual.
+        \\
+
+        Prediksi klinis
+        &
+        Clarke Error Grid
+        &
+        Konsekuensi klinis dari perbedaan antara nilai prediksi dan nilai aktual.
+        \\
+
+        Retrieval
+        &
+        Hit@k, MRR, nDCG
+        &
+        Keberadaan, posisi, dan kualitas pemeringkatan dokumen relevan.
+        \\
+
+        Generation
+        &
+        Faithfulness, context precision, context recall
+        &
+        Keterikatan keluaran terhadap konteks serta kualitas konteks yang digunakan.
+        \\
+
+        Stability
+        &
+        Repeated-run stability
+        &
+        Konsistensi keluaran sistem pada eksekusi berulang.
+        \\
+
+        Safety
+        &
+        Generation safety
+        &
+        Kemunculan keluaran yang tidak didukung, melampaui konteks, atau tidak menyatakan keterbatasan.
+        \\
+
+        Usability
+        &
+        System Usability Scale (SUS)
+        &
+        Persepsi kemudahan penggunaan sistem oleh pengguna sasaran.
+        \\
+
+        \hline
+    \end{tabular}
+    
+    \noindent\tabnotestyle Sumber: Disusun penulis berdasarkan literatur evaluasi prediksi, RAG, dan clinical AI yang dibahas pada Subbab II.5 dan II.9.\normalsize
+
+\end{table}

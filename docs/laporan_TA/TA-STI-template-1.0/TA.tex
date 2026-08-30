@@ -104,6 +104,15 @@
 \usepackage{array} % for better arrays (eg. in tabular environment)
 \usepackage{threeparttable} % for tables with notes
 \usepackage{tabularx} % for tables with adjustable-width columns
+% Kolom lentur untuk tabel yang kolomnya memuat kalimat. Dipakai agar tabel lebar
+% membungkus di dalam \textwidth alih-alih meluber keluar margin.
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+% Gaya paragraf catatan di bawah tabel. \centering dari lingkungan table
+% menular ke paragraf catatan sehingga barisnya ikut rata tengah; makro ini
+% memulihkan rata kiri-kanan seperti paragraf biasa.
+\newcommand{\tabnotestyle}{\footnotesize\leftskip=0pt\rightskip=0pt\parfillskip=0pt plus 1fil\noindent}
+\usepackage{rotating} % for sidewaysfigure: landscape pages for wide diagrams
 \usepackage{xcolor} % for color definitions
 \usepackage[title,titletoc]{appendix} % for appendix management
 \usepackage{csquotes} % for context-sensitive quotation facilities
@@ -196,7 +205,7 @@
 \setlength{\cftsecindent}{1.8em}
 \setlength{\cftsecnumwidth}{2.4em}
 \setlength{\cftsubsecindent}{4.2em}
-\setlength{\cftsubsecnumwidth}{2.8em}
+\setlength{\cftsubsecnumwidth}{3.4em}
 \setlength{\cftsubsubsecindent}{7.0em}
 \setlength{\cftsubsubsecnumwidth}{3.2em}
 

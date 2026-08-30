@@ -1451,3 +1451,193 @@ h2 {
     padding: 10px 12px;
   }
 }
+
+
+/* =============================================================
+   KARTU PASIEN DAN CATATAN SUMBER DATA
+   =============================================================
+   Ditambahkan setelah evaluasi dokter. Dua keluhan yang dijawab di sini:
+   pemilih pasien tidak terlihat karena tidak berjudul dan terselip di dalam
+   bagian sumber glukosa, serta tidak adanya cara mendaftarkan pasien baru.
+   ============================================================= */
+
+.kartu-pasien {
+  margin-top: 24px;
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.kartu-pasien-ringkas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.kartu-pasien-kode {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.kartu-pasien-panel {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.kartu-pasien-mode {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.kartu-pasien-mode label,
+.kartu-pasien-sumber label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.kartu-pasien-baris {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.kartu-pasien-baris label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.kartu-pasien-baris select,
+.kartu-pasien-baris input {
+  min-width: 200px;
+}
+
+.kartu-pasien-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.kartu-pasien-sumber {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.kartu-pasien-sumber legend {
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.kartu-pasien-galat {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fdecec;
+  color: #9d2626;
+  font-size: 13px;
+}
+
+.kartu-pasien-pesan {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--success-bg);
+  color: var(--success);
+  font-size: 13px;
+}
+
+.catatan-data {
+  margin-top: 24px;
+  padding: 16px 18px;
+  border: 1px solid #f0dcb4;
+  border-radius: 14px;
+  background: #fdf7ea;
+}
+
+.catatan-data-ringkas {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.catatan-data-ringkas p {
+  flex: 1 1 320px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.catatan-data-tanda {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #b47f12;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.catatan-data-tombol {
+  border: 1px solid #d9bd7f;
+  border-radius: 999px;
+  padding: 7px 14px;
+  background: transparent;
+  color: #8a6410;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.catatan-data-isi {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #f0dcb4;
+}
+
+.catatan-data-isi p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.catatan-data-isi p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .kartu-pasien-ringkas,
+  .kartu-pasien-baris {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .kartu-pasien-baris select,
+  .kartu-pasien-baris input {
+    width: 100%;
+  }
+}

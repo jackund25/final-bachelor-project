@@ -5,7 +5,7 @@ def test_decision_log_create_update_and_list_patients(tmp_path):
 	storage_file = tmp_path / "patient_states.json"
 	manager = ClinicalDecisionLog(storage_file=str(storage_file))
 
-	state = manager.create_state("P001", {"current_glucose": 123.0, "stress_level": 7})
+	state = manager.create_state("P001", {"current_glucose": 123.0, "activity_level": 7})
 	updated = manager.update_state("P001", {"carbs_on_board": 20.0, "activity_level": 15})
 
 	assert state["current_glucose"] == 123.0
@@ -18,7 +18,7 @@ def test_decision_log_persists_and_restores_state(tmp_path):
 	storage_file = tmp_path / "patient_states.json"
 	manager = ClinicalDecisionLog(storage_file=str(storage_file))
 
-	manager.create_state("P002", {"current_glucose": 145.0, "stress_level": 4})
+	manager.create_state("P002", {"current_glucose": 145.0, "carbs_on_board": 4.0})
 	manager.update_state("P002", {"insulin_on_board": 2.5})
 	manager.save()
 
@@ -28,7 +28,7 @@ def test_decision_log_persists_and_restores_state(tmp_path):
 
 	assert state["current_glucose"] == 145.0
 	assert state["insulin_on_board"] == 2.5
-	assert state["stress_level"] == 4
+	assert state["carbs_on_board"] == 4.0
 
 
 def test_decision_log_records_events(tmp_path):

@@ -314,6 +314,10 @@ def train_gbm_from_config(
     data_source: str = "auto",
     source: str = "CGM",
     horizon_min: Optional[float] = None,
+    sequence_length: Optional[int] = None,
+    min_target_horizon_min: Optional[float] = None,
+    max_target_horizon_min: Optional[float] = None,
+    save_artifacts: bool = True,
 ) -> Dict:
     """
     Train one modality-specific GBM.
@@ -324,6 +328,15 @@ def train_gbm_from_config(
     FINGER_STICK:
         window target using
         min_target_horizon_min / max_target_horizon_min.
+
+    Overrides:
+        sequence_length, min_target_horizon_min, max_target_horizon_min
+        replace the source-profile values when given. They exist for
+        configuration sweeps; leaving them None reproduces the production
+        path exactly.
+
+        save_artifacts=False skips writing to models/, so a sweep cannot
+        overwrite the production bundle.
     """
     with open(
         config_path,
@@ -458,7 +471,9 @@ def train_gbm_from_config(
         ]
 
     sequence_length = int(
-        source_cfg.get(
+        sequence_length
+        if sequence_length is not None
+        else source_cfg.get(
             "sequence_length",
             config["model"].get(
                 "sequence_length",
@@ -485,12 +500,20 @@ def train_gbm_from_config(
         )
     )
 
-    min_target_horizon = source_cfg.get(
-        "min_target_horizon_min"
+    min_target_horizon = (
+        min_target_horizon_min
+        if min_target_horizon_min is not None
+        else source_cfg.get(
+            "min_target_horizon_min"
+        )
     )
 
-    max_target_horizon = source_cfg.get(
-        "max_target_horizon_min"
+    max_target_horizon = (
+        max_target_horizon_min
+        if max_target_horizon_min is not None
+        else source_cfg.get(
+            "max_target_horizon_min"
+        )
     )
 
     train_df = df[
@@ -591,16 +614,20 @@ def train_gbm_from_config(
         # Vektor prediksi disimpan supaya Clarke Error Grid dapat digambar tanpa
         # melatih ulang, dan dijamin berasal dari model yang SAMA dengan tabelnya.
         # Impor lokal agar modul ini tidak bergantung siklik pada persiapan_data.
-        from src.models.persiapan_data import simpan_prediksi
+        #
+        # Ikut dijaga save_artifacts: sapuan konfigurasi tidak boleh menimpa
+        # vektor prediksi produksi yang menjadi sumber gambar Clarke grid.
+        if save_artifacts:
+            from src.models.persiapan_data import simpan_prediksi
 
-        simpan_prediksi(
-            "gbm",
-            source,
-            current_horizon,
-            y_test,
-            y_pred,
-            anc_test,
-        )
+            simpan_prediksi(
+                "gbm",
+                source,
+                current_horizon,
+                y_test,
+                y_pred,
+                anc_test,
+            )
 
         label = (
             f"h{int(current_horizon)}m"
@@ -622,6 +649,11 @@ def train_gbm_from_config(
                 for k, v in metrics.items()
             },
         }
+
+        if not save_artifacts:
+            # Jalur sapuan konfigurasi. Metrik tetap dikembalikan, tetapi
+            # models/ tidak disentuh sehingga bundel produksi aman.
+            continue
 
         models_dir = Path(
             "models"
@@ -797,6 +829,36 @@ def main() -> None:
         ),
     )
 
+    parser.add_argument(
+        "--sequence_length",
+        type=int,
+        default=None,
+        help=(
+            "Override history length. "
+            "Otherwise source profile is used."
+        ),
+    )
+
+    parser.add_argument(
+        "--min_target_horizon_min",
+        type=float,
+        default=None,
+        help="Override target window lower bound.",
+    )
+
+    parser.add_argument(
+        "--max_target_horizon_min",
+        type=float,
+        default=None,
+        help="Override target window upper bound.",
+    )
+
+    parser.add_argument(
+        "--no_save",
+        action="store_true",
+        help="Do not write anything into models/.",
+    )
+
     args = parser.parse_args()
 
     train_gbm_from_config(
@@ -804,6 +866,10 @@ def main() -> None:
         data_source=args.data_source,
         source=args.source,
         horizon_min=args.horizon_min,
+        sequence_length=args.sequence_length,
+        min_target_horizon_min=args.min_target_horizon_min,
+        max_target_horizon_min=args.max_target_horizon_min,
+        save_artifacts=not args.no_save,
     )
 
 

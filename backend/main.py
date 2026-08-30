@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -8,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.prediction import router as prediction_router
 from backend.routes.clinical import router as clinical_router
 from backend.routes.logbook import router as logbook_router
+from backend.routes.patients import router as patients_router
 
 logger = logging.getLogger(__name__)
 
@@ -53,10 +55,43 @@ def _panaskan() -> None:
         _status_pemanasan["berjalan"] = False
 
 
+# Jeda sebelum pemanasan dimulai, dalam detik.
+#
+# SEBAB (24 Agustus 2026, deploy kedua). Render menjalankan instans LAMA dan BARU
+# bersamaan demi zero-downtime: instans lama tetap melayani sampai yang baru lolos
+# health check. Dua proses Python dengan langchain dan chromadb termuat sudah mepet
+# di 512 MB. Pemanasan yang mulai seketika membuat instans baru merebut seluruh
+# memori kerjanya TEPAT di jendela tumpang-tindih itu, dan Render melaporkan
+# "Ran out of memory (used over 512MB)" satu menit setelah tiap deploy dimulai.
+#
+# Menunda pemanasan membuat instans baru boot RINGAN, lolos health check, instans
+# lama berhenti, dan barulah memori dialokasikan — berurutan, bukan berbarengan.
+#
+# Menundanya aman karena _kunci_bangun sudah membuat permintaan yang datang lebih
+# awal MENUNGGU pembangunan yang sama, bukan memulai yang kedua. Tanpa kunci itu,
+# jeda ini justru akan memindahkan pembangunan ke thread permintaan.
+_JEDA_PEMANASAN_DETIK = int(os.getenv("JEDA_PEMANASAN_DETIK", "90"))
+
+
+async def _panaskan_setelah_jeda() -> None:
+    if _JEDA_PEMANASAN_DETIK > 0:
+        logger.info(
+            "Pemanasan ditunda %d detik agar tidak berimpit dengan instans lama "
+            "yang masih melayani selama deploy.", _JEDA_PEMANASAN_DETIK)
+        await asyncio.sleep(_JEDA_PEMANASAN_DETIK)
+
+    await asyncio.to_thread(_panaskan)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    asyncio.create_task(asyncio.to_thread(_panaskan))
-    yield
+    tugas = asyncio.create_task(_panaskan_setelah_jeda())
+    try:
+        yield
+    finally:
+        # Instans yang sedang dimatikan tidak boleh meneruskan pemanasan: memorinya
+        # justru dibutuhkan instans penggantinya.
+        tugas.cancel()
 
 
 app = FastAPI(
@@ -86,6 +121,7 @@ app.add_middleware(
 app.include_router(prediction_router)
 app.include_router(clinical_router)
 app.include_router(logbook_router)
+app.include_router(patients_router)
 
 
 # ---------------------------------------------------------

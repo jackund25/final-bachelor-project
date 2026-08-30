@@ -1,5 +1,43 @@
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+// Asal backend yang dipanggil dari PERAMBAN.
+//
+// Tiga keadaan yang harus dibedakan, dan pembedaannya bergantung pada `undefined`
+// versus string kosong — karena itu `??`, BUKAN `||`. Dengan `||`, string kosong
+// ikut jatuh ke nilai bawaan dan mode satu-asal di bawah tidak akan pernah bisa
+// dipilih.
+//
+//   tidak disetel  -> "http://127.0.0.1:8000"  pengembangan biasa di satu mesin
+//   berisi URL     -> URL itu                  penerapan Vercel + backend publik
+//   string kosong  -> "" (satu asal)           permintaan menjadi relatif, mis.
+//                                              "/api/clinical", lalu diteruskan
+//                                              proksi rewrites() di next.config.ts
+//
+// Keadaan ketiga dipakai saat evaluasi dokter dijalankan dari penerapan lokal di
+// balik Cloudflare Tunnel: URL terowongan gratis berganti tiap dijalankan,
+// sedangkan NEXT_PUBLIC_* dipanggang saat build. Membuat permintaan relatif
+// memutus ketergantungan itu, sehingga URL boleh berubah tanpa build ulang.
+export const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000"
+).replace(/\/+$/, "");
+
+// Header yang WAJIB menyertai setiap permintaan ke backend.
+//
+// `ngrok-skip-browser-warning` diperlukan saat backend disajikan lewat terowongan
+// ngrok gratis pada sesi evaluasi dokter (docs/DEPLOY_LOKAL_NGROK.md). Tanpa
+// header ini ngrok menyisipkan halaman peringatan HTML pada permintaan yang
+// terlihat berasal dari peramban — termasuk fetch() — sehingga `response.json()`
+// gagal mengurai HTML dan dokter menerima galat yang sama sekali tidak
+// menjelaskan sebabnya.
+//
+// Nilainya tidak diperiksa ngrok; keberadaannya yang menentukan. Header ini tidak
+// berbahaya pada penerapan lain: host yang tidak mengenalnya mengabaikannya.
+export function headerApi(
+  tambahan: Record<string, string> = {},
+): Record<string, string> {
+  return {
+    "ngrok-skip-browser-warning": "1",
+    ...tambahan,
+  };
+}
 
 export type GlucoseSource = "CGM" | "FINGER_STICK";
 
@@ -113,9 +151,7 @@ export async function runClinicalAssessment(
 ): Promise<ClinicalResponse> {
   const response = await fetch(`${API_BASE_URL}/api/clinical`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: headerApi({ "Content-Type": "application/json" }),
     body: JSON.stringify({
       patient_code: patientId,
       glucose_source: glucoseSource,

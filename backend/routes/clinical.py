@@ -61,16 +61,13 @@ class Observation(BaseModel):
     carbs: float = 0.0
     activity: float = 0.0
 
-    # `stress` DICABUT dari alur, 24 Agustus 2026. Ia tidak pernah menjadi fitur
-    # model (tidak ada pada config.model.engineered_features), dan kanal `stressors`
-    # OhioT1DM hanya memuat 7 event di seluruh 12 pasien sehingga inheren tak
-    # informatif. Meminta dokter mengisinya membuang waktu mereka; lebih buruk lagi,
-    # angka bawaan 5 sempat dicetak balik sebagai "Tingkat stres: 5/10" seolah fakta
-    # terukur (temuan T5).
-    #
-    # Medannya TETAP diterima supaya klien lama tidak putus, tetapi nilainya tidak
-    # diteruskan ke mana pun.
-    stress: float | None = None
+    # `stress` DICABUT SEPENUHNYA. Ia tidak pernah menjadi fitur model (tidak ada
+    # pada config.model.engineered_features), dan kanal `stressors` OhioT1DM hanya
+    # memuat 7 event di seluruh 12 pasien sehingga inheren tak informatif. Meminta
+    # dokter mengisinya membuang waktu mereka; lebih buruk lagi, angka bawaan 5
+    # sempat dicetak balik sebagai "Tingkat stres: 5/10" seolah fakta terukur
+    # (temuan T5). Medannya sempat dipertahankan demi klien lama, lalu dicabut
+    # bersama tabel `stress_events`.
 
     glucose_source: GlucoseSource | None = None
 

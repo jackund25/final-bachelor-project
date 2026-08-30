@@ -1,0 +1,23 @@
+% FORMAT (25 Agustus 2026): tabular -> tabularx selebar \textwidth. Sebelumnya keluar
+% margin 48,6 pt karena kolom model dan kolom protokol bertipe l sehingga tidak pernah
+% membungkus. Satuan RMSE dipindah ke keterangan tabel.
+\begin{table}[htbp]
+\centering
+\caption{Posisi kinerja prediksi terhadap hasil terpublikasi pada dataset OhioT1DM, horizon $+30$ menit, dengan RMSE dalam mg/dL. Kolom \textbf{protokol} penting: pembagian \emph{per pasien} (pasien uji tak pernah dilihat model) merupakan uji generalisasi yang lebih berat daripada pembagian temporal, tempat pasien yang sama muncul pada data latih maupun uji.}
+\label{tab:literatur}
+\small
+\begin{tabularx}{\textwidth}{@{}lLrL@{}}
+\toprule
+\textbf{Sumber} & \textbf{Model} & \textbf{RMSE} & \textbf{Protokol pembagian data} \\
+\midrule
+\textcite{ghimire2024} & LSTM   & 18,26 & Temporal per pasien \\
+\textcite{ghimire2024} & SAN (\emph{self-attention}) & 18,67 & Temporal per pasien \\
+\textcite{ghimire2024} & CNN    & 20,49 & Temporal per pasien \\
+\textcite{ghimire2024} & TCN    & 20,54 & Temporal per pasien \\
+\textcite{ghimire2024} & FNN    & 22,12 & Temporal per pasien \\
+\midrule
+Penelitian ini & LSTM (pembanding) & 22,04 & \textbf{Per pasien (lintas-pasien)} \\
+Penelitian ini & \emph{Gradient boosting} (produksi) & 22,25 & \textbf{Per pasien (lintas-pasien)} \\
+\bottomrule
+\end{tabularx}
+\end{table}

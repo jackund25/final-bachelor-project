@@ -1,0 +1,205 @@
+{
+  "sumber": "FINGER_STICK",
+  "horizon_menit": 240.0,
+  "sequence_length": 8,
+  "n_features": 9,
+  "features": [
+    "glucose",
+    "glucose_delta",
+    "iob",
+    "cob",
+    "activity",
+    "hour_sin",
+    "hour_cos",
+    "glucose_rate",
+    "time_since_prev_glucose"
+  ],
+  "split": "official_train_test",
+  "catatan": "Split resmi OhioT1DM dipakai agar sebanding dengan jalur regresi FINGER_STICK. Berbeda dari classifier CGM yang memakai split per pasien, sehingga angka keduanya tidak dapat diperbandingkan langsung.",
+  "n_train": 894,
+  "n_uji": 139,
+  "sebaran_kelas_uji": {
+    "hiperglikemia": 76,
+    "hipoglikemia": 1,
+    "normal": 62
+  },
+  "pendekatan": {
+    "kelas_mayoritas": {
+      "hipoglikemia": {
+        "n": 1,
+        "sensitivitas_%": 0.0,
+        "PPV_%": null,
+        "TP": 0,
+        "FN": 1,
+        "FP": 0
+      },
+      "normal": {
+        "n": 62,
+        "sensitivitas_%": 100.0,
+        "PPV_%": 44.6,
+        "TP": 62,
+        "FN": 0,
+        "FP": 77
+      },
+      "hiperglikemia": {
+        "n": 76,
+        "sensitivitas_%": 0.0,
+        "PPV_%": null,
+        "TP": 0,
+        "FN": 76,
+        "FP": 0
+      },
+      "akurasi_%": 44.6,
+      "matriks_kekeliruan": [
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          62,
+          0
+        ],
+        [
+          0,
+          76,
+          0
+        ]
+      ]
+    },
+    "persistence": {
+      "hipoglikemia": {
+        "n": 1,
+        "sensitivitas_%": 0.0,
+        "PPV_%": 0.0,
+        "TP": 0,
+        "FN": 1,
+        "FP": 3
+      },
+      "normal": {
+        "n": 62,
+        "sensitivitas_%": 37.1,
+        "PPV_%": 39.0,
+        "TP": 23,
+        "FN": 39,
+        "FP": 36
+      },
+      "hiperglikemia": {
+        "n": 76,
+        "sensitivitas_%": 48.7,
+        "PPV_%": 48.1,
+        "TP": 37,
+        "FN": 39,
+        "FP": 40
+      },
+      "akurasi_%": 43.2,
+      "matriks_kekeliruan": [
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          23,
+          39
+        ],
+        [
+          3,
+          36,
+          37
+        ]
+      ]
+    },
+    "regresi": {
+      "hipoglikemia": {
+        "n": 1,
+        "sensitivitas_%": 0.0,
+        "PPV_%": null,
+        "TP": 0,
+        "FN": 1,
+        "FP": 0
+      },
+      "normal": {
+        "n": 62,
+        "sensitivitas_%": 69.4,
+        "PPV_%": 49.4,
+        "TP": 43,
+        "FN": 19,
+        "FP": 44
+      },
+      "hiperglikemia": {
+        "n": 76,
+        "sensitivitas_%": 43.4,
+        "PPV_%": 63.5,
+        "TP": 33,
+        "FN": 43,
+        "FP": 19
+      },
+      "akurasi_%": 54.7,
+      "matriks_kekeliruan": [
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          43,
+          19
+        ],
+        [
+          0,
+          43,
+          33
+        ]
+      ]
+    },
+    "pengklasifikasi": {
+      "hipoglikemia": {
+        "n": 1,
+        "sensitivitas_%": 0.0,
+        "PPV_%": null,
+        "TP": 0,
+        "FN": 1,
+        "FP": 0
+      },
+      "normal": {
+        "n": 62,
+        "sensitivitas_%": 62.9,
+        "PPV_%": 46.4,
+        "TP": 39,
+        "FN": 23,
+        "FP": 45
+      },
+      "hiperglikemia": {
+        "n": 76,
+        "sensitivitas_%": 42.1,
+        "PPV_%": 58.2,
+        "TP": 32,
+        "FN": 44,
+        "FP": 23
+      },
+      "akurasi_%": 51.1,
+      "matriks_kekeliruan": [
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          39,
+          23
+        ],
+        [
+          0,
+          44,
+          32
+        ]
+      ]
+    }
+  },
+  "kelas_mayoritas_latih": "normal"
+}

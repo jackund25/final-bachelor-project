@@ -1,0 +1,41 @@
+% FORMAT (25 Agustus 2026): tabular{llll} -> tabularx selebar \textwidth. Sebelumnya
+% keluar margin 124,6 pt, terlebar di seluruh naskah, karena keempat kolomnya bertipe l
+% sehingga tidak pernah membungkus dan pembungkusannya harus ditulis tangan sebagai
+% baris kedua. Baris tangan itu kini disatukan kembali; pembungkusannya diserahkan pada
+% kolom X. Tidak ada angka maupun kata yang berubah.
+\begin{table}[p]
+\centering
+\caption{Sintesis lintas-lapisan: kapan RAG \emph{terkondisi-prediksi} memberi nilai tambah dan kapan tidak. Tabel ini merangkum temuan seluruh subbab evaluasi, termasuk yang tidak menguntungkan, agar batas manfaat metode ini terbaca jelas.}
+\label{tab:sintesis}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}LlLL@{}}
+\toprule
+\textbf{Lapisan / skenario} & \textbf{Nilai tambah} & \textbf{Bukti} & \textbf{Sebab} \\
+\midrule
+Penelusuran, kasus divergen (12,9\% jendela) & \textbf{Besar} \emph{dan robust} & MRR 0,065 $\rightarrow$ 0,168; unggul 6/6 \emph{fold} ($p=0{,}031$) & Kondisi terkini menyesatkan; hanya prediksi yang menolong \\
+\addlinespace
+Penelusuran, distribusi natural & \textbf{Tidak ada} & MRR 0,731 $\rightarrow$ 0,742 ($p=0{,}225$; t.s.) & 87,1\% jendela tidak divergen: RAG standar sudah tepat sasaran \\
+\addlinespace
+Penelusuran, pengklasifikasi (divergen, vs regresi) & \textbf{Besar} \emph{dan robust} & MRR 0,225 lawan 0,168; unggul 6/6 \emph{fold} ($p=0{,}031$) & Pengklasifikasi tidak menyusut ke tengah sebaran \\
+\addlinespace
+Penelusuran, pengklasifikasi (natural, vs regresi) & \textbf{Merugikan} & MRR 0,698 lawan 0,742; kalah 6/6 \emph{fold} ($p=0{,}031$) & Kondisi terkini sudah benar; berpindah kelas justru menjauh \\
+\addlinespace
+Penelusuran, cara leksikal (vs padat) & \textbf{Besar} & \emph{Context recall} 0,900 lawan 0,100 & Model \emph{embedding} berbahasa Inggris, korpus Indonesia \\
+\addlinespace
+Penelusuran, penggabungan hibrida (vs leksikal saja) & \textbf{Merugikan} & \emph{Context recall} 0,700 lawan 0,900 & Fusi peringkat tetap memberi bobot pada daftar yang keliru \\
+\midrule
+Deteksi hipoglikemia (pengklasifikasi kondisi) & \textbf{Besar} & Sensitivitas 17,3\% $\rightarrow$ 67,2\% pada ambang standar & Kondisi diprediksi langsung, bukan diambangkan dari regresi \\
+\midrule
+Generasi, kasus hipoglikemia & Moderat & \emph{sim\_ref} 0,450 $\rightarrow$ 0,629 (kasus D1) & Antisipasi mengubah tindakan secara kualitatif \\
+\addlinespace
+Generasi, kasus hiperglikemia & \textbf{Tidak ada} & \emph{sim\_ref} 0,542 $\rightarrow$ 0,525 (kasus D6) & Anjuran pedoman serupa untuk kondisi kini maupun mendatang \\
+\midrule
+Prediksi SMBG, $+30$ menit & \textbf{Merugikan} & RMSE 28,56 lawan \emph{persistence} 27,33~mg/dL & Jarak antar-pembacaan (124,8 menit) lebih panjang dari horizon \\
+\addlinespace
+Prediksi SMBG, $+60$ menit & Moderat & RMSE 46,53 lawan \emph{persistence} 47,87~mg/dL & Asumsi ``tidak berubah'' runtuh; efek IOB/COB mendominasi \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.4em}
+{\tabnotestyle t.s. = tidak signifikan. Angka penelusuran pada baris pengondisian berasal dari validasi silang enam \emph{fold} lintas-pasien (Tabel~\ref{tab:crossfold-retrieval}), sedangkan baris perbandingan cara penelusuran berasal dari metrik RAGAS berbasis rujukan (Tabel~\ref{tab:lengan-penelusuran}). Dua baris pengklasifikasi sengaja dipisah karena arahnya \textbf{berbalik} antar-himpunan; menggabungkannya menjadi satu putusan akan menyembunyikan temuan yang justru menerangkan mekanismenya. Batas atas metode ini terukur dan konsisten: dengan kondisi masa depan yang diketahui benar (\emph{oracle}), penelusuran mencapai MRR 0,833 pada kasus divergen. Seluruh selisih antara 0,168 dan 0,833 adalah ruang perbaikan yang dapat diraih semata-mata dengan meningkatkan ketepatan prediksi kondisi, tanpa mengubah apa pun pada komponen penelusuran.\par}
+\end{table}

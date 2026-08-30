@@ -1,0 +1,18 @@
+\begin{table}[!htbp]
+    \centering
+    \caption{Alasan pemilihan dan kelemahan yang diakui pada keputusan teknis.}
+    \label{tab:tab3.7_alasan_keputusan_teknis}
+    \renewcommand{\arraystretch}{1.10}
+    \begin{tabular}{@{}p{2.8cm}p{3.2cm}p{5.0cm}p{4.0cm}@{}}
+        \hline
+        \textbf{Keputusan} & \textbf{Alternatif terpilih} & \textbf{Alasan pemilihan} & \textbf{Kelemahan yang diakui} \\
+        \hline
+        Model prediksi & Gradient Boosting & Dipilih berdasarkan ketepatan kelas kondisi dan keterterapan pada lingkungan komputasi penelitian. Keluaran dapat digunakan untuk jalur regresi dan klasifikasi dalam keluarga model yang sama. & Kepekaan terhadap hipoglikemia pada horizon 60 menit lebih rendah daripada Random Forest pada evaluasi yang digunakan untuk pengambilan keputusan. \\
+        Model bahasa & Layanan awan & Tidak membebani perangkat lokal dan tersedia pada skema penggunaan bertingkat yang sesuai dengan konteks penelitian. & Memerlukan konektivitas jaringan. \\
+        Model embedding & Model lokal & Dapat berjalan tanpa akselerator grafis dan tidak menimbulkan biaya per permintaan. & Kemampuan penelusuran lintas bahasa bergantung pada karakteristik model embedding yang digunakan. \\
+        Pengambilan pengetahuan & RAG atas korpus tidak terstruktur & Tidak menuntut pembangunan ontologi maupun integrasi rekam medis sehingga lebih sesuai dengan batasan infrastruktur. & Mutu hasil bergantung pada cakupan dan kualitas korpus. \\
+        Pengklasifikasi kondisi & Pengklasifikasi terpisah & Kelas kondisi dapat dioptimalkan langsung untuk kebutuhan pembentukan kueri dan tidak hanya bergantung pada ambang keluaran regresi. & Menambah satu model yang perlu dilatih dan dipelihara. \\
+        Orkestrasi alur & Penulisan sebagai kode program & Mendukung pemisahan logika domain dan dapat berjalan tanpa server khusus. & Memerlukan penulisan dan pemeliharaan kode lebih banyak dibandingkan perkakas visual. \\
+        \hline
+    \end{tabular}
+\end{table}

@@ -14,22 +14,11 @@ logger = logging.getLogger(__name__)
 ROOT = Path(__file__).resolve().parents[2]
 
 
-MODEL_FAMILIES = [
-    (
-        "GBM",
-        [
-            "models/gbm_inference_bundle_h6.pkl",
-            "models/gbm_inference_bundle_h12.pkl",
-        ],
-    ),
-    (
-        "RF",
-        [
-            "models/rf_inference_bundle_h6.pkl",
-            "models/rf_inference_bundle_h12.pkl",
-        ],
-    ),
-]
+# MODEL_FAMILIES DICABUT 25 Agustus 2026. Konstanta itu tidak pernah dirujuk satu
+# baris pun sejak _load_horizons memilih artefak menurut glucose_source, dan dua
+# dari empat lintasan yang didaftarkannya (rf_inference_bundle_h6/h12.pkl) bahkan
+# tidak ada di models/. Artefak produksi yang benar-benar dimuat ada di
+# _load_horizons dan _load_condition_classifier.
 
 SOURCE_DEFAULT_SEQUENCE_LENGTH = {
     "CGM": 12,

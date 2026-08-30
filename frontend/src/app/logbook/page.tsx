@@ -8,13 +8,19 @@ import {
 
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import PatientSwitcher from "../../components/PatientSwitcher";
+import CatatanSumberData from "../../components/CatatanSumberData";
 
 import {
   getLogbookEntries,
   saveLogbookEntry,
   type LogbookEntry,
 } from "../../lib/logbook";
-import { getPatientSources } from "../../lib/glucose";
+import { getPatients, getPatientSources } from "../../lib/glucose";
+import {
+  bacaPasienAktif,
+  simpanPasienAktif,
+} from "../../lib/patientState";
 import type { GlucoseSource } from "../../lib/api";
 
 import "../dashboard.css";
@@ -148,6 +154,8 @@ export default function LogbookPage() {
   // ===========================================================
 
   const [patientId, setPatientId] = useState("");
+  const [patientOptions, setPatientOptions] =
+    useState<string[]>([]);
   const [glucoseSource, setGlucoseSource] =
     useState<GlucoseSource>("CGM");
   const [sourceOptions, setSourceOptions] =
@@ -248,15 +256,28 @@ export default function LogbookPage() {
   // LOAD DATA ON PAGE OPEN
   // ===========================================================
 
+  // Daftar pasien dimuat di halaman ini juga, bukan hanya di Dashboard. Halaman
+  // Logbook sebelumnya sama sekali tidak punya pemilih pasien: ia memakai pasien
+  // terakhir dari localStorage, sehingga dokter yang membuka Logbook lebih dulu
+  // tidak punya cara mengganti maupun mendaftarkan pasien.
+  const muatDaftarPasien = async () => {
+    try {
+      const catatan = await getPatients();
+      setPatientOptions(catatan.map((item) => item.patient_code));
+    } catch (loadError) {
+      console.error("Failed to load patients:", loadError);
+      setPatientOptions([]);
+    }
+  };
+
   useEffect(() => {
-    const storedPatient = window.localStorage.getItem(
-      "last_patient_id",
-    );
+    const storedPatient = bacaPasienAktif();
     const storedSource = window.localStorage.getItem(
       "last_glucose_source",
     );
 
     setPatientId(storedPatient ?? "");
+    muatDaftarPasien();
     if (
       storedSource === "CGM" ||
       storedSource === "FINGER_STICK"
@@ -279,10 +300,7 @@ export default function LogbookPage() {
       console.error("Failed to load glucose sources:", loadError);
       setSourceOptions([]);
     });
-    window.localStorage.setItem(
-      "last_patient_id",
-      patientId,
-    );
+    simpanPasienAktif(patientId);
     window.localStorage.setItem(
       "last_glucose_source",
       glucoseSource,
@@ -453,11 +471,28 @@ export default function LogbookPage() {
 
             <span className="status-dot" />
 
-            Patient {patientId}
+            Pasien {patientId}
 
           </div>
 
         </header>
+
+
+        <CatatanSumberData />
+
+        <PatientSwitcher
+          pasienAktif={patientId}
+          daftarPasien={patientOptions}
+          onPilih={(kode) => {
+            setPatientId(kode);
+            setSourceOptions([]);
+          }}
+          onPasienBaru={async (kode) => {
+            await muatDaftarPasien();
+            setPatientId(kode);
+            setSourceOptions([]);
+          }}
+        />
 
 
         {/* ===================================================

@@ -179,7 +179,12 @@ def main() -> None:
     }
 
     # ── Siapkan satu jendela logbook nyata ────────────────────────────────
-    df = pd.read_csv(ROOT / "data/raw/ohio_t1dm_merged.csv", parse_dates=["timestamp"])
+    # Dataset produksi mengikuti config.data.unified_dataset. Berkas lama
+    # ohio_t1dm_merged.csv TIDAK dipakai lagi: ia tidak memuat kolom
+    # glucose_source yang kini diwajibkan kontrak data, sehingga skrip ini
+    # gagal pada tahap rekayasa fitur bila masih membacanya.
+    df = pd.read_csv(ROOT / "data/raw/ohio_t1dm.csv", parse_dates=["timestamp"])
+    df = df[df.glucose_source == "CGM"].copy()
     df = df[df.patient_id == sorted(df.patient_id.unique())[-1]].tail(400).copy()
     pre = DataPreprocessor(cfg)
 
@@ -190,9 +195,24 @@ def main() -> None:
 
     result["tahap"]["2_rekayasa_fitur"] = timed(do_features, n=10)
     feat = do_features()
-    window = feat.tail(mc["sequence_length"])
-    X = window[mc["engineered_features"]].to_numpy(float)
+    # Daftar fitur dan panjang jendela diambil dari BUNDEL, bukan dari config.
+    # Bundel produksi h6 dilatih dengan tujuh fitur, sedangkan
+    # config.model.engineered_features mendaftar sembilan karena memuat dua
+    # fitur yang khusus dibutuhkan skenario SMBG (glucose_rate dan
+    # time_since_prev_glucose). Inferensi produksi memakai bundle["features"],
+    # sehingga benchmark harus memakainya juga agar yang terukur adalah jalur
+    # yang benar-benar dijalankan.
+    window = feat.tail(int(bundle.get("sequence_length", mc["sequence_length"])))
+    X = window[bundle["features"]].to_numpy(float)
     Xs = bundle["scaler"].transform(X).reshape(1, -1)
+
+    # Pengklasifikasi kondisi adalah ARTEFAK TERPISAH dengan skema fiturnya
+    # sendiri (sembilan fitur) dan scaler-nya sendiri, sedangkan bundel regresi
+    # memakai tujuh. Backend memperlakukan keduanya terpisah; benchmark ini
+    # mengikutinya. Memakai Xs milik regresi untuk pengklasifikasi membuat
+    # skrip gagal, dan sebelum ini itulah yang terjadi.
+    X_clf = window[clf["features"]].to_numpy(float)
+    Xs_clf = clf["scaler"].transform(X_clf).reshape(1, -1)
 
     # ── 3. Prediksi (regresi + kondisi + interval antar-pohon) ────────────
     # Sumber sigma mengikuti bundel, bukan diandaikan. RF memakai sebaran antar-pohon
@@ -206,7 +226,7 @@ def main() -> None:
 
     def do_predict():
         pred = bundle["model"].predict(Xs)[0] + float(window["glucose"].iloc[-1])
-        cond = clf["model"].predict(Xs)[0]
+        cond = clf["model"].predict(Xs_clf)[0]
         if std_models:
             sigma = (std_models["high"].predict(Xs)[0]
                      - std_models["low"].predict(Xs)[0]) / lebar_gauss
@@ -221,7 +241,7 @@ def main() -> None:
         f"({bundle.get('std_method', 'sebaran antar-pohon')})."
     )
 
-    # ── 4. Retrieval (embedding kueri + MMR atas 2.585 chunk) ─────────────
+    # 4. Retrieval -- mode mengikuti rag.retrieval_mode pada config.yaml
     query = ("Kadar glukosa darah diprediksi 165 mg/dL (30 menit ke depan). "
              "Hiperglikemia, gula darah tinggi di atas 180 mg/dL. Penyebab, gejala, dan penanganan.")
 
@@ -229,7 +249,7 @@ def main() -> None:
         return retriever.retrieve(query, top_k=cfg["rag"]["top_k_retrieval"])
 
     result["tahap"]["4_retrieval"] = timed(do_retrieve, n=20)
-    result["tahap"]["4_retrieval"]["keterangan"] = f"Embedding kueri + pencarian MMR pada {_jumlah_chunk()} chunk."
+    result["tahap"]["4_retrieval"]["keterangan"] = f"Penelusuran mode {retriever.retrieval_mode} pada {_jumlah_chunk()} chunk."
 
     # ── 5. Generasi LLM (opsional; butuh API key + kuota) ─────────────────
     try:

@@ -1,0 +1,46 @@
+\begin{table}[ht]
+    \centering
+    \caption{Perbandingan strategi retrieval.}
+    \label{tab:bab2.3-strategi-retrieval}
+
+    \begin{tabular}{p{3.2cm} p{4.0cm} p{3.4cm} p{3.4cm}}
+        \hline
+        \textbf{Strategi}
+        & \textbf{Dasar pencocokan}
+        & \textbf{Kelebihan}
+        & \textbf{Keterbatasan} \\
+        \hline
+
+        Vector retrieval
+        &
+        Kemiripan representasi semantik antara kueri dan dokumen.
+        &
+        Dapat menangani variasi istilah dan parafrasa.
+        &
+        Bergantung pada kualitas representasi dan kesesuaian domain.
+        \\
+
+        Lexical retrieval (BM25)
+        &
+        Kecocokan istilah pada kueri dan dokumen dengan pembobotan term.
+        &
+        Hubungan antara istilah kueri dan dokumen lebih langsung.
+        &
+        Lebih sensitif terhadap perbedaan istilah dan parafrasa.
+        \\
+
+        Hybrid retrieval
+        &
+        Gabungan sinyal semantik dan leksikal.
+        &
+        Dapat memanfaatkan kedua bentuk kecocokan.
+        &
+        Menambah kompleksitas dan tetap bergantung pada kualitas kandidat awal.
+        \\
+
+        \hline
+    \end{tabular}
+    
+    \noindent\tabnotestyle Sumber: Disusun penulis berdasarkan \textcite{manning2008} dan \textcite{xiong2024}.\normalsize
+
+\end{table}

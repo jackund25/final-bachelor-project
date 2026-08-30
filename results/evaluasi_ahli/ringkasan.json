@@ -1,0 +1,255 @@
+{
+  "n_penilai": 4,
+  "penilai": [
+    {
+      "kode": "P1",
+      "profesi": "Dokter Muda",
+      "okupasi": "Dokter umum",
+      "pernah_cdss": "Belum",
+      "pernah_cgm": "Belum Pernah",
+      "sus": 50.0,
+      "sus_butir": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "sus_seragam": true,
+      "masukan": "Tingkatkan advice",
+      "gap_populasi": ""
+    },
+    {
+      "kode": "P2",
+      "profesi": "Dokter",
+      "okupasi": "Penyakit Dalam",
+      "pernah_cdss": "Belum",
+      "pernah_cgm": "Ya",
+      "sus": 50.0,
+      "sus_butir": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "sus_seragam": true,
+      "masukan": "Lebih baik lagi",
+      "gap_populasi": ""
+    },
+    {
+      "kode": "P3",
+      "profesi": "Dokter Spesialis",
+      "okupasi": "Penyakit Dalam",
+      "pernah_cdss": "Belum",
+      "pernah_cgm": "Belum Pernah",
+      "sus": 40.0,
+      "sus_butir": [
+        3,
+        4,
+        3,
+        4,
+        3,
+        2,
+        2,
+        3,
+        3,
+        5
+      ],
+      "sus_seragam": false,
+      "masukan": "Saat ini sudah banyak aplikasi CGM dari vendor alat alat CGM seperti sinocare atau ottai, aplikasi nya lebih simpel dan mudah digunakan ada baik nya mengambil referensi dari alat CGM yang sudah ada",
+      "gap_populasi": "Perlu populasi ras lain"
+    },
+    {
+      "kode": "P4",
+      "profesi": "Dokter Spesialis",
+      "okupasi": "Penyakit Dalam",
+      "pernah_cdss": "Sudah",
+      "pernah_cgm": "Belum Pernah",
+      "sus": 52.5,
+      "sus_butir": [
+        3,
+        2,
+        4,
+        5,
+        4,
+        3,
+        4,
+        2,
+        3,
+        5
+      ],
+      "sus_seragam": false,
+      "masukan": "Perlu dilakukan publikasi secara menyeluruh mengenai sistem baru yang diterapkan ini sehingga akan lebih mudah dipahami pasa saat penggunaan dan pengambilan makna dari aplikasi yang digunakan",
+      "gap_populasi": ""
+    }
+  ],
+  "agregat": {
+    "sus": {
+      "rerata": 48.12,
+      "min": 40.0,
+      "maks": 52.5,
+      "per_penilai": [
+        50.0,
+        50.0,
+        40.0,
+        52.5
+      ]
+    },
+    "butir": {
+      "Skenario 1, konsistensi prediksi CGM": {
+        "n": 4,
+        "median": 3.0,
+        "min": 3,
+        "maks": 4
+      },
+      "Skenario 2, prediksi dan batas data finger-stick": {
+        "n": 4,
+        "median": 3.5,
+        "min": 3,
+        "maks": 4
+      },
+      "Skenario 4, kejelasan penolakan memprediksi": {
+        "n": 4,
+        "median": 3.0,
+        "min": 1,
+        "maks": 4
+      },
+      "Skenario 4, pengendalian kesan kepastian": {
+        "n": 4,
+        "median": 3.0,
+        "min": 2,
+        "maks": 4
+      },
+      "Keterwakilan populasi sumber data": {
+        "n": 4,
+        "median": 3.5,
+        "min": 2,
+        "maks": 4
+      },
+      "Otonomi dokter dan bias": {
+        "n": 4,
+        "median": 3.5,
+        "min": 3,
+        "maks": 4
+      },
+      "Persetujuan dan keamanan data": {
+        "n": 4,
+        "median": 3.0,
+        "min": 3,
+        "maks": 4
+      },
+      "Kejelasan dasar rekomendasi": {
+        "n": 4,
+        "median": 3.0,
+        "min": 2,
+        "maks": 4
+      },
+      "Kelayakan alur pada praktik klinis": {
+        "n": 4,
+        "median": 3.0,
+        "min": 3,
+        "maks": 4
+      }
+    },
+    "kisi": {
+      "s3a": {
+        "Relevansi": {
+          "n": 4,
+          "median": 3.0,
+          "min": 2,
+          "maks": 4
+        },
+        "Kejelasan": {
+          "n": 4,
+          "median": 3.5,
+          "min": 2,
+          "maks": 4
+        },
+        "Kecukupan konteks": {
+          "n": 4,
+          "median": 3.0,
+          "min": 3,
+          "maks": 4
+        },
+        "Batasan keputusan": {
+          "n": 4,
+          "median": 3.0,
+          "min": 2,
+          "maks": 4
+        }
+      },
+      "s3b": {
+        "Relevansi": {
+          "n": 4,
+          "median": 3.0,
+          "min": 2,
+          "maks": 4
+        },
+        "Kejelasan": {
+          "n": 4,
+          "median": 3.0,
+          "min": 3,
+          "maks": 4
+        },
+        "Kecukupan konteks": {
+          "n": 4,
+          "median": 3.0,
+          "min": 3,
+          "maks": 3
+        },
+        "Batasan keputusan": {
+          "n": 4,
+          "median": 3.0,
+          "min": 3,
+          "maks": 3
+        }
+      },
+      "s3c": {
+        "Relevansi": {
+          "n": 4,
+          "median": 3.0,
+          "min": 3,
+          "maks": 4
+        },
+        "Kejelasan": {
+          "n": 4,
+          "median": 3.0,
+          "min": 3,
+          "maks": 4
+        },
+        "Kecukupan konteks": {
+          "n": 4,
+          "median": 3.0,
+          "min": 2,
+          "maks": 4
+        },
+        "Batasan keputusan": {
+          "n": 4,
+          "median": 3.0,
+          "min": 2,
+          "maks": 3
+        }
+      }
+    },
+    "pedoman": {
+      "3B (hipoglikemia)": {
+        "Sesuai pedoman, tapi perlu verifikasi dokter": 3,
+        "Kurang sesuai pedoman, berpotensi berisiko": 1
+      },
+      "3C (hiperglikemia)": {
+        "Sesuai pedoman, tapi perlu verifikasi dokter": 4
+      }
+    }
+  }
+}

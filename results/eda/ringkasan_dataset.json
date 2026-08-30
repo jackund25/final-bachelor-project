@@ -1,0 +1,223 @@
+{
+  "sumber": "data/raw/ohio_t1dm.csv",
+  "catatan": "Seluruh statistik dihitung TERPISAH per kanal glukosa. Angka pada bingkai tercampur tidak menggambarkan kanal mana pun.",
+  "n_baris_total": 171099,
+  "n_pasien": 12,
+  "n_kolom": 16,
+  "nilai_hilang": 0,
+  "stempel_waktu_berpasangan": 808,
+  "split": {
+    "CGM": {
+      "train": 134790,
+      "test": 31743
+    },
+    "FINGER_STICK": {
+      "train": 3801,
+      "test": 765
+    }
+  },
+  "kanal": {
+    "CGM": {
+      "n_baris": 166533,
+      "n_pasien": 12,
+      "gap_menit": {
+        "median": 5.0,
+        "mean": 5.7,
+        "p90": 5.0,
+        "maks": 7079.8
+      },
+      "glukosa": {
+        "mean": 159.6,
+        "std": 60.7,
+        "min": 40.0,
+        "maks": 400.0,
+        "hipo_persen": 3.28,
+        "target_persen": 63.42,
+        "hiper_persen": 33.3
+      },
+      "kerapatan_kanal_persen": {
+        "carbs": 1.148,
+        "insulin": 99.477,
+        "bolus_dose": 1.857,
+        "basal_rate": 99.47,
+        "activity": 0.118,
+        "stress": 0.004,
+        "sleep": 0.0,
+        "work": 0.0,
+        "illness": 0.0
+      }
+    },
+    "FINGER_STICK": {
+      "n_baris": 4566,
+      "n_pasien": 12,
+      "gap_menit": {
+        "median": 124.8,
+        "mean": 207.6,
+        "p90": 556.6,
+        "maks": 6454.9
+      },
+      "glukosa": {
+        "mean": 164.9,
+        "std": 69.6,
+        "min": 31.0,
+        "maks": 586.0,
+        "hipo_persen": 4.58,
+        "target_persen": 58.34,
+        "hiper_persen": 37.08
+      },
+      "kerapatan_kanal_persen": {
+        "carbs": 11.695,
+        "insulin": 99.54,
+        "bolus_dose": 50.876,
+        "basal_rate": 99.255,
+        "activity": 0.219,
+        "stress": 0.022,
+        "sleep": 0.0,
+        "work": 0.0,
+        "illness": 0.0
+      }
+    }
+  },
+  "cacah_baris_taknol_cgm": {
+    "carbs": 1911,
+    "activity": 197,
+    "stress": 6,
+    "sleep": 0,
+    "work": 0,
+    "illness": 0
+  },
+  "profil_pasien": [
+    {
+      "pasien": "ohio_540",
+      "n_CGM": 14843,
+      "n_tusuk_jari": 524,
+      "rentang_hari": 56.3,
+      "glukosa_mean": 141.3,
+      "glukosa_std": 58.2,
+      "hipo_%": 6.02,
+      "target_%": 71.0,
+      "hiper_%": 23.0
+    },
+    {
+      "pasien": "ohio_544",
+      "n_CGM": 13339,
+      "n_tusuk_jari": 265,
+      "rentang_hari": 54.9,
+      "glukosa_mean": 163.4,
+      "glukosa_std": 58.9,
+      "hipo_%": 1.3,
+      "target_%": 64.7,
+      "hiper_%": 34.0
+    },
+    {
+      "pasien": "ohio_552",
+      "n_CGM": 11444,
+      "n_tusuk_jari": 224,
+      "rentang_hari": 52.3,
+      "glukosa_mean": 145.5,
+      "glukosa_std": 54.2,
+      "hipo_%": 3.28,
+      "target_%": 73.6,
+      "hiper_%": 23.2
+    },
+    {
+      "pasien": "ohio_559",
+      "n_CGM": 13310,
+      "n_tusuk_jari": 215,
+      "rentang_hari": 51.9,
+      "glukosa_mean": 167.2,
+      "glukosa_std": 69.9,
+      "hipo_%": 3.61,
+      "target_%": 56.7,
+      "hiper_%": 39.7
+    },
+    {
+      "pasien": "ohio_563",
+      "n_CGM": 14694,
+      "n_tusuk_jari": 649,
+      "rentang_hari": 55.0,
+      "glukosa_mean": 149.8,
+      "glukosa_std": 49.7,
+      "hipo_%": 1.99,
+      "target_%": 71.8,
+      "hiper_%": 26.2
+    },
+    {
+      "pasien": "ohio_567",
+      "n_CGM": 13247,
+      "n_tusuk_jari": 489,
+      "rentang_hari": 57.3,
+      "glukosa_mean": 152.5,
+      "glukosa_std": 60.0,
+      "hipo_%": 6.67,
+      "target_%": 64.7,
+      "hiper_%": 28.6
+    },
+    {
+      "pasien": "ohio_570",
+      "n_CGM": 13727,
+      "n_tusuk_jari": 313,
+      "rentang_hari": 50.7,
+      "glukosa_mean": 192.9,
+      "glukosa_std": 64.1,
+      "hipo_%": 1.49,
+      "target_%": 40.5,
+      "hiper_%": 58.0
+    },
+    {
+      "pasien": "ohio_575",
+      "n_CGM": 14456,
+      "n_tusuk_jari": 321,
+      "rentang_hari": 54.9,
+      "glukosa_mean": 143.3,
+      "glukosa_std": 60.4,
+      "hipo_%": 7.6,
+      "target_%": 68.2,
+      "hiper_%": 24.2
+    },
+    {
+      "pasien": "ohio_584",
+      "n_CGM": 14815,
+      "n_tusuk_jari": 162,
+      "rentang_hari": 56.4,
+      "glukosa_mean": 188.5,
+      "glukosa_std": 65.2,
+      "hipo_%": 0.9,
+      "target_%": 50.0,
+      "hiper_%": 49.1
+    },
+    {
+      "pasien": "ohio_588",
+      "n_CGM": 15431,
+      "n_tusuk_jari": 684,
+      "rentang_hari": 55.7,
+      "glukosa_mean": 166.8,
+      "glukosa_std": 50.3,
+      "hipo_%": 0.8,
+      "target_%": 62.0,
+      "hiper_%": 37.2
+    },
+    {
+      "pasien": "ohio_591",
+      "n_CGM": 13607,
+      "n_tusuk_jari": 510,
+      "rentang_hari": 54.2,
+      "glukosa_mean": 153.8,
+      "glukosa_std": 56.9,
+      "hipo_%": 3.93,
+      "target_%": 64.9,
+      "hiper_%": 31.2
+    },
+    {
+      "pasien": "ohio_596",
+      "n_CGM": 13620,
+      "n_tusuk_jari": 210,
+      "rentang_hari": 59.9,
+      "glukosa_mean": 147.3,
+      "glukosa_std": 49.5,
+      "hipo_%": 1.99,
+      "target_%": 74.3,
+      "hiper_%": 23.7
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+% Pemenuhan kebutuhan fungsional. Kolom "Bukti" WAJIB terisi: statusnya tidak boleh
+% dinyatakan tanpa menunjuk hasil yang mendasarinya. Kolom "Lokasi" menunjuk tempat
+% bukti itu dipaparkan, bukan tempat kebutuhannya dirumuskan.
+% Seluruh angka pada kolom bukti berasal dari Bab VI dan sudah diverifikasi di sana.
+\begin{longtable}{@{}p{1.1cm}>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{5.6cm}>{\raggedright\arraybackslash}p{2.9cm}@{}}
+\caption{Pemenuhan kebutuhan fungsional beserta bukti yang mendasarinya.}
+\label{tab:pemenuhan-kf} \\
+\toprule
+\textbf{Kode} & \textbf{Status} & \textbf{Bukti} & \textbf{Lokasi bukti} \\
+\midrule
+\endfirsthead
+
+\multicolumn{4}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Kode} & \textbf{Status} & \textbf{Bukti} & \textbf{Lokasi bukti} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+KF-01 & Tercapai & Halaman pencatatan mandiri menerima catatan \emph{logbook} terstruktur dan menyimpannya sebagai sumber data penilaian. & \S\ref{sec:ui-impl}, Gambar~\ref{fig:ui-logbook} \\[2pt]
+
+KF-02 & Tercapai & Besaran turunan berbasis fisiologi dihitung dari catatan mentah: \emph{insulin on board}, \emph{carbohydrate on board}, laju perubahan, dan pola diurnal. & \S\ref{sec:data-impl} \\[2pt]
+
+KF-03 & Tercapai, dengan catatan & Prediksi $+30$ dan $+60$ menit beserta interval terkalibrasi konformal; cakupan 95,5\% pada tingkat nominal 95\%. Pada skenario SMBG nyata, horizon $+30$ menit \emph{belum} melampaui \emph{baseline persistence} (RMSE 28,56 lawan 27,33~mg/dL). & \S\ref{sec:konformal}, \S\ref{sec:eval-smbg} \\[2pt]
+
+KF-04 & Tercapai & Kueri penelusuran disusun dari kondisi terprediksi, bukan kondisi terkini. Pada kasus divergen unggul pada seluruh enam \emph{fold} lintas-pasien: MRR 0,168 lawan 0,065; $p=0{,}031$; $d_z=3{,}81$. & \S\ref{sec:eval-realcases}, Tabel~\ref{tab:crossfold-retrieval} \\[2pt]
+
+KF-05 & Tercapai & Tiap potongan dikembalikan beserta identitas dokumen dan nomor halaman cetaknya, diresolusi dari metadata sehingga tidak dapat dikarang model bahasa. & \S\ref{sec:rag-impl}, Gambar~\ref{fig:ui-rujukan} \\[2pt]
+
+KF-06 & Tercapai & Rekomendasi berbahasa Indonesia dibumikan pada potongan hasil penelusuran; seluruh 56 besaran klinis pada enam kasus uji tertelusur ke sumbernya. & \S\ref{sec:safety-llm}, Gambar~\ref{fig:ui-rekomendasi} \\[2pt]
+
+KF-07 & Tercapai, dengan catatan & Tingkat risiko, arah perubahan, dan kegentingan disajikan, disertai peringatan dini hipoglikemia dan peringatan divergensi. Sensitivitas hipoglikemia naik 17,3\% $\rightarrow$ 67,2\%, tetapi belum memadai untuk penggunaan klinis mandiri dan menurunkan PPV. & \S\ref{sec:hipo} \\[2pt]
+
+KF-08 & Tercapai & Sistem tidak melakukan tindakan otonom; penyangkalan terpasang pada tampilan maupun arahan sistem; tiap klaim tertelusur sampai potongan sumbernya. Butir otonomi dokter memperoleh median 3,5 dari 4 pada penilaian ahli. & \S\ref{subsec:ui-dokter}, \S\ref{subsec:hasil-ahli} \\
+
+\end{longtable}
+
+\noindent\tabnotestyle Status ``tercapai, dengan catatan'' berarti kebutuhannya terwujud sebagai fungsi tetapi mutunya belum memadai untuk penggunaan klinis mandiri; catatannya diteruskan menjadi saran pengembangan pada Subbab~\ref{sec:saran}. Kolom bukti sengaja memuat angka, bukan pernyataan, agar tiap status dapat diperiksa balik ke subbab evaluasi yang menghasilkannya.

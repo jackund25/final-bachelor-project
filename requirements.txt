@@ -38,18 +38,33 @@ pydantic==2.13.4
 # pada mode leksikal.
 chromadb==1.0.12
 rank_bm25==0.2.2
-# Penyusunan ulang kandidat oleh cross-encoder ONNX di CPU, tanpa torch.
-# Tanpa paket ini _muat_reranker gagal dan sistem menelusur TANPA reranking.
-flashrank==0.2.10
+#
+# flashrank==0.2.10 DICABUT 25 Agustus 2026. rag.reranker.enabled = false, dan
+# _muat_reranker mengembalikan nilai pada penjaga `if not self.reranker_enabled`
+# SEBELUM `from flashrank import Ranker` — paket itu tidak pernah disentuh jalur
+# mana pun. Untuk menyalakannya kembali, pasang ulang paketnya BERSAMA mengubah
+# nilai config; salah satunya saja tidak cukup.
 
 # --- Generasi ---
 langchain-core==0.3.86
 langchain-google-genai>=2.0.0
 
-# --- Jalur pemulihan penelusuran ---
-# Dipakai HANYA bila indeks BM25 gagal dibangun dan retriever menurunkan mode ke
-# vektor secara eksplisit. Pada mode bm25 keempatnya tidak pernah di-import,
-# sehingga membebani disk saja, bukan memori runtime.
+# --- Pengindeksan korpus + jalur pemulihan penelusuran ---
+# TETAP DI SINI, dan sengaja TIDAK ada di backend/requirements.txt (dicabut dari
+# sana 25 Agustus 2026). Root memikul dua tugas yang tidak dipikul lingkungan
+# penyajian:
+#
+#   1. MEMBANGUN INDEKS. scripts/reingest_kb.py dan
+#      MedicalKnowledgeBase.save_to_chroma() memanggil _build_embeddings dan
+#      pemecah teks; tanpa keempatnya korpus 2.233 potongan tidak dapat dibangun
+#      ulang, sehingga angka Bab VI berhenti dapat direproduksi.
+#
+#   2. MEREPRODUKSI LENGAN PEMBANDING. Jalur vektor dan hibrida tetap ada pada
+#      src/rag/retriever.py sebagai kontrol eksperimen Tabel VI.3, yang mengklaim
+#      ketiga cara diuji atas potongan yang sama. Klaim itu harus dapat diuji ulang.
+#
+# Pada mode bm25 keempatnya tidak pernah di-import saat melayani, sehingga di sini
+# pun ia membebani disk saja, bukan memori runtime.
 #
 # torch dipatok eksplisit meski sentence-transformers sudah membawanya: di Windows
 # ia harus di-import SEBELUM numpy/pyarrow untuk menghindari WinError 1114 pada
