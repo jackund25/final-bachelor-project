@@ -52,3 +52,87 @@ dan kredensial layanan.
 
 Pada tahap inisialisasi, artefak yang diperlukan untuk prediction dan knowledge retrieval disiapkan sebelum sistem menerima permintaan assessment. Pendekatan tersebut
 mengurangi pekerjaan berat yang harus dilakukan pada permintaan pertama dan menjaga waktu respons layanan tetap sesuai dengan karakteristik lingkungan komputasi yang digunakan.
+
+\subsection{Implementasi Modul Prediksi}
+\label{subsec:bab5-implementasi-modul-prediksi}
+
+Modul prediksi merupakan realisasi tujuan artefak pertama (T1) yang mengubah riwayat pemantauan pasien menjadi estimasi kadar glukosa pada horizon tertentu beserta informasi
+yang menyertainya. Implementasi mengikuti rancangan pada Bab IV dengan memproses data secara berurutan dari prapemrosesan, rekayasa fitur, pembentukan sekuens, normalisasi,
+prediksi, estimasi ketidakpastian, hingga pembentukan kondisi klinis. Pipeline implementasi juga mempertahankan pemisahan pemrosesan berdasarkan pasien untuk mencegah
+kebocoran temporal.
+
+\subsubsection{Prapemrosesan Data}
+\label{subsubsec:bab5-prapemrosesan-data}
+
+Data OhioT1DM terlebih dahulu diurutkan berdasarkan pasien dan stempel waktu sebelum diproses. Pemeriksaan kontrak data dilakukan terhadap struktur masukan agar data yang
+tidak memenuhi skema dihentikan sebelum memasuki tahapan berikutnya. Nilai glukosa yang hilang tidak dibuat secara sintetis, sedangkan interpolasi hanya diterapkan pada
+variabel numerik selain glukosa dengan batas jumlah langkah interpolasi yang telah ditetapkan pada konfigurasi.
+
+Pemrosesan juga mempertahankan karakteristik temporal masing-masing kanal. Perhitungan fitur berbasis waktu menggunakan selisih waktu aktual antar-pengamatan, sehingga
+ketidakberaturan pembacaan finger-stick tidak diperlakukan sebagai interval tetap. Batas kelayakan riwayat yang digunakan pada proses pelatihan disimpan bersama artefak
+inferensi dan dibaca kembali saat penyajian untuk menjaga konsistensi antara data pelatihan dan data yang diproses saat runtime.
+
+\subsubsection{Rekayasa Fitur}
+\label{subsubsec:bab5-rekayasa-fitur}
+
+Tahap rekayasa fitur mengubah pengamatan mentah menjadi representasi yang digunakan oleh model. Representasi tersebut menggabungkan kadar glukosa, perubahan kadar glukosa,
+aktivitas, informasi efek residual insulin dan karbohidrat melalui IOB dan COB, serta konteks waktu dan keteraturan pengamatan. Konfigurasi implementasi yang digunakan
+terdiri atas sembilan fitur sebagaimana dirangkum pada Tabel~\ref{tab:tab5.3_konfigurasi_fitur_dan_sekuens}.
+
+\input{tables/bab5/tab5.3_konfigurasi_fitur_dan_sekuens.tex}
+
+Tabel~\ref{tab:tab5.3_konfigurasi_fitur_dan_sekuens} merangkum representasi masukan yang benar-benar digunakan oleh modul prediksi. Fitur \texttt{glucose\_delta} dan
+\texttt{glucose\_rate} menangkap perubahan kadar glukosa, sedangkan \texttt{iob} dan \texttt{cob} mempertahankan pengaruh residual insulin dan karbohidrat. Fitur
+\texttt{hour\_sin} dan \texttt{hour\_cos} merepresentasikan pola siklis waktu, sementara \texttt{time\_since\_prev\_glucose} mempertahankan informasi mengenai
+ketidakberaturan pengamatan.
+
+Prosedur perhitungan fitur fisiologis dan temporal diringkas pada Algoritma~\ref{alg:alg5.1_rekayasa_fitur}. Perhitungan dilakukan secara terpisah untuk setiap pasien
+setelah data diurutkan berdasarkan waktu. Pendekatan tersebut mempertahankan informasi urutan sekaligus mencegah kejadian dari pasien lain masuk ke perhitungan keadaan
+pasien yang sedang diproses.
+
+\input{algorithms/bab5/alg5_1_rekayasa_fitur_fisiologi_temporal.tex}
+
+Algoritma~\ref{alg:alg5.1_rekayasa_fitur} menunjukkan bahwa rekayasa fitur bukan hanya transformasi kolom, tetapi juga mempertahankan karakteristik temporal data.
+Keluaran tahap ini berupa vektor fitur yang menjadi dasar pembentukan sekuens dan selanjutnya digunakan oleh model prediksi.
+
+\subsubsection{Pembentukan Sekuens dan Horizon Prediksi}
+\label{subsubsec:bab5-pembentukan-sekuens-horizon}
+
+Vektor fitur yang telah dibentuk disusun menjadi sekuens historis sebelum diberikan kepada model. Konfigurasi panjang sekuens dibedakan berdasarkan modalitas untuk
+menyesuaikan kerapatan pengamatan. Pada kanal CGM digunakan 12 langkah yang secara nominal mewakili sekitar satu jam riwayat, sedangkan kanal finger-stick menggunakan
+8 langkah dengan horizon prediksi sekitar 240 menit. Ringkasan konfigurasi ini disajikan pada Tabel~\ref{tab:tab5.3_konfigurasi_fitur_dan_sekuens}.
+
+Setelah sekuens terbentuk, normalisasi dilakukan menggunakan \textit{StandardScaler} yang hanya di-fit pada data pelatihan. Objek normalisasi disimpan bersama artefak
+model sehingga transformasi pada saat inferensi menggunakan parameter yang sama dengan proses pelatihan. Pemisahan berbasis pasien dilakukan sebelum proses tersebut untuk
+mencegah informasi dari pasien yang sama muncul pada bagian pelatihan dan pengujian.
+
+\subsubsection{Implementasi Model Prediksi}
+\label{subsubsec:bab5-model-prediksi}
+
+Model yang direalisasikan untuk produksi adalah gradient boosting. Random Forest dan LSTM tetap tersedia sebagai model pembanding untuk eksperimen, tetapi tidak digunakan
+sebagai model produksi pada jalur runtime. Pemodelan diarahkan untuk memperkirakan perubahan kadar glukosa sehingga keluaran model berupa $\Delta g$. Nilai tersebut
+kemudian direkonstruksi menjadi estimasi kadar glukosa pada horizon yang dituju dengan menggunakan nilai glukosa terakhir yang tersedia.
+
+Prosedur prediksi dan rekonstruksi diringkas pada Algoritma~\ref{alg:alg5.2_prediksi_delta_glukosa}. Algoritma ini memisahkan proses pembentukan masukan, prediksi perubahan
+glukosa, dan rekonstruksi nilai absolut sehingga hubungan antara keluaran model dan kadar glukosa yang ditampilkan pada sistem dapat ditelusuri.
+
+\input{algorithms/bab5/alg5.2_prediksi_delta_glukosa_rekonstruksi.tex}
+
+Algoritma~\ref{alg:alg5.2_prediksi_delta_glukosa} menghasilkan nilai prediksi yang kemudian diteruskan ke tahap estimasi ketidakpastian dan pembentukan kondisi klinis.
+Dengan demikian, model prediksi menjadi salah satu komponen pada rangkaian yang lebih besar dan bukan keluaran akhir modul secara langsung.
+
+\subsubsection{Estimasi Ketidakpastian}
+\label{subsubsec:bab5-estimasi-ketidakpastian}
+
+Estimasi ketidakpastian dihitung dari keluaran model kuantil dan dikombinasikan dengan faktor kalibrasi konformal apabila artefak kalibrasi yang sesuai tersedia.
+Model kuantil pada batas 0,025 dan 0,975 menyediakan rentang prediksi awal, sedangkan kalibrasi konformal digunakan untuk menyesuaikan rentang tersebut pada tahap penyajian.
+
+Implementasi menerapkan prinsip konservatif ketika artefak kalibrasi tidak tersedia. Sistem tidak membentuk faktor pengganti secara otomatis, sehingga interval prediksi tidak
+ditampilkan apabila kalibrasi yang sesuai tidak dapat ditemukan. Perilaku ini mencegah sistem menampilkan informasi ketidakpastian yang tidak mempunyai dasar kalibrasi.
+
+\subsubsection{Pembentukan Clinical State}
+\label{subsubsec:bab5-clinical-state}
+
+Hasil prediksi kemudian digunakan untuk membentuk representasi \textit{clinical state} yang menjadi kontrak data antar-modul. Representasi ini memuat informasi prediksi
+dan konteks yang dibutuhkan oleh mekanisme RAG pada tahap berikutnya. Pada jalur yang memiliki artefak klasifikasi kondisi, kondisi klinis juga dapat diturunkan dari hasil
+prediksi. Keluaran modul ini selanjutnya digunakan sebagai masukan untuk implementasi \textit{query transformation} pada bagian berikutnya.

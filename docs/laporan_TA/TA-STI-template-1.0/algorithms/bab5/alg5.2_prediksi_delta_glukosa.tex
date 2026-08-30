@@ -1,0 +1,11 @@
+\begin{algorithm}[h]
+    \caption{Prediksi $\Delta$Glukosa dan Rekonstruksi Kadar Glukosa}
+    \label{alg:alg5.2_prediksi_delta_glukosa}
+    \begin{algorithmic}[1]
+        \Require Sekuens fitur $\mathbf{X}$, model gradient boosting $f$, kadar glukosa terakhir $g_t$
+        \Ensure Prediksi kadar glukosa $\hat{g}_{t+h}$
+        \State Hitung $\Delta\hat{g}_{t+h} \gets f(\mathbf{X})$
+        \State Rekonstruksi $\hat{g}_{t+h} \gets g_t + \Delta\hat{g}_{t+h}$
+        \State \Return $\hat{g}_{t+h}$
+    \end{algorithmic}
+\end{algorithm}

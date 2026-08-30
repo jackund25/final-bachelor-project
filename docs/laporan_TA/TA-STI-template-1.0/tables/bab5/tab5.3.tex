@@ -1,0 +1,25 @@
+\begin{table}[h]
+    \centering
+    \caption{Konfigurasi fitur dan sekuens pada implementasi modul prediksi.}
+    \label{tab:tab5.3_konfigurasi_fitur_dan_sekuens}
+    \begin{tabular}{p{0.29\textwidth}p{0.61\textwidth}}
+        \hline
+        \textbf{Komponen} & \textbf{Konfigurasi} \\
+        \hline
+        Fitur masukan &
+        \begin{tabular}[t]{@{}l@{}}
+        \texttt{glucose}, \texttt{glucose\_delta}, \texttt{iob}, \texttt{cob}, \texttt{activity},\\
+        \texttt{hour\_sin}, \texttt{hour\_cos}, \texttt{glucose\_rate},\\
+        \texttt{time\_since\_prev\_glucose}
+        \end{tabular} \\
+        Target model & $\Delta$glukosa \\
+        Sekuens CGM & 12 langkah, sekitar 1 jam \\
+        Sekuens finger-stick & 8 langkah \\
+        Horizon CGM & +30 menit dan +60 menit \\
+        Horizon finger-stick & sekitar +240 menit \\
+        Normalisasi & \textit{StandardScaler}, fit pada data pelatihan \\
+        \hline
+    \end{tabular}
+    \vspace{2pt}
+    {\small\itshape Sumber: Konfigurasi implementasi modul prediksi.}
+\end{table}
