@@ -155,10 +155,9 @@ data/knowledge_base/tidak terpakai lagi/
 # docs/proposal_ta memuat figur dari publikasi berhak cipta dan lembar pengesahan
 # bertanda tangan, serta sudah tidak selaras dengan TA final.
 docs/proposal_ta/
-# docs/METHODOLOGY.md SENGAJA TIDAK diabaikan sejak 17 Agustus 2026. Isinya sudah disunting
-# agar layak dibaca publik: catatan internal dan persiapan sidang dihapus, angka dan
-# komponen diselaraskan dengan sistem yang berjalan. Ia menjadi dokumen metodologi
-# repositori ini.
+# docs/METHODOLOGY.md diarsipkan ke arsip/ dan tidak lagi menjadi bagian repositori.
+# Metodologi yang berlaku ada pada laporan tugas akhir; README memuat ringkasannya.
+docs/METHODOLOGY.md
 docs/journey/
 docs/doc.md
 docs/SUS_kuesioner.md
