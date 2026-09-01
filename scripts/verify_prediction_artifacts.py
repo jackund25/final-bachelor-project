@@ -46,7 +46,6 @@ logger = logging.getLogger(__name__)
 
 MODELS_DIR = PROJECT_ROOT / "models"
 
-# ---------------------------------------------------------------------------
 # ANGKA YANG WAJIB SAMA DENGAN NASKAH.
 #
 # Berkas ini SENGAJA dikopel ke naskah: bila Bab VI berubah, berkas ini ikut berubah,
@@ -63,7 +62,6 @@ MODELS_DIR = PROJECT_ROOT / "models"
 # resmi OhioT1DM bersifat TEMPORAL DALAM-PASIEN — seluruh 12 pasien muncul di kedua
 # sisi — sehingga ia lebih ringan daripada pembagian lintas-pasien, dan klaim README
 # tentang "pembagian lintas-pasien yang lebih berat" tidak berlaku bagi angka ini.
-# ---------------------------------------------------------------------------
 DILAPORKAN = {
     ("CGM", 30.0): {"RMSE": 18.67, "MAE": 13.19, "Clarke_A+B": 95.87},
     ("CGM", 60.0): {"RMSE": 31.18, "MAE": 22.96, "Clarke_A+B": 87.49},

@@ -355,7 +355,6 @@ def main() -> None:
     # memakai representasi terskala yang sama. Lihat blok "Regression baseline"
     # di bawah.
 
-    # ---------------------------------------------------------
     # NEW condition classifier
     #
     # IMPORTANT:
@@ -363,7 +362,6 @@ def main() -> None:
     # The classifier gets its own scaler fitted on the same
     # 9-feature representation, preventing the old 7-feature
     # classifier artifact from leaking into this pipeline.
-    # ---------------------------------------------------------
 
     classifier_scaler = StandardScaler()
 
@@ -449,7 +447,6 @@ def main() -> None:
         Xte_model
     )
 
-    # ---------------------------------------------------------
     # Regression baseline from the SAME model family.
     #
     # Lengan ini memprediksi kadar glukosa lalu mengambangnya menjadi kondisi,
@@ -463,7 +460,6 @@ def main() -> None:
     # Sebelum Agustus 2026 lengan ini pernah hilang saat pipeline berpindah ke
     # 9 fitur, sehingga condition_classifier_9features.json hanya memuat lengan
     # pengklasifikasi dan Gambar VI.7 terpaksa memakai angka 7 fitur yang lama.
-    # ---------------------------------------------------------
 
     if prefix == "gbm":
         reg = HistGradientBoostingRegressor(
@@ -508,9 +504,7 @@ def main() -> None:
         for v in yhat_reg
     ])
 
-    # ---------------------------------------------------------
     # Report
-    # ---------------------------------------------------------
 
     res = {
         "source": SOURCE,
@@ -658,9 +652,7 @@ def main() -> None:
         "%",
     )
 
-    # ---------------------------------------------------------
     # Persist bundle
-    # ---------------------------------------------------------
 
     clf_path = (
         ROOT

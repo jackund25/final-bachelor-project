@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Hasilkan Gambar VI.13 (skenario CDSS) dan VI.14 (profil butir SUS).
 
-Sumber: ``results/hasil_form/statistik.json`` (n = 7 responden). Berkas itu
+Sumber: ``results/hasil_form/terbaru/statistik_kompat.json`` (n = 12
+responden), yaitu statistik putaran akhir yang dipetakan ke skema lama oleh
+``scripts/kompat_statistik_form.py``. Putaran lama tidak dipakai lagi dan
+berkasnya tidak dilacak git. Berkas sumber ini
 menyatakan sendiri bahwa bentuk sumbernya adalah distribusi marginal per
 pertanyaan, bukan baris per responden; konsekuensinya skor SUS per responden
 tidak teridentifikasi dan hanya reratanya yang eksak.
@@ -34,7 +37,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-SUMBER = ROOT / "results/hasil_form/statistik.json"
+SUMBER = ROOT / "results/hasil_form/terbaru/statistik_kompat.json"
 OUT_DIR = ROOT / "docs/laporan_TA/TA-STI-template-1.0/images/bab6"
 
 # (kunci di statistik.json, label sumbu) — urutan menentukan urutan batang.
@@ -178,7 +181,7 @@ def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--out-dir", type=Path, default=OUT_DIR)
     p.add_argument("--sumber", type=Path, default=SUMBER,
-                   help="statistik.json yang dipakai (skema putaran n=10)")
+                   help="statistik.json yang dipakai (skema lama, isi n=12)")
     args = p.parse_args()
 
     d = muat(args.sumber)

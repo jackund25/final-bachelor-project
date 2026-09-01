@@ -62,9 +62,7 @@ plt.rcParams.update({
 })
 
 
-# --------------------------------------------------------------------------
 # Statistik
-# --------------------------------------------------------------------------
 def bentangkan(dist: dict) -> list[int]:
     """{'3': 4, '4': 3} -> [3,3,3,3,4,4,4]. Marginal satu butir = sampel penuh."""
     nilai: list[int] = []
@@ -243,9 +241,7 @@ def uji_konsistensi_n4(data: dict) -> dict:
     }
 
 
-# --------------------------------------------------------------------------
 # Diagram
-# --------------------------------------------------------------------------
 def _judul(ax, teks: str, lebar: int = 62, pad: int = 12):
     """Judul dibungkus manual agar kalimat pertanyaan yang panjang tetap muat."""
     baris, kini = [], ""
@@ -431,9 +427,7 @@ def gambar_ringkas_butir4(stat: dict, data: dict, keluar: Path):
     plt.close(fig)
 
 
-# --------------------------------------------------------------------------
 # Laporan Markdown
-# --------------------------------------------------------------------------
 def koma(x) -> str:
     return f"{x}".replace(".", ",")
 
@@ -530,7 +524,6 @@ def tulis_markdown(data: dict, stat: dict, gambar: list[tuple[str, str]]) -> str
     return "\n".join(b)
 
 
-# --------------------------------------------------------------------------
 def main() -> None:
     data = json.loads(SUMBER.read_text(encoding="utf-8"))
     GAMBAR_DIR.mkdir(parents=True, exist_ok=True)

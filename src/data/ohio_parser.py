@@ -309,9 +309,7 @@ def process_ohio_dataset(
         f"dari {ohio_root}"
     )
 
-    # =========================================================
     # PARSE CGM
-    # =========================================================
 
     print(
         "\n[1/2] Timeline CGM (5-menit)"
@@ -338,9 +336,7 @@ def process_ohio_dataset(
                 f"{exc}"
             )
 
-    # =========================================================
     # PARSE FINGER-STICK / SMBG
-    # =========================================================
 
     print(
         "\n[2/2] Timeline finger_stick (SMBG nyata)"
@@ -371,9 +367,7 @@ def process_ohio_dataset(
         print("Tidak ada data yang berhasil diparse.")
         return
 
-    # =========================================================
     # COMBINE CGM + SMBG
-    # =========================================================
 
     frames = []
 
@@ -388,9 +382,7 @@ def process_ohio_dataset(
         ignore_index=True,
     )
 
-    # =========================================================
     # SORT
-    # =========================================================
 
     combined = (
         combined
@@ -404,9 +396,7 @@ def process_ohio_dataset(
         .reset_index(drop=True)
     )
 
-    # =========================================================
     # WRITE ONE DATASET
-    # =========================================================
 
     output_path.parent.mkdir(
         parents=True,
@@ -420,9 +410,7 @@ def process_ohio_dataset(
         index=False,
     )
 
-    # =========================================================
     # SUMMARY
-    # =========================================================
 
     split_counts = (
         combined["dataset_split"]
@@ -469,9 +457,7 @@ def process_ohio_dataset(
         "=================================================="
     )
 
-    # =========================================================
     # CGM SUMMARY
-    # =========================================================
 
     if cgm_frames:
 
@@ -506,9 +492,7 @@ def process_ohio_dataset(
 
         print(nz)
 
-    # =========================================================
     # SOURCE/SPLIT CROSS-TAB
-    # =========================================================
 
     cross_tab = pd.crosstab(
         combined["glucose_source"],

@@ -1,0 +1,483 @@
+{
+  "percobaan": "T12b — penaksir cakupan conformal dengan tiga himpunan terpisah",
+  "mengapa": "conformal_h*.json mengkalibrasi dan melaporkan pada himpunan yang SAMA, sehingga cakupannya optimistis. Di sini pasien pengukur tidak pernah dipakai melatih maupun mengkalibrasi.",
+  "rancangan": "latih 10 pasien (sama dengan produksi) -> kalibrasi 1 pasien -> ukur pada 1 pasien lain; enam pasangan lepas, dua arah",
+  "yang_tidak_diklaim": "Ini cakupan PROSEDUR, bukan cakupan satu bundel tertentu. Bagi satu bundel, jaminannya teoretis atas titik baru yang dapat dipertukarkan (Angelopoulos & Bates 2021 Bagian 2).",
+  "n_pasien": 12,
+  "horizon": {
+    "6": {
+      "menit": 30,
+      "ringkasan": {
+        "90": {
+          "cakupan_rerata_%": 89.6,
+          "cakupan_sd_%": 3.4,
+          "cakupan_min_%": 82.9,
+          "cakupan_maks_%": 94.5,
+          "q_rerata": 1.672,
+          "n_putaran": 12
+        },
+        "95": {
+          "cakupan_rerata_%": 94.7,
+          "cakupan_sd_%": 2.1,
+          "cakupan_min_%": 90.8,
+          "cakupan_maks_%": 97.4,
+          "q_rerata": 2.125,
+          "n_putaran": 12
+        }
+      },
+      "analisis_sebaran": {
+        "korelasi_q_dengan_cakupan_r": 0.705,
+        "korelasi_p": 0.01052,
+        "n_putaran_di_bawah_nominal_95": 6,
+        "n_putaran": 12,
+        "q_min": 1.848,
+        "q_maks": 2.542,
+        "tafsir": "Korelasi positif kuat antara q dan cakupan menunjukkan cakupan yang terwujud ditentukan oleh SIAPA yang mengkalibrasi, bukan oleh mutu modelnya. Itu tanda asumsi exchangeability conformal tertekan oleh keragaman antar-pasien: residual satu pasien tidak dapat dipertukarkan dengan residual pasien lain."
+      },
+      "per_putaran": [
+        {
+          "n_cal": 14350,
+          "n_test": 12904,
+          "90": {
+            "q": 1.75,
+            "cakupan_%": 93.0,
+            "lebar_rata2": 61.9
+          },
+          "95": {
+            "q": 2.207,
+            "cakupan_%": 96.9,
+            "lebar_rata2": 78.0
+          },
+          "kalibrasi": "ohio_540",
+          "uji": "ohio_544",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 12904,
+          "n_test": 14350,
+          "90": {
+            "q": 1.548,
+            "cakupan_%": 86.5,
+            "lebar_rata2": 56.5
+          },
+          "95": {
+            "q": 1.948,
+            "cakupan_%": 92.5,
+            "lebar_rata2": 71.1
+          },
+          "kalibrasi": "ohio_544",
+          "uji": "ohio_540",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 10816,
+          "n_test": 12501,
+          "90": {
+            "q": 1.575,
+            "cakupan_%": 87.4,
+            "lebar_rata2": 58.7
+          },
+          "95": {
+            "q": 2.0,
+            "cakupan_%": 92.8,
+            "lebar_rata2": 74.6
+          },
+          "kalibrasi": "ohio_552",
+          "uji": "ohio_559",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 12501,
+          "n_test": 10816,
+          "90": {
+            "q": 1.755,
+            "cakupan_%": 92.6,
+            "lebar_rata2": 60.2
+          },
+          "95": {
+            "q": 2.254,
+            "cakupan_%": 96.6,
+            "lebar_rata2": 77.3
+          },
+          "kalibrasi": "ohio_559",
+          "uji": "ohio_552",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 14435,
+          "n_test": 12226,
+          "90": {
+            "q": 1.557,
+            "cakupan_%": 87.7,
+            "lebar_rata2": 57.8
+          },
+          "95": {
+            "q": 1.979,
+            "cakupan_%": 93.7,
+            "lebar_rata2": 73.5
+          },
+          "kalibrasi": "ohio_563",
+          "uji": "ohio_567",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 12226,
+          "n_test": 14435,
+          "90": {
+            "q": 1.691,
+            "cakupan_%": 92.0,
+            "lebar_rata2": 55.1
+          },
+          "95": {
+            "q": 2.164,
+            "cakupan_%": 96.4,
+            "lebar_rata2": 70.5
+          },
+          "kalibrasi": "ohio_567",
+          "uji": "ohio_563",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 13275,
+          "n_test": 13536,
+          "90": {
+            "q": 1.476,
+            "cakupan_%": 86.9,
+            "lebar_rata2": 52.3
+          },
+          "95": {
+            "q": 1.848,
+            "cakupan_%": 93.1,
+            "lebar_rata2": 65.5
+          },
+          "kalibrasi": "ohio_570",
+          "uji": "ohio_575",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 13536,
+          "n_test": 13275,
+          "90": {
+            "q": 1.633,
+            "cakupan_%": 92.6,
+            "lebar_rata2": 58.8
+          },
+          "95": {
+            "q": 2.045,
+            "cakupan_%": 96.5,
+            "lebar_rata2": 73.6
+          },
+          "kalibrasi": "ohio_575",
+          "uji": "ohio_570",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 13941,
+          "n_test": 15219,
+          "90": {
+            "q": 1.958,
+            "cakupan_%": 92.4,
+            "lebar_rata2": 68.1
+          },
+          "95": {
+            "q": 2.542,
+            "cakupan_%": 96.6,
+            "lebar_rata2": 88.4
+          },
+          "kalibrasi": "ohio_584",
+          "uji": "ohio_588",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 15219,
+          "n_test": 13941,
+          "90": {
+            "q": 1.779,
+            "cakupan_%": 87.3,
+            "lebar_rata2": 66.7
+          },
+          "95": {
+            "q": 2.255,
+            "cakupan_%": 93.1,
+            "lebar_rata2": 84.5
+          },
+          "kalibrasi": "ohio_588",
+          "uji": "ohio_584",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 13216,
+          "n_test": 13172,
+          "90": {
+            "q": 1.859,
+            "cakupan_%": 94.5,
+            "lebar_rata2": 60.4
+          },
+          "95": {
+            "q": 2.339,
+            "cakupan_%": 97.4,
+            "lebar_rata2": 76.0
+          },
+          "kalibrasi": "ohio_591",
+          "uji": "ohio_596",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 13172,
+          "n_test": 13216,
+          "90": {
+            "q": 1.483,
+            "cakupan_%": 82.9,
+            "lebar_rata2": 53.4
+          },
+          "95": {
+            "q": 1.917,
+            "cakupan_%": 90.8,
+            "lebar_rata2": 69.0
+          },
+          "kalibrasi": "ohio_596",
+          "uji": "ohio_591",
+          "n_pasien_latih": 10
+        }
+      ],
+      "durasi_detik": 2283.7
+    },
+    "12": {
+      "menit": 60,
+      "ringkasan": {
+        "90": {
+          "cakupan_rerata_%": 89.2,
+          "cakupan_sd_%": 4.7,
+          "cakupan_min_%": 80.3,
+          "cakupan_maks_%": 95.5,
+          "q_rerata": 1.727,
+          "n_putaran": 12
+        },
+        "95": {
+          "cakupan_rerata_%": 94.5,
+          "cakupan_sd_%": 2.8,
+          "cakupan_min_%": 89.2,
+          "cakupan_maks_%": 97.8,
+          "q_rerata": 2.149,
+          "n_putaran": 12
+        }
+      },
+      "analisis_sebaran": {
+        "korelasi_q_dengan_cakupan_r": 0.828,
+        "korelasi_p": 0.00087,
+        "n_putaran_di_bawah_nominal_95": 6,
+        "n_putaran": 12,
+        "q_min": 1.855,
+        "q_maks": 2.496,
+        "tafsir": "Korelasi positif kuat antara q dan cakupan menunjukkan cakupan yang terwujud ditentukan oleh SIAPA yang mengkalibrasi, bukan oleh mutu modelnya. Itu tanda asumsi exchangeability conformal tertekan oleh keragaman antar-pasien: residual satu pasien tidak dapat dipertukarkan dengan residual pasien lain."
+      },
+      "per_putaran": [
+        {
+          "n_cal": 14226,
+          "n_test": 12778,
+          "90": {
+            "q": 1.822,
+            "cakupan_%": 92.4,
+            "lebar_rata2": 106.4
+          },
+          "95": {
+            "q": 2.236,
+            "cakupan_%": 96.1,
+            "lebar_rata2": 130.6
+          },
+          "kalibrasi": "ohio_540",
+          "uji": "ohio_544",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 12778,
+          "n_test": 14226,
+          "90": {
+            "q": 1.657,
+            "cakupan_%": 86.8,
+            "lebar_rata2": 99.4
+          },
+          "95": {
+            "q": 2.082,
+            "cakupan_%": 93.5,
+            "lebar_rata2": 124.9
+          },
+          "kalibrasi": "ohio_544",
+          "uji": "ohio_540",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 10643,
+          "n_test": 12252,
+          "90": {
+            "q": 1.665,
+            "cakupan_%": 86.7,
+            "lebar_rata2": 98.8
+          },
+          "95": {
+            "q": 2.064,
+            "cakupan_%": 92.0,
+            "lebar_rata2": 122.4
+          },
+          "kalibrasi": "ohio_552",
+          "uji": "ohio_559",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 12252,
+          "n_test": 10643,
+          "90": {
+            "q": 1.891,
+            "cakupan_%": 93.3,
+            "lebar_rata2": 107.7
+          },
+          "95": {
+            "q": 2.43,
+            "cakupan_%": 97.4,
+            "lebar_rata2": 138.4
+          },
+          "kalibrasi": "ohio_559",
+          "uji": "ohio_552",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 14362,
+          "n_test": 11914,
+          "90": {
+            "q": 1.576,
+            "cakupan_%": 84.7,
+            "lebar_rata2": 99.5
+          },
+          "95": {
+            "q": 1.953,
+            "cakupan_%": 92.1,
+            "lebar_rata2": 123.4
+          },
+          "kalibrasi": "ohio_563",
+          "uji": "ohio_567",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 11914,
+          "n_test": 14362,
+          "90": {
+            "q": 1.817,
+            "cakupan_%": 93.7,
+            "lebar_rata2": 102.2
+          },
+          "95": {
+            "q": 2.215,
+            "cakupan_%": 97.0,
+            "lebar_rata2": 124.6
+          },
+          "kalibrasi": "ohio_567",
+          "uji": "ohio_563",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 13142,
+          "n_test": 13348,
+          "90": {
+            "q": 1.524,
+            "cakupan_%": 85.1,
+            "lebar_rata2": 89.8
+          },
+          "95": {
+            "q": 1.896,
+            "cakupan_%": 92.9,
+            "lebar_rata2": 111.7
+          },
+          "kalibrasi": "ohio_570",
+          "uji": "ohio_575",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 13348,
+          "n_test": 13142,
+          "90": {
+            "q": 1.73,
+            "cakupan_%": 93.2,
+            "lebar_rata2": 108.2
+          },
+          "95": {
+            "q": 2.091,
+            "cakupan_%": 96.8,
+            "lebar_rata2": 130.7
+          },
+          "kalibrasi": "ohio_575",
+          "uji": "ohio_570",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 13749,
+          "n_test": 15152,
+          "90": {
+            "q": 1.983,
+            "cakupan_%": 93.7,
+            "lebar_rata2": 115.3
+          },
+          "95": {
+            "q": 2.496,
+            "cakupan_%": 97.1,
+            "lebar_rata2": 145.1
+          },
+          "kalibrasi": "ohio_584",
+          "uji": "ohio_588",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 15152,
+          "n_test": 13749,
+          "90": {
+            "q": 1.692,
+            "cakupan_%": 85.3,
+            "lebar_rata2": 104.6
+          },
+          "95": {
+            "q": 2.122,
+            "cakupan_%": 91.8,
+            "lebar_rata2": 131.3
+          },
+          "kalibrasi": "ohio_588",
+          "uji": "ohio_584",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 13113,
+          "n_test": 13043,
+          "90": {
+            "q": 1.913,
+            "cakupan_%": 95.5,
+            "lebar_rata2": 104.1
+          },
+          "95": {
+            "q": 2.354,
+            "cakupan_%": 97.8,
+            "lebar_rata2": 128.1
+          },
+          "kalibrasi": "ohio_591",
+          "uji": "ohio_596",
+          "n_pasien_latih": 10
+        },
+        {
+          "n_cal": 13043,
+          "n_test": 13113,
+          "90": {
+            "q": 1.453,
+            "cakupan_%": 80.3,
+            "lebar_rata2": 84.7
+          },
+          "95": {
+            "q": 1.855,
+            "cakupan_%": 89.2,
+            "lebar_rata2": 108.1
+          },
+          "kalibrasi": "ohio_596",
+          "uji": "ohio_591",
+          "n_pasien_latih": 10
+        }
+      ],
+      "durasi_detik": 2001.3
+    }
+  }
+}

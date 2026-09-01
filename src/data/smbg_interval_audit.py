@@ -443,9 +443,7 @@ def main():
         exist_ok=True,
     )
 
-    # ---------------------------------------------------------
     # 1. Patient summary
-    # ---------------------------------------------------------
 
     patient_result = patient_summary(
         intervals
@@ -461,9 +459,7 @@ def main():
         index=False,
     )
 
-    # ---------------------------------------------------------
     # 2. Quality summary
-    # ---------------------------------------------------------
 
     quality_result = quality_summary(
         intervals
@@ -479,9 +475,7 @@ def main():
         index=False,
     )
 
-    # ---------------------------------------------------------
     # 3. Horizon coverage
-    # ---------------------------------------------------------
 
     horizon_result = horizon_coverage_summary(
         intervals
@@ -497,9 +491,7 @@ def main():
         index=False,
     )
 
-    # ---------------------------------------------------------
     # 4. Raw interval audit
-    # ---------------------------------------------------------
 
     raw_stats = summarize(
         intervals["interval_min"]
@@ -565,9 +557,7 @@ def main():
         index=False,
     )
 
-    # ---------------------------------------------------------
     # Console
-    # ---------------------------------------------------------
 
     print("\n" + "=" * 105)
     print("M5.4-B — SMBG IRREGULAR-HORIZON AUDIT v2")

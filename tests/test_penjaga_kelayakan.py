@@ -49,9 +49,7 @@ def _jendela(n, interval_menit, jeda_di=None, jeda_menit=0):
     return pd.DataFrame(rows)
 
 
-# ---------------------------------------------------------------------------
 # Kriteria dasar
-# ---------------------------------------------------------------------------
 
 def test_jendela_rapat_dinyatakan_layak():
     k = periksa_kelayakan_menit(_jendela(12, 5), sequence_length=12, max_gap_min=30)
@@ -112,9 +110,7 @@ def test_batas_tidak_diketahui_tidak_dianggap_layak():
     assert not k.boleh_diprediksi
 
 
-# ---------------------------------------------------------------------------
 # Pembungkus berbasis langkah
-# ---------------------------------------------------------------------------
 
 def test_pembungkus_langkah_sepadan_dengan_jalur_menit():
     """Satu aturan, dua satuan. Bila keduanya menyimpang, penjaga kehilangan arti."""
@@ -130,9 +126,7 @@ def test_pembungkus_langkah_sepadan_dengan_jalur_menit():
     assert langkah.batas_langkah == 6
 
 
-# ---------------------------------------------------------------------------
 # Integrasi dengan bundle produksi
-# ---------------------------------------------------------------------------
 
 @pytest.fixture(scope="module")
 def layanan():

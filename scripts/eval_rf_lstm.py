@@ -43,9 +43,7 @@ import pandas as pd
 import yaml
 
 
-# ---------------------------------------------------------------------------
 # Clarke Error Grid plotting
-# ---------------------------------------------------------------------------
 
 def _clarke_zones_to_color(zone: str) -> str:
     return {"A": "#2ecc71", "B": "#f1c40f", "C": "#e67e22", "D": "#e74c3c", "E": "#8e44ad"}[zone]
@@ -157,9 +155,7 @@ def plot_comparison_bar(hasil: "list[tuple[str, dict]]", out_path: Path,
     print(f"  Comparison chart saved: {out_path}")
 
 
-# ---------------------------------------------------------------------------
 # Main evaluation routine
-# ---------------------------------------------------------------------------
 
 LENGAN = [
     ("gbm", "Gradient Boosting"),

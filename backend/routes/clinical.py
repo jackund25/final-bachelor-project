@@ -16,35 +16,11 @@ router = APIRouter(
 )
 
 
-# ============================================================
 # Stage 3 — Clinical Decision Support
 #
-# Flow:
-#
-# observation
-#     ↓
-# modality routing
-#     ↓
-# prediction service
-#     ↓
-# ┌───────────────────────────────┐
-# │ prediction available?         │
-# └───────────────┬───────────────┘
-#       YES       │       NO
-#        ↓        │        ↓
-# prediction      │   current-state mode
-#        ↓        │        ↓
-# prediction-     │   current glucose
-# conditioned RAG │   + safety status
-#        ↓        │
-# clinical advice │
-#
-# IMPORTANT:
-# If prediction is unavailable, this endpoint NEVER treats the
-# current glucose as a future prediction. This prevents the
-# current-state fallback from corrupting the prediction-
-# conditioned retrieval semantics.
-# ============================================================
+# PENTING: bila prediksi tidak tersedia, endpoint ini TIDAK PERNAH
+# memperlakukan glukosa terkini sebagai prediksi. Tanpa pemisahan itu, mode
+# cadangan akan merusak semantik penelusuran terkondisi-prediksi.
 
 
 class GlucoseSource(str, Enum):
@@ -87,21 +63,11 @@ _data_service = None
 
 # Satu-satunya pembangun yang boleh berjalan pada satu waktu.
 #
-# SEBAB (24 Agustus 2026, sesudah deploy pertama). Instans produksi ter-OOM dan
-# restart berulang setiap kali /api/clinical dipanggil. Rantainya:
-#
-#   1. Pemanasan menetapkan _rag_pipeline SEBELUM .build() selesai.
-#   2. Permintaan yang datang melihat globalnya sudah terisi, lalu memakai
-#      pipeline yang masih setengah jadi.
-#   3. RAGPipeline.answer() melihat self._ready masih False dan memanggil
-#      .build() LAGI, kali ini di thread permintaan.
-#   4. Dua indeks BM25 atas 2.233 potongan dibangun BERSAMAAN pada instans
-#      512 MB. Prosesnya dibunuh, klien menerima 502, dan karena respons 502
-#      tidak membawa header CORS browser melaporkannya sebagai galat CORS —
-#      gejala yang menyesatkan, jauh dari sebabnya.
-#
-# Kunci ini beserta pola "bangun dulu, publikasikan kemudian" di bawah membuat
-# pembangunan kedua mustahil terjadi.
+# Tanpa kunci ini, permintaan yang datang saat pemanasan belum tuntas akan
+# memakai pipeline setengah jadi, lalu RAGPipeline.answer() membangunnya
+# ulang. Dua indeks BM25 atas 2.233 potongan hidup bersamaan pada instans
+# 512 MB dan prosesnya dibunuh. Kunci ini beserta pola "bangun dulu,
+# publikasikan kemudian" di bawah mencegahnya.
 _kunci_bangun = threading.Lock()
 
 # Kunci TERPISAH untuk layanan prediksi. Kalau ia ikut memakai _kunci_bangun, sebuah
@@ -154,28 +120,13 @@ def get_rag_pipeline():
 
         from src.rag.pipeline import RAGPipeline
 
-        # Seluruh parameter dibiarkan diambil dari config.yaml.
+        # Seluruh parameter diambil dari config.yaml, tidak dipatri di sini.
         #
-        # SEBELUMNYA tiga nilai dipatri di sini, dan salah satunya menunjuk indeks
-        # yang KOSONG: chroma_persist_dir="models/chroma_db_eval" dengan
-        # collection_name="diabetes_kb_eval". Koleksi itu tidak pernah ada, sehingga
-        # tiap permintaan melewati rantai kegagalan berikut TANPA satu pun galat
-        # sampai ke pemanggil:
-        #
-        #   koleksi tidak ada -> indeks BM25 gagal dibangun
-        #   -> mode turun ke vektor -> ruang vektor pun kosong
-        #   -> RAGPipeline mundur ke SimpleKeywordRetriever
-        #   -> penelusuran dilayani 36 potongan cadangan, bukan 2.233 potongan korpus
-        #
-        # Jawabannya tetap keluar, sitasinya tetap membawa nomor halaman sungguhan,
-        # dan tidak ada yang tampak salah. Hanya 1,6% korpus yang benar-benar
-        # terjangkau. Inilah jenis kegagalan yang paling mahal pada alat klinis:
-        # sistem yang keliru tanpa terlihat keliru.
-        #
-        # Nilai produksi ada di config.yaml (rag.persist_dir = models/chroma_db,
-        # rag.collection_name = diabetes_kb). Membiarkannya bersumber dari satu
-        # tempat mencegah lingkungan penyajian menyimpang diam-diam dari lingkungan
-        # yang membangun indeksnya.
+        # Nilai yang dipatri pernah menunjuk koleksi yang tidak ada, dan
+        # rantai cadangannya menurunkan penelusuran ke 36 potongan tanpa satu
+        # pun galat sampai ke pemanggil. Bersumber satu tempat mencegah
+        # lingkungan penyajian menyimpang diam-diam dari lingkungan yang
+        # membangun indeksnya.
         # DIBANGUN KE VARIABEL LOKAL DULU. Menetapkan global sebelum .build()
         # selesai membuat pemanggil lain menerima pipeline setengah jadi, dan
         # RAGPipeline.answer() akan membangunnya ulang — dua indeks sekaligus di
@@ -369,9 +320,7 @@ def clinical_decision_support(
                 },
             }
 
-        # -----------------------------------------------------
         # 1. Modality-aware prediction
-        # -----------------------------------------------------
 
         prediction_result = (
             get_prediction_service().predict(
@@ -401,13 +350,11 @@ def clinical_decision_support(
             )
         )
 
-        # -----------------------------------------------------
         # 2A. No sufficient history
         #
         # Do NOT feed current_glucose into rag.answer()
         # because rag.answer() interprets its `prediction`
         # argument as a future predicted value.
-        # -----------------------------------------------------
 
         if not prediction_available:
             current_glucose = prediction_result.get(
@@ -444,9 +391,7 @@ def clinical_decision_support(
                 "clinical_advisory": advisory,
             }
 
-        # -----------------------------------------------------
         # 2B. Prediction available
-        # -----------------------------------------------------
 
         horizons = prediction_result.get(
             "horizons",
@@ -478,29 +423,12 @@ def clinical_decision_support(
             "prediction_horizon_minutes"
         ] = prediction_horizon
 
-        # -----------------------------------------------------
-        # 2C. Salurkan seluruh keluaran prediktor ke RAG
+        # 2C. Salurkan seluruh keluaran prediktor ke RAG.
         #
-        # SEBELUMNYA tiga keluaran ini dihitung lalu dibuang di sini, dan itu
-        # membuat advisory jauh lebih dangkal daripada yang mampu dihasilkan
-        # sistem:
-        #
-        #   condition  - kelas dari pengklasifikasi tiga kelas. Regresi yang
-        #                meminimalkan galat kuadrat menyusut ke tengah dan jarang
-        #                berani melewati ambang 70/180, sehingga tanpa ini
-        #                perubahan kondisi kerap tidak tertandai sama sekali.
-        #   interval   - batas interval konformal. Tanpanya bagian "Penilaian"
-        #                tidak dapat menyebut rentang, dan bagian "Yang tidak
-        #                dapat disimpulkan" kehilangan bahan paling konkretnya.
-        #                Ia juga yang menghidupkan pengondisian sadar-ketidakpastian
-        #                pada _primary_query: kondisi berisiko yang masih tercakup
-        #                interval tetap diambilkan dokumennya meski prediksi
-        #                titiknya normal.
-        #
-        # PatientState.from_model_output dan RAGPipeline._build_query SUDAH
-        # menerima ketiga nama medan ini. Tidak ada kode baru di sisi RAG; yang
-        # diperbaiki hanyalah berhenti membuangnya di sini.
-        # -----------------------------------------------------
+        # condition dan interval keduanya terpakai di hilir: regresi menyusut
+        # ke tengah dan jarang melewati ambang 70/180, sedangkan interval
+        # konformal menghidupkan pengondisian sadar-ketidakpastian pada
+        # _primary_query. Membuangnya di sini membuat advisory dangkal.
 
         patient_state["predicted_condition"] = prediction_result.get("condition")
 
@@ -526,9 +454,7 @@ def clinical_decision_support(
             if nama in engineered:
                 patient_state[nama] = engineered[nama]
 
-        # -----------------------------------------------------
         # 3. Prediction-conditioned clinical RAG
-        # -----------------------------------------------------
 
         rag = get_rag_pipeline()
 

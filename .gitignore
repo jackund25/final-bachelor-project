@@ -220,3 +220,6 @@ results/hasil_form/*
 results/hasil_form/terbaru/*
 !results/hasil_form/terbaru/statistik.json
 !results/hasil_form/terbaru/statistik_kompat.json
+
+# Direktori uji sementara, tidak pernah dilacak.
+.tmp_uji/

@@ -412,7 +412,6 @@ class PredictionService:
                 "has_sufficient_history": False,
             }
 
-        # -----------------------------------------------------------------
         # PENJAGA KELAYAKAN TEMPORAL (M5.7 clinical readiness rules)
         #
         # Jumlah baris yang cukup TIDAK cukup. Pelatihan juga membuang jendela
@@ -423,7 +422,6 @@ class PredictionService:
         #
         # Batasnya dibaca dari BUNDLE, bukan dari config, supaya selalu sama
         # persis dengan yang dipakai saat model itu dilatih.
-        # -----------------------------------------------------------------
         kelayakan = self._periksa_kelayakan(patient_df, horizons[0])
 
         if not kelayakan.boleh_diprediksi:

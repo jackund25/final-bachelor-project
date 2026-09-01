@@ -32,9 +32,7 @@ def main():
         retrieval_mode="hibrida",
     )
 
-    # ------------------------------------------------------------
     # Cari target chunk di seluruh corpus
-    # ------------------------------------------------------------
     target_idx = None
 
     for idx, text in enumerate(r._bm25_teks):
@@ -51,9 +49,7 @@ def main():
     print("Index :", target_idx)
     print("Target:", TARGET)
 
-    # ------------------------------------------------------------
     # BM25
-    # ------------------------------------------------------------
     bm25_indices = r._peringkat_bm25(QUERY, 50)
     bm25_rank = find_rank(bm25_indices, target_idx)
 
@@ -61,9 +57,7 @@ def main():
     print("-" * 70)
     print("Target rank:", bm25_rank)
 
-    # ------------------------------------------------------------
     # Vector / MMR
-    # ------------------------------------------------------------
     docs_vector = r._vector_store.max_marginal_relevance_search(
         QUERY,
         k=50,
@@ -84,9 +78,7 @@ def main():
     print("Jumlah hasil :", len(vector_indices))
     print("Target rank  :", vector_rank)
 
-    # ------------------------------------------------------------
     # RRF
-    # ------------------------------------------------------------
     rrf_indices = r._gabung_rrf(
         [
             vector_indices,
@@ -101,9 +93,7 @@ def main():
     print("Jumlah kandidat:", len(rrf_indices))
     print("Target rank    :", rrf_rank)
 
-    # ------------------------------------------------------------
     # TOP 20 RRF
-    # ------------------------------------------------------------
     print("\nTOP 20 RRF")
     print("-" * 70)
 
@@ -127,9 +117,7 @@ def main():
             text[:220].replace("\n", " "),
         )
 
-    # ------------------------------------------------------------
     # Candidate pool yang benar-benar dikirim ke BGE
-    # ------------------------------------------------------------
     candidate_k = max(
         5,
         r.reranker_candidate_k,
@@ -150,9 +138,7 @@ def main():
     if candidate_rank is not None:
         print("Target rank :", candidate_rank)
 
-    # ------------------------------------------------------------
     # BGE Reranker
-    # ------------------------------------------------------------
     if r.reranker_enabled and r._reranker is not None:
 
         candidates = r._hasil_dari_indeks(
@@ -215,9 +201,7 @@ def main():
         print("-" * 70)
         print("BGE tidak tersedia.")
 
-    # ------------------------------------------------------------
     # SUMMARY
-    # ------------------------------------------------------------
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)

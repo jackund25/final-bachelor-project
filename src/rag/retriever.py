@@ -525,10 +525,8 @@ class MMRRetriever:
             )
 
             if self.retrieval_mode == "bm25":
-                # ============================================================
                 # LEXICAL RETRIEVAL
                 # BM25 -> candidate pool -> cross-encoder -> top_k
-                # ============================================================
                 #
                 # Sebelumnya cabang ini mengembalikan urut_bm[:top_k] apa adanya,
                 # sehingga _rerank TIDAK PERNAH dipanggil pada jalur produksi meski
@@ -559,10 +557,8 @@ class MMRRetriever:
                     top_k,
                 )
 
-            # ============================================================
             # HYBRID RETRIEVAL
             # BM25 + Vector/MMR -> RRF
-            # ============================================================
 
             docs_v = self._vector_store.max_marginal_relevance_search(
                 query,
@@ -583,9 +579,7 @@ class MMRRetriever:
                 [urut_v, urut_bm]
             )
 
-            # ============================================================
             # CANDIDATE POOL
-            # ============================================================
 
             candidate_k = max(
                 top_k,
@@ -598,9 +592,7 @@ class MMRRetriever:
                 candidate_indices
             )
 
-            # ============================================================
             # RERANKING
-            # ============================================================
 
             if self.reranker_enabled and self._reranker is not None:
                 return self._rerank(

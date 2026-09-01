@@ -146,9 +146,7 @@ class RAGPipeline:
         )
         self._ready = False
 
-    # ------------------------------------------------------------------
     # Public API
-    # ------------------------------------------------------------------
 
     def ingest(self, reset_collection: bool = False) -> Dict[str, Any]:
         """Indeks ulang korpus dari potongan cadangan.
@@ -335,9 +333,7 @@ class RAGPipeline:
             "timings": timer.as_dict(),
         }
 
-    # ------------------------------------------------------------------
     # Internal helpers
-    # ------------------------------------------------------------------
 
     def _retrieve(
         self,
@@ -413,17 +409,13 @@ class RAGPipeline:
         try:
             from src.constants import classify_glucose_3class, CLASS_NORMAL
 
-            # --------------------------------------------------------------
             # 1. Clinical question = PRIMARY QUERY
-            # --------------------------------------------------------------
             question = (user_question or "").strip()
 
             if not question:
                 question = "Apa tindakan yang sesuai berdasarkan kondisi pasien?"
 
-            # --------------------------------------------------------------
             # 2. Prediction -> clinical condition
-            # --------------------------------------------------------------
             condition = classify_glucose_3class(float(prediction))
 
             context_parts: List[str] = []
@@ -431,9 +423,7 @@ class RAGPipeline:
             if condition != CLASS_NORMAL:
                 context_parts.append(condition)
 
-            # --------------------------------------------------------------
             # 3. Hanya tambahkan konteks klinis yang benar-benar relevan.
-            # --------------------------------------------------------------
             if context_parts:
                 retrieval_query = (
                     f"{question} "
@@ -442,10 +432,8 @@ class RAGPipeline:
             else:
                 retrieval_query = question
 
-            # --------------------------------------------------------------
             # 4. Tetap bangun structured context untuk LLM.
             #    Ini TIDAK dipakai sebagai retrieval query.
-            # --------------------------------------------------------------
             try:
                 from src.patient_state import PatientState
             except ImportError:
@@ -497,10 +485,8 @@ class RAGPipeline:
                 exc,
             )
 
-            # --------------------------------------------------------------
             # Safe fallback:
             # pertanyaan pengguna tetap menjadi query utama.
-            # --------------------------------------------------------------
             question = (user_question or "").strip()
 
             if question:
@@ -571,9 +557,7 @@ class RAGPipeline:
         return f"{text.strip()} Catatan: Keputusan medis final tetap pada dokter."
 
 
-# ------------------------------------------------------------------
 # CLI
-# ------------------------------------------------------------------
 
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="RAG Pipeline CLI")

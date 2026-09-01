@@ -38,9 +38,7 @@ from pathlib import Path
 from statistics import mean
 
 
-# ============================================================
 # PROJECT ROOT
-# ============================================================
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
@@ -49,9 +47,7 @@ sys.path.insert(0, str(ROOT))
 from src.rag.retriever import MMRRetriever
 
 
-# ============================================================
 # CONFIG
-# ============================================================
 
 PERSIST_DIR = "models/chroma_db_eval"
 COLLECTION_NAME = "diabetes_kb_eval"
@@ -67,9 +63,7 @@ DATASET_PATH = (
 )
 
 
-# ============================================================
 # DISPLAY
-# ============================================================
 
 def header(title: str) -> None:
     print()
@@ -87,9 +81,7 @@ def short_text(text: str, n: int = 180) -> str:
     return text
 
 
-# ============================================================
 # DATASET
-# ============================================================
 
 def load_dataset() -> list[dict]:
 
@@ -117,9 +109,7 @@ def load_dataset() -> list[dict]:
     )
 
 
-# ============================================================
 # QUERY
-# ============================================================
 
 def get_question(case: dict) -> str:
 
@@ -141,9 +131,7 @@ def get_question(case: dict) -> str:
     )
 
 
-# ============================================================
 # PREDICTION / CLASSIFICATION CONTEXT
-# ============================================================
 
 def build_prediction_context(case: dict) -> str:
     """
@@ -219,10 +207,8 @@ def build_prediction_context(case: dict) -> str:
             f"Konteks klinis: {context}"
         )
 
-    # --------------------------------------------------------
     # Jika dataset tidak menyediakan field eksplisit,
     # kita tidak mengarang informasi.
-    # --------------------------------------------------------
 
     if not parts:
 
@@ -231,9 +217,7 @@ def build_prediction_context(case: dict) -> str:
     return " ".join(parts)
 
 
-# ============================================================
 # TARGET
-# ============================================================
 
 def target_matches(
     doc: dict,
@@ -244,9 +228,7 @@ def target_matches(
         doc.get("text", "")
     ).lower()
 
-    # --------------------------------------------------------
     # Exact target text
-    # --------------------------------------------------------
 
     for key in (
         "target_text",
@@ -270,9 +252,7 @@ def target_matches(
 
                 return True
 
-    # --------------------------------------------------------
     # Reference text
-    # --------------------------------------------------------
 
     for key in (
         "reference",
@@ -304,9 +284,7 @@ def target_matches(
     return False
 
 
-# ============================================================
 # RETRIEVAL
-# ============================================================
 
 def hybrid_candidates(
     retriever: MMRRetriever,
@@ -364,9 +342,7 @@ def hybrid_candidates(
     return candidates
 
 
-# ============================================================
 # RERANK
-# ============================================================
 
 def retrieve_final(
     retriever: MMRRetriever,
@@ -391,9 +367,7 @@ def retrieve_final(
     )
 
 
-# ============================================================
 # RANK
-# ============================================================
 
 def target_rank(
     docs: list[dict],
@@ -431,9 +405,7 @@ def hit(rank: int, k: int) -> int:
     )
 
 
-# ============================================================
 # EVALUATE ONE CASE
-# ============================================================
 
 def evaluate_case(
     retriever: MMRRetriever,
@@ -449,9 +421,7 @@ def evaluate_case(
 
     question = get_question(case)
 
-    # --------------------------------------------------------
     # STANDARD
-    # --------------------------------------------------------
 
     standard_docs = retrieve_final(
         retriever,
@@ -463,9 +433,7 @@ def evaluate_case(
         case,
     )
 
-    # --------------------------------------------------------
     # PREDICTION-CONDITIONED
-    # --------------------------------------------------------
 
     clinical_context = (
         build_prediction_context(case)
@@ -576,9 +544,7 @@ def evaluate_case(
     }
 
 
-# ============================================================
 # SUMMARY
-# ============================================================
 
 def avg(
     results: list[dict],
@@ -624,9 +590,7 @@ def print_comparison(
     )
 
 
-# ============================================================
 # MAIN
-# ============================================================
 
 def main():
 
@@ -655,9 +619,7 @@ def main():
 
     print()
 
-    # --------------------------------------------------------
     # Retriever
-    # --------------------------------------------------------
 
     header(
         "INITIALIZING RETRIEVER"
@@ -691,9 +653,7 @@ def main():
             "BGE reranker belum tersedia."
         )
 
-    # --------------------------------------------------------
     # Dataset
-    # --------------------------------------------------------
 
     cases = load_dataset()
 
@@ -702,9 +662,7 @@ def main():
         len(cases),
     )
 
-    # --------------------------------------------------------
     # Evaluate
-    # --------------------------------------------------------
 
     header(
         "RUNNING EXPERIMENT"
@@ -761,9 +719,7 @@ def main():
             "Tidak ada kasus yang berhasil."
         )
 
-    # --------------------------------------------------------
     # Per case
-    # --------------------------------------------------------
 
     header(
         "RANK MOVEMENT"
@@ -836,9 +792,7 @@ def main():
             f"{status:>14}"
         )
 
-    # --------------------------------------------------------
     # Metrics
-    # --------------------------------------------------------
 
     header(
         "METRIC COMPARISON"
@@ -872,9 +826,7 @@ def main():
         "MRR",
     )
 
-    # --------------------------------------------------------
     # Aggregate interpretation
-    # --------------------------------------------------------
 
     improved = sum(
         1
@@ -928,9 +880,7 @@ def main():
         unchanged,
     )
 
-    # --------------------------------------------------------
     # Save
-    # --------------------------------------------------------
 
     output_dir = (
         ROOT / "results"
@@ -1027,9 +977,7 @@ def main():
         encoding="utf-8",
     )
 
-    # --------------------------------------------------------
     # Final
-    # --------------------------------------------------------
 
     header(
         "RESULT SAVED"

@@ -1,0 +1,243 @@
+{
+  "percobaan": "Kestabilan answer_relevancy, context_precision, context_recall",
+  "keputusan": "#7 pada docs/KEPUTUSAN_DIAMBIL.md",
+  "prapendaftaran": "docs/PRAPENDAFTARAN_T_RAGAS_STABIL.md",
+  "waktu": "2026-08-13T17:51:52",
+  "sifat": "DIAGNOSTIK. Tidak satu pun angka RAGAS yang sudah ada diubah atau diganti. Yang dihasilkan adalah pernyataan kestabilan yang menyertai angka-angka itu di Bab VI. Rerata dua jalan BUKAN angka baru.",
+  "judge_model": "gemini-3.5-flash-lite",
+  "top_k": 5,
+  "acuan_faithfulness": {
+    "median": 0.18,
+    "maks": 0.56,
+    "selisih_rerata": 0.003
+  },
+  "hasil": {
+    "answer_relevancy": {
+      "n_dibandingkan": 10,
+      "n_dikeluarkan_karena_NaN": 0,
+      "kasus_NaN": [],
+      "selisih_absolut_median": 0.0561,
+      "selisih_absolut_maks": 0.685,
+      "rerata_jalan1": 0.7629,
+      "rerata_jalan2": 0.5866,
+      "selisih_rerata": -0.1764,
+      "n_berbalik_penuh": 0,
+      "kasus_berbalik_penuh": [],
+      "n_tidak_bergerak": 1,
+      "per_kasus": [
+        {
+          "id": "E01",
+          "jalan1": 0.685,
+          "jalan2": 0.0,
+          "selisih": -0.685
+        },
+        {
+          "id": "E02",
+          "jalan1": 0.5046,
+          "jalan2": 0.4345,
+          "selisih": -0.0701
+        },
+        {
+          "id": "E03",
+          "jalan1": 0.6499,
+          "jalan2": 0.0,
+          "selisih": -0.6499
+        },
+        {
+          "id": "E04",
+          "jalan1": 0.6606,
+          "jalan2": 0.7027,
+          "selisih": 0.0421
+        },
+        {
+          "id": "E05",
+          "jalan1": 0.8867,
+          "jalan2": 0.848,
+          "selisih": -0.0387
+        },
+        {
+          "id": "E06",
+          "jalan1": 0.827,
+          "jalan2": 0.7387,
+          "selisih": -0.0883
+        },
+        {
+          "id": "E07",
+          "jalan1": 0.7749,
+          "jalan2": 0.4767,
+          "selisih": -0.2982
+        },
+        {
+          "id": "E08",
+          "jalan1": 0.9332,
+          "jalan2": 0.9276,
+          "selisih": -0.0056
+        },
+        {
+          "id": "E09",
+          "jalan1": 0.8214,
+          "jalan2": 0.8214,
+          "selisih": 0.0
+        },
+        {
+          "id": "E10",
+          "jalan1": 0.8861,
+          "jalan2": 0.9159,
+          "selisih": 0.0298
+        }
+      ],
+      "lebih_stabil_daripada_faithfulness": false
+    },
+    "context_precision": {
+      "n_dibandingkan": 9,
+      "n_dikeluarkan_karena_NaN": 1,
+      "kasus_NaN": [
+        "E02"
+      ],
+      "selisih_absolut_median": 0.0,
+      "selisih_absolut_maks": 0.0,
+      "rerata_jalan1": 0.4444,
+      "rerata_jalan2": 0.4444,
+      "selisih_rerata": 0.0,
+      "n_berbalik_penuh": 0,
+      "kasus_berbalik_penuh": [],
+      "n_tidak_bergerak": 9,
+      "per_kasus": [
+        {
+          "id": "E01",
+          "jalan1": 0.0,
+          "jalan2": 0.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E03",
+          "jalan1": 0.0,
+          "jalan2": 0.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E04",
+          "jalan1": 1.0,
+          "jalan2": 1.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E05",
+          "jalan1": 0.0,
+          "jalan2": 0.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E06",
+          "jalan1": 1.0,
+          "jalan2": 1.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E07",
+          "jalan1": 0.0,
+          "jalan2": 0.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E08",
+          "jalan1": 1.0,
+          "jalan2": 1.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E09",
+          "jalan1": 0.0,
+          "jalan2": 0.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E10",
+          "jalan1": 1.0,
+          "jalan2": 1.0,
+          "selisih": 0.0
+        }
+      ],
+      "lebih_stabil_daripada_faithfulness": true
+    },
+    "context_recall": {
+      "n_dibandingkan": 10,
+      "n_dikeluarkan_karena_NaN": 0,
+      "kasus_NaN": [],
+      "selisih_absolut_median": 0.0,
+      "selisih_absolut_maks": 0.0,
+      "rerata_jalan1": 0.45,
+      "rerata_jalan2": 0.45,
+      "selisih_rerata": 0.0,
+      "n_berbalik_penuh": 0,
+      "kasus_berbalik_penuh": [],
+      "n_tidak_bergerak": 10,
+      "per_kasus": [
+        {
+          "id": "E01",
+          "jalan1": 0.0,
+          "jalan2": 0.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E02",
+          "jalan1": 1.0,
+          "jalan2": 1.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E03",
+          "jalan1": 0.0,
+          "jalan2": 0.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E04",
+          "jalan1": 0.5,
+          "jalan2": 0.5,
+          "selisih": 0.0
+        },
+        {
+          "id": "E05",
+          "jalan1": 0.0,
+          "jalan2": 0.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E06",
+          "jalan1": 1.0,
+          "jalan2": 1.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E07",
+          "jalan1": 0.0,
+          "jalan2": 0.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E08",
+          "jalan1": 1.0,
+          "jalan2": 1.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E09",
+          "jalan1": 0.0,
+          "jalan2": 0.0,
+          "selisih": 0.0
+        },
+        {
+          "id": "E10",
+          "jalan1": 1.0,
+          "jalan2": 1.0,
+          "selisih": 0.0
+        }
+      ],
+      "lebih_stabil_daripada_faithfulness": true
+    }
+  },
+  "peringatan": [],
+  "asimetri_sumber_variasi": "answer_relevancy bergantung pada JAWABAN, yang dibangkitkan ulang pada jalan kedua, sehingga variasinya bercampur antara pembangkitan dan penjurian. context_precision dan context_recall tidak memakai jawaban sama sekali, sehingga variasinya adalah variasi JURI murni (penelusuran deterministik).",
+  "batas_tafsir": "n = 10 kasus terlalu kecil untuk menyatakan BESARAN ketidakstabilan secara presisi. Yang sah disimpulkan adalah ADA atau TIDAKNYA ketidakstabilan tingkat kasus. NaN tidak diperlakukan sebagai nol."
+}

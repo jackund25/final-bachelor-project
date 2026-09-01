@@ -2,9 +2,23 @@ import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+# Kredensial: .env AKAR, dimuat sebelum apa pun mengimpor konfigurasi.
+#
+# Repositori punya dua berkas .env. backend/.env memuat kredensial Supabase
+# dan dimuat supabase_data_service; .env akar memuat GOOGLE_API_KEY dan
+# konfigurasi LLM, dan tidak dimuat siapa pun di jalur backend. Tanpa baris
+# ini kuncinya tidak sampai ke uvicorn, advisory diam-diam mundur ke templat,
+# dan permintaan tetap dijawab 200 OK.
+#
+# override=False disengaja: variabel yang sudah ada di environment menang,
+# agar kredensial dari dasbor deploy tidak ditimpa berkas repo.
+load_dotenv(Path(__file__).resolve().parents[1] / ".env", override=False)
 
 from backend.routes.prediction import router as prediction_router
 from backend.routes.clinical import router as clinical_router
@@ -14,24 +28,16 @@ from backend.routes.patients import router as patients_router
 logger = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------
 # Pemanasan saat startup
-# ---------------------------------------------------------
-# SEBELUMNYA seluruh pembangunan berat terjadi DI DALAM permintaan HTTP pertama:
-# klien ChromaDB, indeks BM25 atas 2.233 potongan, pemuatan artefak model. Dokter
-# yang menekan "Run Clinical Assessment" pertama kali menanggung seluruh biaya itu
-# di atas waktu penalaran LLM, dan itulah sebagian besar keluhan "assessment lama".
+# Pembangunan berat (klien ChromaDB, indeks BM25 atas 2.233 potongan, artefak
+# model) dipindahkan ke sini agar tidak ditanggung permintaan HTTP pertama.
 #
-# Pemanasan dijalankan sebagai task LATAR, bukan ditunggu. Alasannya operasional:
-# Render menganggap instans gagal bila port tidak dibuka dalam batas waktunya. Bila
-# pemanasan ditunggu di dalam lifespan, startup yang lambat berubah menjadi deploy
-# yang gagal. Dengan task latar, port terbuka seketika.
+# Dijalankan sebagai task latar dan tidak ditunggu: Render menganggap instans
+# gagal bila port tidak dibuka dalam batas waktunya, sehingga pemanasan yang
+# ditunggu di dalam lifespan mengubah startup lambat menjadi deploy gagal.
 #
-# Permintaan yang datang SEBELUM pemanasan tuntas akan MENUNGGU pekerjaan yang sama
-# itu, bukan memulai pekerjaan kedua. Pembedaan ini bukan detail: pada deploy
-# pertama, permintaan yang membangun sendiri secara paralel membuat dua indeks BM25
-# atas 2.233 potongan hidup bersamaan di instans 512 MB, dan prosesnya dibunuh
-# berulang kali. Penjaganya ada di backend/routes/clinical.py (_kunci_bangun).
+# Permintaan yang datang sebelum pemanasan tuntas menunggu pekerjaan yang
+# sama, bukan memulai yang kedua. Penjaganya _kunci_bangun di clinical.py.
 _status_pemanasan: dict = {"selesai": False, "berjalan": False, "galat": None}
 
 
@@ -101,9 +107,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ---------------------------------------------------------
 # CORS
-# ---------------------------------------------------------
 # Development: Next.js biasanya berjalan di localhost:3000.
 # Nanti origin production diganti sesuai domain PWA.
 app.add_middleware(
@@ -124,9 +128,7 @@ app.include_router(logbook_router)
 app.include_router(patients_router)
 
 
-# ---------------------------------------------------------
 # Health Check
-# ---------------------------------------------------------
 # DIPERLUAS 24 Agustus 2026. Versi sebelumnya hanya menjawab {"status": "ok"},
 # dan justru itu yang membuat T1 lolos berminggu-minggu: GOOGLE_API_KEY tidak
 # pernah dipasang di Render, advisory diam-diam dilayani templat if/else, dan

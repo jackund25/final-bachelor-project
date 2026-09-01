@@ -1,22 +1,10 @@
-"""Pembentuk kueri SIMETRIS untuk ablasi standard vs prediction-conditioned.
+"""Pembentuk kueri simetris untuk ablasi standard vs terkondisi-prediksi.
 
-Ablasi ini menguji satu hal saja: apakah mengondisikan retrieval pada glukosa
-TERPREDIKSI lebih baik daripada pada glukosa SAAT INI. Agar kesimpulannya sah,
-satu-satunya yang boleh berbeda antara kedua lengan adalah ANGKA yang dipakai.
+Agar selisih metrik dapat dikaitkan murni pada sumber pengondisian, satu-satunya
+yang boleh berbeda antara kedua lengan adalah ANGKA yang dipakai. Sufiks penanda
+horizon karena itu tidak dipakai pada lengan mana pun.
 
-Sebelumnya tidak demikian. Lengan prediction-conditioned menambahkan sufiks
-" (prediksi 30 menit ke depan)" yang tidak ada pada lengan standard::
-
-    standard : "Kadar glukosa darah 112 mg/dL. Gula darah dalam rentang normal..."
-    predicted: "Kadar glukosa darah 58 mg/dL (prediksi 30 menit ke depan). Hipoglikemia..."
-
-Kedua kueri itu berbeda pada dua hal sekaligus (angka DAN panjang/isi teks), sehingga
-selisih metriknya tidak dapat dikaitkan murni pada sumber pengondisian. Sufiks itu juga
-tidak bisa sekadar disalin ke lengan standard, karena di sana angkanya memang bukan
-prediksi. Jalan keluarnya: menghapusnya dari keduanya.
-
-Modul ini juga menjadi SATU sumber kebenaran untuk CONDITION_PHRASE, yang tadinya
-tersalin di dua skrip dan diimpor silang oleh tiga skrip lain.
+Modul ini juga menjadi satu-satunya sumber kebenaran untuk CONDITION_PHRASE.
 """
 
 from __future__ import annotations

@@ -1,0 +1,1027 @@
+{
+  "catatan": "Enam fold lintas-pasien. Pada tiap fold, model regresi dan pengklasifikasi dilatih ulang dari nol pada 10 pasien; retrieval dievaluasi pada 2 pasien yang tak pernah dilihat. Ground truth = kondisi glukosa yang benar-benar terjadi.",
+  "konfigurasi_efektif": {
+    "keluarga_prediktor": "HistGradientBoostingRegressor",
+    "keluarga_pengklasifikasi": "HistGradientBoostingClassifier",
+    "class_weight": "balanced",
+    "lambda_mult": 0.0,
+    "fetch_k": 12,
+    "top_k": 5,
+    "chunk_size": 900,
+    "chunk_overlap": 120,
+    "embedding_model": "all-MiniLM-L6-v2",
+    "collection_name": "diabetes_kb",
+    "max_gap_steps": 6,
+    "horizon_steps": 6,
+    "seed": 42,
+    "corpus_tag": "kb12"
+  },
+  "kontrol_tak_bergantung_prediktor": "Mode `standard` dan `oracle`, serta pemilihan kasus divergen, TIDAK menyentuh model sama sekali. Ketiganya wajib tereproduksi persis terhadap jalan sebelumnya; bila tidak, yang berubah adalah jalur pengukurannya. Lihat Dugaan ini ditetapkan di muka pada protokol percobaan.",
+  "n_fold": 6,
+  "top_k": 5,
+  "n_kasus_per_himpunan_per_fold": 60,
+  "ringkasan_lintas_fold": {
+    "divergen": {
+      "standard": {
+        "mrr_rerata": 0.2,
+        "mrr_sd": 0.005,
+        "hit@1_rerata": 0.003,
+        "hit@1_sd": 0.007
+      },
+      "pc_rag": {
+        "mrr_rerata": 0.221,
+        "mrr_sd": 0.009,
+        "hit@1_rerata": 0.003,
+        "hit@1_sd": 0.007
+      },
+      "pc_rag_classifier": {
+        "mrr_rerata": 0.316,
+        "mrr_sd": 0.028,
+        "hit@1_rerata": 0.125,
+        "hit@1_sd": 0.031
+      },
+      "oracle": {
+        "mrr_rerata": 0.516,
+        "mrr_sd": 0.012,
+        "hit@1_rerata": 0.333,
+        "hit@1_sd": 0.0
+      }
+    },
+    "natural": {
+      "standard": {
+        "mrr_rerata": 0.26,
+        "mrr_sd": 0.045,
+        "hit@1_rerata": 0.017,
+        "hit@1_sd": 0.015
+      },
+      "pc_rag": {
+        "mrr_rerata": 0.252,
+        "mrr_sd": 0.052,
+        "hit@1_rerata": 0.006,
+        "hit@1_sd": 0.013
+      },
+      "pc_rag_classifier": {
+        "mrr_rerata": 0.248,
+        "mrr_sd": 0.049,
+        "hit@1_rerata": 0.017,
+        "hit@1_sd": 0.015
+      },
+      "oracle": {
+        "mrr_rerata": 0.28,
+        "mrr_sd": 0.053,
+        "hit@1_rerata": 0.022,
+        "hit@1_sd": 0.013
+      }
+    }
+  },
+  "per_fold": [
+    {
+      "fold": 0,
+      "pasien_uji": [
+        "ohio_540",
+        "ohio_544"
+      ],
+      "n_divergen_tersedia": 3832,
+      "divergen": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.017,
+          "mrr": 0.197
+        },
+        "pc_rag": {
+          "hit@1": 0.0,
+          "mrr": 0.207
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.15,
+          "mrr": 0.331
+        },
+        "oracle": {
+          "hit@1": 0.333,
+          "mrr": 0.516
+        }
+      },
+      "divergen_lengan": {
+        "vektor": {
+          "standard": {
+            "hit@1": 0.017,
+            "mrr": 0.197
+          },
+          "pc_rag": {
+            "hit@1": 0.0,
+            "mrr": 0.207
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.15,
+            "mrr": 0.331
+          },
+          "oracle": {
+            "hit@1": 0.333,
+            "mrr": 0.516
+          }
+        },
+        "bm25": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.192
+          },
+          "pc_rag": {
+            "hit@1": 0.083,
+            "mrr": 0.271
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.183,
+            "mrr": 0.338
+          },
+          "oracle": {
+            "hit@1": 0.667,
+            "mrr": 0.778
+          }
+        },
+        "hibrida": {
+          "standard": {
+            "hit@1": 0.35,
+            "mrr": 0.458
+          },
+          "pc_rag": {
+            "hit@1": 0.35,
+            "mrr": 0.472
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.483,
+            "mrr": 0.553
+          },
+          "oracle": {
+            "hit@1": 0.667,
+            "mrr": 0.685
+          }
+        }
+      },
+      "natural": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.017,
+          "mrr": 0.226
+        },
+        "pc_rag": {
+          "hit@1": 0.0,
+          "mrr": 0.209
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.017,
+          "mrr": 0.201
+        },
+        "oracle": {
+          "hit@1": 0.017,
+          "mrr": 0.272
+        }
+      },
+      "natural_lengan": {
+        "vektor": {
+          "standard": {
+            "hit@1": 0.017,
+            "mrr": 0.226
+          },
+          "pc_rag": {
+            "hit@1": 0.0,
+            "mrr": 0.209
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.017,
+            "mrr": 0.201
+          },
+          "oracle": {
+            "hit@1": 0.017,
+            "mrr": 0.272
+          }
+        },
+        "bm25": {
+          "standard": {
+            "hit@1": 0.65,
+            "mrr": 0.743
+          },
+          "pc_rag": {
+            "hit@1": 0.683,
+            "mrr": 0.776
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.583,
+            "mrr": 0.672
+          },
+          "oracle": {
+            "hit@1": 0.717,
+            "mrr": 0.811
+          }
+        },
+        "hibrida": {
+          "standard": {
+            "hit@1": 0.25,
+            "mrr": 0.331
+          },
+          "pc_rag": {
+            "hit@1": 0.183,
+            "mrr": 0.294
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.217,
+            "mrr": 0.303
+          },
+          "oracle": {
+            "hit@1": 0.3,
+            "mrr": 0.365
+          }
+        }
+      }
+    },
+    {
+      "fold": 1,
+      "pasien_uji": [
+        "ohio_552",
+        "ohio_559"
+      ],
+      "n_divergen_tersedia": 3106,
+      "divergen": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.0,
+          "mrr": 0.194
+        },
+        "pc_rag": {
+          "hit@1": 0.0,
+          "mrr": 0.222
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.167,
+          "mrr": 0.355
+        },
+        "oracle": {
+          "hit@1": 0.333,
+          "mrr": 0.503
+        }
+      },
+      "divergen_lengan": {
+        "vektor": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.194
+          },
+          "pc_rag": {
+            "hit@1": 0.0,
+            "mrr": 0.222
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.167,
+            "mrr": 0.355
+          },
+          "oracle": {
+            "hit@1": 0.333,
+            "mrr": 0.503
+          }
+        },
+        "bm25": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.186
+          },
+          "pc_rag": {
+            "hit@1": 0.067,
+            "mrr": 0.257
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.15,
+            "mrr": 0.31
+          },
+          "oracle": {
+            "hit@1": 0.667,
+            "mrr": 0.778
+          }
+        },
+        "hibrida": {
+          "standard": {
+            "hit@1": 0.367,
+            "mrr": 0.485
+          },
+          "pc_rag": {
+            "hit@1": 0.35,
+            "mrr": 0.471
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.5,
+            "mrr": 0.557
+          },
+          "oracle": {
+            "hit@1": 0.667,
+            "mrr": 0.695
+          }
+        }
+      },
+      "natural": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.017,
+          "mrr": 0.234
+        },
+        "pc_rag": {
+          "hit@1": 0.0,
+          "mrr": 0.223
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.033,
+          "mrr": 0.228
+        },
+        "oracle": {
+          "hit@1": 0.033,
+          "mrr": 0.279
+        }
+      },
+      "natural_lengan": {
+        "vektor": {
+          "standard": {
+            "hit@1": 0.017,
+            "mrr": 0.234
+          },
+          "pc_rag": {
+            "hit@1": 0.0,
+            "mrr": 0.223
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.033,
+            "mrr": 0.228
+          },
+          "oracle": {
+            "hit@1": 0.033,
+            "mrr": 0.279
+          }
+        },
+        "bm25": {
+          "standard": {
+            "hit@1": 0.633,
+            "mrr": 0.726
+          },
+          "pc_rag": {
+            "hit@1": 0.633,
+            "mrr": 0.731
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.583,
+            "mrr": 0.672
+          },
+          "oracle": {
+            "hit@1": 0.733,
+            "mrr": 0.825
+          }
+        },
+        "hibrida": {
+          "standard": {
+            "hit@1": 0.267,
+            "mrr": 0.326
+          },
+          "pc_rag": {
+            "hit@1": 0.267,
+            "mrr": 0.338
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.3,
+            "mrr": 0.341
+          },
+          "oracle": {
+            "hit@1": 0.333,
+            "mrr": 0.386
+          }
+        }
+      }
+    },
+    {
+      "fold": 2,
+      "pasien_uji": [
+        "ohio_563",
+        "ohio_567"
+      ],
+      "n_divergen_tersedia": 3678,
+      "divergen": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.0,
+          "mrr": 0.199
+        },
+        "pc_rag": {
+          "hit@1": 0.0,
+          "mrr": 0.224
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.117,
+          "mrr": 0.304
+        },
+        "oracle": {
+          "hit@1": 0.333,
+          "mrr": 0.525
+        }
+      },
+      "divergen_lengan": {
+        "vektor": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.199
+          },
+          "pc_rag": {
+            "hit@1": 0.0,
+            "mrr": 0.224
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.117,
+            "mrr": 0.304
+          },
+          "oracle": {
+            "hit@1": 0.333,
+            "mrr": 0.525
+          }
+        },
+        "bm25": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.19
+          },
+          "pc_rag": {
+            "hit@1": 0.117,
+            "mrr": 0.309
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.133,
+            "mrr": 0.298
+          },
+          "oracle": {
+            "hit@1": 0.667,
+            "mrr": 0.778
+          }
+        },
+        "hibrida": {
+          "standard": {
+            "hit@1": 0.35,
+            "mrr": 0.464
+          },
+          "pc_rag": {
+            "hit@1": 0.35,
+            "mrr": 0.49
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.45,
+            "mrr": 0.526
+          },
+          "oracle": {
+            "hit@1": 0.667,
+            "mrr": 0.682
+          }
+        }
+      },
+      "natural": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.033,
+          "mrr": 0.259
+        },
+        "pc_rag": {
+          "hit@1": 0.0,
+          "mrr": 0.235
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.017,
+          "mrr": 0.24
+        },
+        "oracle": {
+          "hit@1": 0.033,
+          "mrr": 0.267
+        }
+      },
+      "natural_lengan": {
+        "vektor": {
+          "standard": {
+            "hit@1": 0.033,
+            "mrr": 0.259
+          },
+          "pc_rag": {
+            "hit@1": 0.0,
+            "mrr": 0.235
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.017,
+            "mrr": 0.24
+          },
+          "oracle": {
+            "hit@1": 0.033,
+            "mrr": 0.267
+          }
+        },
+        "bm25": {
+          "standard": {
+            "hit@1": 0.7,
+            "mrr": 0.783
+          },
+          "pc_rag": {
+            "hit@1": 0.667,
+            "mrr": 0.761
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.65,
+            "mrr": 0.74
+          },
+          "oracle": {
+            "hit@1": 0.767,
+            "mrr": 0.844
+          }
+        },
+        "hibrida": {
+          "standard": {
+            "hit@1": 0.267,
+            "mrr": 0.335
+          },
+          "pc_rag": {
+            "hit@1": 0.233,
+            "mrr": 0.303
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.25,
+            "mrr": 0.307
+          },
+          "oracle": {
+            "hit@1": 0.267,
+            "mrr": 0.337
+          }
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "pasien_uji": [
+        "ohio_570",
+        "ohio_575"
+      ],
+      "n_divergen_tersedia": 3200,
+      "divergen": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.0,
+          "mrr": 0.206
+        },
+        "pc_rag": {
+          "hit@1": 0.0,
+          "mrr": 0.222
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.1,
+          "mrr": 0.293
+        },
+        "oracle": {
+          "hit@1": 0.333,
+          "mrr": 0.513
+        }
+      },
+      "divergen_lengan": {
+        "vektor": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.206
+          },
+          "pc_rag": {
+            "hit@1": 0.0,
+            "mrr": 0.222
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.1,
+            "mrr": 0.293
+          },
+          "oracle": {
+            "hit@1": 0.333,
+            "mrr": 0.513
+          }
+        },
+        "bm25": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.188
+          },
+          "pc_rag": {
+            "hit@1": 0.117,
+            "mrr": 0.306
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.15,
+            "mrr": 0.318
+          },
+          "oracle": {
+            "hit@1": 0.667,
+            "mrr": 0.778
+          }
+        },
+        "hibrida": {
+          "standard": {
+            "hit@1": 0.35,
+            "mrr": 0.46
+          },
+          "pc_rag": {
+            "hit@1": 0.367,
+            "mrr": 0.493
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.433,
+            "mrr": 0.525
+          },
+          "oracle": {
+            "hit@1": 0.7,
+            "mrr": 0.72
+          }
+        }
+      },
+      "natural": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.033,
+          "mrr": 0.322
+        },
+        "pc_rag": {
+          "hit@1": 0.033,
+          "mrr": 0.311
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.033,
+          "mrr": 0.292
+        },
+        "oracle": {
+          "hit@1": 0.033,
+          "mrr": 0.325
+        }
+      },
+      "natural_lengan": {
+        "vektor": {
+          "standard": {
+            "hit@1": 0.033,
+            "mrr": 0.322
+          },
+          "pc_rag": {
+            "hit@1": 0.033,
+            "mrr": 0.311
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.033,
+            "mrr": 0.292
+          },
+          "oracle": {
+            "hit@1": 0.033,
+            "mrr": 0.325
+          }
+        },
+        "bm25": {
+          "standard": {
+            "hit@1": 0.55,
+            "mrr": 0.694
+          },
+          "pc_rag": {
+            "hit@1": 0.533,
+            "mrr": 0.686
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.467,
+            "mrr": 0.619
+          },
+          "oracle": {
+            "hit@1": 0.55,
+            "mrr": 0.7
+          }
+        },
+        "hibrida": {
+          "standard": {
+            "hit@1": 0.433,
+            "mrr": 0.506
+          },
+          "pc_rag": {
+            "hit@1": 0.45,
+            "mrr": 0.523
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.45,
+            "mrr": 0.515
+          },
+          "oracle": {
+            "hit@1": 0.433,
+            "mrr": 0.505
+          }
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "pasien_uji": [
+        "ohio_584",
+        "ohio_588"
+      ],
+      "n_divergen_tersedia": 3888,
+      "divergen": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.0,
+          "mrr": 0.205
+        },
+        "pc_rag": {
+          "hit@1": 0.0,
+          "mrr": 0.214
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.083,
+          "mrr": 0.282
+        },
+        "oracle": {
+          "hit@1": 0.333,
+          "mrr": 0.506
+        }
+      },
+      "divergen_lengan": {
+        "vektor": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.205
+          },
+          "pc_rag": {
+            "hit@1": 0.0,
+            "mrr": 0.214
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.083,
+            "mrr": 0.282
+          },
+          "oracle": {
+            "hit@1": 0.333,
+            "mrr": 0.506
+          }
+        },
+        "bm25": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.187
+          },
+          "pc_rag": {
+            "hit@1": 0.067,
+            "mrr": 0.257
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.117,
+            "mrr": 0.286
+          },
+          "oracle": {
+            "hit@1": 0.667,
+            "mrr": 0.778
+          }
+        },
+        "hibrida": {
+          "standard": {
+            "hit@1": 0.283,
+            "mrr": 0.408
+          },
+          "pc_rag": {
+            "hit@1": 0.383,
+            "mrr": 0.48
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.433,
+            "mrr": 0.51
+          },
+          "oracle": {
+            "hit@1": 0.667,
+            "mrr": 0.683
+          }
+        }
+      },
+      "natural": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.0,
+          "mrr": 0.307
+        },
+        "pc_rag": {
+          "hit@1": 0.0,
+          "mrr": 0.326
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.0,
+          "mrr": 0.323
+        },
+        "oracle": {
+          "hit@1": 0.017,
+          "mrr": 0.345
+        }
+      },
+      "natural_lengan": {
+        "vektor": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.307
+          },
+          "pc_rag": {
+            "hit@1": 0.0,
+            "mrr": 0.326
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.0,
+            "mrr": 0.323
+          },
+          "oracle": {
+            "hit@1": 0.017,
+            "mrr": 0.345
+          }
+        },
+        "bm25": {
+          "standard": {
+            "hit@1": 0.367,
+            "mrr": 0.56
+          },
+          "pc_rag": {
+            "hit@1": 0.417,
+            "mrr": 0.6
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.4,
+            "mrr": 0.583
+          },
+          "oracle": {
+            "hit@1": 0.433,
+            "mrr": 0.625
+          }
+        },
+        "hibrida": {
+          "standard": {
+            "hit@1": 0.483,
+            "mrr": 0.564
+          },
+          "pc_rag": {
+            "hit@1": 0.55,
+            "mrr": 0.615
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.55,
+            "mrr": 0.611
+          },
+          "oracle": {
+            "hit@1": 0.55,
+            "mrr": 0.622
+          }
+        }
+      }
+    },
+    {
+      "fold": 5,
+      "pasien_uji": [
+        "ohio_591",
+        "ohio_596"
+      ],
+      "n_divergen_tersedia": 3416,
+      "divergen": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.0,
+          "mrr": 0.199
+        },
+        "pc_rag": {
+          "hit@1": 0.017,
+          "mrr": 0.234
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.133,
+          "mrr": 0.331
+        },
+        "oracle": {
+          "hit@1": 0.333,
+          "mrr": 0.536
+        }
+      },
+      "divergen_lengan": {
+        "vektor": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.199
+          },
+          "pc_rag": {
+            "hit@1": 0.017,
+            "mrr": 0.234
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.133,
+            "mrr": 0.331
+          },
+          "oracle": {
+            "hit@1": 0.333,
+            "mrr": 0.536
+          }
+        },
+        "bm25": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.194
+          },
+          "pc_rag": {
+            "hit@1": 0.117,
+            "mrr": 0.305
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.15,
+            "mrr": 0.321
+          },
+          "oracle": {
+            "hit@1": 0.667,
+            "mrr": 0.778
+          }
+        },
+        "hibrida": {
+          "standard": {
+            "hit@1": 0.317,
+            "mrr": 0.436
+          },
+          "pc_rag": {
+            "hit@1": 0.367,
+            "mrr": 0.478
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.45,
+            "mrr": 0.527
+          },
+          "oracle": {
+            "hit@1": 0.667,
+            "mrr": 0.687
+          }
+        }
+      },
+      "natural": {
+        "n": 60,
+        "standard": {
+          "hit@1": 0.0,
+          "mrr": 0.213
+        },
+        "pc_rag": {
+          "hit@1": 0.0,
+          "mrr": 0.21
+        },
+        "pc_rag_classifier": {
+          "hit@1": 0.0,
+          "mrr": 0.205
+        },
+        "oracle": {
+          "hit@1": 0.0,
+          "mrr": 0.194
+        }
+      },
+      "natural_lengan": {
+        "vektor": {
+          "standard": {
+            "hit@1": 0.0,
+            "mrr": 0.213
+          },
+          "pc_rag": {
+            "hit@1": 0.0,
+            "mrr": 0.21
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.0,
+            "mrr": 0.205
+          },
+          "oracle": {
+            "hit@1": 0.0,
+            "mrr": 0.194
+          }
+        },
+        "bm25": {
+          "standard": {
+            "hit@1": 0.6,
+            "mrr": 0.693
+          },
+          "pc_rag": {
+            "hit@1": 0.633,
+            "mrr": 0.728
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.6,
+            "mrr": 0.694
+          },
+          "oracle": {
+            "hit@1": 0.717,
+            "mrr": 0.811
+          }
+        },
+        "hibrida": {
+          "standard": {
+            "hit@1": 0.3,
+            "mrr": 0.341
+          },
+          "pc_rag": {
+            "hit@1": 0.3,
+            "mrr": 0.348
+          },
+          "pc_rag_classifier": {
+            "hit@1": 0.3,
+            "mrr": 0.342
+          },
+          "oracle": {
+            "hit@1": 0.283,
+            "mrr": 0.321
+          }
+        }
+      }
+    }
+  ]
+}

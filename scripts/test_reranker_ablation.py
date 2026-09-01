@@ -27,9 +27,7 @@ import sys
 from pathlib import Path
 from statistics import mean, stdev
 
-# ---------------------------------------------------------------------
 # ROOT PROJECT
-# ---------------------------------------------------------------------
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
@@ -37,9 +35,7 @@ sys.path.insert(0, str(ROOT))
 from src.rag.retriever import MMRRetriever
 
 
-# ---------------------------------------------------------------------
 # CONFIG
-# ---------------------------------------------------------------------
 
 PERSIST_DIR = "models/chroma_db_eval"
 COLLECTION_NAME = "diabetes_kb_eval"
@@ -61,9 +57,7 @@ DATASET_PATH = ROOT / "evaluation" / "ragas_dataset.json"
 E02_TARGET_PHRASE = "turunkan dosis 4 unit"
 
 
-# ---------------------------------------------------------------------
 # DISPLAY
-# ---------------------------------------------------------------------
 
 
 def print_header(title: str) -> None:
@@ -80,9 +74,7 @@ def short_text(text: str, length: int = 220) -> str:
     return text
 
 
-# ---------------------------------------------------------------------
 # TARGET MATCHING
-# ---------------------------------------------------------------------
 
 
 def target_matches(doc: dict, target: dict) -> bool:
@@ -132,9 +124,7 @@ def target_matches(doc: dict, target: dict) -> bool:
     return False
 
 
-# ---------------------------------------------------------------------
 # RETRIEVAL
-# ---------------------------------------------------------------------
 
 
 def retrieve_hybrid_raw(
@@ -193,9 +183,7 @@ def retrieve_hybrid_raw(
     return candidates
 
 
-# ---------------------------------------------------------------------
 # RANK HELPERS
-# ---------------------------------------------------------------------
 
 
 def find_target_rank(
@@ -226,9 +214,7 @@ def hit_at_k(rank: int, k: int) -> int:
     return int(rank > 0 and rank <= k)
 
 
-# ---------------------------------------------------------------------
 # DATASET
-# ---------------------------------------------------------------------
 
 
 def load_cases() -> list[dict]:
@@ -263,9 +249,7 @@ def load_cases() -> list[dict]:
     return cases
 
 
-# ---------------------------------------------------------------------
 # TARGET EXTRACTION
-# ---------------------------------------------------------------------
 
 
 def get_expected_target(case: dict) -> dict:
@@ -322,9 +306,7 @@ def get_expected_target(case: dict) -> dict:
     return target
 
 
-# ---------------------------------------------------------------------
 # QUERY EXTRACTION
-# ---------------------------------------------------------------------
 
 
 def get_query(case: dict) -> str:
@@ -348,9 +330,7 @@ def get_query(case: dict) -> str:
     )
 
 
-# ---------------------------------------------------------------------
 # SINGLE CASE
-# ---------------------------------------------------------------------
 
 
 def evaluate_case(
@@ -368,9 +348,7 @@ def evaluate_case(
 
     target = get_expected_target(case)
 
-    # -------------------------------------------------------------
     # Hybrid -> RRF -> candidate pool
-    # -------------------------------------------------------------
 
     candidates = retrieve_hybrid_raw(
         retriever,
@@ -384,9 +362,7 @@ def evaluate_case(
         target,
     )
 
-    # -------------------------------------------------------------
     # BGE reranking
-    # -------------------------------------------------------------
 
     if retriever._reranker is None:
         raise RuntimeError(
@@ -407,9 +383,7 @@ def evaluate_case(
         target,
     )
 
-    # -------------------------------------------------------------
     # Metrics
-    # -------------------------------------------------------------
 
     result = {
         "id": case_id,
@@ -434,9 +408,7 @@ def evaluate_case(
         "target_found_topk": rerank_rank > 0,
     }
 
-    # -------------------------------------------------------------
     # Simpan diagnostic TOP results
-    # -------------------------------------------------------------
 
     result["raw_top5"] = [
         {
@@ -460,9 +432,7 @@ def evaluate_case(
     return result
 
 
-# ---------------------------------------------------------------------
 # SUMMARY
-# ---------------------------------------------------------------------
 
 
 def safe_mean(results: list[dict], key: str) -> float:
@@ -636,9 +606,7 @@ def print_summary(results: list[dict]) -> None:
     )
 
 
-# ---------------------------------------------------------------------
 # CASE DETAILS
-# ---------------------------------------------------------------------
 
 
 def print_case_table(results: list[dict]) -> None:
@@ -701,9 +669,7 @@ def print_case_table(results: list[dict]) -> None:
         )
 
 
-# ---------------------------------------------------------------------
 # MAIN
-# ---------------------------------------------------------------------
 
 
 def main() -> None:
@@ -719,9 +685,7 @@ def main() -> None:
     print(f"Candidate-K      : {CANDIDATE_K}")
     print(f"Dataset          : {DATASET_PATH}")
 
-    # -------------------------------------------------------------
     # Load retriever
-    # -------------------------------------------------------------
 
     print_header("INITIALIZING RETRIEVER")
 
@@ -769,9 +733,7 @@ def main() -> None:
             "    candidate_k: 50\n"
         )
 
-    # -------------------------------------------------------------
     # Load cases
-    # -------------------------------------------------------------
 
     cases = load_cases()
 
@@ -780,9 +742,7 @@ def main() -> None:
         f"Kasus ditemukan : {len(cases)}"
     )
 
-    # -------------------------------------------------------------
     # Evaluasi
-    # -------------------------------------------------------------
 
     print_header("RUNNING ABLATION")
 
@@ -830,16 +790,12 @@ def main() -> None:
             "Tidak ada kasus yang berhasil dievaluasi."
         )
 
-    # -------------------------------------------------------------
     # Summary
-    # -------------------------------------------------------------
 
     print_case_table(results)
     print_summary(results)
 
-    # -------------------------------------------------------------
     # Save JSON
-    # -------------------------------------------------------------
 
     output_dir = ROOT / "results"
     output_dir.mkdir(

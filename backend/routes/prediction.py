@@ -15,10 +15,8 @@ router = APIRouter(
 )
 
 
-# ============================================================
 # Stage 2 — Prediction API
 # Modality-aware request contract
-# ============================================================
 
 
 class GlucoseSource(str, Enum):
@@ -96,12 +94,10 @@ def predict(request: PredictionRequest):
     try:
         _validate_request(request)
 
-        # -----------------------------------------------------
         # Request-level source is authoritative.
         #
         # We intentionally do not let one observation silently
         # route the request to another model.
-        # -----------------------------------------------------
 
         source = request.glucose_source.value
 
