@@ -223,3 +223,8 @@ results/hasil_form/terbaru/*
 
 # Direktori uji sementara, tidak pernah dilacak.
 .tmp_uji/
+
+# Perkakas dan catatan kerja internal. Berkas tetap ada secara lokal,
+# tetapi bukan bagian dari repositori.
+collect_ta_source.py
+results/eval_rag/*_TEMUAN.md
