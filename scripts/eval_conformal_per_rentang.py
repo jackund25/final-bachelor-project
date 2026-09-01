@@ -35,7 +35,7 @@ from pathlib import Path
 
 import numpy as np
 import yaml
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor, RandomForestRegressor
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -44,8 +44,10 @@ from src.conformal import conformal_factor  # noqa: E402
 from src.constants import (  # noqa: E402
     GLUCOSE_CRITICAL_HIGH, GLUCOSE_CRITICAL_LOW, GLUCOSE_HIGH, GLUCOSE_LOW,
 )
-from src.data.loader import DiabetesDataLoader  # noqa: E402
-from src.data.preprocessor import DataPreprocessor  # noqa: E402
+from src.data.loader import DiabetesDataLoader  # noqa: E402,F401
+from src.data.preprocessor import DataPreprocessor  # noqa: E402,F401
+
+from _konformal_data import muat_cgm, seqs_cgm  # noqa: E402
 
 OUT_DIR = ROOT / "results/eval_prediksi"
 EPS = 1e-6
@@ -106,6 +108,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--horizon", type=int, default=6)
     ap.add_argument("--level", type=int, default=95, choices=[90, 95])
+    ap.add_argument("--model", choices=["gbm", "rf"], default=None,
+                    help="keluarga model; bawaan mengikuti config.yaml (model.name)")
     args = ap.parse_args()
     H, LEVEL = args.horizon, args.level
 
@@ -119,32 +123,39 @@ def main() -> None:
     seq_len = m.get("sequence_length", 12)
     use_eng = m.get("use_engineered", False)
     predict_delta = m.get("predict_delta", False)
-    feats = m["engineered_features"] if use_eng else m["features"]
+    kal = json.loads((OUT_DIR / f"conformal_h{H}.json").read_text(encoding="utf-8"))
     rf = m.get("random_forest", {})
     seed = cfg.get("data", {}).get("seed", 42)
+    keluarga_model = args.model or ("rf" if m.get("name") == "RandomForest" else "gbm")
     max_gap = m.get("max_gap_steps")
     cadence = float(cfg.get("data", {}).get("sampling_interval_min", 5))
 
-    loader = DiabetesDataLoader(cfg["data"]["output_dir"])
-    df = loader.load_csv("ohio_t1dm_merged.csv") \
-        .sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
-    prep = DataPreprocessor(cfg)
-    df = prep.handle_missing_values(df)
-    if use_eng:
-        df = prep.engineer_features(df, **m.get("feature_engineering", {}))
-    prep.feature_columns = list(feats)
+    df, feats = muat_cgm(cfg)
+
+    # Cakupan hanya bermakna bila diukur pada representasi yang sama dengan saat q
+    # dikalibrasi. Penjagaan ini menolak berjalan bila kedua skema berbeda, alih-alih
+    # menghasilkan angka yang tampak wajar tetapi mengukur model yang lain — persis
+    # yang terjadi ketika config berpindah dari 7 ke 9 fitur sementara conformal_h{N}.json
+    # tetap hasil kalibrasi 7 fitur.
+    feats_kal = list(kal.get("features") or [])
+    if feats_kal and feats_kal != list(feats):
+        raise SystemExit(
+            f"Skema fitur tidak cocok dengan kalibrasi conformal_h{H}.json.\n"
+            f"  kalibrasi ({len(feats_kal)}): {feats_kal}\n"
+            f"  config    ({len(feats)}): {list(feats)}\n"
+            f"Jalankan ulang scripts/conformal_calibration.py --horizon {H} lebih dahulu."
+        )
 
     # Pembagian pasien IDENTIK dengan conformal_calibration.py supaya faktor q yang
     # dipakai memang dikalibrasi pada pasien yang berbeda dari pasien uji di sini.
     pids = sorted(df["patient_id"].unique().tolist())
     test_p, cal_p, train_p = pids[-2:], pids[-4:-2], pids[:-4]
-    kw = {"max_gap_steps": max_gap, "source_interval_min": cadence}
 
     def seqs(sub):
-        return prep.create_sequences(df[df["patient_id"].isin(sub)], seq_len, H,
-                                     return_anchor=True, **kw)
+        return seqs_cgm(cfg, df, feats, sub, H * cadence)
 
-    print(f"Horizon +{int(H * cadence)} mnt | level {LEVEL}% | q = {q}")
+    print(f"Horizon +{int(H * cadence)} mnt | level {LEVEL}% | q = {q} "
+          f"| model = {keluarga_model}")
     print(f"latih={len(train_p)} | kalibrasi={cal_p} | uji={test_p}")
 
     t0 = time.time()
@@ -155,14 +166,39 @@ def main() -> None:
     Xte_s = p2.scaler.transform(Xte.reshape(-1, Xte.shape[2])).reshape(Xte.shape)
     Ftr, Fte = Xtr_s.reshape(len(ytr), -1), Xte_s.reshape(len(yte), -1)
 
-    model = RandomForestRegressor(n_estimators=rf.get("n_estimators", 200),
-                                  max_depth=rf.get("max_depth", 20),
-                                  min_samples_split=rf.get("min_samples_split", 5),
-                                  random_state=seed, n_jobs=-1)
-    model.fit(Ftr, (ytr - atr) if predict_delta else ytr)
+    # Keluarga model dan penaksir sigma HARUS sama dengan yang dipakai saat q
+    # dikalibrasi di conformal_calibration.py; q yang dipakai di bawah berasal dari
+    # berkas kalibrasi itu. Pemuatan data dan pembentukan jendela sudah dipusatkan di
+    # scripts/_konformal_data.py; blok pemilihan model di bawah masih mencerminkan blok
+    # di skrip kalibrasi karena keduanya bercabang pada argumen --model yang berbeda.
+    ytr_fit = (ytr - atr) if predict_delta else ytr
+    if keluarga_model == "rf":
+        model = RandomForestRegressor(n_estimators=rf.get("n_estimators", 200),
+                                      max_depth=rf.get("max_depth", 20),
+                                      min_samples_split=rf.get("min_samples_split", 5),
+                                      random_state=seed, n_jobs=-1)
+        model.fit(Ftr, ytr_fit)
+        sigma = lambda Xf: rf_std(model, Xf)  # noqa: E731
+        nama_keluarga, sumber_sigma = "RandomForestRegressor", "tree_variance"
+    else:
+        from src.models.gbm_model import GAUSS_95_WIDTH, QUANTILE_HIGH, QUANTILE_LOW
+
+        gb = m.get("gradient_boosting", {})
+        gseed = gb.get("random_state", seed)
+        model = HistGradientBoostingRegressor(random_state=gseed)
+        model.fit(Ftr, ytr_fit)
+        # Model kuantil dilatih pada TARGET YANG SAMA dengan model titik, sama seperti
+        # di conformal_calibration.py.
+        q_lo = HistGradientBoostingRegressor(loss="quantile", quantile=QUANTILE_LOW,
+                                             random_state=gseed).fit(Ftr, ytr_fit)
+        q_hi = HistGradientBoostingRegressor(loss="quantile", quantile=QUANTILE_HIGH,
+                                             random_state=gseed).fit(Ftr, ytr_fit)
+        sigma = lambda Xf: np.maximum(q_hi.predict(Xf) - q_lo.predict(Xf), 0.0) / GAUSS_95_WIDTH  # noqa: E731
+        nama_keluarga, sumber_sigma = "HistGradientBoostingRegressor", "quantile_spread"
+
     yp = model.predict(Fte)
     yp = yp + ate if predict_delta else yp
-    std = rf_std(model, Fte)
+    std = sigma(Fte)
     lo, hi = yp - q * std, yp + q * std
     tercakup = (yte >= lo) & (yte <= hi)
     lebar = hi - lo
@@ -228,6 +264,15 @@ def main() -> None:
         "horizon_steps": H, "horizon_min": int(H * cadence),
         "level_nominal_persen": LEVEL, "faktor_q": q,
         "sumber_faktor": f"results/eval_prediksi/conformal_h{H}.json (A3)",
+        # PROVENANS keluarga model. Tanpa dua kunci ini, versi sebelumnya berjalan
+        # dengan RandomForest sementara q-nya sudah berasal dari kalibrasi
+        # HistGradientBoosting, dan ketidakcocokan itu tidak terbaca dari berkas hasil.
+        "model_family": nama_keluarga,
+        "sigma_source": sumber_sigma,
+        "predict_delta": bool(predict_delta),
+        "features": list(feats),
+        "n_features": len(feats),
+        "sumber_skema_fitur": f"results/eval_prediksi/conformal_h{H}.json (features)",
         "batas_rentang": "src/constants.py (54 / 70 / 180 / 250)",
         "pasien_uji": test_p,
         "agregat": agregat,

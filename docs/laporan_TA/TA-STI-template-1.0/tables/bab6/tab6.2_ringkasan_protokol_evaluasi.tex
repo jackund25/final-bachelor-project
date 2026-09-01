@@ -1,0 +1,40 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{@{}p{0.30\textwidth}p{0.24\textwidth}p{0.37\textwidth}@{}}
+\caption{Ringkasan protokol evaluasi utama.}
+\label{tab:tab6.2_ringkasan_protokol_evaluasi} \\
+\toprule
+\textbf{Evaluasi} & \textbf{Skenario} & \textbf{Protokol utama} \\
+\midrule
+\endfirsthead
+
+\multicolumn{3}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Evaluasi} & \textbf{Skenario} & \textbf{Protokol utama} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Prediksi & CGM & Hold-out dan validasi silang lintas-pasien; horizon +30 dan +60 menit \\
+
+Prediksi & Finger-stick & Sekuens 8 observasi; horizon sekitar 240 menit; dibandingkan dengan persistence \\
+
+Retrieval & Natural & Enam fold lintas-pasien pada distribusi jendela apa adanya \\
+
+Retrieval & Divergen & Enam fold; kondisi saat ini berbeda dari kondisi masa depan \\
+
+Retrieval & Oracle & Kondisi masa depan benar digunakan sebagai kontrol \\
+
+Generation & RAG produksi & Evidence hasil retrieval digunakan sebagai konteks generation \\
+
+Stability & Repeated-run & Masukan yang sama dijalankan berulang untuk melihat konsistensi \\
+
+Safety & Skenario klinis & Pemeriksaan unsupported claim, keterbatasan, dan deteksi hipoglikemia \\
+
+Usability & Pengguna sasaran & System Usability Scale (SUS) dan penilaian ahli \\
+
+Operational & Konfigurasi produksi & Latency dan memory pada lingkungan komputasi penelitian \\
+\end{longtable}
+\endgroup

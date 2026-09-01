@@ -1,0 +1,16 @@
+{
+  "catatan": "Jejak memori backend per tahap inisialisasi, dipakai Gambar VI.12.",
+  "PROVENANS": "DISALIN dari prosa docs/arsip/DEPLOY_LOKAL_NGROK.md baris 13-14, BUKAN keluaran skrip. Tidak ada berkas pengukuran mesin untuk keenam tahap ini: scripts/benchmark_deployability.py hanya mencatat RSS pada dua titik (sebelum_muat dan setelah_muat_semua), tanpa pemecahan per tahap. Angka di bawah tidak dapat direproduksi ulang tanpa menulis skrip pengukur baru.",
+  "yang_tidak_diklaim": "342 MB adalah jejak APLIKASI yang diukur sebelum overhead lingkungan, bukan total kebutuhan RAM seluruh proses sistem. Pengukuran RSS penuh pada mesin pengembangan ada di deployability.json (275,2 MB sebelum muat, 484,2 MB setelah muat) dan angkanya memang lebih besar karena memuat overhead lingkungan Windows.",
+  "satuan": "MB",
+  "batas_render_gratis_mb": 512,
+  "sumber_batas": "docs/arsip/DEPLOY_LOKAL_NGROK.md baris 12",
+  "tahap": [
+    { "nama": "Python awal", "memori_mb": 21 },
+    { "nama": "FastAPI", "memori_mb": 47 },
+    { "nama": "Route", "memori_mb": 96 },
+    { "nama": "PredictionService", "memori_mb": 157 },
+    { "nama": "RAGPipeline()", "memori_mb": 266 },
+    { "nama": "build()", "memori_mb": 342 }
+  ]
+}

@@ -16,21 +16,21 @@ risiko komplikasi mikrovaskular, tetapi intensifikasi terapi juga meningkatkan r
 kerusakan dalam jangka panjang, sedangkan kadar yang terlalu rendah dapat menimbulkan konsekuensi akut. Oleh sebab itu, pengelolaan DMT1 tidak cukup hanya berorientasi pada 
 penurunan kadar glukosa, tetapi juga perlu mempertahankan kadar tersebut dalam rentang yang aman dan mengantisipasi perubahan yang dapat terjadi dalam waktu singkat. 
 
-Kebutuhan antisipatif tersebut tidak sederhana karena kadar glukosa dipengaruhi oleh berbagai faktor yang bekerja pada skala waktu berbeda. Asupan karbohidrat dan aktivitas 
-fisik berhubungan dengan dinamika glukosa \parencite{colberg2016}, sedangkan stres psikologis juga dapat memengaruhi kadar dan variabilitas glukosa \parencite{velasco2022}. 
+Kebutuhan antisipatif tersebut tidak sederhana karena kadar glukosa dipengaruhi oleh berbagai faktor yang bekerja pada skala waktu berbeda. Asupan karbohidrat memengaruhi kadar glukosa melalui penyerapan makanan dan respons insulin \parencite{bergman1979,dallaman2014},
+aktivitas fisik memengaruhi penggunaan glukosa dan sensitivitas insulin \parencite{colberg2016}, sedangkan stres psikologis juga dapat memengaruhi kadar dan variabilitas glukosa \parencite{velasco2022}. 
 Akibatnya, keadaan glukosa pada suatu waktu tidak selalu dapat dipahami secara memadai dari satu nilai pengukuran. Riwayat pengukuran dan kejadian sebelumnya tetap diperlukan 
 untuk memperkirakan arah perubahan yang sedang berlangsung. Informasi historis tersebut juga memberikan konteks untuk membedakan perubahan yang berlangsung secara bertahap 
 dari perubahan yang terjadi secara lebih cepat. Semakin terbatas frekuensi pengukuran, semakin penting pemanfaatan riwayat tersebut untuk memperkirakan kondisi glukosa berikutnya.
 
-Kebutuhan akan informasi tersebut berhadapan dengan ketidakmerataan akses terhadap teknologi pemantauan. Continuous glucose monitoring (CGM) menghasilkan deret pengukuran yang 
+Kebutuhan akan informasi tersebut berhadapan dengan ketidakmerataan akses terhadap teknologi pemantauan. \textit{Continuous glucose monitoring} (CGM) menghasilkan deret pengukuran yang 
 rapat sehingga perubahan kadar glukosa dapat diamati secara lebih rinci, tetapi akses terhadap teknologi diabetes masih dipengaruhi oleh biaya dan ketersediaan perangkat, 
 terutama di negara berkembang \parencite{santoscastro2025}. Di Indonesia, penggunaan glukometer dan strip pengukuran juga memberikan beban biaya berulang bagi sebagian 
 pasien \parencite{ramadaniati2024}. Kondisi tersebut membuat pilihan pemantauan tidak selalu ditentukan oleh kebutuhan klinis saja, tetapi juga oleh keterjangkauan perangkat 
 dan sumber daya yang tersedia.
 
-Dalam kondisi tersebut, pemantauan melalui \textit{finger-stick} yang dicatat secara periodik menjadi penting sebagai sumber data yang lebih realistis. Karakteristiknya berbeda 
-dari CGM karena pengukuran tidak berlangsung secara kontinu dan jarak antarpembacaan dapat bervariasi. Dataset OhioT1DM, yang menjadi salah satu dataset penelitian prediksi 
-glukosa, memuat kanal CGM dan \textit{finger-stick} dengan karakteristik pengamatan yang berbeda \parencite{marling2020}. Pada pemantauan periodik, terdapat interval ketika 
+Dalam kondisi tersebut, pemantauan melalui finger-stick yang dicatat secara periodik menjadi penting sebagai sumber data yang lebih realistis. Karakteristiknya berbeda 
+dari CGM karena pengukuran tidak berlangsung secara kontinu dan jarak antarpembacaan dapat bervariasi. Dataset OhioT1DM merupakan salah satu dataset penelitian prediksi 
+glukosa yang memuat kanal CGM dan finger-stick dengan karakteristik pengamatan yang berbeda \parencite{marling2020}. Pada pemantauan periodik, terdapat interval ketika 
 keadaan glukosa tidak diamati secara langsung. Kondisi ini tidak hanya mengurangi jumlah data, tetapi juga mengurangi kesempatan untuk mengamati perubahan arah glukosa secara 
 langsung. Karena itu, kemampuan untuk memperkirakan keadaan setelah pengukuran terakhir menjadi semakin relevan ketika frekuensi pemantauan semakin terbatas.
 
@@ -57,20 +57,20 @@ kesehatan personal, prediksi, dan rekomendasi, tetapi pendekatan tersebut membut
 Keterbatasan infrastruktur juga tidak hanya berkaitan dengan perangkat pemantauan. Pada layanan primer di Indonesia, keterbatasan pengetahuan penyedia layanan mengenai tata 
 laksana diabetes dan alur rujukan masih ditemukan, sementara pencapaian pengendalian diabetes di tingkat nasional juga masih menjadi tantangan \parencite{hustrini2026,muharram2025}. 
 Kajian pada negara berpendapatan rendah menunjukkan persoalan serupa berupa keterbatasan insulin dan logistik, kesinambungan perawatan, serta keterbatasan kapasitas sistem 
-layanan \parencite{owusu2024}. Kondisi tersebut menunjukkan bahwa solusi digital untuk pengelolaan DMT1 tidak hanya perlu menghasilkan informasi yang relevan secara klinis, 
-tetapi juga perlu mempertimbangkan keterbatasan infrastruktur dan kesinambungan proses pengambilan keputusan.
+layanan \parencite{owusu2024}. Kondisi tersebut menunjukkan bahwa solusi digital untuk pengelolaan DMT1 perlu mempertimbangkan keterbatasan infrastruktur dan kesinambungan 
+pengambilan keputusan, selain menghasilkan informasi yang relevan secara klinis.
 
 Dalam konteks tersebut, pendekatan yang menghubungkan prediksi dengan pengetahuan klinis perlu mempertahankan fungsi antisipatif tanpa bergantung pada integrasi infrastruktur 
 yang berat. Penelitian mengenai teknologi diabetes menunjukkan bahwa perkembangan teknologi dapat memperluas kemampuan pemantauan dan pengelolaan, tetapi penerapannya pada 
-lingkungan dengan sumber daya terbatas tetap dipengaruhi oleh ketersediaan perangkat, biaya, dan kesiapan sistem layanan (Samajdar dkk. 2025). Karena itu, diperlukan alur 
+lingkungan dengan sumber daya terbatas tetap dipengaruhi oleh ketersediaan perangkat, biaya, dan kesiapan sistem layanan \parencite{samajdar2025}. Karena itu, diperlukan alur 
 pendukung keputusan yang memanfaatkan informasi yang tersedia, menggunakan prediksi sebagai dasar antisipasi, serta tetap menempatkan tenaga kesehatan sebagai pihak yang 
 melakukan penilaian akhir.
 
 Dari rangkaian penelitian tersebut terlihat adanya ruang integrasi antara prediksi kondisi glukosa dan penelusuran pengetahuan klinis. Salah satu peluangnya adalah menggunakan 
 kondisi fisiologis yang diprediksi sebagai dasar pengondisian penelusuran pedoman sebelum kondisi tersebut benar-benar terjadi. Pendekatan ini relevan pada lingkungan dengan 
 pemantauan yang tidak kontinu karena prediksi dapat memberikan waktu untuk menyiapkan informasi klinis yang sesuai. Atas dasar tersebut, penelitian ini diarahkan untuk 
-membangun artefak yang menghubungkan prediksi kadar glukosa dengan penelusuran pedoman klinis melalui query transformation terkondisi-prediksi, kemudian mengintegrasikannya 
-ke dalam CDSS beralur doctor-mediated. Dengan demikian, research gap penelitian ini terletak pada kebutuhan untuk menghubungkan prediksi fisiologis masa depan dengan 
+membangun artefak yang menghubungkan prediksi kadar glukosa dengan penelusuran pedoman klinis melalui \textit{query transformation} terkondisi-prediksi, kemudian mengintegrasikannya 
+ke dalam CDSS beralur \textit{doctor-mediated}. Dengan demikian, \textit{research gap} penelitian ini terletak pada kebutuhan untuk menghubungkan prediksi fisiologis masa depan dengan 
 penelusuran pedoman klinis dan penyusunan rekomendasi dalam satu alur pendukung keputusan pada lingkungan dengan keterbatasan infrastruktur.
 
 \section{Rumusan Masalah}
@@ -109,13 +109,13 @@ Untuk menjaga penelitian tetap berada dalam ruang lingkup tugas akhir, batasan m
 \begin{enumerate}
     \item \textbf{Ruang lingkup penyakit.} Penelitian difokuskan pada diabetes melitus tipe 1 (DMT1). Tipe diabetes lain berada di luar cakupan penelitian.
 
-    \item \textbf{Sumber data.} Penelitian menggunakan dataset publik OhioT1DM sebagai sumber data utama. Skenario pemantauan mandiri menggunakan kanal \textit{finger-stick} 
+    \item \textbf{Sumber data.} Penelitian menggunakan dataset publik OhioT1DM sebagai sumber data utama. Skenario pemantauan mandiri menggunakan kanal finger-stick 
     yang benar-benar tersedia pada dataset dan bukan hasil penjarangan buatan dari kanal CGM \parencite{marling2020}.
 
-    \item \textbf{Representasi pasien.} Keadaan pasien direpresentasikan dari informasi yang tersedia pada riwayat \textit{logbook}. Penelitian tidak menggunakan aliran sensor 
+    \item \textbf{Representasi pasien.} Keadaan pasien direpresentasikan dari informasi yang tersedia pada riwayat logbook. Penelitian tidak menggunakan aliran sensor 
     kontinu sebagai masukan langsung pada skenario aplikasi sasaran.
 
-    \item \textbf{Horizon prediksi.} Kanal CGM dibatasi pada horizon 30 menit dan 60 menit. Skenario \textit{finger-stick} menggunakan konfigurasi produksi final yang 
+    \item \textbf{Horizon prediksi.} Kanal CGM dibatasi pada horizon +30 menit dan +60 menit. Skenario finger-stick menggunakan konfigurasi produksi final yang 
     ditetapkan pada artefak implementasi dan tidak disamakan dengan eksperimen lama yang menggunakan konfigurasi berbeda.
 
     \item \textbf{Peran sistem.} Sistem dibatasi sebagai \textit{clinical decision support system} dengan alur \textit{doctor-mediated}. Rekomendasi menjadi bahan pertimbangan
@@ -142,9 +142,9 @@ Untuk menjaga penelitian tetap berada dalam ruang lingkup tugas akhir, batasan m
 Penelitian ini menggunakan \textit{Design Science Research Methodology} (DSRM) sebagai kerangka metodologis utama. DSRM menempatkan pembangunan artefak sebagai pusat kegiatan 
 penelitian melalui tahapan identifikasi masalah dan motivasi, definisi tujuan solusi, desain dan pengembangan, demonstrasi, evaluasi, dan komunikasi \parencite{peffers2007}.
 
-Sebagai pembanding, \textit{Design Research Methodology} (DRM) juga dipertimbangkan. DRM menempatkan proses perancangan sebagai objek penelitian sehingga fokusnya berbeda dari 
-penelitian ini, yang berorientasi pada pembangunan artefak perangkat lunak untuk menjawab masalah yang telah diidentifikasi \parencite{blessing2009}. Berdasarkan perbedaan 
-objek tersebut, DSRM dipilih sebagai kerangka yang sesuai.
+Sebagai pembanding, \textit{Design Research Methodology} (DRM) juga dipertimbangkan. DRM menempatkan proses perancangan sebagai objek penelitian, sedangkan penelitian ini 
+berorientasi pada pembangunan artefak perangkat lunak untuk menjawab masalah yang telah diidentifikasi, sehingga fokus kedua kerangka tersebut berbeda \parencite{blessing2009}. 
+Berdasarkan perbedaan objek tersebut, DSRM dipilih sebagai kerangka yang sesuai.
 
 Pemetaan aktivitas DSRM terhadap laporan ini adalah sebagai berikut.
 
@@ -152,7 +152,7 @@ Pemetaan aktivitas DSRM terhadap laporan ini adalah sebagai berikut.
     \item \textbf{Identifikasi masalah dan motivasi} direalisasikan melalui Bab I dan didukung oleh kajian literatur pada Bab II.
     \item \textbf{Definisi tujuan solusi} direalisasikan melalui analisis masalah, kebutuhan, data, dan alternatif solusi pada Bab III.
     \item \textbf{Perancangan dan pengembangan} direalisasikan melalui perancangan dan pembangunan artefak pada Bab IV dan Bab V.
-    \item \textbf{Demonstrasi} direalisasikan melalui penggunaan artefak pada skenario yang merepresentasikan alur konsultasi berbasis data \textit{logbook} pada Bab V.
+    \item \textbf{Demonstrasi} direalisasikan melalui penggunaan artefak pada skenario yang merepresentasikan alur konsultasi berbasis data logbook pada Bab V.
     \item \textbf{Evaluasi} direalisasikan pada Bab VI untuk memperoleh bukti terhadap pemenuhan kebutuhan dan tujuan penelitian.
     \item \textbf{Komunikasi} direalisasikan melalui penyajian hasil, kontribusi, keterbatasan, dan saran pengembangan pada Bab VII.
 \end{enumerate}
@@ -164,7 +164,7 @@ serta komunikasi pada Bab VII. Pemetaan ini menjaga keterkaitan antara tahapan p
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{images/bab1/fig1.1_dsrm.png}
-    \caption{Enam aktivitas \textit{Design Science Research Methodology} dan pemetaannya terhadap struktur laporan tugas akhir}
+    \caption[Enam aktivitas \textit{Design Science Research Methodology} dan pemetaannya terhadap struktur laporan tugas akhir.]{Enam aktivitas \textit{Design Science Research Methodology} dan pemetaannya terhadap struktur laporan tugas akhir (Diadaptasi dari \citeauthor{peffers2007} \citeyear{peffers2007}).}
     \label{fig:fig1.1_dsrm}
 \end{figure}
 
@@ -182,7 +182,7 @@ Penelitian ini memiliki kontribusi pada tiga tingkat artefak serta satu tingkat 
     \item \textbf{Modul prediksi kadar glukosa berbasis data pemantauan.} Penelitian menghasilkan modul prediksi yang dirancang untuk data pemantauan dengan karakteristik 
     kerapatan berbeda dan lingkungan komputasi terbatas.
 
-    \item \textbf{Integrasi CDSS \textit{doctor-mediated}.} Penelitian menghasilkan integrasi prediksi dan \textit{retrieval} ke dalam alur pendukung keputusan klinis yang 
+    \item \textbf{Integrasi CDSS \textit{doctor-mediated}.} Penelitian menghasilkan integrasi prediksi dan retrieval ke dalam alur pendukung keputusan klinis yang 
     menempatkan dokter sebagai pengambil keputusan akhir.
 
     \item \textbf{Bukti empiris mengenai pengondisian-prediksi.} Penelitian menyediakan evaluasi untuk membandingkan mekanisme terkondisi-prediksi dengan RAG standar. Klaim 
@@ -205,10 +205,10 @@ diturunkan dari kebutuhan.
 
 \textbf{Bab IV Perancangan Sistem RAG Terkondisi-Prediksi} menjelaskan rancangan arsitektur, modul prediksi, mekanisme RAG terkondisi-prediksi, dan integrasi CDSS.
 
-\textbf{Bab V Implementasi Sistem} menjelaskan realisasi rancangan menjadi sistem yang dapat dijalankan, termasuk lingkungan implementasi, implementasi modul prediksi, 
+\textbf{Bab V Implementasi Sistem RAG Terkondisi-Prediksi} menjelaskan realisasi rancangan menjadi sistem yang dapat dijalankan, termasuk lingkungan implementasi, implementasi modul prediksi, 
 implementasi RAG, integrasi CDSS, demonstrasi, dan verifikasi fungsional.
 
-\textbf{Bab VI Evaluasi Sistem} menyajikan rancangan dan hasil evaluasi terhadap ketiga tujuan artefak, mencakup prediksi, \textit{retrieval} dan generasi, keamanan, kinerja 
+\textbf{Bab VI Evaluasi Sistem RAG Terkondisi-Prediksi} menyajikan rancangan dan hasil evaluasi terhadap ketiga tujuan artefak, mencakup prediksi, retrieval dan generasi, keamanan, kinerja 
 operasional, ketahanan sistem, serta evaluasi ahli sesuai ruang lingkup penelitian.
 
 \textbf{Bab VII Penutup} menyajikan kesimpulan berdasarkan ketiga tujuan penelitian, pemenuhan kebutuhan sistem, keterbatasan penelitian, dan saran pengembangan lebih lanjut.

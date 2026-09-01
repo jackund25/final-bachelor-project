@@ -1,0 +1,38 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{p{0.23\textwidth}p{0.27\textwidth}p{0.37\textwidth}}
+\caption{Definisi dan rasionalisasi fitur modul prediksi.}
+\label{tab:tab5.5_definisi_fitur_modul_prediksi} \\
+\toprule
+\textbf{Fitur} & \textbf{Transformasi} & \textbf{Rasionalisasi penggunaan} \\
+\midrule
+\endfirsthead
+
+\multicolumn{3}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Fitur} & \textbf{Transformasi} & \textbf{Rasionalisasi penggunaan} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+\texttt{glucose} & Nilai glukosa pada waktu pengamatan & Menyediakan keadaan kadar glukosa yang diketahui \\
+
+\texttt{glucose\_delta} & Selisih antar-pengamatan & Menangkap arah perubahan kadar glukosa \\
+
+\texttt{iob} & Peluruhan insulin berbasis waktu & Mempertahankan efek residual insulin \\
+
+\texttt{cob} & Peluruhan karbohidrat berbasis waktu & Mempertahankan efek residual karbohidrat \\
+
+\texttt{activity} & Nilai aktivitas yang tersedia & Menambahkan konteks aktivitas fisik \\
+
+\texttt{hour\_sin} & Sinus waktu, periode 24 jam & Merepresentasikan pola waktu secara siklis \\
+
+\texttt{hour\_cos} & Cosinus waktu, periode 24 jam & Melengkapi representasi siklis waktu \\
+
+\texttt{glucose\_rate} & Perubahan glukosa per waktu & Menangkap kecepatan perubahan glukosa \\
+
+\texttt{time\_since\_\allowbreak prev\_glucose} & Selang waktu aktual & Mempertahankan irregularitas pengamatan \\
+\end{longtable}
+\endgroup

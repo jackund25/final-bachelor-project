@@ -27,7 +27,7 @@ DMT1 \parencite{owusu2024}.
 
 Pemantauan kadar glukosa merupakan bagian penting dalam pengelolaan DMT1 karena keputusan terkait terapi dan aktivitas dapat dipengaruhi oleh kondisi glukosa yang sedang 
 berlangsung. Secara umum, pemantauan dapat dilakukan melalui pengukuran kontinu menggunakan \textit{continuous glucose monitoring} (CGM) atau melalui pengukuran mandiri secara
-berkala menggunakan \textit{self-monitoring blood glucose} (SMBG) berbasis \textit{finger-stick}. Kedua modalitas tersebut menghasilkan informasi dengan karakteristik temporal
+berkala menggunakan \textit{self-monitoring blood glucose} (SMBG) berbasis finger-stick. Kedua modalitas tersebut menghasilkan informasi dengan karakteristik temporal
 yang berbeda.
 
 \subsection{Continuous Glucose Monitoring (CGM)}
@@ -40,7 +40,7 @@ Dalam konteks pemodelan, kepadatan pengukuran CGM memberikan lebih banyak observ
 rinci. Namun, ketersediaan CGM tidak bersifat universal. Biaya perangkat, biaya penggunaan berulang, serta kesenjangan akses teknologi menjadi faktor yang dapat membatasi 
 penggunaannya, terutama pada lingkungan dengan sumber daya terbatas \parencite{santoscastro2025}.
 
-\subsection{Self-Monitoring Blood Glucose (SMBG) dan \textit{Finger-stick}}
+\subsection{Self-Monitoring Blood Glucose (SMBG) dan Finger-stick}
 \label{subsec:bab2-smbg}
 
 SMBG dilakukan melalui pengukuran glukosa menggunakan sampel darah kapiler yang diambil secara berkala, umumnya dengan tusukan ujung jari. Berbeda dari CGM, pengukuran SMBG 
@@ -56,21 +56,23 @@ perangkat pemantauan merupakan salah satu faktor yang memengaruhi akses terhadap
 Perbedaan utama antara \textit{continuous glucose monitoring} (CGM) dan \textit{self-monitoring blood glucose} (SMBG) terletak pada kontinuitas dan kepadatan pengukuran. 
 CGM menghasilkan pengamatan kadar glukosa secara berulang dengan interval yang relatif rapat sehingga perubahan kadar glukosa dapat direpresentasikan sebagai deret waktu yang 
 lebih kontinu. Sebaliknya, SMBG menghasilkan pengukuran pada waktu-waktu tertentu ketika pengguna melakukan pengambilan sampel darah sehingga observasi yang tersedia bersifat 
-diskret dan jarak antarpengukuran dapat bervariasi \parencite{marling2020}. 
+diskret dan jarak antarpengukuran dapat bervariasi \parencite{marling2020}.
 
-Perbedaan karakteristik tersebut berimplikasi pada informasi temporal yang tersedia untuk pemodelan. Pada CGM, lebih banyak titik pengamatan tersedia dalam suatu rentang waktu 
-sehingga pola perubahan dan arah pergerakan kadar glukosa dapat diamati dengan lebih rinci. Pada SMBG, terdapat interval waktu ketika kadar glukosa tidak diamati secara langsung. 
-Akibatnya, informasi mengenai perubahan yang terjadi di antara dua pengukuran harus dipahami dari riwayat pengukuran dan kejadian lain yang tersedia pada logbook. Perbedaan
-pola pengamatan tersebut diilustrasikan pada Gambar~\ref{fig:bab2.1_cgm_smbg}.
-
-\begin{figure}[h]
+% Deklarasi float dimajukan ke awal subbab. LaTeX hanya boleh menempatkan float
+% di bagian atas halaman apabila float sudah dideklarasikan sebelum halaman
+% tersebut terisi penuh; jika dideklarasikan setelah paragraf pembahas, gambar
+% terpaksa melompat ke halaman berikutnya. Urutan kalimat tidak berubah.
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/bab2/fig2.1_cgm_smbg.png}
+    \includegraphics[width=0.9\textwidth]{images/bab2/fig2.1_cgm_smbg.png}
     \caption{Perbandingan karakteristik temporal pengukuran CGM dan SMBG.}
-    \label{fig:bab2.1_cgm_smbg}
-    \noindent
-    \textit{Sumber: Disusun penulis berdasarkan Marling dan Bunescu (2020) serta literatur mengenai teknologi pemantauan diabetes.}
+    \label{fig:bab2-cgm-smbg}
 \end{figure}
+
+Perbedaan karakteristik tersebut berimplikasi pada informasi temporal yang tersedia untuk pemodelan. Pada CGM, lebih banyak titik pengamatan tersedia dalam suatu rentang waktu
+sehingga pola perubahan dan arah pergerakan kadar glukosa dapat diamati dengan lebih rinci. Pada SMBG, terdapat interval waktu ketika kadar glukosa tidak diamati secara langsung.
+Akibatnya, informasi mengenai perubahan yang terjadi di antara dua pengukuran harus dipahami dari riwayat pengukuran dan kejadian lain yang tersedia pada logbook. Perbedaan
+pola pengamatan tersebut diilustrasikan pada Gambar~\ref{fig:bab2-cgm-smbg}.
 
 Karakteristik tersebut menjadi dasar untuk memahami bagaimana struktur waktu pada data pemantauan memengaruhi pembentukan masukan bagi pemodelan kadar glukosa.
 
@@ -99,17 +101,15 @@ OhioT1DM merupakan dataset publik yang dikembangkan sebagai benchmark untuk pene
 penyandang DMT1 pengguna pompa insulin dan menyediakan beberapa kanal pengukuran serta catatan kejadian yang dapat digunakan untuk mempelajari hubungan antara kondisi 
 fisiologis dan perubahan kadar glukosa \parencite{marling2020}.
 
-Salah satu karakteristik penting OhioT1DM adalah adanya perbedaan laju pengamatan antar-kanal. Kanal CGM menyediakan pengukuran yang lebih rapat, sedangkan kanal \textit{finger-stick} 
+Salah satu karakteristik penting OhioT1DM adalah adanya perbedaan laju pengamatan antar-kanal. Kanal CGM menyediakan pengukuran yang lebih rapat, sedangkan kanal finger-stick 
 menyediakan pengukuran pada waktu-waktu tertentu. Dataset juga memuat variabel yang berkaitan dengan insulin, asupan makanan, aktivitas, dan faktor lain yang dapat digunakan 
 untuk membentuk konteks temporal prediksi \parencite{marling2020}. Struktur multikanal tersebut dapat dilihat pada Gambar~\ref{fig:bab2.2-ohiot1dm-viewer}.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.98\textwidth]{images/bab2/fig2.2_ohiot1dm_viewer.png}
-    \caption{Ilustrasi struktur multikanal temporal pada dataset OhioT1DM.}
+    \includegraphics[width=0.95\textwidth]{images/bab2/fig2.2_ohiot1dm_viewer.png}
+    \caption[Ilustrasi struktur multikanal temporal pada dataset OhioT1DM.]{Ilustrasi struktur multikanal temporal pada dataset OhioT1DM (Diadaptasi dari \citeauthor{marling2020} \citeyear{marling2020}).}
     \label{fig:bab2.2-ohiot1dm-viewer}
-    \noindent
-    \textit {Sumber: Diadaptasi dari Marling dan Bunescu (2020).}
 \end{figure}
 
 Gambar~\ref{fig:bab2.2-ohiot1dm-viewer} menunjukkan bahwa data OhioT1DM tidak hanya terdiri atas rangkaian kadar glukosa, tetapi juga mencakup informasi insulin, aktivitas, serta 
@@ -123,29 +123,26 @@ dengan keterbatasan proses de-identifikasinya.
 \subsection{Faktor Dinamika Glukosa}
 \label{subsec:bab2-faktor-dinamika-glukosa}
 
-Perubahan kadar glukosa merupakan hasil interaksi beberapa faktor fisiologis dan perilaku. Salah satu faktor utama adalah asupan karbohidrat, yang dapat meningkatkan kadar 
+Perubahan kadar glukosa merupakan hasil interaksi beberapa faktor fisiologis dan perilaku. Salah satu faktor utama adalah asupan karbohidrat yang dapat meningkatkan kadar 
 glukosa setelah konsumsi makanan. Respons tersebut dipengaruhi pula oleh insulin dan keadaan fisiologis individu sehingga hubungan antara konsumsi karbohidrat dan kadar glukosa 
-tidak selalu bersifat linear \parencite{colberg2016}.
-
-Insulin merupakan faktor penting lainnya dalam dinamika glukosa karena pemberian insulin memengaruhi laju penurunan glukosa. Pemodelan fisiologis juga menunjukkan bahwa respons 
-glukosa terhadap insulin memiliki dinamika terhadap waktu, sehingga efek suatu pemberian insulin tidak selalu tercermin pada satu titik pengukuran saja \parencite{bergman1979}. 
-Dalam konteks pemodelan, kondisi ini menjadi dasar bahwa riwayat insulin dapat berkontribusi terhadap prediksi keadaan glukosa.
+tidak selalu bersifat linear \parencite{bergman1979,dallaman2014}.
 
 Hubungan konseptual antara asupan karbohidrat, insulin, glukosa, dan aktivitas fisik ditunjukkan pada Gambar~\ref{fig:bab2.3-dinamika-glukosa}.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.72\textwidth]{images/bab2/fig2.3_dinamika_glukosa.png}
+    \includegraphics[width=0.45\textwidth]{images/bab2/fig2.3_dinamika_glukosa.png}
     \caption{Konseptualisasi faktor-faktor yang berinteraksi dalam dinamika kadar glukosa.}
     \label{fig:bab2.3-dinamika-glukosa}
-
-    \noindent 
-    \textit{Sumber: Disusun penulis berdasarkan Colberg dkk. (2016), Bergman dkk. (1979), dan Velasco dkk. (2022).}
 \end{figure}
 
 Gambar~\ref{fig:bab2.3-dinamika-glukosa} menunjukkan bahwa perubahan kadar glukosa dapat dipengaruhi oleh interaksi antara asupan karbohidrat, insulin, aktivitas fisik, dan 
 faktor psikologis. Aktivitas fisik dapat memengaruhi penggunaan glukosa dan respons terhadap insulin. Efek aktivitas bergantung pada karakteristik aktivitas dan keadaan individu, 
 sehingga pengaruhnya perlu dipertimbangkan sebagai bagian dari konteks temporal \parencite{colberg2016}.
+
+Insulin merupakan faktor penting lainnya dalam dinamika glukosa karena pemberian insulin memengaruhi laju penurunan glukosa. Pemodelan fisiologis juga menunjukkan bahwa respons
+glukosa terhadap insulin memiliki dinamika terhadap waktu, sehingga efek suatu pemberian insulin tidak selalu tercermin pada satu titik pengukuran saja \parencite{bergman1979}.
+Dalam konteks pemodelan, kondisi ini menjadi dasar bahwa riwayat insulin dapat berkontribusi terhadap prediksi keadaan glukosa.
 
 Faktor psikologis juga dapat berhubungan dengan kadar serta variabilitas glukosa, meskipun pengaruhnya dapat berbeda antarindividu \parencite{velasco2022}. Selain faktor yang 
 teramati langsung, terdapat efek residual dari kejadian sebelumnya. Efek tersebut mencerminkan bahwa dampak suatu asupan karbohidrat atau pemberian insulin dapat tetap berpengaruh
@@ -154,15 +151,11 @@ kejadian yang masih berlangsung.
 
 Representasi efek residual tersebut diilustrasikan melalui insulin-on-board (IOB) dan carbohydrate-on-board (COB) pada Gambar~\ref{fig:bab2.4-iob-cob}.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.98\textwidth]{images/bab2/fig2.4_iob_cob_residual.png}
+    \includegraphics[width=0.80\textwidth]{images/bab2/fig2.4_iob_cob_residual.png}
     \caption{Perbandingan pencatatan kejadian sesaat dan representasi efek residual insulin serta karbohidrat yang meluruh terhadap waktu.}
     \label{fig:bab2.4-iob-cob}
-
-    \vspace{2pt}
-    \noindent 
-    \textit{Sumber: Disusun penulis dari data OhioT1DM (Marling dan Bunescu, 2020).}
 \end{figure}
 
 Gambar~\ref{fig:bab2.4-iob-cob} menunjukkan bahwa pencatatan kejadian insulin dan karbohidrat pada suatu waktu tidak secara langsung merepresentasikan pengaruh kejadian tersebut 
@@ -177,13 +170,11 @@ dapat memanfaatkan riwayat glukosa serta variabel pendukung untuk mempelajari hu
 
 Konsep umum penggunaan riwayat glukosa dan variabel pendukung untuk memperkirakan kondisi pada waktu mendatang ditunjukkan pada Gambar~\ref{fig:bab2.5-konsep-prediksi-glukosa}.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.6\textwidth]{images/bab2/fig2.5_konsep_prediksi_glukosa.png}
-    \caption{Konsep umum prediksi kadar glukosa berdasarkan riwayat glukosa dan variabel pendukung.}
+    \caption[Konsep umum prediksi kadar glukosa berdasarkan riwayat glukosa dan variabel pendukung.]{Konsep umum prediksi kadar glukosa berdasarkan riwayat glukosa dan variabel pendukung (Diadaptasi dari \citeauthor{woldaregay2019} \citeyear{woldaregay2019}).}
     \label{fig:bab2.5-konsep-prediksi-glukosa}
-    \noindent 
-    \textit{Sumber: Diadaptasi dari Woldaregay dkk. (2019).}
 \end{figure}
 
 Gambar~\ref{fig:bab2.5-konsep-prediksi-glukosa} menunjukkan bahwa model dapat menggunakan riwayat glukosa dan variabel pendukung sebagai masukan untuk memperkirakan kadar glukosa 
@@ -294,13 +285,11 @@ dan nilai aktual. Area pada grid membedakan kesalahan yang tidak menimbulkan kon
 Pendekatan Clarke Error Grid membagi ruang antara nilai aktual dan nilai prediksi ke dalam beberapa zona berdasarkan tingkat konsekuensi klinis dari kesalahan. Visualisasi pembagian 
 zona tersebut ditunjukkan pada Gambar~\ref{fig:bab2-clarke-error-grid}.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.82\textwidth]{images/bab2/fig2.6_clarke_error_grid.png}
-    \caption{Clarke Error Grid untuk evaluasi kesalahan prediksi kadar glukosa.}
+    \includegraphics[width=0.72\textwidth]{images/bab2/fig2.6_clarke_error_grid.png}
+    \caption[Clarke Error Grid untuk evaluasi kesalahan prediksi kadar glukosa.]{Clarke Error Grid untuk evaluasi kesalahan prediksi kadar glukosa (Diadaptasi dari \citeauthor{clarke1987} \citeyear{clarke1987}).}
     \label{fig:bab2-clarke-error-grid}
-    \noindent
-    \textit{Sumber: Diadaptasi dari Clarke dkk. (1987).}
 \end{figure}
 
 Gambar~\ref{fig:bab2-clarke-error-grid} memperlihatkan bahwa evaluasi prediksi tidak hanya mempertimbangkan besarnya selisih numerik, tetapi juga posisi kesalahan terhadap nilai 
@@ -341,24 +330,22 @@ dapat menjadi pertimbangan dalam sistem pendukung keputusan.
 CDSS ditempatkan sebagai pendukung keputusan, bukan pengganti penilaian klinis. Prinsip tersebut penting dalam sistem yang memanfaatkan model pembelajaran mesin atau kecerdasan 
 buatan karena keluaran model dapat mengandung kesalahan atau ketidakpastian \parencite{sutton2020}.
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/bab2/fig2.7_arsitektur_konseptual_cdss.png}
+    \caption[Arsitektur konseptual sistem pendukung keputusan klinis.]{Arsitektur konseptual sistem pendukung keputusan klinis (Diadaptasi dari \citeauthor{sutton2020} \citeyear{sutton2020}).}
+    \label{fig:bab2-cdss}
+\end{figure}
+
 \subsection{Definisi dan Cakupan CDSS}
 \label{subsec:bab2-definisi-cdss}
 
-CDSS dapat memanfaatkan data pasien, pengetahuan klinis, aturan keputusan, atau model prediktif untuk menghasilkan informasi yang relevan terhadap suatu keputusan. Cakupannya 
-dapat berupa pemberian pengingat, interpretasi data, dukungan diagnosis, atau rekomendasi tindakan. Dalam sistem berbasis AI, komponen prediktif dapat menjadi salah satu sumber 
+CDSS dapat memanfaatkan data pasien, pengetahuan klinis, aturan keputusan, atau model prediktif untuk menghasilkan informasi yang relevan terhadap suatu keputusan. Cakupannya
+dapat berupa pemberian pengingat, interpretasi data, dukungan diagnosis, atau rekomendasi tindakan. Dalam sistem berbasis AI, komponen prediktif dapat menjadi salah satu sumber
 informasi bagi CDSS, tetapi hasil prediksi tetap perlu ditempatkan dalam konteks klinis dan alur keputusan yang sesuai.
 
 Secara konseptual, CDSS menghubungkan data pasien dengan pengetahuan, aturan, atau model yang digunakan untuk menghasilkan informasi pendukung keputusan. Hubungan antara komponen tersebut dan tenaga kesehatan
 ditunjukkan pada Gambar~\ref{fig:bab2-cdss}.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.92\textwidth]{images/bab2/fig2.7_arsitektur_konseptual_cdss.png}
-    \caption{Arsitektur konseptual sistem pendukung keputusan klinis.}
-    \label{fig:bab2-cdss}
-    \noindent
-    \textit{Sumber: Diadaptasi dari Sutton dkk. (2020).}
-\end{figure}
 
 Gambar~\ref{fig:bab2-cdss} menempatkan keluaran sistem sebagai informasi yang disampaikan kepada tenaga kesehatan untuk dipertimbangkan dalam proses pengambilan keputusan. 
 Dengan demikian, model prediktif atau mekanisme berbasis pengetahuan berfungsi sebagai komponen pendukung, sedangkan keputusan klinis tetap berada pada pengguna yang bertanggung jawab.
@@ -388,7 +375,7 @@ berarti sebagian informasi fisiologis tidak tersedia dan sistem harus menyatakan
 \label{subsec:bab2-sbar}
 
 Informasi CDSS pada akhirnya dibaca dan ditafsirkan oleh manusia. Karena itu, struktur komunikasi dapat membantu mengorganisasi keluaran agar informasi yang penting disampaikan 
-secara konsisten. Salah satu kerangka komunikasi klinis yang dikenal luas adalah SBAR, yaitu \textit{Situation}, \textit{Background}, \textit{Assessment}, dan \textit{Recommendation}. 
+secara konsisten. Salah satu kerangka komunikasi klinis yang dikenal luas adalah SBAR, yaitu \textit{Situation}, \textit{Background}, Assessment, dan \textit{Recommendation}. 
 Kerangka tersebut menyusun informasi secara berurutan sehingga penerima dapat mengenali keadaan, konteks, penilaian, dan tindakan yang diusulkan \parencite{muller2018}.
 
 Kerangka SBAR menyusun informasi klinis ke dalam empat unsur utama, yaitu Situation, Background, Assessment, dan Recommendation. Keempat unsur tersebut dirangkum pada Tabel~\ref{tab:tab2.2_sbar}.
@@ -427,20 +414,11 @@ keluaran yang sesuai dengan permintaan \parencite{lewis2020,gao2023}.
 
 Hubungan antara korpus pengetahuan, proses retrieval, dan pembangkitan keluaran dalam arsitektur RAG ditunjukkan pada Gambar~\ref{fig:fig2.8_rag_architecture}.
 
-\begin{figure}[!htbp]
+\begin{figure}[htbp]
     \centering
-    \includegraphics[
-        height=0.38\textheight,
-        keepaspectratio
-    ]{images/bab2/fig2.8_rag_architecture.png}
-
-    \caption{Arsitektur umum \textit{Retrieval-Augmented Generation}.}
+    \includegraphics[height=0.34\textheight,keepaspectratio]{images/bab2/fig2.8_rag_architecture.png}
+    \caption[Arsitektur umum \textit{Retrieval-Augmented Generation}.]{Arsitektur umum \textit{Retrieval-Augmented Generation} (Diadaptasi dari \citeauthor{lewis2020} \citeyear{lewis2020} dan \citeauthor{gao2023} \citeyear{gao2023}).}
     \label{fig:fig2.8_rag_architecture}
-
-    \vspace{2pt}
-    {\small\itshape
-    Sumber: Diadaptasi dari Lewis et al. (2020) dan Gao et al. (2023).
-    }
 \end{figure}
 
 Gambar~\ref{fig:fig2.8_rag_architecture} memperlihatkan bahwa proses RAG memisahkan penelusuran informasi dari proses pembangkitan keluaran. Dengan demikian, informasi yang 
@@ -462,7 +440,7 @@ model pada dokumen klinis yang relevan \parencite{lee2024,wang2024}.
 \label{subsec:bab2-chunking-metadata}
 
 Dokumen yang akan ditelusuri umumnya dipecah menjadi unit-unit informasi yang lebih kecil atau \textit{chunks}. Ukuran unit tersebut perlu mempertahankan konteks yang cukup
-untuk dipahami ketika diambil, tetapi tidak terlalu besar sehingga banyak informasi yang tidak relevan ikut masuk ke konteks model. Karena itu, \textit{chunking} merupakan
+untuk dipahami ketika diambil, tetapi tidak terlalu besar sehingga banyak informasi yang tidak relevan ikut masuk ke konteks model. Karena itu, chunking merupakan
 bagian penting dari desain sistem retrieval \parencite{gao2023,xiong2024}.
 
 Metadata dapat disimpan bersama setiap \textit{chunk} untuk mempertahankan informasi mengenai asal konteks. Pada dokumen klinis, metadata dapat mencakup identitas dokumen,
@@ -484,7 +462,7 @@ representasi dan kesesuaian domain data dengan representasi yang digunakan.
 \subsection{Lexical Retrieval dan BM25}
 \label{subsec:bab2-lexical-retrieval}
 
-\textit{Lexical retrieval} melakukan pencocokan berdasarkan istilah yang muncul pada kueri dan dokumen. Salah satu pendekatan yang banyak digunakan adalah BM25, yang
+\textit{Lexical retrieval} melakukan pencocokan berdasarkan istilah yang muncul pada kueri dan dokumen. Salah satu pendekatan yang banyak digunakan adalah BM25 yang
 memperhitungkan frekuensi istilah serta panjang dokumen untuk memberikan skor relevansi. Pendekatan ini termasuk keluarga metode \textit{term-weighting} pada sistem temu
 kembali informasi \parencite{manning2008}.
 
@@ -524,11 +502,11 @@ agar perubahan kueri tidak menghasilkan konteks yang keluar dari kebutuhan infor
 \subsection{MMR dan Reranking}
 \label{subsec:bab2-mmr-reranking}
 
-Setelah sejumlah dokumen kandidat ditemukan, sistem dapat melakukan \textit{reranking} untuk mengatur kembali urutan hasil berdasarkan kriteria tertentu. Salah satu pendekatan
+Setelah sejumlah dokumen kandidat ditemukan, sistem dapat melakukan reranking untuk mengatur kembali urutan hasil berdasarkan kriteria tertentu. Salah satu pendekatan
 yang digunakan untuk mengurangi redundansi antarhasil adalah \textit{Maximal Marginal Relevance} (MMR). MMR mempertimbangkan relevansi terhadap kueri sekaligus kemiripan
 dengan dokumen yang telah dipilih sehingga hasil akhir diharapkan tetap relevan tetapi memiliki keragaman informasi \parencite{carbonell1998}.
 
-\textit{Reranking} dan MMR merupakan tahap tambahan setelah retrieval awal. Karena itu, manfaatnya bergantung pada kualitas kandidat yang dihasilkan oleh retriever. Jika
+Reranking dan MMR merupakan tahap tambahan setelah retrieval awal. Karena itu, manfaatnya bergantung pada kualitas kandidat yang dihasilkan oleh retriever. Jika
 kandidat awal tidak memuat informasi yang relevan, reranking tidak dapat menghasilkan informasi yang sebelumnya tidak ditemukan. Hal tersebut membuat evaluasi retriever tetap
 menjadi bagian penting dalam keseluruhan pipeline RAG.
 
@@ -545,7 +523,7 @@ menunjukkan bahwa penggabungan model bahasa dengan dokumen pedoman dapat membant
 ditelusuri \parencite{lee2024,wang2024}.
 
 Dengan demikian, RAG menyediakan kerangka untuk menghubungkan pertanyaan atau keadaan klinis dengan dokumen pengetahuan yang relevan. Kualitas sistem bergantung pada rangkaian
-proses mulai dari representasi korpus dan \textit{chunking}, pemilihan retriever, transformasi kueri, hingga penyusunan konteks yang diberikan kepada model bahasa.
+proses mulai dari representasi korpus dan chunking, pemilihan retriever, transformasi kueri, hingga penyusunan konteks yang diberikan kepada model bahasa.
 Konsep-konsep tersebut menjadi dasar untuk memahami \textit{grounded generation} pada bagian berikutnya.
 
 \section{Large Language Model dan \textit{Grounded Generation}}
@@ -622,7 +600,7 @@ Penggunaan beberapa metrik diperlukan karena kualitas RAG memiliki lebih dari sa
 sepenuhnya didukung konteks, atau menghasilkan jawaban yang baik dari konteks yang tidak lengkap. Evaluasi yang memisahkan dimensi-dimensi tersebut membantu mengidentifikasi
 apakah masalah utama berada pada retrieval atau pada generation.
 
-\subsection{Stability dan Generation Safety}
+\subsection{Stabilitas dan Keamanan Pembangkitan}
 \label{subsec:bab2-stability-generation-safety}
 
 Evaluasi sistem berbasis LLM juga perlu mempertimbangkan kestabilan keluaran. Model bahasa dapat menghasilkan keluaran yang berbeda ketika dijalankan berulang, sehingga satu
@@ -638,7 +616,7 @@ konteks penggunaan yang realistis sebelum penerapan lebih luas \parencite{vasey2
 
 Kualitas teknis tidak selalu menunjukkan apakah sebuah sistem mudah digunakan oleh pengguna sasaran. Usability dapat menjadi bagian dari evaluasi karena sistem pendukung
 keputusan pada akhirnya digunakan oleh tenaga kesehatan dalam alur kerja tertentu. Salah satu instrumen yang banyak digunakan untuk mengukur persepsi usability adalah
-\textit{System Usability Scale} (SUS), yang menyediakan skor ringkas berdasarkan sejumlah pernyataan standar \parencite{brooke1996}.
+\textit{System Usability Scale} (SUS) yang menyediakan skor ringkas berdasarkan sejumlah pernyataan standar \parencite{brooke1996}.
 
 Dalam konteks CDSS, usability perlu dipertimbangkan bersama keterlacakan dan keselamatan. Sistem yang akurat tetapi sulit dipahami atau sulit diperiksa dapat mengurangi
 manfaat praktisnya. Karena itu, evaluasi sistem klinis perlu mempertimbangkan hubungan antara kualitas teknis, kualitas informasi, dan pengalaman penggunaan.

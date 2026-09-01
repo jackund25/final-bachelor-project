@@ -1,0 +1,61 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\small
+\captionsetup{font=normalsize}
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.750cm}>{\raggedright\arraybackslash}p{5.350cm}>{\raggedright\arraybackslash}p{6.338cm}@{}}
+\caption{Pemetaan kebutuhan sistem terhadap bagian rancangan yang merealisasikannya.}
+\label{tab:tab4.2_pemetaan_kebutuhan_rancangan} \\
+\toprule
+\textbf{Kebutuhan} & \textbf{Inti kebutuhan} & \textbf{Bagian rancangan} \\
+\midrule
+\endfirsthead
+
+\multicolumn{3}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Kebutuhan} & \textbf{Inti kebutuhan} & \textbf{Bagian rancangan} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+KF-01 & Menerima catatan \emph{logbook} terstruktur & Subbab~\ref{subsec:bab4-input-output-modul-prediksi} dan Subbab~\ref{subsec:bab4-prapemrosesan-kualitas-data} \\
+
+KF-02 & Menghitung besaran turunan berbasis fisiologi & Subbab~\ref{subsec:bab4-rekayasa-fitur-prediksi} \\
+
+KF-03 & Memprediksi glukosa pada dua horizon beserta selang ketidakpastian & Subbab~\ref{subsec:bab4-pembentukan-sekuens-horizon}, Subbab~\ref{subsec:bab4-target-prediksi-rekonstruksi}, dan Subbab~\ref{subsec:bab4-ketidakpastian-prediksi} \\
+
+KF-04 & Menyusun kueri yang dikondisikan pada glukosa terprediksi & Subbab~\ref{subsec:bab4-query-transformation-prediksi} dan Subbab~\ref{subsec:bab4-perbandingan-rag} \\
+
+KF-05 & Menelusuri korpus pedoman dan mengembalikan potongan ber-penunjuk halaman & Subbab~\ref{subsec:bab4-kurasi-basis-pengetahuan}, Subbab~\ref{subsec:bab4-segmentasi-dokumen-metadata}, dan Subbab~\ref{subsec:bab4-desain-penelusuran} \\
+
+KF-06 & Menyusun rekomendasi berbahasa Indonesia yang dibumikan pada dokumen & Subbab~\ref{subsec:bab4-grounded-generation} \\
+
+KF-07 & Menyajikan kondisi klinis terstruktur beserta peringatan dini dan divergensi & Subbab~\ref{subsec:bab4-representasi-kondisi-klinis} dan Subbab~\ref{subsec:bab4-struktur-assessment-output} \\
+
+KF-08 & Mendukung alur termediasi dokter tanpa tindakan otonom & Subbab~\ref{subsec:bab4-guardrail-keselamatan} dan Subbab~\ref{subsec:bab4-konteks-penggunaan-doctor-mediated} \\
+
+\midrule
+
+KNF-01 & Keterterapan tanpa akselerator grafis & Subbab~\ref{subsec:bab4-arsitektur-sistem} dan Subbab~\ref{subsec:bab4-desain-penelusuran} \\
+
+KNF-02 & Keterjelasan prediksi dan rekomendasi & Subbab~\ref{subsec:bab4-ketidakpastian-prediksi} dan Subbab~\ref{subsec:bab4-keterlacakan-verifikasi-sitasi} \\
+
+KNF-03 & Keamanan konten keluaran & Subbab~\ref{subsec:bab4-guardrail-keselamatan} \\
+
+KNF-04 & Ketahanan terhadap data dan evidence yang tidak memadai & Subbab~\ref{subsec:bab4-fallback-retrieval-generation} dan Subbab~\ref{subsec:bab4-integrasi-fallback-status-data} \\
+
+KNF-05 & Keluaran berbahasa Indonesia & Subbab~\ref{subsec:bab4-grounded-generation} \\
+
+KNF-06 & Keamanan klinis dan penentu akhir pada dokter & Subbab~\ref{subsec:bab4-guardrail-keselamatan} dan Subbab~\ref{subsec:bab4-konteks-penggunaan-doctor-mediated} \\
+
+KNF-07 & Keterpeliharaan melalui pemisahan komponen & Subbab~\ref{subsec:bab4-arsitektur-sistem} \\
+
+KNF-08 & Keterlacakan sitasi sampai halaman sumber & Subbab~\ref{subsec:bab4-segmentasi-dokumen-metadata} dan Subbab~\ref{subsec:bab4-keterlacakan-verifikasi-sitasi} \\
+
+KNF-09 & Biaya rendah dan keterpindahan lingkungan & Subbab~\ref{subsec:bab4-arsitektur-sistem} \\
+
+KNF-10 & Waktu tanggap yang memungkinkan penggunaan saat konsultasi & Subbab~\ref{subsec:bab4-aliran-data-end-to-end} \\
+\end{longtable}
+\endgroup

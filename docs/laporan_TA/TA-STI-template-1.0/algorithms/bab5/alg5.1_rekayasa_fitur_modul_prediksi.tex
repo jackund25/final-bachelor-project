@@ -1,0 +1,17 @@
+\begin{algorithm}[!htbp]
+    \caption{Rekayasa Fitur Modul Prediksi}
+    \label{alg:alg5.1_rekayasa_fitur_modul_prediksi}
+    \begin{algorithmic}[1]
+        \Require Riwayat data pasien yang telah divalidasi
+        \Ensure Vektor sembilan fitur
+        \State Urutkan pengamatan berdasarkan waktu
+        \State Hitung selang waktu antar-pengamatan
+        \State Hitung \texttt{glucose\_delta} dan \texttt{glucose\_rate}
+        \State Hitung IOB dan COB berdasarkan peluruhan berbasis waktu
+        \State Hitung \texttt{hour\_sin} dan \texttt{hour\_cos}
+        \State Hitung \texttt{time\_since\_prev\_glucose}
+        \State Pertahankan \texttt{activity}
+        \State Bentuk vektor fitur sesuai urutan konfigurasi
+        \State \Return vektor fitur
+    \end{algorithmic}
+\end{algorithm}

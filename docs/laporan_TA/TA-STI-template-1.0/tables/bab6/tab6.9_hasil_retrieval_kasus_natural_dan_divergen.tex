@@ -1,0 +1,36 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{llrr}
+\caption{Kinerja retrieval pada kasus natural dan divergen, rerata enam fold lintas-pasien.}
+\label{tab:tab6.9_hasil_retrieval_kasus_natural_dan_divergen} \\
+\toprule
+\textbf{Himpunan} & \textbf{Mode} & \textbf{MRR} & \textbf{Hit@1} \\
+\midrule
+\endfirsthead
+
+\multicolumn{4}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Himpunan} & \textbf{Mode} & \textbf{MRR} & \textbf{Hit@1} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Divergen & RAG standar & 0,190 $\pm$ 0,003 & 0,000 \\
+
+Divergen & RAG terkondisi-prediksi & 0,284 $\pm$ 0,025 & 0,095 \\
+
+Divergen & RAG + pengklasifikasi kondisi & 0,312 $\pm$ 0,018 & 0,147 \\
+
+Divergen & Oracle & 0,778 $\pm$ 0,000 & 0,667 \\
+
+Natural & RAG standar & 0,700 $\pm$ 0,076 & 0,583 \\
+
+Natural & RAG terkondisi-prediksi & 0,714 $\pm$ 0,064 & 0,594 \\
+
+Natural & RAG + pengklasifikasi kondisi & 0,663 $\pm$ 0,055 & 0,547 \\
+
+Natural & Oracle & 0,769 $\pm$ 0,087 & 0,653 \\
+\end{longtable}
+\endgroup

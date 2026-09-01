@@ -1,0 +1,16 @@
+\begin{algorithm}[!htbp]
+    \caption{Query Transformation Terkondisi-Prediksi}
+    \label{alg:alg5.3_query_transformation_terkondisi_prediksi}
+    \begin{algorithmic}[1]
+        \Require Pertanyaan pengguna $q$, prediksi glukosa $\hat{g}_{t+h}$
+        \Ensure Kueri retrieval $q'$
+        \State Tentukan kondisi klinis $c \gets C(\hat{g}_{t+h})$
+        \If{$c$ tersedia}
+            \State Bentuk konteks kondisi
+            \State $q' \gets q + \text{``Konteks klinis: ''} + c$
+        \Else
+            \State $q' \gets q$
+        \EndIf
+        \State \Return $q'$
+    \end{algorithmic}
+\end{algorithm}

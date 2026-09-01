@@ -1,0 +1,34 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{lrrr}
+\caption{Kinerja model produksi dan persistence pada skenario finger-stick produksi.}
+\label{tab:tab6.5_kinerja_fingerstick_produksi} \\
+\toprule
+\textbf{Protokol} & \textbf{Model} & \textbf{RMSE} & \textbf{MAE} \\
+& & \textbf{mg/dL} & \textbf{mg/dL} \\
+\midrule
+\endfirsthead
+
+\multicolumn{4}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Protokol} & \textbf{Model} & \textbf{RMSE} & \textbf{MAE} \\
+& & \textbf{mg/dL} & \textbf{mg/dL} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Hold-out & Model produksi & 68,24 & 55,62 \\
+
+Hold-out & Persistence & 95,69 & 77,60 \\
+
+Cross-fold & Model produksi & 71,60 $\pm$ 11,50 & -- \\
+
+Cross-fold & Persistence & 95,31 $\pm$ 13,64 & -- \\
+
+\midrule
+
+\multicolumn{4}{l}{\textbf{Clarke A+B cross-fold:} produksi 54,36 $\pm$ 8,45\%; persistence 49,62 $\pm$ 11,04\%.} \\
+\end{longtable}
+\endgroup

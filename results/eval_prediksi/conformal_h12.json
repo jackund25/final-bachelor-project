@@ -1,7 +1,17 @@
 {
   "horizon_steps": 12,
   "horizon_min": 60,
-  "max_gap_steps": 6,
+  "jendela": {
+    "sequence_length": 12,
+    "target_tolerance_min": 2.5,
+    "max_history_gap_min": 30,
+    "min_history_interval_min": 0.0,
+    "prediction_horizons_min": [
+      30,
+      60
+    ]
+  },
+  "max_gap_steps": null,
   "model_family": "HistGradientBoostingRegressor",
   "sigma_source": "quantile_spread",
   "predict_delta": true,
@@ -12,10 +22,12 @@
     "cob",
     "activity",
     "hour_sin",
-    "hour_cos"
+    "hour_cos",
+    "glucose_rate",
+    "time_since_prev_glucose"
   ],
-  "n_cal": 26169,
-  "n_test": 26169,
+  "n_cal": 26156,
+  "n_test": 26156,
   "pasien_latih": [
     "ohio_540",
     "ohio_544",
@@ -39,12 +51,12 @@
     "90": {
       "baseline_z_std": {
         "coverage%": 89.0,
-        "mean_width": 92.6
+        "mean_width": 92.7
       },
       "conformal_absolute": {
         "coverage%": 90.0,
-        "mean_width": 103.2,
-        "q": 51.59
+        "mean_width": 102.9,
+        "q": 51.45
       },
       "conformal_normalized": {
         "coverage%": 90.0,
@@ -59,15 +71,15 @@
       },
       "conformal_absolute": {
         "coverage%": 95.0,
-        "mean_width": 131.9,
-        "q": 65.96
+        "mean_width": 132.2,
+        "q": 66.12
       },
       "conformal_normalized": {
         "coverage%": 95.0,
-        "mean_width": 121.4,
-        "q": 2.16
+        "mean_width": 120.6,
+        "q": 2.14
       }
     }
   },
-  "durasi_detik": 19.4
+  "durasi_detik": 223.7
 }

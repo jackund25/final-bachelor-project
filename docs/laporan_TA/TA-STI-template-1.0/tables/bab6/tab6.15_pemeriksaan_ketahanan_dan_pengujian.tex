@@ -1,0 +1,34 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{p{0.32\textwidth}p{0.43\textwidth}p{0.15\textwidth}}
+\caption{Pemeriksaan ketahanan dan pengujian software.}
+\label{tab:tab6.15_pemeriksaan_ketahanan_dan_pengujian} \\
+\toprule
+\textbf{Pemeriksaan} & \textbf{Hasil} & \textbf{Status} \\
+\midrule
+\endfirsthead
+
+\multicolumn{3}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Pemeriksaan} & \textbf{Hasil} & \textbf{Status} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Test suite setelah pembersihan & 206 passed, 0 failed, 4 skipped & Lulus \\
+
+Missing model bundle pada UI & Peringatan dan instruksi, bukan crash diam-diam & Lulus \\
+
+Evidence RAG tidak memadai & Keterbatasan diteruskan; tidak dibuat evidence sintetis & Lulus \\
+
+Artefak uncertainty tidak tersedia & Interval tidak ditampilkan sebagai nilai pengganti & Lulus \\
+
+Memory stress pada pemuatan dataset penuh & Satu MemoryError pada run awal; lulus pada run berikutnya tanpa perubahan kode uji & Sensitif lingkungan \\
+
+Deployment cloud gratis & OOM saat inisialisasi/bangun pipeline & Tidak dipakai \\
+
+Deployment final evaluasi & Frontend Vercel; backend lokal melalui ngrok & Dipakai \\
+\end{longtable}
+\endgroup

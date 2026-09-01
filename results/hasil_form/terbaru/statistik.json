@@ -1,0 +1,437 @@
+{
+  "judul": "Statistik evaluasi ahli putaran n=12",
+  "sumber": {
+    "csv": "results/hasil_form/terbaru/Form Penggunaan dan Evaluasi Sistem Diabetes Clinical Decision Support  (Jawaban) - Form Responses 3 (1).csv",
+    "pdf_ringkasan": "results/hasil_form/terbaru/hasil form update 2.pdf",
+    "bentuk": "satu baris per responden"
+  },
+  "n_responden": 12,
+  "catatan_skala": {
+    "sus": "1-5 sesuai instrumen Brooke",
+    "skenario_dan_penilaian": "1-4 sesuai rancangan formulir"
+  },
+  "profil": {
+    "profesi": {
+      "n_menjawab": 12,
+      "cacah": {
+        "Dokter Muda": 7,
+        "Dokter Spesialis": 3,
+        "Dokter": 1,
+        "Mahasiswa kedokteran/kesehatan": 1
+      }
+    },
+    "bidang_okupasi": {
+      "n_menjawab": 9,
+      "cacah": {
+        "Penyakit Dalam": 3,
+        "Dokter umum": 1,
+        "Obgin": 1,
+        "Umum": 1,
+        "Koas": 1,
+        "-": 1,
+        "Kedokteran umum": 1
+      }
+    },
+    "pengalaman_cdss": {
+      "n_menjawab": 12,
+      "cacah": {
+        "Belum": 9,
+        "Sudah": 3
+      }
+    },
+    "pengalaman_cgm": {
+      "n_menjawab": 12,
+      "cacah": {
+        "Belum Pernah": 10,
+        "Ya": 1,
+        "Jarang": 1
+      }
+    }
+  },
+  "butir_skala4": {
+    "Prediksi dan status kondisi pada CGM": {
+      "n": 12,
+      "rerata": 3.333,
+      "sb": 0.492,
+      "median": 3.0,
+      "modus": 3,
+      "min": 3,
+      "maks": 4,
+      "n_min_baik": 12,
+      "persen_min_baik": 100.0
+    },
+    "Prediksi finger-stick dan komunikasi keterbatasan": {
+      "n": 12,
+      "rerata": 3.417,
+      "sb": 0.515,
+      "median": 3.0,
+      "modus": 3,
+      "min": 3,
+      "maks": 4,
+      "n_min_baik": 12,
+      "persen_min_baik": 100.0
+    },
+    "Penolakan prediksi saat data tidak memadai": {
+      "n": 12,
+      "rerata": 3.083,
+      "sb": 0.793,
+      "median": 3.0,
+      "modus": 3,
+      "min": 1,
+      "maks": 4,
+      "n_min_baik": 11,
+      "persen_min_baik": 91.7
+    },
+    "Menghindari kesan kepastian berlebihan": {
+      "n": 12,
+      "rerata": 3.167,
+      "sb": 0.577,
+      "median": 3.0,
+      "modus": 3,
+      "min": 2,
+      "maks": 4,
+      "n_min_baik": 11,
+      "persen_min_baik": 91.7
+    },
+    "Menjaga otonomi dokter": {
+      "n": 12,
+      "rerata": 3.333,
+      "sb": 0.492,
+      "median": 3.0,
+      "modus": 3,
+      "min": 3,
+      "maks": 4,
+      "n_min_baik": 12,
+      "persen_min_baik": 100.0
+    },
+    "Consent dan keamanan data": {
+      "n": 12,
+      "rerata": 3.333,
+      "sb": 0.492,
+      "median": 3.0,
+      "modus": 3,
+      "min": 3,
+      "maks": 4,
+      "n_min_baik": 12,
+      "persen_min_baik": 100.0
+    },
+    "Dasar rekomendasi cukup jelas": {
+      "n": 12,
+      "rerata": 3.083,
+      "sb": 0.669,
+      "median": 3.0,
+      "modus": 3,
+      "min": 2,
+      "maks": 4,
+      "n_min_baik": 10,
+      "persen_min_baik": 83.3
+    },
+    "Alur realistis untuk praktik klinis": {
+      "n": 12,
+      "rerata": 3.167,
+      "sb": 0.389,
+      "median": 3.0,
+      "modus": 3,
+      "min": 3,
+      "maks": 4,
+      "n_min_baik": 12,
+      "persen_min_baik": 100.0
+    },
+    "Karakteristik populasi sumber data memadai": {
+      "n": 12,
+      "rerata": 3.083,
+      "sb": 0.793,
+      "median": 3.0,
+      "modus": 3,
+      "min": 2,
+      "maks": 4,
+      "n_min_baik": 9,
+      "persen_min_baik": 75.0
+    }
+  },
+  "grid": {
+    "3A": {
+      "Relevansi": {
+        "n": 9,
+        "rerata": 2.889,
+        "sb": 0.333,
+        "median": 3,
+        "modus": 3,
+        "min": 2,
+        "maks": 3,
+        "n_min_baik": 8,
+        "persen_min_baik": 88.9
+      },
+      "Kejelasan": {
+        "n": 6,
+        "rerata": 2.833,
+        "sb": 0.408,
+        "median": 3.0,
+        "modus": 3,
+        "min": 2,
+        "maks": 3,
+        "n_min_baik": 5,
+        "persen_min_baik": 83.3
+      },
+      "Kecukupan konteks": {
+        "n": 9,
+        "rerata": 2.889,
+        "sb": 0.333,
+        "median": 3,
+        "modus": 3,
+        "min": 2,
+        "maks": 3,
+        "n_min_baik": 8,
+        "persen_min_baik": 88.9
+      },
+      "Batasan keputusan": {
+        "n": 8,
+        "rerata": 2.875,
+        "sb": 0.354,
+        "median": 3.0,
+        "modus": 3,
+        "min": 2,
+        "maks": 3,
+        "n_min_baik": 7,
+        "persen_min_baik": 87.5
+      }
+    },
+    "3B": {
+      "Relevansi": {
+        "n": 8,
+        "rerata": 2.875,
+        "sb": 0.354,
+        "median": 3.0,
+        "modus": 3,
+        "min": 2,
+        "maks": 3,
+        "n_min_baik": 7,
+        "persen_min_baik": 87.5
+      },
+      "Kejelasan": {
+        "n": 9,
+        "rerata": 3,
+        "sb": 0.0,
+        "median": 3,
+        "modus": 3,
+        "min": 3,
+        "maks": 3,
+        "n_min_baik": 9,
+        "persen_min_baik": 100.0
+      },
+      "Kecukupan konteks": {
+        "n": 11,
+        "rerata": 2.909,
+        "sb": 0.302,
+        "median": 3,
+        "modus": 3,
+        "min": 2,
+        "maks": 3,
+        "n_min_baik": 10,
+        "persen_min_baik": 90.9
+      },
+      "Batasan keputusan": {
+        "n": 8,
+        "rerata": 3,
+        "sb": 0.0,
+        "median": 3.0,
+        "modus": 3,
+        "min": 3,
+        "maks": 3,
+        "n_min_baik": 8,
+        "persen_min_baik": 100.0
+      }
+    },
+    "3C": {
+      "Relevansi": {
+        "n": 9,
+        "rerata": 3,
+        "sb": 0.0,
+        "median": 3,
+        "modus": 3,
+        "min": 3,
+        "maks": 3,
+        "n_min_baik": 9,
+        "persen_min_baik": 100.0
+      },
+      "Kejelasan": {
+        "n": 8,
+        "rerata": 2.875,
+        "sb": 0.354,
+        "median": 3.0,
+        "modus": 3,
+        "min": 2,
+        "maks": 3,
+        "n_min_baik": 7,
+        "persen_min_baik": 87.5
+      },
+      "Kecukupan konteks": {
+        "n": 10,
+        "rerata": 2.7,
+        "sb": 0.483,
+        "median": 3.0,
+        "modus": 3,
+        "min": 2,
+        "maks": 3,
+        "n_min_baik": 7,
+        "persen_min_baik": 70.0
+      },
+      "Batasan keputusan": {
+        "n": 9,
+        "rerata": 2.778,
+        "sb": 0.441,
+        "median": 3,
+        "modus": 3,
+        "min": 2,
+        "maks": 3,
+        "n_min_baik": 7,
+        "persen_min_baik": 77.8
+      }
+    }
+  },
+  "rekomendasi": {
+    "3B": {
+      "n_menjawab": 12,
+      "cacah": {
+        "Sesuai pedoman, tapi perlu verifikasi dokter": 9,
+        "Sesuai pedoman & aman diikuti": 2,
+        "Kurang sesuai pedoman, berpotensi berisiko": 1
+      }
+    },
+    "3C": {
+      "n_menjawab": 12,
+      "cacah": {
+        "Sesuai pedoman, tapi perlu verifikasi dokter": 11,
+        "Sesuai pedoman & aman diikuti": 1
+      }
+    }
+  },
+  "sus": {
+    "n": 12,
+    "skor_per_responden": [
+      40.0,
+      50.0,
+      50.0,
+      50.0,
+      50.0,
+      50.0,
+      52.5,
+      55.0,
+      62.5,
+      62.5,
+      67.5,
+      72.5
+    ],
+    "rerata": 55.21,
+    "sb": 9.2,
+    "median": 51.25,
+    "min": 40.0,
+    "maks": 72.5,
+    "galat_baku": 2.66,
+    "ki95": [
+      49.36,
+      61.05
+    ],
+    "t_kritis": 2.201,
+    "per_butir": {
+      "1. Akan sering menggunakan": {
+        "arah": "positif",
+        "n": 12,
+        "rerata": 3.75,
+        "sb": 0.754,
+        "median": 4.0,
+        "min": 3,
+        "maks": 5
+      },
+      "2. Rumit tanpa alasan jelas": {
+        "arah": "negatif",
+        "n": 12,
+        "rerata": 3.25,
+        "sb": 1.288,
+        "median": 3.5,
+        "min": 1,
+        "maks": 5
+      },
+      "3. Mudah digunakan": {
+        "arah": "positif",
+        "n": 12,
+        "rerata": 3.75,
+        "sb": 0.754,
+        "median": 4.0,
+        "min": 3,
+        "maks": 5
+      },
+      "4. Butuh bantuan teknis": {
+        "arah": "negatif",
+        "n": 12,
+        "rerata": 3.917,
+        "sb": 0.996,
+        "median": 4.0,
+        "min": 2,
+        "maks": 5
+      },
+      "5. Fungsi terintegrasi": {
+        "arah": "positif",
+        "n": 12,
+        "rerata": 4.083,
+        "sb": 0.669,
+        "median": 4.0,
+        "min": 3,
+        "maks": 5
+      },
+      "6. Terlalu banyak inkonsistensi": {
+        "arah": "negatif",
+        "n": 12,
+        "rerata": 3,
+        "sb": 1.128,
+        "median": 3.0,
+        "min": 2,
+        "maks": 5
+      },
+      "7. Cepat dipelajari orang lain": {
+        "arah": "positif",
+        "n": 12,
+        "rerata": 3.75,
+        "sb": 0.866,
+        "median": 4.0,
+        "min": 2,
+        "maks": 5
+      },
+      "8. Merepotkan digunakan": {
+        "arah": "negatif",
+        "n": 12,
+        "rerata": 3,
+        "sb": 1.279,
+        "median": 3.0,
+        "min": 1,
+        "maks": 5
+      },
+      "9. Percaya diri saat memakai": {
+        "arah": "positif",
+        "n": 12,
+        "rerata": 3.833,
+        "sb": 0.835,
+        "median": 4.0,
+        "min": 3,
+        "maks": 5
+      },
+      "10. Perlu banyak belajar dahulu": {
+        "arah": "negatif",
+        "n": 12,
+        "rerata": 3.917,
+        "sb": 0.996,
+        "median": 3.5,
+        "min": 3,
+        "maks": 5
+      }
+    }
+  },
+  "masukan_terbuka": {
+    "n_mengisi": {
+      "25": 0,
+      "28": 0,
+      "40": 2,
+      "45": 12
+    }
+  }
+}

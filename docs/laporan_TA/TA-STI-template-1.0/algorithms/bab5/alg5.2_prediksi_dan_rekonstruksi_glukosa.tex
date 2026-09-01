@@ -1,0 +1,12 @@
+\begin{algorithm}[!htbp]
+    \caption{Prediksi dan Rekonstruksi Kadar Glukosa}
+    \label{alg:alg5.2_prediksi_dan_rekonstruksi}
+    \begin{algorithmic}[1]
+        \Require Sekuens fitur $\mathbf{X}$, scaler pelatihan $s$, model $f$, glukosa terakhir $g_t$
+        \Ensure Prediksi glukosa $\hat{g}_{t+h}$
+        \State Normalisasi $\mathbf{X}$ menggunakan scaler pelatihan
+        \State Hitung $\Delta\hat{g}_{t+h} \gets f(\mathbf{X})$
+        \State Rekonstruksi $\hat{g}_{t+h} \gets g_t + \Delta\hat{g}_{t+h}$
+        \State \Return $\hat{g}_{t+h}$
+    \end{algorithmic}
+\end{algorithm}

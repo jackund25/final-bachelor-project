@@ -1,5 +1,5 @@
 \cleardoublepage
-\chapter{PERANCANGAN}
+\chapter{PERANCANGAN SISTEM RAG TERKONDISI-PREDIKSI}
 \label{chap:perancangan}
 
 \section{Gambaran Umum Arsitektur} 
@@ -11,17 +11,20 @@ berbasis kondisi terprediksi, dan integrasi ke dalam konteks \textit{doctor-medi
 
 Gambaran keseluruhan komponen dan hubungan antarkomponen ditunjukkan pada Gambar~\ref{fig:fig4.1_arsitektur_sistem}.
 
-\clearpage
-\begin{figure}[p]
+% Pada \textwidth gambar ini hanya setinggi sekitar setengah \textheight,
+% sehingga tidak memerlukan halaman float tersendiri. Penempatan diubah dari
+% [p] ke [htbp] dan \clearpage manual dihapus agar gambar berbagi halaman
+% dengan teks, bukan menyisakan halaman setengah kosong sebelum dan sesudahnya.
+\begin{figure}[!htbp]
     \centering
     \includegraphics[
-        height=0.88\textheight,
+        width=\textwidth,
+        height=0.50\textheight,
         keepaspectratio
     ]{images/bab4/fig4.1_arsitektur_sistem.png}
     \caption{Gambaran umum arsitektur sistem RAG terkondisi-prediksi.}
     \label{fig:fig4.1_arsitektur_sistem}
 \end{figure}
-\clearpage
 
 Arsitektur dirancang pada tingkat fungsi sehingga hubungan antara data masukan, proses pengolahan, artefak yang dihasilkan, dan keluaran sistem dapat ditelusuri. Rancangan mencakup dua
 sumber artefak utama, yaitu dataset OhioT1DM untuk membentuk modul prediksi dan dokumen pedoman klinis untuk membentuk basis pengetahuan. Kedua artefak tersebut kemudian digunakan pada
@@ -38,12 +41,12 @@ Pada sisi pengetahuan klinis, dokumen pedoman melalui prapemrosesan dokumen, pem
 menyediakan indeks untuk penelusuran informasi klinis. Pengindeksan dibangun dari himpunan potongan dokumen yang sama sehingga metadata sumber dan struktur informasi dapat dipertahankan
 sepanjang proses retrieval.
 
-Setelah artefak prediksi dan basis pengetahuan tersedia, masukan berupa catatan \textit{logbook} pasien diproses melalui \textit{modality routing} untuk menentukan sumber pengukuran
+Setelah artefak prediksi dan basis pengetahuan tersedia, masukan berupa catatan logbook pasien diproses melalui \textit{modality routing} untuk menentukan sumber pengukuran
 glukosa yang digunakan. Data kemudian diproses menjadi fitur yang diperlukan oleh model prediksi. Modul prediksi menghasilkan kadar glukosa terprediksi beserta informasi ketidakpastian
 yang menyertainya. Hasil tersebut selanjutnya digunakan untuk membentuk representasi keadaan klinis terstruktur.
 
 Keadaan klinis terprediksi menjadi dasar bagi \textit{query transformation}. Tahap ini mengubah kebutuhan penelusuran menjadi kueri yang dikondisikan pada keadaan yang diperkirakan akan
-terjadi. Kueri tersebut kemudian digunakan untuk mengambil bukti dari basis pengetahuan. Bukti yang diperoleh diproses melalui \textit{reranking} dan seleksi evidence sebelum diteruskan
+terjadi. Kueri tersebut kemudian digunakan untuk mengambil bukti dari basis pengetahuan. Bukti yang diperoleh diproses melalui reranking dan seleksi evidence sebelum diteruskan
 ke pembangkitan keluaran yang dibumikan pada konteks dokumen.
 
 Keluaran pembangkitan kemudian melalui resolusi sitasi sehingga informasi pendukung dapat ditelusuri kembali ke sumber dokumen. Hasil akhir sistem berupa \textit{assessment output} yang
@@ -56,10 +59,10 @@ Aliran data end-to-end menggambarkan perubahan bentuk data sejak catatan \textit
 tahap ini adalah transformasi representasi data pada setiap proses, sehingga hubungan antara masukan, hasil antara, dan keluaran sistem dapat dipahami secara berurutan. Aliran tersebut
 ditunjukkan pada Gambar~\ref{fig:fig4.2_aliran_data-end-to-end}.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
     \centering
     \includegraphics[
-        height=0.52\textheight,
+        height=0.42\textheight,
         keepaspectratio
     ]{images/bab4/fig4.2_aliran_data_end-to-end.png}
     \caption{Aliran transformasi data dari \textit{patient logbook} hingga \textit{assessment output}.}
@@ -87,7 +90,7 @@ penelusuran pengetahuan klinis. Kueri yang dihasilkan menjadi representasi masuk
 dengan penelusuran yang dikondisikan pada kondisi terprediksi.
 
 Hasil retrieval berupa kumpulan kandidat evidence dari basis pengetahuan. Kandidat tersebut belum langsung diteruskan ke pembangkitan karena perlu disusun berdasarkan relevansinya
-terhadap kebutuhan penelusuran. Oleh karena itu, proses \textit{reranking} mengubah kumpulan kandidat menjadi evidence yang lebih terurut untuk digunakan sebagai konteks pembangkitan.
+terhadap kebutuhan penelusuran. Oleh karena itu, proses reranking mengubah kumpulan kandidat menjadi evidence yang lebih terurut untuk digunakan sebagai konteks pembangkitan.
 
 Evidence terpilih kemudian digabungkan dengan konteks keadaan klinis pada tahap \textit{grounded generation}. Pada tahap ini, representasi evidence dan konteks digunakan untuk membentuk
 keluaran assessment yang didasarkan pada informasi yang diperoleh dari basis pengetahuan, bukan hanya pada pengetahuan internal model bahasa.
@@ -99,6 +102,22 @@ keadaan klinis, assessment atau rekomendasi, evidence pendukung, sitasi, informa
 Dengan demikian, aliran data pada sistem tidak hanya menunjukkan urutan proses, tetapi juga menunjukkan perubahan representasi data dari riwayat pemantauan menjadi fitur, hasil
 prediksi, keadaan klinis, kueri terkondisi, evidence, dan akhirnya assessment yang memiliki keterlacakan sumber. Sistem berhenti pada \textit{assessment output}; penggunaan hasil
 tersebut oleh dokter berada pada konteks \textit{doctor-mediated} dan bukan merupakan tahapan komputasi di dalam sistem.
+
+\subsection{Pemetaan Kebutuhan terhadap Rancangan}
+\label{subsec:bab4-pemetaan-kebutuhan-rancangan}
+
+Rancangan pada bab ini diturunkan dari kebutuhan yang telah ditetapkan pada Subbab~\ref{sec:bab3-analisis-kebutuhan}. Agar hubungan tersebut dapat diperiksa,
+Tabel~\ref{tab:tab4.2_pemetaan_kebutuhan_rancangan} memetakan tiap kebutuhan fungsional dan nonfungsional terhadap bagian rancangan yang merealisasikannya.
+
+\input{tables/bab4/tab4.2_pemetaan_kebutuhan_rancangan.tex}
+
+Tabel tersebut memperlihatkan bahwa kebutuhan fungsional terdistribusi mengikuti tiga tujuan artefak. KF-01 sampai KF-03 direalisasikan pada perancangan modul
+prediksi, KF-04 sampai KF-06 pada perancangan RAG terkondisi-prediksi, sedangkan KF-07 dan KF-08 pada perancangan integrasi CDSS. Kebutuhan nonfungsional
+umumnya tidak dipenuhi oleh satu komponen tunggal. Keterlacakan sitasi, misalnya, ditentukan bersama oleh cara dokumen disegmentasi dan cara sitasi diverifikasi,
+sedangkan keamanan klinis ditentukan oleh guardrail keluaran sekaligus oleh penempatan dokter sebagai penentu akhir.
+
+Pemetaan ini menyatakan hubungan rancangan terhadap kebutuhan, bukan bukti bahwa kebutuhan telah terpenuhi. Pemenuhannya dinilai melalui implementasi dan evaluasi
+pada bab berikutnya.
 
 \section{Perancangan Modul Prediksi Kadar Glukosa} 
 \label{sec:bab4-perancangan-modul-prediksi}
@@ -166,15 +185,19 @@ sekuens yang dipaksakan untuk seluruh modalitas karena karakteristik temporal ke
 
 Model dirancang untuk mempelajari perubahan kadar glukosa, bukan langsung nilai absolutnya. Untuk suatu waktu acuan $t$ dan horizon $h$, perubahan glukosa didefinisikan sebagai
 
-\begin{equation} \Delta g_{t+h} = g_{t+h} - g_t, 
-    \label{eq:bab4-delta-glukosa} 
-\end{equation} dengan $g_t$ menyatakan kadar glukosa pada waktu acuan dan $g_{t+h}$ menyatakan kadar glukosa pada waktu target. Model kemudian menghasilkan taksiran $\widehat{\Delta g}_{t+h}$.
+\begin{equation} \Delta g_{t+h} = g_{t+h} - g_t,
+    \label{eq:bab4-delta-glukosa}
+\end{equation}
+\eqcaption{Definisi perubahan (delta) kadar glukosa.}
+dengan $g_t$ menyatakan kadar glukosa pada waktu acuan dan $g_{t+h}$ menyatakan kadar glukosa pada waktu target. Model kemudian menghasilkan taksiran $\widehat{\Delta g}_{t+h}$.
 
 Nilai glukosa terprediksi direkonstruksi dari perubahan tersebut menggunakan: 
 
-\begin{equation} \widehat{g}_{t+h} = g_t + \widehat{\Delta g}_{t+h}. 
+\begin{equation} \widehat{g}_{t+h} = g_t + \widehat{\Delta g}_{t+h}.
     \label{eq:bab4-rekonstruksi-glukosa}
-\end{equation} Pendekatan ini membuat model berfokus pada dinamika perubahan dari keadaan terkini, sementara nilai absolut pada waktu acuan tetap dipertahankan sebagai titik referensi.
+\end{equation}
+\eqcaption{Rekonstruksi nilai glukosa terprediksi dari delta.}
+Pendekatan ini membuat model berfokus pada dinamika perubahan dari keadaan terkini, sementara nilai absolut pada waktu acuan tetap dipertahankan sebagai titik referensi.
 
 \subsection{Ketidakpastian Prediksi} 
 \label{subsec:bab4-ketidakpastian-prediksi}
@@ -236,7 +259,7 @@ generation.
 Basis pengetahuan menyediakan representasi yang dapat digunakan untuk penelusuran semantik dan leksikal. Potongan dokumen yang sama menjadi dasar pembentukan kedua indeks sehingga hasil
 yang diperoleh dari strategi penelusuran dapat dibandingkan terhadap korpus yang sama. Pendekatan tersebut juga mempertahankan keterhubungan antara hasil retrieval dan metadata sumber.
 
-Pada tahap retrieval, kueri digunakan untuk memperoleh sejumlah kandidat evidence dari basis pengetahuan. Kandidat kemudian diproses melalui \textit{reranking} untuk mengatur urutan
+Pada tahap retrieval, kueri digunakan untuk memperoleh sejumlah kandidat evidence dari basis pengetahuan. Kandidat kemudian diproses melalui reranking untuk mengatur urutan
 berdasarkan relevansi terhadap kueri. Reranking merupakan tahap setelah retrieval awal dan tidak dimaksudkan untuk menghasilkan informasi yang tidak terdapat pada kandidat; oleh karena
 itu, kualitas kandidat awal tetap membatasi kualitas hasil akhir \parencite{carbonell1998}.
 
@@ -252,10 +275,10 @@ memasukkan konteks kondisi yang relevan bagi penelusuran. Pada sistem ini, konte
 Untuk memperjelas perbedaan sumber konteks, Gambar~\ref{fig:fig4.3_rag-konvensional} memperlihatkan alur RAG konvensional. Pada alur tersebut, data logbook digunakan untuk memperoleh
 kondisi glukosa saat ini, kemudian kondisi tersebut menjadi dasar pembentukan kueri sebelum pedoman ditelusuri.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
     \centering
     \includegraphics[
-        height=0.50\textheight,
+        height=0.44\textheight,
         keepaspectratio
     ]{images/bab4/fig4.3_rag_konvensional.png}
     \caption{Alur RAG konvensional dengan kondisi glukosa saat ini sebagai konteks kueri.}
@@ -266,10 +289,10 @@ Sebaliknya, Gambar~\ref{fig:fig4.4_rag-terkondisi-prediksi} menunjukkan rancanga
 untuk menghasilkan kadar glukosa terprediksi beserta ketidakpastiannya. Hasil tersebut diterjemahkan menjadi \textit{clinical state} dan kemudian digunakan untuk membentuk kueri yang
 dikondisikan pada keadaan yang diperkirakan.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
     \centering
     \includegraphics[
-        height=0.55\textheight,
+        height=0.44\textheight,
         keepaspectratio
     ]{images/bab4/fig4.4_rag_terkondisi_prediksi.png}
     \caption{Alur RAG terkondisi-prediksi dengan kondisi glukosa terprediksi sebagai konteks kueri.}
@@ -281,9 +304,10 @@ kueri. Pada pendekatan yang diusulkan, kondisi tersebut digantikan atau diperkay
 kondisi masa depan.
 
 Secara konseptual, transformasi kueri pada penelitian ini dapat dituliskan sebagai: 
-\begin{equation} q_{\mathrm{pred}} = T(q,\hat{s}_{t+h}), 
+\begin{equation} q_{\mathrm{pred}} = T(q,\hat{s}_{t+h}),
     \label{eq:bab4-query-pred-conditioned}
-\end{equation} 
+\end{equation}
+\eqcaption{Transformasi kueri terkondisi-prediksi.}
 dengan $q$ menyatakan kebutuhan informasi awal, $\hat{s}_{t+h}$ menyatakan \textit{clinical state} yang dibentuk dari hasil prediksi pada horizon $h$, dan $T$ menyatakan
 fungsi transformasi kueri. Bentuk ini menempatkan informasi masa depan yang diperkirakan sebagai konteks sebelum retrieval dilakukan.
 
@@ -295,11 +319,14 @@ Pada baseline, konteks utama berasal dari kondisi glukosa yang tersedia pada saa
 prediksi.
 
 Perbedaan tersebut dapat diringkas melalui: 
-\begin{equation} q_{\mathrm{baseline}} = T(q,s_t), 
-    \label{eq:bab4-query-baseline} \end{equation} dan: 
-    \begin{equation} q_{\mathrm{pred}} = T(q,\hat{s}_{t+h}), 
-        \label{eq:bab4-query-pred-conditioned-2} 
-\end{equation} 
+\begin{equation} q_{\mathrm{baseline}} = T(q,s_t),
+    \label{eq:bab4-query-baseline} \end{equation}
+\eqcaption{Transformasi kueri baseline (RAG standar).}
+dan:
+    \begin{equation} q_{\mathrm{pred}} = T(q,\hat{s}_{t+h}),
+        \label{eq:bab4-query-pred-conditioned-2}
+\end{equation}
+\eqcaption{Transformasi kueri terkondisi-prediksi (pembanding).}
 dengan $s_t$ menyatakan kondisi yang tersedia pada saat pengamatan dan $\hat{s}_{t+h}$ menyatakan kondisi
 yang diperkirakan pada waktu mendatang. Perumusan ini menempatkan sumber conditioning sebagai variabel rancangan yang membedakan kedua pendekatan.
 
@@ -327,8 +354,8 @@ Keterlacakan dirancang dengan mempertahankan metadata sumber sejak tahap segment
 halaman, dan identitas potongan sehingga hubungan antara keluaran dan sumber informasi dapat dipertahankan.
 
 Tahap \textit{citation resolution} memetakan informasi pendukung pada keluaran kembali ke evidence yang digunakan. Dengan mekanisme ini, sitasi berfungsi tidak hanya sebagai elemen
-presentasi, tetapi juga sebagai sarana pemeriksaan terhadap dasar informasi yang digunakan dalam assessment. Keterlacakan seperti ini penting pada RAG klinis karena pengguna perlu dapat
-membedakan informasi yang berasal dari hasil prediksi dengan informasi yang berasal dari pedoman \parencite{kresevic2024,lee2024,wang2024}.
+presentasi, tetapi juga sebagai sarana pemeriksaan terhadap dasar informasi yang digunakan dalam assessment. Keterlacakan seperti ini penting pada RAG klinis \parencite{kresevic2024,lee2024,wang2024}.
+Pada sistem ini kebutuhannya bertambah karena pengguna perlu dapat membedakan informasi yang berasal dari hasil prediksi dengan informasi yang berasal dari pedoman.
 
 Verifikasi dilakukan terhadap kesesuaian antara sitasi dan evidence yang menjadi sumbernya. Apabila suatu bagian keluaran tidak memiliki evidence yang sesuai, bagian tersebut tidak
 diposisikan sebagai informasi yang didukung oleh knowledge base.
@@ -368,7 +395,7 @@ Dengan rancangan tersebut, T1 dan T2 membentuk rangkaian yang saling bergantung.
 keadaan tersebut untuk mengarahkan penelusuran pengetahuan klinis. Hasil prediksi dan evidence tetap dipertahankan sebagai dua sumber informasi yang berbeda hingga tahap pembentukan
 assessment.
 
-\subsection{Struktur Assessment Output} 
+\subsection{Struktur Keluaran Assessment} 
 \label{subsec:bab4-struktur-assessment-output}
 
 Keluaran akhir sistem dirancang sebagai \textit{assessment output} yang memadukan informasi hasil prediksi, keadaan klinis, assessment atau rekomendasi, evidence pendukung, sitasi,
@@ -396,7 +423,7 @@ serta batas penggunaan assessment.
 Guardrail juga membatasi interpretasi hasil pada konteks yang tersedia. Apabila kondisi yang diperlukan untuk menghasilkan prediction atau evidence yang memadai tidak terpenuhi, sistem
 tidak diarahkan untuk mengisi kekosongan tersebut dengan informasi yang tidak memiliki dasar.
 
-\subsection{Konteks Penggunaan Doctor-Mediated} 
+\subsection{Konteks Penggunaan Termediasi Dokter} 
 \label{subsec:bab4-konteks-penggunaan-doctor-mediated}
 
 Sistem dirancang untuk digunakan dalam konteks \textit{doctor-mediated}, yaitu ketika dokter menjadi pihak yang menggunakan dan meninjau \textit{assessment output} yang dihasilkan
@@ -407,13 +434,13 @@ Alur penggunaan sampai keluaran assessment ditunjukkan pada Gambar~\ref{fig:fig4
 sudut pandang pengguna, karena rincian transformasi data dan mekanisme retrieval telah dijelaskan pada Gambar~\ref{fig:fig4.2_aliran_data-end-to-end} serta
 Gambar~\ref{fig:fig4.3_rag-konvensional}--\ref{fig:fig4.4_rag-terkondisi-prediksi}.
 
-\begin{figure}[h] 
+\begin{figure}[!htbp] 
     \centering 
-    \includegraphics[ 
-        height=0.68
-        \textheight, keepaspectratio 
-        ]{images/bab4/fig4.5_flow_cdss.png} 
-    \caption{Alur penggunaan sistem sebagai \textit{clinical decision support system} pada konteks \textit{doctor-mediated}.} 
+    \includegraphics[
+        height=0.45\textheight,
+        keepaspectratio
+    ]{images/bab4/fig4.5_flow_cdss.png}
+    \caption{Alur penggunaan sistem sebagai CDSS pada konteks \textit{doctor-mediated}.} 
     \label{fig:fig4.5_flow-cdss} 
 \end{figure}
 

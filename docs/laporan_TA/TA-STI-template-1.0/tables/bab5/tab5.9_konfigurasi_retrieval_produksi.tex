@@ -1,0 +1,46 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{p{0.38\textwidth}p{0.47\textwidth}}
+\caption{Konfigurasi retrieval produksi.}
+\label{tab:tab5.9_konfigurasi_retrieval_produksi} \\
+\toprule
+\textbf{Komponen} & \textbf{Konfigurasi final} \\
+\midrule
+\endfirsthead
+
+\multicolumn{2}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Komponen} & \textbf{Konfigurasi final} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Basis pengetahuan & Koleksi \texttt{diabetes\_kb} \\
+
+Jumlah potongan & 2.233 potongan \\
+
+Chunk size & 900 karakter \\
+
+Chunk overlap & 120 karakter \\
+
+Batas kalimat & Diaktifkan \\
+
+Metode retrieval produksi & Okapi BM25 \\
+
+Retrieval mode & \texttt{bm25} \\
+
+Candidate pool & 50 potongan teratas berdasarkan skor BM25 \\
+
+Evidence output & 5 potongan teratas (\texttt{top\_k=5}) \\
+
+Tokenisasi & Huruf kecil dan token alfanumerik, termasuk angka \\
+
+Embedding saat serving & Tidak digunakan sebagai mesin retrieval \\
+
+MMR / RRF & Tidak digunakan pada jalur produksi \\
+
+Reranking & Tidak aktif pada jalur produksi \\
+\end{longtable}
+\endgroup

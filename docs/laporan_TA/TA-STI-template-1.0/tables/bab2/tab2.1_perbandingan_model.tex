@@ -1,4 +1,6 @@
-\begin{longtable}{@{}p{3.0cm}p{3.5cm}p{3.5cm}p{3.5cm}@{}}
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{@{}p{2.6cm}p{3.35cm}p{3.35cm}p{3.4cm}@{}}
 \caption{Perbandingan karakteristik pendekatan pembelajaran mesin
 untuk prediksi kadar glukosa.}
 \label{tab:tab2.1_perbandingan_model} \\
@@ -23,57 +25,56 @@ untuk prediksi kadar glukosa.}
 \bottomrule
 \endlastfoot
 
-        Representasi temporal 
-        &
-        Memanfaatkan fitur historis yang telah direpresentasikan dalam bentuk tabular. 
-        &
-        Memanfaatkan fitur tabular atau ringkasan historis untuk membentuk prediktor secara bertahap. 
-        &
-        Mempelajari dependensi temporal secara langsung melalui urutan data. \\
+Representasi temporal
+&
+Memanfaatkan fitur historis yang telah direpresentasikan dalam bentuk tabular.
+&
+Memanfaatkan fitur tabular atau ringkasan historis untuk membentuk prediktor secara bertahap.
+&
+Mempelajari dependensi temporal secara langsung melalui urutan data. \\
 
-        Karakteristik model 
-        &
-        Ensemble sejumlah pohon keputusan dengan randomisasi fitur.
-        &
-        Ensemble yang dibangun secara bertahap untuk memperbaiki kesalahan model sebelumnya. 
-        &
-        Jaringan saraf rekuren dengan mekanisme gerbang untuk mempertahankan informasi temporal. \\
+Karakteristik model
+&
+Ensemble sejumlah pohon keputusan dengan randomisasi fitur.
+&
+Ensemble yang dibangun secara bertahap untuk memperbaiki kesalahan model sebelumnya.
+&
+Jaringan saraf rekuren dengan mekanisme gerbang untuk mempertahankan informasi temporal. \\
 
-        Kompleksitas
-        &
-        Relatif lebih sederhana pada representasi tabular.
-        &
-        Dapat meningkat sesuai jumlah pohon dan konfigurasi boosting.
-        &
-        Lebih kompleks karena melibatkan pembelajaran jaringan saraf dan sekuens.
-        \\
+Kompleksitas
+&
+Relatif lebih sederhana pada representasi tabular.
+&
+Dapat meningkat sesuai jumlah pohon dan konfigurasi boosting.
+&
+Lebih kompleks karena melibatkan pembelajaran jaringan saraf dan sekuens.
+\\
 
-        Kebutuhan komputasi
-        &
-        Umumnya lebih ringan dibandingkan pendekatan deep learning pada skenario sebanding.
-        &
-        Bergantung pada jumlah pohon, kedalaman, dan konfigurasi boosting.
-        &
-        Relatif lebih tinggi karena proses pelatihan jaringan saraf.
-        \\
+Kebutuhan komputasi
+&
+Umumnya lebih ringan dibandingkan pendekatan deep learning pada skenario sebanding.
+&
+Bergantung pada jumlah pohon, kedalaman, dan konfigurasi boosting.
+&
+Relatif lebih tinggi karena proses pelatihan jaringan saraf.
+\\
 
-        Kelebihan utama
-        &
-        Mampu menangani hubungan nonlinear pada fitur tabular.
-        &
-        Mampu membentuk prediktor kuat melalui pembelajaran bertahap.
-        &
-        Mampu mempelajari dependensi urutan temporal secara langsung.
-        \\
+Kelebihan utama
+&
+Mampu menangani hubungan nonlinear pada fitur tabular.
+&
+Mampu membentuk prediktor kuat melalui pembelajaran bertahap.
+&
+Mampu mempelajari dependensi urutan temporal secara langsung.
+\\
 
-        Keterbatasan utama
-        &
-        Temporalitas tidak dipelajari secara langsung tanpa rekayasa fitur.
-        &
-        Bergantung pada kualitas representasi fitur temporal.
-        &
-        Membutuhkan data dan komputasi lebih besar serta tidak selalu menjamin generalisasi lebih baik.
-        \\
-        
-        \noindent\tabnotestyle Sumber: Disusun penulis berdasarkan \textcite{breiman2001,friedman2001,hochreiter1997,ghimire2024}.\normalsize
+Keterbatasan utama
+&
+Temporalitas tidak dipelajari secara langsung tanpa rekayasa fitur.
+&
+Bergantung pada kualitas representasi fitur temporal.
+&
+Membutuhkan data dan komputasi lebih besar serta tidak selalu menjamin generalisasi lebih baik.
+\\
 \end{longtable}
+\endgroup

@@ -1,67 +1,73 @@
-\begin{table}[ht]
-    \centering
-    \caption{Kerangka evaluasi komponen prediksi dan RAG dalam sistem pendukung keputusan.}
-    \label{tab:bab2.4-kerangka-evaluasi}
-
-    \begin{tabular}{p{3.2cm} p{4.2cm} p{5.0cm}}
-        \hline
-        \textbf{Komponen}
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{p{3.2cm}p{4.2cm}p{5.0cm}}
+\caption{Kerangka evaluasi komponen prediksi dan RAG dalam sistem pendukung keputusan.}
+\label{tab:bab2.4-kerangka-evaluasi} \\
+\toprule
+\textbf{Komponen}
         & \textbf{Metrik/Instrumen}
         & \textbf{Aspek yang Diukur} \\
-        \hline
+\midrule
+\endfirsthead
 
-        Prediksi glukosa
-        &
-        RMSE, MAE, MAPE
-        &
-        Besarnya kesalahan numerik antara nilai prediksi dan nilai aktual.
-        \\
+\multicolumn{3}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Komponen}
+        & \textbf{Metrik/Instrumen}
+        & \textbf{Aspek yang Diukur} \\
+\midrule
+\endhead
 
-        Prediksi klinis
-        &
-        Clarke Error Grid
-        &
-        Konsekuensi klinis dari perbedaan antara nilai prediksi dan nilai aktual.
-        \\
+\bottomrule
+\endlastfoot
 
-        Retrieval
-        &
-        Hit@k, MRR, nDCG
-        &
-        Keberadaan, posisi, dan kualitas pemeringkatan dokumen relevan.
-        \\
+Prediksi glukosa
+&
+RMSE, MAE, MAPE
+&
+Besarnya kesalahan numerik antara nilai prediksi dan nilai aktual.
+\\
 
-        Generation
-        &
-        Faithfulness, context precision, context recall
-        &
-        Keterikatan keluaran terhadap konteks serta kualitas konteks yang digunakan.
-        \\
+Prediksi klinis
+&
+Clarke Error Grid
+&
+Konsekuensi klinis dari perbedaan antara nilai prediksi dan nilai aktual.
+\\
 
-        Stability
-        &
-        Repeated-run stability
-        &
-        Konsistensi keluaran sistem pada eksekusi berulang.
-        \\
+Retrieval
+&
+Hit@k, MRR, nDCG
+&
+Keberadaan, posisi, dan kualitas pemeringkatan dokumen relevan.
+\\
 
-        Safety
-        &
-        Generation safety
-        &
-        Kemunculan keluaran yang tidak didukung, melampaui konteks, atau tidak menyatakan keterbatasan.
-        \\
+Generation
+&
+Faithfulness, context precision, context recall
+&
+Keterikatan keluaran terhadap konteks serta kualitas konteks yang digunakan.
+\\
 
-        Usability
-        &
-        System Usability Scale (SUS)
-        &
-        Persepsi kemudahan penggunaan sistem oleh pengguna sasaran.
-        \\
+Stability
+&
+Repeated-run stability
+&
+Konsistensi keluaran sistem pada eksekusi berulang.
+\\
 
-        \hline
-    \end{tabular}
-    
-    \noindent\tabnotestyle Sumber: Disusun penulis berdasarkan literatur evaluasi prediksi, RAG, dan clinical AI yang dibahas pada Subbab II.5 dan II.9.\normalsize
+Safety
+&
+Generation safety
+&
+Kemunculan keluaran yang tidak didukung, melampaui konteks, atau tidak menyatakan keterbatasan.
+\\
 
-\end{table}
+Usability
+&
+System Usability Scale (SUS)
+&
+Persepsi kemudahan penggunaan sistem oleh pengguna sasaran.
+\\
+\end{longtable}
+\endgroup

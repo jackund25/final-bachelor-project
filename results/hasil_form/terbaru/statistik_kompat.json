@@ -1,0 +1,236 @@
+{
+  "meta": {
+    "n_responden": 12,
+    "sumber": {
+      "csv": "results/hasil_form/terbaru/Form Penggunaan dan Evaluasi Sistem Diabetes Clinical Decision Support  (Jawaban) - Form Responses 3 (1).csv",
+      "pdf_ringkasan": "results/hasil_form/terbaru/hasil form update 2.pdf",
+      "bentuk": "satu baris per responden"
+    },
+    "bentuk_sumber": "satu baris per responden",
+    "catatan": "Skema kompatibilitas untuk skrip gambar Bab VI. Sumber sebenarnya adalah baris per responden."
+  },
+  "butir": {
+    "s1_cgm": {
+      "n": 12,
+      "rerata": 3.333,
+      "simpangan_baku": 0.492,
+      "median": 3.0,
+      "modus": [
+        3
+      ],
+      "min": 3,
+      "maks": 4,
+      "ambang_setuju": 3,
+      "n_setuju": 12,
+      "persen_setuju": 100.0
+    },
+    "s2_fingerstick": {
+      "n": 12,
+      "rerata": 3.417,
+      "simpangan_baku": 0.515,
+      "median": 3.0,
+      "modus": [
+        3
+      ],
+      "min": 3,
+      "maks": 4,
+      "ambang_setuju": 3,
+      "n_setuju": 12,
+      "persen_setuju": 100.0
+    },
+    "s4_penolakan": {
+      "n": 12,
+      "rerata": 3.083,
+      "simpangan_baku": 0.793,
+      "median": 3.0,
+      "modus": [
+        3
+      ],
+      "min": 1,
+      "maks": 4,
+      "ambang_setuju": 3,
+      "n_setuju": 11,
+      "persen_setuju": 91.7
+    },
+    "s4_kepastian": {
+      "n": 12,
+      "rerata": 3.167,
+      "simpangan_baku": 0.577,
+      "median": 3.0,
+      "modus": [
+        3
+      ],
+      "min": 2,
+      "maks": 4,
+      "ambang_setuju": 3,
+      "n_setuju": 11,
+      "persen_setuju": 91.7
+    },
+    "b11_otonomi": {
+      "n": 12,
+      "rerata": 3.333,
+      "simpangan_baku": 0.492,
+      "median": 3.0,
+      "modus": [
+        3
+      ],
+      "min": 3,
+      "maks": 4,
+      "ambang_setuju": 3,
+      "n_setuju": 12,
+      "persen_setuju": 100.0
+    },
+    "b11_consent": {
+      "n": 12,
+      "rerata": 3.333,
+      "simpangan_baku": 0.492,
+      "median": 3.0,
+      "modus": [
+        3
+      ],
+      "min": 3,
+      "maks": 4,
+      "ambang_setuju": 3,
+      "n_setuju": 12,
+      "persen_setuju": 100.0
+    },
+    "b11_dasar": {
+      "n": 12,
+      "rerata": 3.083,
+      "simpangan_baku": 0.669,
+      "median": 3.0,
+      "modus": [
+        3
+      ],
+      "min": 2,
+      "maks": 4,
+      "ambang_setuju": 3,
+      "n_setuju": 10,
+      "persen_setuju": 83.3
+    },
+    "b11_alur": {
+      "n": 12,
+      "rerata": 3.167,
+      "simpangan_baku": 0.389,
+      "median": 3.0,
+      "modus": [
+        3
+      ],
+      "min": 3,
+      "maks": 4,
+      "ambang_setuju": 3,
+      "n_setuju": 12,
+      "persen_setuju": 100.0
+    },
+    "b11_populasi": {
+      "n": 12,
+      "rerata": 3.083,
+      "simpangan_baku": 0.793,
+      "median": 3.0,
+      "modus": [
+        3
+      ],
+      "min": 2,
+      "maks": 4,
+      "ambang_setuju": 3,
+      "n_setuju": 9,
+      "persen_setuju": 75.0
+    }
+  },
+  "sus": {
+    "rerata": 55.21,
+    "simpangan_baku_antar_responden": 9.2,
+    "median": 51.25,
+    "rentang_individu": [
+      40.0,
+      72.5
+    ],
+    "ki95": [
+      49.36,
+      61.05
+    ],
+    "catatan": "Skor dihitung per responden dengan algoritma Brooke dari 12 baris tanggapan.",
+    "butir": [
+      {
+        "butir": 1,
+        "teks": "Saya berpikir akan sering menggunakan sistem ini.",
+        "arah": "positif",
+        "rerata": 3.75,
+        "simpangan_baku": 0.754,
+        "sumbangan_sus": 6.875
+      },
+      {
+        "butir": 2,
+        "teks": "Saya merasa sistem ini rumit tanpa alasan yang jelas.",
+        "arah": "negatif",
+        "rerata": 3.25,
+        "simpangan_baku": 1.288,
+        "sumbangan_sus": 4.375
+      },
+      {
+        "butir": 3,
+        "teks": "Saya merasa sistem ini mudah digunakan.",
+        "arah": "positif",
+        "rerata": 3.75,
+        "simpangan_baku": 0.754,
+        "sumbangan_sus": 6.875
+      },
+      {
+        "butir": 4,
+        "teks": "Saya merasa membutuhkan bantuan teknis untuk menggunakan sistem ini.",
+        "arah": "negatif",
+        "rerata": 3.917,
+        "simpangan_baku": 0.996,
+        "sumbangan_sus": 2.708
+      },
+      {
+        "butir": 5,
+        "teks": "Saya merasa fungsi-fungsi dalam sistem ini terintegrasi dengan baik.",
+        "arah": "positif",
+        "rerata": 4.083,
+        "simpangan_baku": 0.669,
+        "sumbangan_sus": 7.708
+      },
+      {
+        "butir": 6,
+        "teks": "Saya merasa terdapat terlalu banyak inkonsistensi dalam sistem ini.",
+        "arah": "negatif",
+        "rerata": 3,
+        "simpangan_baku": 1.128,
+        "sumbangan_sus": 5.0
+      },
+      {
+        "butir": 7,
+        "teks": "Saya membayangkan kebanyakan orang akan cepat mempelajari sistem ini.",
+        "arah": "positif",
+        "rerata": 3.75,
+        "simpangan_baku": 0.866,
+        "sumbangan_sus": 6.875
+      },
+      {
+        "butir": 8,
+        "teks": "Saya merasa sistem ini sangat merepotkan untuk digunakan.",
+        "arah": "negatif",
+        "rerata": 3,
+        "simpangan_baku": 1.279,
+        "sumbangan_sus": 5.0
+      },
+      {
+        "butir": 9,
+        "teks": "Saya merasa percaya diri saat menggunakan sistem ini.",
+        "arah": "positif",
+        "rerata": 3.833,
+        "simpangan_baku": 0.835,
+        "sumbangan_sus": 7.083
+      },
+      {
+        "butir": 10,
+        "teks": "Saya perlu mempelajari banyak hal sebelum bisa menggunakan sistem ini dengan baik.",
+        "arah": "negatif",
+        "rerata": 3.917,
+        "simpangan_baku": 0.996,
+        "sumbangan_sus": 2.708
+      }
+    ]
+  }
+}

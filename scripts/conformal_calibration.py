@@ -50,8 +50,10 @@ import numpy as np
 import yaml
 from sklearn.ensemble import HistGradientBoostingRegressor, RandomForestRegressor
 
-from src.data.loader import DiabetesDataLoader
+from src.data.loader import DiabetesDataLoader  # noqa: F401
 from src.data.preprocessor import DataPreprocessor
+
+from _konformal_data import muat_cgm, profil_cgm, seqs_cgm
 
 OUT_DIR = Path("results/eval_prediksi")
 EPS = 1e-6
@@ -93,13 +95,10 @@ def main():
     out_path = OUT_DIR / f"conformal_h{horizon}.json"
     t0 = time.time()
 
-    loader = DiabetesDataLoader(cfg["data"]["output_dir"])
-    df = loader.load_csv("ohio_t1dm_merged.csv").sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
-    prep = DataPreprocessor(cfg)
-    df = prep.handle_missing_values(df)
-    if use_eng:
-        df = prep.engineer_features(df, **fe)
-    prep.feature_columns = list(feats)
+    # Pemuatan dan pembentukan jendela dipusatkan di scripts/_konformal_data.py supaya
+    # skrip ini, eval_cakupan_conformal.py, dan eval_conformal_per_rentang.py tidak
+    # dapat lagi menyimpang satu sama lain.
+    df, feats = muat_cgm(cfg)
 
     # T12 — PEMBAGIAN WAJIB SELARAS DENGAN PRODUKSI.
     #
@@ -133,10 +132,7 @@ def main():
           f"(selaras produksi: gbm_model.py memakai patient_ids[-2:] sebagai uji)")
 
     def seqs(sub):
-        return prep.create_sequences(
-            df[df["patient_id"].isin(sub)], seq_len, horizon, return_anchor=True,
-            max_gap_steps=max_gap_steps, source_interval_min=cadence_min,
-        )
+        return seqs_cgm(cfg, df, feats, sub, horizon * cadence_min)
 
     Xtr, ytr, atr = seqs(train_p); Xca, yca, aca = seqs(cal_p); Xte, yte, ate = seqs(test_p)
     p2 = DataPreprocessor(cfg)
@@ -193,6 +189,10 @@ def main():
     out = {
         "horizon_steps": int(horizon),
         "horizon_min": int(horizon * cadence_min),
+        # Jendela kini dipilih berdasarkan jarak WAKTU, bukan posisi baris; parameternya
+        # berasal dari model.source_profiles.CGM. max_gap_steps dipertahankan sebagai
+        # catatan konfigurasi lama agar berkas hasil lintas-tanggal tetap dapat dibaca.
+        "jendela": profil_cgm(cfg),
         "max_gap_steps": max_gap_steps,
         "model_family": keluarga,
         "sigma_source": sumber_sigma,

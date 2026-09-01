@@ -1,0 +1,40 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{p{0.38\textwidth}p{0.47\textwidth}}
+\caption{Konfigurasi generation dan evidence pada pipeline RAG produksi.}
+\label{tab:tab5.10_konfigurasi_generation_dan_evidence} \\
+\toprule
+\textbf{Komponen} & \textbf{Konfigurasi final} \\
+\midrule
+\endfirsthead
+
+\multicolumn{2}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Komponen} & \textbf{Konfigurasi final} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Retrieval & Okapi BM25 \\
+
+Evidence output & 5 potongan (\texttt{top\_k=5}) \\
+
+Reranking & Tidak aktif pada jalur produksi \\
+
+Model bahasa & Gemini 3.5 Flash-Lite \\
+
+Temperature & 0,2 \\
+
+Batas keluaran & 2048 token \\
+
+Konteks generation & Pertanyaan + clinical context + evidence \\
+
+Format assessment & Assessment terstruktur + ``Yang tidak dapat disimpulkan'' \\
+
+Citation & Berdasarkan metadata evidence \\
+
+Pemeriksaan angka & Verifikasi angka yang disertai citation \\
+\end{longtable}
+\endgroup

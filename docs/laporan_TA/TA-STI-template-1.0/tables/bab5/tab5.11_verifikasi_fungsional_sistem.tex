@@ -1,0 +1,38 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{p{0.30\textwidth}p{0.26\textwidth}p{0.30\textwidth}}
+\caption{Skenario verifikasi fungsional sistem.}
+\label{tab:tab5.11_verifikasi_fungsional_sistem} \\
+\toprule
+\textbf{Skenario} & \textbf{Komponen} & \textbf{Keluaran yang diharapkan} \\
+\midrule
+\endfirsthead
+
+\multicolumn{3}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Skenario} & \textbf{Komponen} & \textbf{Keluaran yang diharapkan} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Memuat pasien & Frontend + API + penyimpanan & Data pasien dan logbook dapat ditampilkan \\
+
+Membentuk prediksi & Prediction service & Prediksi sesuai modalitas dan horizon yang tersedia \\
+
+Membentuk clinical state & Prediction + state & State terstruktur diteruskan ke pipeline berikutnya \\
+
+Retrieval evidence & RAG retriever & Evidence dan metadata sumber dikembalikan \\
+
+Generation assessment & LLM + evidence & Assessment terstruktur dihasilkan berdasarkan konteks \\
+
+Citation resolution & Citation handler & Citation dapat ditelusuri ke evidence/sumber \\
+
+Data tidak layak & Prediction service & Prediksi ditolak dan keterbatasan ditampilkan \\
+
+Evidence tidak memadai & RAG pipeline & Keluaran menyatakan keterbatasan evidence \\
+
+Integrasi CDSS & Frontend + backend & Hasil prediction dan assessment tampil pada alur yang sama \\
+\end{longtable}
+\endgroup

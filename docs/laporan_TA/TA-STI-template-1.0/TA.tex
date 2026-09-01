@@ -131,6 +131,13 @@
 ]{biblatex-chicago}
 \addbibresource{daftar-pustaka.bib}
 
+% --- biblatex tidak memiliki berkas pelokalan untuk bahasa Indonesia, sehingga
+% ia memperingatkan "Language 'indonesian' not supported" lalu meminta rerun
+% pada tiap kompilasi tanpa pernah tuntas. Pemetaan ini menyuruhnya memakai
+% english.lbx untuk bahasa indonesian; keluarannya sama sebab selama ini pun
+% ia jatuh ke english, dan terjemahan istilah di bawah tetap berlaku. ---
+\DeclareLanguageMapping{indonesian}{english}
+
 % --- Terjemahan istilah daftar pustaka ke Bahasa Indonesia ---
 \DefineBibliographyStrings{english}{
   and          = {dan},
@@ -335,6 +342,13 @@
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{12pt plus 2pt minus 1pt}
 
+% --- Cegah baris sisa dan kata ke-hyphenate persis di batas
+% halaman. Ini murni aturan line-breaking LaTeX, tidak mengubah format
+% template (margin/font/judul/penomoran tetap sama). ---
+\widowpenalty=10000
+\clubpenalty=10000
+\brokenpenalty=10000
+
 \setlist[enumerate]{nosep, topsep=-10pt} % mengurangi spasi antar item dan atas bawah daftar
 \setlist[itemize]{nosep, topsep=-10pt} % mengurangi spasi antar item dan atas bawah daftar
 
@@ -342,6 +356,12 @@
 % AWAL DOKUMEN
 % ==========================================
 \begin{document}
+
+% --- Biarkan halaman berakhir di tempat teksnya habis. Tanpa ini kelas book
+% dalam mode twoside memakai \flushbottom, yang memaksa tiap halaman
+% setinggi persis sama dengan cara meregangkan \parskip yang elastis,
+% sehingga jarak antar-paragraf melebar tidak konsisten antar-halaman. ---
+\raggedbottom
 
 % ==========================================
 % HALAMAN AWAL (FRONTMATTER)
@@ -434,8 +454,9 @@
   %\makeatother
 \input{Lampiran-A.tex}
 \input{Lampiran-B.tex}
+\input{Lampiran-C.tex}
+\input{Lampiran-D.tex}
 \end{appendices}
 \backmatter
 
 \end{document}
- 

@@ -1,35 +1,65 @@
-\begin{table}[!htbp]
-    \centering
-    \caption{Matriks penilaian alternatif keputusan teknis terhadap kebutuhan.}
-    \label{tab:tab3.6_matriks_keputusan_teknis}
-    \renewcommand{\arraystretch}{1.10}
-    \begin{tabular}{@{}p{2.8cm}p{4.3cm}cccc@{}}
-        \hline
-        \textbf{Keputusan} & \textbf{Alternatif} & \textbf{KNF-01} & \textbf{KNF-02} & \textbf{Ketepatan} & \textbf{Deterministik} \\
-        \hline
-        Model prediksi & Random Forest & + & + & + & ++ \\
-        Model prediksi & Long Short-Term Memory & $\circ$ & -- & $\circ$ & ++ \\
-        Model prediksi & \textbf{Gradient Boosting Machine} & \textbf{++} & \textbf{+} & \textbf{++} & \textbf{++} \\
-        \hline
-        Model bahasa & \textbf{Layanan awan} & \textbf{++} & \textbf{+} & \textbf{++} & $\circ$ \\
-        Model bahasa & Model lokal & -- & + & $\circ$ & $\circ$ \\
-        \hline
-        Model embedding & \textbf{Model lokal} & \textbf{++} & $\circ$ & \textbf{+} & \textbf{++} \\
-        Model embedding & Layanan embedding awan & + & $\circ$ & + & + \\
-        \hline
-        Pengambilan pengetahuan & \textbf{RAG atas korpus tidak terstruktur} & \textbf{++} & \textbf{++} & \textbf{++} & \textbf{+} \\
-        Pengambilan pengetahuan & SPARQL atas graf pengetahuan & -- & + & $\circ$ & ++ \\
-        \hline
-        Pengklasifikasi kondisi & Ambang atas nilai regresi & ++ & ++ & -- & ++ \\
-        Pengklasifikasi kondisi & \textbf{Pengklasifikasi terpisah} & \textbf{+} & \textbf{+} & \textbf{++} & \textbf{+} \\
-        \hline
-        Orkestrasi alur & \textbf{Penulisan sebagai kode program} & \textbf{++} & \textbf{++} & \textbf{++} & \textbf{++} \\
-        Orkestrasi alur & Perkakas alur kerja visual & $\circ$ & + & + & + \\
-        \hline
-    \end{tabular}
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.10}
+\captionsetup{font=normalsize}
+\begin{longtable}{@{}p{2.4cm}p{3.4cm}cccc@{}}
+\caption{Matriks penilaian alternatif keputusan teknis terhadap kebutuhan.}
+\label{tab:tab3.6_matriks_keputusan_teknis} \\
+\toprule
+\textbf{Keputusan} & \textbf{Alternatif} & \textbf{KNF-01} & \textbf{KNF-02} & \textbf{Ketepatan} & \textbf{Deterministik} \\
+\midrule
+\endfirsthead
 
-    \noindent
+\multicolumn{6}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Keputusan} & \textbf{Alternatif} & \textbf{KNF-01} & \textbf{KNF-02} & \textbf{Ketepatan} & \textbf{Deterministik} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Model prediksi & Random Forest & + & + & + & ++ \\
+
+Model prediksi & Long Short-Term Memory & $\circ$ & -- & $\circ$ & ++ \\
+
+Model prediksi & \textbf{Gradient Boosting Machine} & \textbf{++} & \textbf{+} & \textbf{++} & \textbf{++} \\
+
+\midrule
+
+Model bahasa & \textbf{Layanan awan} & \textbf{++} & \textbf{+} & \textbf{++} & $\circ$ \\
+
+Model bahasa & Model lokal & -- & + & $\circ$ & $\circ$ \\
+
+\midrule
+
+Model embedding & \textbf{Model lokal} & \textbf{++} & $\circ$ & \textbf{+} & \textbf{++} \\
+
+Model embedding & Layanan embedding awan & + & $\circ$ & + & + \\
+
+\midrule
+
+Pengambilan pengetahuan & \textbf{RAG atas korpus tidak terstruktur} & \textbf{++} & \textbf{++} & \textbf{++} & \textbf{+} \\
+
+Pengambilan pengetahuan & SPARQL atas graf pengetahuan & -- & + & $\circ$ & ++ \\
+
+\midrule
+
+Pengklasifikasi kondisi & Ambang atas nilai regresi & ++ & ++ & -- & ++ \\
+
+Pengklasifikasi kondisi & \textbf{Pengklasifikasi terpisah} & \textbf{+} & \textbf{+} & \textbf{++} & \textbf{+} \\
+
+\midrule
+
+Orkestrasi alur & \textbf{Penulisan sebagai kode program} & \textbf{++} & \textbf{++} & \textbf{++} & \textbf{++} \\
+
+Orkestrasi alur & Perkakas alur kerja visual & $\circ$ & + & + & + \\
+\end{longtable}
+\endgroup
+
+\noindent
     \textit{
     Keterangan: ++ memenuhi penuh, + memenuhi, $\circ$ memenuhi sebagian, dan -- tidak memenuhi. Teks tebal menandai alternatif yang dipilih. Penilaian merupakan pertimbangan 
     rancangan dan bukan hasil pengukuran performa.}
-\end{table}

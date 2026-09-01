@@ -4,7 +4,7 @@
 
 Bab ini memaparkan analisis kondisi pengelolaan diabetes melitus tipe 1 yang berlaku saat ini, analisis kebutuhan sistem yang diusulkan, analisis data yang mendasarinya, serta 
 analisis pemilihan solusi beserta justifikasinya. Bab ini merupakan realisasi aktivitas kedua pada kerangka DSRM, yaitu perumusan tujuan solusi, sebagaimana dipaparkan pada 
-Subbab~\ref{sec:bab1-metodologi}. Keluaran bab ini berupa sehimpunan kebutuhan beserta keputusan teknis yang telah dijustifikasi, yang selanjutnya menjadi dasar bagi 
+Subbab~\ref{sec:bab1-metodologi}. Keluaran bab ini berupa sehimpunan kebutuhan beserta keputusan teknis yang telah dijustifikasi. Keluaran tersebut selanjutnya menjadi dasar bagi 
 perancangan sistem.
 
 \section{Analisis Kondisi Saat Ini}
@@ -14,19 +14,18 @@ perancangan sistem.
 \label{subsec:bab3-model-alur-perawatan}
 
 Pengelolaan diabetes melitus tipe 1 (DMT1) dalam konteks penelitian ini berlangsung melalui rangkaian pemantauan mandiri, pencatatan hasil pemantauan, kunjungan kontrol, penafsiran 
-oleh dokter, dan penggunaan pedoman klinis. Pasien dan keluarga melakukan pemantauan kadar glukosa secara mandiri dan mencatat hasilnya secara periodik pada \textit{logbook}. 
+oleh dokter, dan penggunaan pedoman klinis. Pasien dan keluarga melakukan pemantauan kadar glukosa secara mandiri dan mencatat hasilnya secara periodik pada logbook. 
 Catatan tersebut kemudian dibawa pada kunjungan kontrol sebagai bahan peninjauan oleh dokter. Dokter menafsirkan pola pemantauan yang telah terkumpul dan menggunakan pedoman 
 klinis sebagai salah satu dasar dalam menentukan penyesuaian tata laksana.
 
-Alur kondisi saat ini melibatkan lima komponen utama, yaitu pasien dan keluarga, catatan \textit{logbook}, kunjungan kontrol, dokter spesialis, dan pedoman klinis. Hubungan 
+Alur kondisi saat ini melibatkan lima komponen utama, yaitu pasien dan keluarga, catatan logbook, kunjungan kontrol, dokter spesialis, dan pedoman klinis. Hubungan 
 antar-komponen tersebut ditunjukkan pada Gambar~\ref{fig:fig3.1_model_alur_perawatan}.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.90\textwidth]{images/bab3/fig3.1_model_alur_perawatan.png}
     \caption{Model konseptual alur perawatan DMT1 saat ini.}
     \label{fig:fig3.1_model_alur_perawatan}
-    \noindent \textit{Sumber: Disusun penulis berdasarkan Ikatan Dokter Anak Indonesia (2015), Perkumpulan Endokrinologi Indonesia (2021a), Pulungan dkk. (2021), dan Faizi dkk. (2025).}
 \end{figure}
 
 Gambar~\ref{fig:fig3.1_model_alur_perawatan} memperlihatkan bahwa proses berlangsung secara berurutan dari pemantauan oleh pasien hingga peninjauan dan penyesuaian tata laksana 
@@ -70,7 +69,7 @@ atribut mutu yang harus dipenuhi.
 Pengguna utama sistem adalah dokter atau tenaga medis yang menangani pasien DMT1. Pasien menerima keluaran sistem secara tidak langsung melalui alur \textit{doctor-mediated}, yaitu
 setelah rekomendasi divalidasi oleh dokter.
 
-Bagi dokter, kebutuhan yang belum terpenuhi mencakup tiga hal. Pertama, alat bantu yang mengubah catatan \textit{logbook} mentah menjadi taksiran kadar glukosa jangka pendek. Kedua,
+Bagi dokter, kebutuhan yang belum terpenuhi mencakup tiga hal. Pertama, alat bantu yang mengubah catatan logbook mentah menjadi taksiran kadar glukosa jangka pendek. Kedua,
 peringatan dini terhadap risiko yang diperkirakan akan terjadi. Ketiga, rekomendasi yang dapat ditelusuri sampai ke dokumen pedoman sumbernya. Ketiga kebutuhan tersebut perlu tersedia
 dalam waktu konsultasi yang singkat dan tanpa perangkat tambahan yang mahal.
 
@@ -90,7 +89,7 @@ fungsional yang dihasilkan beserta hubungan masing-masing dengan persoalan dan t
 
 Tabel~\ref{tab:tab3.1_kebutuhan_fungsional} memperlihatkan bahwa kedelapan kebutuhan membentuk satu rangkaian dari penerimaan data hingga validasi klinis. KF-01 dan KF-02 menyediakan
 representasi yang diperlukan sebelum prediksi dilakukan, sedangkan KF-03 menghasilkan taksiran kondisi masa depan. KF-04 kemudian menggunakan kondisi terprediksi sebagai dasar
-pembentukan kueri, yang menjadi penghubung antara modul prediksi dan penelusuran. KF-05 dan KF-06 menyediakan konteks pedoman serta rekomendasi tertelusur, sementara KF-07 dan KF-08
+pembentukan kueri yang menjadi penghubung antara modul prediksi dan penelusuran. KF-05 dan KF-06 menyediakan konteks pedoman serta rekomendasi tertelusur, sementara KF-07 dan KF-08
 mengatur penyajian kondisi serta validasi oleh dokter.
 
 Kolom asal dan tujuan pada Tabel~\ref{tab:tab3.1_kebutuhan_fungsional} membentuk penelusuran dua arah. Kolom asal menghubungkan setiap kebutuhan dengan persoalan P1--P4, sedangkan kolom
@@ -154,13 +153,11 @@ kadar glukosa, laju perubahan glukosa, aktivitas fisik, serta penyandian siklis 
 Selain pertimbangan fisiologis, kelayakan representasi fitur dinilai berdasarkan kerapatan pengisian kanal dan kontribusinya terhadap prediksi. Penelaahan awal terhadap kerapatan
 pengisian kanal kejadian pada OhioT1DM ditunjukkan pada Gambar~\ref{fig:fig3.2_kerapatan_kanal}.
 
-\begin{figure}[h] 
-    \centering 
-    \includegraphics[width=0.88\textwidth]{images/bab3/fig3.2_kerapatan_kanal.png} 
-    \caption{Proporsi baris dengan nilai lebih besar dari nol pada setiap kanal kejadian dataset OhioT1DM.} 
-    \label{fig:fig3.2_kerapatan_kanal} 
-    \noindent 
-    \textit{Sumber: Disusun penulis berdasarkan pengolahan dataset OhioT1DM (Marling dan Bunescu, 2020).} 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.88\textwidth]{images/bab3/fig3.2_kerapatan_kanal.png}
+    \caption{Proporsi baris dengan nilai lebih besar dari nol pada setiap kanal kejadian dataset OhioT1DM.}
+    \label{fig:fig3.2_kerapatan_kanal}
 \end{figure}
 
 Gambar~\ref{fig:fig3.2_kerapatan_kanal} memperlihatkan bahwa kerapatan setiap kanal kejadian berbeda jauh. Pada kanal CGM, insulin dan basal rate hadir hampir pada seluruh baris,
@@ -204,22 +201,22 @@ Enam alternatif pendekatan dipertimbangkan untuk menjawab kebutuhan antisipasi, 
 tersebut mewakili rentang solusi dari pemantauan berbasis aturan hingga integrasi prediksi dan retrieval.
 
 \begin{enumerate}
-    \item \textbf{P1 --- Pemantauan manual berbasis ambang.} Kadar glukosa dibandingkan terhadap ambang tetap, kemudian tindakan ditentukan melalui aturan yang disusun sebelumnya.
+    \item \textbf{P1: Pemantauan manual berbasis ambang.} Kadar glukosa dibandingkan terhadap ambang tetap, kemudian tindakan ditentukan melalui aturan yang disusun sebelumnya.
     Pendekatan ini sederhana dan deterministik, tetapi hanya menanggapi keadaan yang telah teramati dan tidak memanfaatkan hubungan nonlinear antarfaktor.
 
-    \item \textbf{P2 --- Model prediksi tanpa penelusuran.} Model pembelajaran mesin digunakan untuk memetakan riwayat pemantauan menjadi taksiran kadar glukosa pada horizon tertentu.
+    \item \textbf{P2: Model prediksi tanpa penelusuran.} Model pembelajaran mesin digunakan untuk memetakan riwayat pemantauan menjadi taksiran kadar glukosa pada horizon tertentu.
     Pendekatan ini menyediakan kemampuan antisipatif, tetapi keluaran prediksi tetap berdiri sendiri tanpa penelusuran pengetahuan klinis.
 
-    \item \textbf{P3 --- Model bahasa besar tanpa penelusuran.} Pertanyaan diberikan langsung kepada model bahasa besar dan jawaban dihasilkan dari pengetahuan yang tersimpan pada parameter
+    \item \textbf{P3: Model bahasa besar tanpa penelusuran.} Pertanyaan diberikan langsung kepada model bahasa besar dan jawaban dihasilkan dari pengetahuan yang tersimpan pada parameter
     model. Pendekatan ini dapat menghasilkan bahasa yang mudah dipahami, tetapi tidak memberikan grounding pada dokumen sumber dan tidak menghubungkan keluaran dengan keadaan pasien.
 
-    \item \textbf{P4 --- RAG dengan kueri statis.} Model bahasa besar dilengkapi penelusuran pada korpus pedoman klinis dengan kueri yang disusun dari pertanyaan pengguna atau keadaan yang
+    \item \textbf{P4: RAG dengan kueri statis.} Model bahasa besar dilengkapi penelusuran pada korpus pedoman klinis dengan kueri yang disusun dari pertanyaan pengguna atau keadaan yang
     sedang berlaku. Pendekatan ini menyediakan keterlacakan ke dokumen sumber, tetapi masih merespons keadaan yang telah diamati.
 
-    \item \textbf{P5 --- Model fisiologis mekanistik.} Dinamika glukosa dimodelkan melalui hubungan fisiologis yang dirumuskan secara eksplisit, seperti pendekatan Bergman dkk. (1979) dan
+    \item \textbf{P5: Model fisiologis mekanistik.} Dinamika glukosa dimodelkan melalui hubungan fisiologis yang dirumuskan secara eksplisit, seperti pendekatan Bergman dkk. (1979) dan
     Dalla Man dkk. (2014). Pendekatan ini memiliki dasar fisiologis yang kuat, tetapi memerlukan pengukuran dan parameterisasi yang lebih lengkap daripada yang tersedia dalam konteks penelitian.
 
-    \item \textbf{P6 --- RAG dengan kueri terkondisi-prediksi.} Taksiran kadar glukosa pada horizon tertentu diterjemahkan menjadi keadaan klinis terstruktur, kemudian keadaan tersebut
+    \item \textbf{P6: RAG dengan kueri terkondisi-prediksi.} Taksiran kadar glukosa pada horizon tertentu diterjemahkan menjadi keadaan klinis terstruktur, kemudian keadaan tersebut
     digunakan untuk membentuk kueri penelusuran. Pendekatan ini menghubungkan kemampuan prediktif dengan pengetahuan klinis sehingga retrieval diarahkan pada keadaan yang diperkirakan 
     akan terjadi.
 \end{enumerate}
@@ -249,9 +246,10 @@ nilai setiap kriteria yang telah dikalikan dengan bobotnya. Formulasi WSM yang d
 S_i = \sum_{j=1}^{N} a_{ij}w_j,
 \label{eq:bab3-wsm}
 \end{equation}
+\eqcaption{Formulasi skor \textit{Weighted Sum Model} (WSM).}
 
 dengan $S_i$ menyatakan skor alternatif ke-$i$, $a_{ij}$ menyatakan skor alternatif ke-$i$ pada kriteria ke-$j$, $w_j$ menyatakan bobot kriteria ke-$j$, dan $N$ menyatakan jumlah
-kriteria. Seluruh kriteria dinilai pada skala ordinal 1 sampai 5 sehingga hasil dapat dijumlahkan secara konsisten \parencite{triantaphyllous1989}.
+kriteria. Seluruh kriteria dinilai pada skala ordinal 1 sampai 5 sehingga hasil dapat dijumlahkan secara konsisten \parencite{triantaphyllou1989}.
 
 WSM digunakan sebagai alat bantu analisis pemilihan, bukan sebagai bukti performa sistem. Skor dan bobot merupakan keputusan analitis yang bergantung pada karakteristik persoalan dan
 kebutuhan penelitian. Hasil penilaian keenam alternatif disajikan pada Tabel~\ref{tab:tab3.5_penilaian_wsm}.

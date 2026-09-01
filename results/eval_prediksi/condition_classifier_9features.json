@@ -15,12 +15,31 @@
     "time_since_prev_glucose"
   ],
   "keluarga_model": "HistGradientBoostingClassifier",
+  "regresor_pembanding": "HistGradientBoostingRegressor",
   "class_weight": "balanced",
   "classifier_scaler": "StandardScaler fitted on training data",
-  "catatan": "Kondisi masa depan diprediksi langsung oleh pengklasifikasi tiga kelas dengan 9 engineered features yang sama dengan pipeline GBM regression.",
+  "catatan": "Kondisi masa depan diprediksi langsung oleh pengklasifikasi tiga kelas dengan 9 engineered features yang sama dengan pipeline GBM regression, dibandingkan terhadap kondisi yang diturunkan dari regresi pada keluarga model, himpunan uji, dan representasi terskala yang SAMA.",
   "n_train": 133203,
   "n_uji": 26388,
   "n_divergen": 3395,
+  "regresi_lalu_ambang": {
+    "akurasi_keseluruhan_%": 89.3,
+    "hipoglikemia": {
+      "n": 766,
+      "sensitivitas_%": 14.1,
+      "PPV_%": 57.8
+    },
+    "normal": {
+      "n": 18388,
+      "sensitivitas_%": 93.5,
+      "PPV_%": 91.3
+    },
+    "hiperglikemia": {
+      "n": 7234,
+      "sensitivitas_%": 86.6,
+      "PPV_%": 84.8
+    }
+  },
   "pengklasifikasi_kondisi": {
     "akurasi_keseluruhan_%": 86.2,
     "hipoglikemia": {
@@ -40,6 +59,7 @@
     }
   },
   "pada_kasus_divergen": {
+    "akurasi_kondisi_regresi_%": 36.5,
     "akurasi_kondisi_pengklasifikasi_%": 36.0
   }
 }

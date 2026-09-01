@@ -1,0 +1,44 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{p{0.37\textwidth}p{0.49\textwidth}}
+\caption{Konfigurasi utama implementasi sistem.}
+\label{tab:tab5.3_konfigurasi_utama_implementasi} \\
+\toprule
+\textbf{Komponen} & \textbf{Konfigurasi} \\
+\midrule
+\endfirsthead
+
+\multicolumn{2}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Komponen} & \textbf{Konfigurasi} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Model produksi & HistGradientBoostingRegressor \\
+
+Random seed & 42 \\
+
+Hyperparameter utama & Default scikit-learn, selain \texttt{random\_state} \\
+
+Normalisasi & StandardScaler, fit pada data pelatihan \\
+
+Basis pengetahuan & Koleksi \texttt{diabetes\_kb} \\
+
+Chunk size & 900 karakter \\
+
+Chunk overlap & 120 karakter \\
+
+Batas kalimat & Diaktifkan pada proses chunking produksi \\
+
+Jumlah potongan terindeks & 2.233 potongan \\
+
+Retriever produksi & Okapi BM25 \\
+
+Jumlah evidence & \texttt{top\_k = 5} \\
+
+Temperature generasi & 0,2 \\
+\end{longtable}
+\endgroup

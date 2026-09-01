@@ -1,0 +1,18 @@
+\begin{algorithm}[!htbp]
+    \caption{Grounded Generation dan Citation Resolution}
+    \label{alg:alg5.4_grounded_generation_dan_citation}
+    \begin{algorithmic}[1]
+        \Require Pertanyaan $q$, clinical state $s$, evidence $E$
+        \Ensure Assessment $A$ dengan citation
+        \State Susun konteks generation dari $q$, $s$, dan $E$
+        \State Hasilkan assessment $A$ menggunakan model bahasa
+        \State Ekstrak citation dari $A$
+        \ForAll{citation pada $A$}
+            \State Cocokkan citation dengan metadata evidence $E$
+            \State Pertahankan citation hanya jika sumber dapat ditelusuri
+        \EndFor
+        \State Periksa angka yang memiliki citation terhadap evidence terkait
+        \State Tambahkan penjelasan keterbatasan apabila evidence tidak memadai
+        \State \Return $A$
+    \end{algorithmic}
+\end{algorithm}

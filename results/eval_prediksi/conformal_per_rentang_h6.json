@@ -3,89 +3,105 @@
   "horizon_steps": 6,
   "horizon_min": 30,
   "level_nominal_persen": 95,
-  "faktor_q": 3.31,
+  "faktor_q": 2.15,
   "sumber_faktor": "results/eval_prediksi/conformal_h6.json (A3)",
+  "model_family": "HistGradientBoostingRegressor",
+  "sigma_source": "quantile_spread",
+  "predict_delta": true,
+  "features": [
+    "glucose",
+    "glucose_delta",
+    "iob",
+    "cob",
+    "activity",
+    "hour_sin",
+    "hour_cos",
+    "glucose_rate",
+    "time_since_prev_glucose"
+  ],
+  "n_features": 9,
+  "sumber_skema_fitur": "results/eval_prediksi/conformal_h6.json (features)",
   "batas_rentang": "src/constants.py (54 / 70 / 180 / 250)",
   "pasien_uji": [
     "ohio_591",
     "ohio_596"
   ],
   "agregat": {
-    "n": 26445,
-    "cakupan_persen": 95.31,
+    "n": 26388,
+    "cakupan_persen": 93.86,
     "ci95": [
-      95.05,
-      95.56
+      93.57,
+      94.15
     ],
-    "lebar_rata2_mgdl": 99.9
+    "lebar_rata2_mgdl": 69.8
   },
   "per_rentang": {
     "hipoglikemia_berat": {
       "n": 150,
       "porsi_persen": 0.57,
-      "cakupan_persen": 96.67,
+      "cakupan_persen": 76.67,
       "ci95": [
-        92.43,
-        98.57
+        69.28,
+        82.72
       ],
-      "lebar_rata2_mgdl": 131.0,
-      "selisih_thd_agregat": 1.36,
-      "di_bawah_nominal_meyakinkan": false,
-      "di_bawah_agregat_meyakinkan": false,
-      "selang_memuat_nominal": true
+      "lebar_rata2_mgdl": 70.5,
+      "selisih_thd_agregat": -17.19,
+      "di_bawah_nominal_meyakinkan": true,
+      "di_bawah_agregat_meyakinkan": true,
+      "selang_memuat_nominal": false
     },
     "hipoglikemia": {
-      "n": 618,
-      "porsi_persen": 2.34,
-      "cakupan_persen": 96.12,
+      "n": 616,
+      "porsi_persen": 2.33,
+      "cakupan_persen": 92.69,
       "ci95": [
-        94.29,
-        97.38
+        90.36,
+        94.5
       ],
-      "lebar_rata2_mgdl": 105.9,
-      "selisih_thd_agregat": 0.81,
-      "di_bawah_nominal_meyakinkan": false,
+      "lebar_rata2_mgdl": 67.8,
+      "selisih_thd_agregat": -1.17,
+      "di_bawah_nominal_meyakinkan": true,
       "di_bawah_agregat_meyakinkan": false,
-      "selang_memuat_nominal": true
+      "selang_memuat_nominal": false
     },
     "normal": {
-      "n": 18283,
+      "n": 18244,
       "porsi_persen": 69.14,
-      "cakupan_persen": 95.18,
+      "cakupan_persen": 94.27,
       "ci95": [
-        94.86,
-        95.48
+        93.93,
+        94.6
       ],
-      "lebar_rata2_mgdl": 93.1,
-      "selisih_thd_agregat": -0.13,
-      "di_bawah_nominal_meyakinkan": false,
+      "lebar_rata2_mgdl": 65.9,
+      "selisih_thd_agregat": 0.41,
+      "di_bawah_nominal_meyakinkan": true,
       "di_bawah_agregat_meyakinkan": false,
-      "selang_memuat_nominal": true
+      "selang_memuat_nominal": false
     },
     "hiperglikemia": {
-      "n": 6085,
-      "porsi_persen": 23.01,
-      "cakupan_persen": 96.11,
+      "n": 6077,
+      "porsi_persen": 23.03,
+      "cakupan_persen": 94.26,
       "ci95": [
-        95.59,
-        96.56
+        93.64,
+        94.81
       ],
-      "lebar_rata2_mgdl": 112.5,
-      "selisih_thd_agregat": 0.8,
-      "di_bawah_nominal_meyakinkan": false,
+      "lebar_rata2_mgdl": 78.3,
+      "selisih_thd_agregat": 0.4,
+      "di_bawah_nominal_meyakinkan": true,
       "di_bawah_agregat_meyakinkan": false,
       "selang_memuat_nominal": false
     },
     "hiperglikemia_berat": {
-      "n": 1309,
-      "porsi_persen": 4.95,
-      "cakupan_persen": 92.97,
+      "n": 1301,
+      "porsi_persen": 4.93,
+      "cakupan_persen": 88.85,
       "ci95": [
-        91.46,
-        94.23
+        87.03,
+        90.45
       ],
-      "lebar_rata2_mgdl": 128.9,
-      "selisih_thd_agregat": -2.34,
+      "lebar_rata2_mgdl": 85.2,
+      "selisih_thd_agregat": -5.01,
       "di_bawah_nominal_meyakinkan": true,
       "di_bawah_agregat_meyakinkan": true,
       "selang_memuat_nominal": false
@@ -94,19 +110,19 @@
   "hipotesis": {
     "pernyataan": "Cakupan pada rentang hipoglikemia lebih rendah daripada cakupan agregat karena sampelnya paling sedikit.",
     "ditetapkan": "di muka, sebelum satu pun angka dilihat",
-    "n_hipoglikemia_gabungan": 768,
-    "cakupan_hipoglikemia_gabungan": 96.22,
+    "n_hipoglikemia_gabungan": 766,
+    "cakupan_hipoglikemia_gabungan": 89.56,
     "ci95_hipoglikemia": [
-      94.63,
-      97.36
+      87.19,
+      91.53
     ],
-    "cakupan_agregat": 95.31,
+    "cakupan_agregat": 93.86,
     "ci95_agregat": [
-      95.05,
-      95.56
+      93.57,
+      94.15
     ],
-    "TERBUKTI": false,
-    "arah_saja_tanpa_selang": false,
+    "TERBUKTI": true,
+    "arah_saja_tanpa_selang": true,
     "kriteria": "TERBUKTI hanya bila batas ATAS selang Wilson hipoglikemia berada di bawah cakupan agregat. Titik estimasi yang lebih rendah saja tidak cukup: pada n<800 selangnya beberapa poin persen lebarnya."
   }
 }

@@ -1,42 +1,52 @@
-\begin{table}[ht]
-\centering
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\small
+\setlength{\tabcolsep}{4pt}
+\captionsetup{font=normalsize}
+\begin{longtable}{@{}p{3.0cm}p{5.0cm}p{5.0cm}@{}}
 \caption{Posisi penelitian terhadap penelitian terdahulu.}
-\label{tab:tab2.6_posisi_penelitian}
-\begin{tabular}{@{}p{3.0cm}p{5.0cm}p{5.0cm}@{}}
+\label{tab:tab2.6_posisi_penelitian} \\
 \toprule
 \textbf{Dimensi} & \textbf{Penelitian terdahulu} & \textbf{Penelitian ini} \\
 \midrule
-    Data &
-    CGM, multimoda, dokumen klinis, atau data kesehatan terintegrasi &
-    Logbook dan kanal glukosa yang tersedia pada dataset OhioT1DM \\[5pt]
+\endfirsthead
 
-    Output prediksi &
-    Umumnya berupa nilai atau estimasi kadar glukosa &
-    Nilai prediksi beserta representasi keadaan yang digunakan untuk conditioning retrieval \\[5pt]
+\multicolumn{3}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Dimensi} & \textbf{Penelitian terdahulu} & \textbf{Penelitian ini} \\
+\midrule
+\endhead
 
-    Sumber conditioning retrieval &
-    Pertanyaan pengguna, kondisi saat ini, atau kebutuhan model bahasa &
-    Keadaan glukosa yang diprediksi \\[5pt]
+\bottomrule
+\endlastfoot
 
-    Retrieval &
-    Prediksi glukosa dan retrieval klinis umumnya dibahas sebagai fungsi terpisah; RAG klinis menggunakan pertanyaan atau kondisi saat ini &
-    Retrieval pedoman dikondisikan oleh keadaan fisiologis masa depan yang diprediksi \\[5pt]
+Data &
+CGM, multimoda, dokumen klinis, atau data kesehatan terintegrasi &
+Logbook dan kanal glukosa yang tersedia pada dataset OhioT1DM \\[5pt]
 
-    Grounding &
-    Dokumen klinis atau sumber pengetahuan dengan karakteristik yang bervariasi &
-    Korpus pedoman klinis terkurasi dengan keterlacakan sumber \\[5pt]
+Output prediksi &
+Umumnya berupa nilai atau estimasi kadar glukosa &
+Nilai prediksi beserta representasi keadaan yang digunakan untuk conditioning retrieval \\[5pt]
 
-    Decision flow &
-    Bervariasi, termasuk keluaran model atau bantuan interpretasi &
-    \textit{Doctor-mediated}; rekomendasi ditinjau oleh tenaga kesehatan \\[5pt]
+Sumber conditioning retrieval &
+Pertanyaan pengguna, kondisi saat ini, atau kebutuhan model bahasa &
+Keadaan glukosa yang diprediksi \\[5pt]
 
-    Infrastructure &
-    Sebagian pendekatan memerlukan pemantauan kontinu, integrasi rekam medis, atau representasi pengetahuan formal &
-    Target lingkungan komputasi ringan dengan representasi pasien berbasis logbook
-    \\
-    \bottomrule
-    \end{tabular}
-    
-    \noindent\tabnotestyle Sumber: Sintesis penulis berdasarkan penelitian terdahulu yang dibahas pada Subbab II.10.\normalsize
+Retrieval &
+Prediksi glukosa dan retrieval klinis umumnya dibahas sebagai fungsi terpisah; RAG klinis menggunakan pertanyaan atau kondisi saat ini &
+Retrieval pedoman dikondisikan oleh keadaan fisiologis masa depan yang diprediksi \\[5pt]
 
-\end{table}
+Grounding &
+Dokumen klinis atau sumber pengetahuan dengan karakteristik yang bervariasi &
+Korpus pedoman klinis terkurasi dengan keterlacakan sumber \\[5pt]
+
+Decision flow &
+Bervariasi, termasuk keluaran model atau bantuan interpretasi &
+\textit{Doctor-mediated}; rekomendasi ditinjau oleh tenaga kesehatan \\[5pt]
+
+Infrastructure &
+Sebagian pendekatan memerlukan pemantauan kontinu, integrasi rekam medis, atau representasi pengetahuan formal &
+Target lingkungan komputasi ringan dengan representasi pasien berbasis logbook
+\\
+\end{longtable}
+\endgroup

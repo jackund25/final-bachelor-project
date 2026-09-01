@@ -6,6 +6,10 @@ This version is aligned with the current modality-aware preprocessing:
 - features: config.model.engineered_features (9 features)
 - temporal builder: create_time_horizon_sequences()
 - classifier gets its OWN StandardScaler fitted on training data
+
+Dua lengan dilaporkan pada himpunan uji yang sama: ``regresi_lalu_ambang``
+(regresi glukosa lalu diambang menjadi kondisi) dan ``pengklasifikasi_kondisi``
+(pengklasifikasi tiga kelas langsung). Keduanya menjadi sumber Gambar VI.7.
 """
 
 from __future__ import annotations
@@ -19,7 +23,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import yaml
-from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
+from sklearn.ensemble import (
+    HistGradientBoostingClassifier,
+    HistGradientBoostingRegressor,
+    RandomForestClassifier,
+    RandomForestRegressor,
+)
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
 
@@ -342,13 +351,9 @@ def main() -> None:
         f"{int(divergent.sum())}"
     )
 
-    # ---------------------------------------------------------
-    # Regression baseline from the SAME GBM family.
-    # This comparison is kept for continuity with the previous
-    # experiment.
-    # ---------------------------------------------------------
-
-
+    # Regression baseline dihitung setelah classifier, karena kedua lengan
+    # memakai representasi terskala yang sama. Lihat blok "Regression baseline"
+    # di bawah.
 
     # ---------------------------------------------------------
     # NEW condition classifier
@@ -445,6 +450,65 @@ def main() -> None:
     )
 
     # ---------------------------------------------------------
+    # Regression baseline from the SAME model family.
+    #
+    # Lengan ini memprediksi kadar glukosa lalu mengambangnya menjadi kondisi,
+    # sedangkan lengan di atas memprediksi kondisi secara langsung. Keduanya
+    # WAJIB memakai himpunan uji, panjang jendela, dan representasi terskala
+    # yang sama; kalau tidak, selisih sensitivitas yang dilaporkan bercampur
+    # dengan selisih data. Karena itu regresor di bawah memakai Xtr_model dan
+    # Xte_model yang sama persis dengan pengklasifikasi, bukan bundle produksi
+    # yang punya scaler dan split sendiri.
+    #
+    # Sebelum Agustus 2026 lengan ini pernah hilang saat pipeline berpindah ke
+    # 9 fitur, sehingga condition_classifier_9features.json hanya memuat lengan
+    # pengklasifikasi dan Gambar VI.7 terpaksa memakai angka 7 fitur yang lama.
+    # ---------------------------------------------------------
+
+    if prefix == "gbm":
+        reg = HistGradientBoostingRegressor(
+            random_state=(
+                mc.get(
+                    "gradient_boosting",
+                    {},
+                ).get(
+                    "random_state",
+                    SEED,
+                )
+            ),
+        )
+    else:
+        rf_cfg = mc["random_forest"]
+
+        reg = RandomForestRegressor(
+            n_estimators=rf_cfg[
+                "n_estimators"
+            ],
+            max_depth=rf_cfg[
+                "max_depth"
+            ],
+            min_samples_split=rf_cfg[
+                "min_samples_split"
+            ],
+            random_state=SEED,
+            n_jobs=-1,
+        )
+
+    reg.fit(
+        Xtr_model,
+        ytr,
+    )
+
+    yhat_reg = reg.predict(
+        Xte_model
+    )
+
+    lbl_reg = np.array([
+        classify_glucose(v)
+        for v in yhat_reg
+    ])
+
+    # ---------------------------------------------------------
     # Report
     # ---------------------------------------------------------
 
@@ -461,6 +525,9 @@ def main() -> None:
         "keluarga_model": type(
             clf
         ).__name__,
+        "regresor_pembanding": type(
+            reg
+        ).__name__,
         "class_weight": "balanced",
         "classifier_scaler": (
             "StandardScaler fitted on training data"
@@ -469,7 +536,10 @@ def main() -> None:
             "Kondisi masa depan diprediksi langsung "
             "oleh pengklasifikasi tiga kelas dengan "
             "9 engineered features yang sama dengan "
-            "pipeline GBM regression."
+            "pipeline GBM regression, dibandingkan "
+            "terhadap kondisi yang diturunkan dari "
+            "regresi pada keluarga model, himpunan uji, "
+            "dan representasi terskala yang SAMA."
         ),
         "n_train": int(
             len(ytr)
@@ -480,11 +550,29 @@ def main() -> None:
         "n_divergen": int(
             divergent.sum()
         ),
+        "regresi_lalu_ambang": metrics_for(
+            lbl_te,
+            lbl_reg,
+        ),
         "pengklasifikasi_kondisi": metrics_for(
             lbl_te,
             lbl_clf,
         ),
         "pada_kasus_divergen": {
+            "akurasi_kondisi_regresi_%": (
+                round(
+                    100
+                    * float(
+                        (
+                            lbl_reg[divergent]
+                            == lbl_te[divergent]
+                        ).mean()
+                    ),
+                    1,
+                )
+                if divergent.any()
+                else 0.0
+            ),
             "akurasi_kondisi_pengklasifikasi_%": (
                 round(
                     100
@@ -501,6 +589,32 @@ def main() -> None:
             ),
         },
     }
+
+    print(
+        "\n--- Kondisi dari REGRESI lalu AMBANG ---"
+    )
+
+    for c in CLASSES:
+        d = res[
+            "regresi_lalu_ambang"
+        ][c]
+
+        print(
+            f"  {c:15s} "
+            f"n={d['n']:6d} "
+            f"sensitivitas={d['sensitivitas_%']:5.1f}% "
+            f"PPV={d['PPV_%']:5.1f}%"
+        )
+
+    print(
+        "  akurasi keseluruhan:",
+        res[
+            "regresi_lalu_ambang"
+        ][
+            "akurasi_keseluruhan_%"
+        ],
+        "%",
+    )
 
     print(
         "\n--- Kondisi dari CLASSIFIER 9-FEATURE ---"
@@ -529,6 +643,13 @@ def main() -> None:
     )
 
     print("\n--- Pada kasus divergen ---")
+    print(
+        "  regresi         :",
+        res["pada_kasus_divergen"][
+            "akurasi_kondisi_regresi_%"
+        ],
+        "%",
+    )
     print(
         "  classifier 9F   :",
         res["pada_kasus_divergen"][

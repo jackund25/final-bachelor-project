@@ -1,0 +1,34 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{p{0.34\textwidth}p{0.51\textwidth}}
+\caption{Struktur informasi clinical state untuk integrasi antarmodul.}
+\label{tab:tab5.7_struktur_clinical_state} \\
+\toprule
+\textbf{Elemen} & \textbf{Peran} \\
+\midrule
+\endfirsthead
+
+\multicolumn{2}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Elemen} & \textbf{Peran} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Sumber glukosa & Menentukan modalitas pengukuran yang digunakan \\
+
+Nilai glukosa terakhir & Konteks keadaan terakhir yang diketahui \\
+
+Prediksi glukosa & Nilai prediksi pada horizon tujuan \\
+
+Horizon prediksi & Menentukan waktu yang direpresentasikan oleh prediksi \\
+
+Interval ketidakpastian & Rentang prediksi apabila artefak kalibrasi tersedia \\
+
+Kondisi klinis & Kategori kondisi hasil artefak klasifikasi yang sesuai \\
+
+Konteks temporal & Informasi waktu dan perubahan yang diperlukan downstream \\
+\end{longtable}
+\endgroup

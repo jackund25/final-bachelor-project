@@ -1,0 +1,32 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{llrr}
+\caption{Hasil retrieval pada kasus nyata pasien hold-out.}
+\label{tab:tab6.11_hasil_real_case_retrieval} \\
+\toprule
+\textbf{Himpunan} & \textbf{Mode} & \textbf{MRR} & \textbf{N} \\
+\midrule
+\endfirsthead
+
+\multicolumn{4}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Himpunan} & \textbf{Mode} & \textbf{MRR} & \textbf{N} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Divergen & RAG standar & 0,186 & 120 \\
+
+Divergen & RAG terkondisi-prediksi & 0,321 & 120 \\
+
+Divergen & Oracle & 0,778 & 120 \\
+
+Natural & RAG standar & 0,780 & 120 \\
+
+Natural & RAG terkondisi-prediksi & 0,762 & 120 \\
+
+Natural & Oracle & 0,850 & 120 \\
+\end{longtable}
+\endgroup

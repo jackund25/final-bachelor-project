@@ -1,0 +1,50 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{p{0.37\textwidth}p{0.48\textwidth}}
+\caption{Konfigurasi utama modul prediksi.}
+\label{tab:tab5.6_konfigurasi_modul_prediksi} \\
+\toprule
+\textbf{Komponen} & \textbf{Konfigurasi final} \\
+\midrule
+\endfirsthead
+
+\multicolumn{2}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Komponen} & \textbf{Konfigurasi final} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Model produksi & HistGradientBoostingRegressor \\
+
+Target & $\Delta$glukosa \\
+
+Fitur & Sembilan variabel, tujuh di antaranya turunan \\
+
+Sekuens CGM & 12 observasi \\
+
+Horizon CGM & +30 dan +60 menit \\
+
+Maximum history gap CGM & 30 menit \\
+
+Target tolerance CGM & 2,5 menit \\
+
+Sekuens finger-stick & 8 observasi \\
+
+Horizon finger-stick & sekitar +240 menit \\
+
+Target window finger-stick & 180--300 menit \\
+
+Minimum history interval & 5 menit \\
+
+Maximum history gap & 720 menit \\
+
+Normalisasi & StandardScaler, fit pada data pelatihan \\
+
+Random state & 42 \\
+
+Hyperparameter & Nilai bawaan scikit-learn selain \texttt{random\_state} \\
+\end{longtable}
+\endgroup

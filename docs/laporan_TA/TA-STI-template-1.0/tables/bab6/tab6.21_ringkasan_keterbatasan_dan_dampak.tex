@@ -1,0 +1,36 @@
+\begingroup
+\setlength{\LTcapwidth}{\textwidth}
+\begin{longtable}{p{0.23\textwidth}p{0.43\textwidth}p{0.22\textwidth}}
+\caption{Ringkasan keterbatasan penelitian dan dampaknya terhadap interpretasi hasil.}
+\label{tab:tab6.21_ringkasan_keterbatasan_dan_dampak} \\
+\toprule
+\textbf{Aspek} & \textbf{Keterbatasan} & \textbf{Dampak} \\
+\midrule
+\endfirsthead
+
+\multicolumn{3}{@{}l}{\small\emph{Tabel \thetable{} (lanjutan)}} \\
+\toprule
+\textbf{Aspek} & \textbf{Keterbatasan} & \textbf{Dampak} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+Dataset & OhioT1DM tidak mewakili seluruh populasi; hipoglikemia relatif jarang & Generalisasi dan sensitivitas kelas berisiko terbatas \\
+
+Generalisasi & Validasi lintas-pasien belum sama dengan validasi populasi luas & Belum dapat mengklaim performa universal \\
+
+Uncertainty & Artefak kalibrasi belum tersedia untuk finger-stick 240 menit & Interval tidak tersedia seragam pada semua jalur \\
+
+Retrieval & Manfaat conditioning terutama pada kasus divergen dan bergantung pada kondisi prediksi & Tidak merupakan peningkatan universal \\
+
+Generation & Konfigurasi evaluasi lama berbeda dari konfigurasi production terbaru & Angka generation harus dibatasi pada protokolnya \\
+
+Ahli/Usability & n=12 dan pengalaman CDSS/CGM terbatas & Evaluasi bersifat awal, bukan validasi klinis luas \\
+
+Deployment & Backend lokal melalui ngrok & Feasibility bergantung pada perangkat, jaringan, dan layanan LLM \\
+
+Safety & Prediksi tidak menjamin sensitivitas tinggi untuk hipoglikemia & Sistem tetap doctor-mediated \\
+\end{longtable}
+\endgroup

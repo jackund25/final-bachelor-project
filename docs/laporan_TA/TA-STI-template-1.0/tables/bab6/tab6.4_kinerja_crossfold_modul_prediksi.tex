@@ -1,0 +1,14 @@
+\begin{table}[!htbp]
+    \centering
+    \caption{Kinerja prediksi pada validasi silang lintas-pasien horizon +30 menit.}
+    \label{tab:tab6.4_kinerja_crossfold_modul_prediksi}
+    \begin{tabular}{lrr}
+        \hline
+        \textbf{Model} & \textbf{RMSE (mg/dL)} & \textbf{Clarke A+B (\%)} \\
+        \hline
+        Gradient Boosting & 20,721 $\pm$ 1,163 & 94,686 $\pm$ 0,504 \\
+        Random Forest & 21,079 $\pm$ 1,152 & 94,350 $\pm$ 0,551 \\
+        LSTM & 20,602 $\pm$ 1,329 & 94,891 $\pm$ 0,518 \\
+        \hline
+    \end{tabular}
+\end{table}

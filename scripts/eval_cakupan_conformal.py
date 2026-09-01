@@ -42,8 +42,10 @@ from sklearn.ensemble import HistGradientBoostingRegressor
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from src.data.loader import DiabetesDataLoader  # noqa: E402
+from src.data.loader import DiabetesDataLoader  # noqa: E402,F401
 from src.data.preprocessor import DataPreprocessor  # noqa: E402
+
+from _konformal_data import muat_cgm, seqs_cgm  # noqa: E402
 
 
 def conformal_q(scores, alpha):
@@ -78,10 +80,7 @@ def jalankan_satu(df, feats, cfg_penuh, horizon, cal_p, test_p, train_p, seq_len
     prep.feature_columns = list(feats)
 
     def seqs(sub):
-        return prep.create_sequences(
-            df[df["patient_id"].isin(sub)], seq_len, horizon, return_anchor=True,
-            max_gap_steps=max_gap_steps, source_interval_min=cadence_min,
-        )
+        return seqs_cgm(cfg_penuh, df, feats, sub, horizon * cadence_min)
 
     Xtr, ytr, atr = seqs(train_p)
     Xca, yca, aca = seqs(cal_p)
@@ -164,19 +163,11 @@ def main() -> None:
     fe = m.get("feature_engineering", {}) or {}
     use_eng = bool(m.get("use_engineered_features", True))
 
-    # Konstruksi disamakan PERSIS dengan scripts/conformal_calibration.py:96-98:
-    # loader menerima direktori keluaran, dan DataPreprocessor menerima config
-    # PENUH (bukan blok model). Menyimpang di sini akan menghasilkan fitur atau
-    # jendela yang berbeda, sehingga cakupan yang ditaksir bukan milik prosedur
-    # yang sebenarnya dipakai.
-    loader = DiabetesDataLoader(cfg["data"]["output_dir"])
-    df = (loader.load_csv("ohio_t1dm_merged.csv")
-          .sort_values(["patient_id", "timestamp"]).reset_index(drop=True))
-    prep = DataPreprocessor(cfg)
-    df = prep.handle_missing_values(df)
-    if use_eng:
-        df = prep.engineer_features(df, **fe)
-    feats = list(prep.feature_columns)
+    # Konstruksi disamakan PERSIS dengan scripts/conformal_calibration.py dengan cara
+    # memakai modul yang sama, bukan dengan menyalin bloknya. Menyimpang di sini akan
+    # menghasilkan fitur atau jendela yang berbeda, sehingga cakupan yang ditaksir
+    # bukan milik prosedur yang sebenarnya dipakai.
+    df, feats = muat_cgm(cfg)
 
     pids = sorted(df["patient_id"].unique().tolist())
     pasangan = [(pids[i], pids[i + 1]) for i in range(0, len(pids) - 1, 2)]
