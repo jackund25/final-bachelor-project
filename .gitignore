@@ -203,11 +203,6 @@ docs/laporan_TA/TA-STI-template-1.0/images/SS Sistem/
 docs/laporan_TA/TA-STI-template-1.0/images/form response tmp/
 docs/laporan_TA/TA-STI-template-1.0/images/Tampilan antarmuka halaman Dashboard pada perangkat desktop.png
 
-# Berkas panduan agen yang ditulis ulang otomatis oleh `next dev` setiap kali
-# server pengembangan dijalankan (node_modules/next/dist/server/lib/generate-agent-files.js).
-frontend/AGENTS.md
-frontend/CLAUDE.md
-
 # Hasil kuesioner evaluasi ahli.
 # CSV dan PDF sumber memuat nama lengkap dan alamat surel 12 responden, jadi
 # tidak pernah dilacak. Putaran lama (n=7 dan n=10) juga dikecualikan karena
