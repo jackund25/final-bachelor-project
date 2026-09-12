@@ -105,7 +105,7 @@ rerata ± simpangan baku antar-fold:
 | Random Forest | 21,08 ± 1,15 | 94,35 ± 0,55 |
 | LSTM | 20,60 ± 1,33 | 94,89 ± 0,52 |
 
-*Sumber: `T1_prediksi/holdout_semua_horizon.csv` dan `T1_prediksi/gbm_produksi_h30m.json`.*
+*Sumber: `T1_prediksi/holdout_semua_horizon.csv` dan `T1_prediksi/crossfold_h30m.json`.*
 
 Selisih antarmodel berada di bawah variasi antar-fold, sehingga ketiganya diperlakukan
 sebagai berkinerja sebanding. Gradient Boosting dipertahankan sebagai model produksi atas
@@ -173,7 +173,7 @@ Diukur seluruhnya pada CPU tanpa akselerator grafis. Waktu tanggap ujung-ke-ujun
 **2,474 detik**, dengan komputasi lokal **0,339 detik** dan sisanya menunggu layanan LLM
 (85,0% dari total).
 
-*Sumber: `operasional/latensi_ujung_ke_ujung.json`, `operasional/keterterapan.json`.*
+*Sumber: `operasional/latensi_ujung_ke_ujung.json`.*
 
 ### Evaluasi ahli
 

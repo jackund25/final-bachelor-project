@@ -1,0 +1,804 @@
+{
+  "experiment": "Hybrid retrieval versus Hybrid retrieval + BGE reranker",
+  "config": {
+    "persist_dir": "models/chroma_db_eval",
+    "collection_name": "diabetes_kb_eval",
+    "embed_provider": "sentence-transformers",
+    "retrieval_mode": "hibrida",
+    "top_k": 5,
+    "candidate_k": 50,
+    "reranker_enabled": true,
+    "reranker_model": "BAAI/bge-reranker-v2-m3"
+  },
+  "description": {
+    "baseline": "BM25 + Vector/MMR -> RRF -> Top-K",
+    "reranked": "BM25 + Vector/MMR -> RRF -> Candidate Pool -> BGE -> Top-K"
+  },
+  "n_cases": 10,
+  "summary": {
+    "hybrid": {
+      "hit@1": 0.0,
+      "hit@3": 0.2,
+      "hit@5": 0.3,
+      "mrr": 0.2172258297258297
+    },
+    "hybrid_bge": {
+      "hit@1": 0.3,
+      "hit@3": 0.3,
+      "hit@5": 0.3,
+      "mrr": 0.3
+    }
+  },
+  "cases": [
+    {
+      "id": "E01",
+      "query": "Berapa dosis awal insulin basal pada terapi insulin rawat jalan?",
+      "candidate_count": 17,
+      "raw_rank": 2,
+      "rerank_rank": 1,
+      "raw_mrr": 0.5,
+      "rerank_mrr": 1.0,
+      "raw_hit@1": 0,
+      "raw_hit@3": 1,
+      "raw_hit@5": 1,
+      "rerank_hit@1": 1,
+      "rerank_hit@3": 1,
+      "rerank_hit@5": 1,
+      "improved": true,
+      "target_found_candidate": true,
+      "target_found_topk": true,
+      "raw_top5": [
+        {
+          "rank": 1,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia"
+        },
+        {
+          "rank": 2,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia 23 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Gambar III.2 Algoritma Strategi Umum Terapi Insulin Rawat Jalan INSULIN BASAL Biasanya dengan metformin +..."
+        },
+        {
+          "rank": 3,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        },
+        {
+          "rank": 4,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hiperglikemia. Namun untuk mencapai kadar in..."
+        },
+        {
+          "rank": 5,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Terdapat laporan kasus pasien wanita hamil dengan DMT2 yang menggunakan degludec sejak prekonsepsi memiliki keluaran klinis dalam kehamilan yang sukses. Namun saat ini belum terdapat penelitian uji coba klinis penggunaan..."
+        }
+      ],
+      "rerank_top5": [
+        {
+          "rank": 1,
+          "score": 0.9927700161933899,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia 23 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Gambar III.2 Algoritma Strategi Umum Terapi Insulin Rawat Jalan INSULIN BASAL Biasanya dengan metformin +..."
+        },
+        {
+          "rank": 2,
+          "score": 0.811002790927887,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosis 1 Æ ..."
+        },
+        {
+          "rank": 3,
+          "score": 0.7852869033813477,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        },
+        {
+          "rank": 4,
+          "score": 0.5387799143791199,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        },
+        {
+          "rank": 5,
+          "score": 0.48083165287971497,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantung dan gagal ginjal direkomendasikan pema..."
+        }
+      ]
+    },
+    {
+      "id": "E02",
+      "query": "Apa yang harus dilakukan terhadap dosis insulin basal bila pasien mengalami hipoglikemia?",
+      "candidate_count": 17,
+      "raw_rank": 8,
+      "rerank_rank": 1,
+      "raw_mrr": 0.125,
+      "rerank_mrr": 1.0,
+      "raw_hit@1": 0,
+      "raw_hit@3": 0,
+      "raw_hit@5": 0,
+      "rerank_hit@1": 1,
+      "rerank_hit@3": 1,
+      "rerank_hit@5": 1,
+      "improved": true,
+      "target_found_candidate": true,
+      "target_found_topk": true,
+      "raw_top5": [
+        {
+          "rank": 1,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia"
+        },
+        {
+          "rank": 2,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Terdapat laporan kasus pasien wanita hamil dengan DMT2 yang menggunakan degludec sejak prekonsepsi memiliki keluaran klinis dalam kehamilan yang sukses. Namun saat ini belum terdapat penelitian uji coba klinis penggunaan..."
+        },
+        {
+          "rank": 3,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "48 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 peningkatan insiden hipoglikemia, termasuk episode hipoglikemia nokturnal. FDA pada april 2012 menyetujui penggunaan detemir pada kehamilan d..."
+        },
+        {
+          "rank": 4,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        },
+        {
+          "rank": 5,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik dengan harapan mengurangi kejadian hipogli..."
+        }
+      ],
+      "rerank_top5": [
+        {
+          "rank": 1,
+          "score": 0.9417060017585754,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia 23 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Gambar III.2 Algoritma Strategi Umum Terapi Insulin Rawat Jalan INSULIN BASAL Biasanya dengan metformin +..."
+        },
+        {
+          "rank": 2,
+          "score": 0.9195464849472046,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        },
+        {
+          "rank": 3,
+          "score": 0.9128084182739258,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosis 1 Æ ..."
+        },
+        {
+          "rank": 4,
+          "score": 0.7998520731925964,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik dengan harapan mengurangi kejadian hipogli..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6240374445915222,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "48 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 peningkatan insiden hipoglikemia, termasuk episode hipoglikemia nokturnal. FDA pada april 2012 menyetujui penggunaan detemir pada kehamilan d..."
+        }
+      ]
+    },
+    {
+      "id": "E03",
+      "query": "Berapa ambang kadar glukosa darah untuk hipoglikemia Level 1 dan Level 2?",
+      "candidate_count": 17,
+      "raw_rank": 11,
+      "rerank_rank": 0,
+      "raw_mrr": 0.09090909090909091,
+      "rerank_mrr": 0.0,
+      "raw_hit@1": 0,
+      "raw_hit@3": 0,
+      "raw_hit@5": 0,
+      "rerank_hit@1": 0,
+      "rerank_hit@3": 0,
+      "rerank_hit@5": 0,
+      "improved": false,
+      "target_found_candidate": true,
+      "target_found_topk": false,
+      "raw_top5": [
+        {
+          "rank": 1,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia"
+        },
+        {
+          "rank": 2,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik dengan harapan mengurangi kejadian hipogli..."
+        },
+        {
+          "rank": 3,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosis 1 Æ ..."
+        },
+        {
+          "rank": 4,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hiperglikemia. Namun untuk mencapai kadar in..."
+        },
+        {
+          "rank": 5,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        }
+      ],
+      "rerank_top5": [
+        {
+          "rank": 1,
+          "score": 0.9482370018959045,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik dengan harapan mengurangi kejadian hipogli..."
+        },
+        {
+          "rank": 2,
+          "score": 0.15016117691993713,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosis 1 Æ ..."
+        },
+        {
+          "rank": 3,
+          "score": 0.13186107575893402,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        },
+        {
+          "rank": 4,
+          "score": 0.08161167055368423,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Terdapat laporan kasus pasien wanita hamil dengan DMT2 yang menggunakan degludec sejak prekonsepsi memiliki keluaran klinis dalam kehamilan yang sukses. Namun saat ini belum terdapat penelitian uji coba klinis penggunaan..."
+        },
+        {
+          "rank": 5,
+          "score": 0.07924705743789673,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hiperglikemia. Namun untuk mencapai kadar in..."
+        }
+      ]
+    },
+    {
+      "id": "E04",
+      "query": "Apa yang dimaksud dengan hipoglikemia berat atau Level 3?",
+      "candidate_count": 17,
+      "raw_rank": 7,
+      "rerank_rank": 0,
+      "raw_mrr": 0.14285714285714285,
+      "rerank_mrr": 0.0,
+      "raw_hit@1": 0,
+      "raw_hit@3": 0,
+      "raw_hit@5": 0,
+      "rerank_hit@1": 0,
+      "rerank_hit@3": 0,
+      "rerank_hit@5": 0,
+      "improved": false,
+      "target_found_candidate": true,
+      "target_found_topk": false,
+      "raw_top5": [
+        {
+          "rank": 1,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia"
+        },
+        {
+          "rank": 2,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Hipoglikemia berat dengan ganggan status mental dan/atau fisik yang membutuhkan bantuan orang lain."
+        },
+        {
+          "rank": 3,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik dengan harapan mengurangi kejadian hipogli..."
+        },
+        {
+          "rank": 4,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        },
+        {
+          "rank": 5,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosis 1 Æ ..."
+        }
+      ],
+      "rerank_top5": [
+        {
+          "rank": 1,
+          "score": 0.7857693433761597,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik dengan harapan mengurangi kejadian hipogli..."
+        },
+        {
+          "rank": 2,
+          "score": 0.18783310055732727,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Hipoglikemia berat dengan ganggan status mental dan/atau fisik yang membutuhkan bantuan orang lain."
+        },
+        {
+          "rank": 3,
+          "score": 0.040184903889894485,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "48 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 peningkatan insiden hipoglikemia, termasuk episode hipoglikemia nokturnal. FDA pada april 2012 menyetujui penggunaan detemir pada kehamilan d..."
+        },
+        {
+          "rank": 4,
+          "score": 0.034286800771951675,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Terdapat laporan kasus pasien wanita hamil dengan DMT2 yang menggunakan degludec sejak prekonsepsi memiliki keluaran klinis dalam kehamilan yang sukses. Namun saat ini belum terdapat penelitian uji coba klinis penggunaan..."
+        },
+        {
+          "rank": 5,
+          "score": 0.03414848819375038,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        }
+      ]
+    },
+    {
+      "id": "E05",
+      "query": "Berapa laju infus insulin intravena pada krisis hiperglikemia dan berapa penurunan glukosa darah yang diharapkan?",
+      "candidate_count": 17,
+      "raw_rank": 6,
+      "rerank_rank": 0,
+      "raw_mrr": 0.16666666666666666,
+      "rerank_mrr": 0.0,
+      "raw_hit@1": 0,
+      "raw_hit@3": 0,
+      "raw_hit@5": 0,
+      "rerank_hit@1": 0,
+      "rerank_hit@3": 0,
+      "rerank_hit@5": 0,
+      "improved": false,
+      "target_found_candidate": true,
+      "target_found_topk": false,
+      "raw_top5": [
+        {
+          "rank": 1,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia"
+        },
+        {
+          "rank": 2,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        },
+        {
+          "rank": 3,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous infusion of low dose insulin) merupakan sta..."
+        },
+        {
+          "rank": 4,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hiperglikemia. Namun untuk mencapai kadar in..."
+        },
+        {
+          "rank": 5,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї 75 mg/dL/jam serta dapat menghambat lip..."
+        }
+      ],
+      "rerank_top5": [
+        {
+          "rank": 1,
+          "score": 0.99677973985672,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї 75 mg/dL/jam serta dapat menghambat lip..."
+        },
+        {
+          "rank": 2,
+          "score": 0.9276967644691467,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hiperglikemia. Namun untuk mencapai kadar in..."
+        },
+        {
+          "rank": 3,
+          "score": 0.8319804668426514,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous infusion of low dose insulin) merupakan sta..."
+        },
+        {
+          "rank": 4,
+          "score": 0.7105129361152649,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        },
+        {
+          "rank": 5,
+          "score": 0.43960806727409363,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "NaCl 0,9% 1 liter/jam (15 ї 20 mL/kgBB/jam). Tabel VII.2. Skema Penatalaksanaan Ketoasidosis Diabetik dan Sindroma Hiperosmolar Hiperglikemia Jam Ke - Infus NaCl 0,9% Infus II (Insulin) Infus III (Koreksi K+) Infus IV (K..."
+        }
+      ]
+    },
+    {
+      "id": "E06",
+      "query": "Apa yang harus dilakukan terhadap dosis infus insulin bila kadar glukosa darah sudah turun di bawah 250 mg/dL?",
+      "candidate_count": 17,
+      "raw_rank": 9,
+      "rerank_rank": 0,
+      "raw_mrr": 0.1111111111111111,
+      "rerank_mrr": 0.0,
+      "raw_hit@1": 0,
+      "raw_hit@3": 0,
+      "raw_hit@5": 0,
+      "rerank_hit@1": 0,
+      "rerank_hit@3": 0,
+      "rerank_hit@5": 0,
+      "improved": false,
+      "target_found_candidate": true,
+      "target_found_topk": false,
+      "raw_top5": [
+        {
+          "rank": 1,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia"
+        },
+        {
+          "rank": 2,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї 75 mg/dL/jam serta dapat menghambat lip..."
+        },
+        {
+          "rank": 3,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantung dan gagal ginjal direkomendasikan pema..."
+        },
+        {
+          "rank": 4,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        },
+        {
+          "rank": 5,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous infusion of low dose insulin) merupakan sta..."
+        }
+      ],
+      "rerank_top5": [
+        {
+          "rank": 1,
+          "score": 0.9977838397026062,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї 75 mg/dL/jam serta dapat menghambat lip..."
+        },
+        {
+          "rank": 2,
+          "score": 0.953324019908905,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantung dan gagal ginjal direkomendasikan pema..."
+        },
+        {
+          "rank": 3,
+          "score": 0.5166258215904236,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        },
+        {
+          "rank": 4,
+          "score": 0.42303037643432617,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        },
+        {
+          "rank": 5,
+          "score": 0.3642559051513672,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous infusion of low dose insulin) merupakan sta..."
+        }
+      ]
+    },
+    {
+      "id": "E07",
+      "query": "Berapa dosis awal insulin intramuskular pada krisis hiperglikemia bila drip insulin tidak tersedia?",
+      "candidate_count": 17,
+      "raw_rank": 4,
+      "rerank_rank": 0,
+      "raw_mrr": 0.25,
+      "rerank_mrr": 0.0,
+      "raw_hit@1": 0,
+      "raw_hit@3": 0,
+      "raw_hit@5": 1,
+      "rerank_hit@1": 0,
+      "rerank_hit@3": 0,
+      "rerank_hit@5": 0,
+      "improved": false,
+      "target_found_candidate": true,
+      "target_found_topk": false,
+      "raw_top5": [
+        {
+          "rank": 1,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia"
+        },
+        {
+          "rank": 2,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        },
+        {
+          "rank": 3,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous infusion of low dose insulin) merupakan sta..."
+        },
+        {
+          "rank": 4,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia 23 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Gambar III.2 Algoritma Strategi Umum Terapi Insulin Rawat Jalan INSULIN BASAL Biasanya dengan metformin +..."
+        },
+        {
+          "rank": 5,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hiperglikemia. Namun untuk mencapai kadar in..."
+        }
+      ],
+      "rerank_top5": [
+        {
+          "rank": 1,
+          "score": 0.9820804595947266,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        },
+        {
+          "rank": 2,
+          "score": 0.9060759544372559,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous infusion of low dose insulin) merupakan sta..."
+        },
+        {
+          "rank": 3,
+          "score": 0.7089290022850037,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hiperglikemia. Namun untuk mencapai kadar in..."
+        },
+        {
+          "rank": 4,
+          "score": 0.6775650978088379,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosis 1 Æ ..."
+        },
+        {
+          "rank": 5,
+          "score": 0.6514537930488586,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        }
+      ]
+    },
+    {
+      "id": "E08",
+      "query": "Bagaimana menyesuaikan kecepatan drip insulin bila glukosa darah hanya menurun 0 sampai 49 mg/dL per jam?",
+      "candidate_count": 17,
+      "raw_rank": 7,
+      "rerank_rank": 0,
+      "raw_mrr": 0.14285714285714285,
+      "rerank_mrr": 0.0,
+      "raw_hit@1": 0,
+      "raw_hit@3": 0,
+      "raw_hit@5": 0,
+      "rerank_hit@1": 0,
+      "rerank_hit@3": 0,
+      "rerank_hit@5": 0,
+      "improved": false,
+      "target_found_candidate": true,
+      "target_found_topk": false,
+      "raw_top5": [
+        {
+          "rank": 1,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia"
+        },
+        {
+          "rank": 2,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantung dan gagal ginjal direkomendasikan pema..."
+        },
+        {
+          "rank": 3,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        },
+        {
+          "rank": 4,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї 75 mg/dL/jam serta dapat menghambat lip..."
+        },
+        {
+          "rank": 5,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "glukosa darah yang ingin dicapai untuk pasien kritis. Edukasi pasien rawat jalan yang menggunakan terapi insulin untuk mengendalikan glukosa darahnya perlu diberikan dengan baik dengan harapan mengurangi kejadian hipogli..."
+        }
+      ],
+      "rerank_top5": [
+        {
+          "rank": 1,
+          "score": 0.9707932472229004,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantung dan gagal ginjal direkomendasikan pema..."
+        },
+        {
+          "rank": 2,
+          "score": 0.8390848636627197,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї 75 mg/dL/jam serta dapat menghambat lip..."
+        },
+        {
+          "rank": 3,
+          "score": 0.3817223310470581,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        },
+        {
+          "rank": 4,
+          "score": 0.1618576943874359,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        },
+        {
+          "rank": 5,
+          "score": 0.0938907191157341,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosis 1 Æ ..."
+        }
+      ]
+    },
+    {
+      "id": "E09",
+      "query": "Mengapa pemberian insulin subkutan pada krisis hiperglikemia lebih berisiko dibandingkan intramuskular?",
+      "candidate_count": 17,
+      "raw_rank": 7,
+      "rerank_rank": 0,
+      "raw_mrr": 0.14285714285714285,
+      "rerank_mrr": 0.0,
+      "raw_hit@1": 0,
+      "raw_hit@3": 0,
+      "raw_hit@5": 0,
+      "rerank_hit@1": 0,
+      "rerank_hit@3": 0,
+      "rerank_hit@5": 0,
+      "improved": false,
+      "target_found_candidate": true,
+      "target_found_topk": false,
+      "raw_top5": [
+        {
+          "rank": 1,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia"
+        },
+        {
+          "rank": 2,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        },
+        {
+          "rank": 3,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hiperglikemia. Namun untuk mencapai kadar in..."
+        },
+        {
+          "rank": 4,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous infusion of low dose insulin) merupakan sta..."
+        },
+        {
+          "rank": 5,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        }
+      ],
+      "rerank_top5": [
+        {
+          "rank": 1,
+          "score": 0.9859776496887207,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "45 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 B.1.3. Insulin subkutan Metode pemberian insulin subkutan juga dapat dilakukan pada kasus krisis hiperglikemia. Namun untuk mencapai kadar in..."
+        },
+        {
+          "rank": 2,
+          "score": 0.8213358521461487,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "B.1. Metode Pemberian Insulin pada Krisis Hiperglikemia B.1.1. Insulin Infus IV Kontinyu Dosis Rendah Insulin infus intravena dosis rendah berkelanjutan (continuous intravenous infusion of low dose insulin) merupakan sta..."
+        },
+        {
+          "rank": 3,
+          "score": 0.629081130027771,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        },
+        {
+          "rank": 4,
+          "score": 0.21246707439422607,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "44 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Pada umumnya infus insulin intravena 5 ї 7 unit/jam mampu menurunkan kadar glukosa darah sebesar 50 ї 75 mg/dL/jam serta dapat menghambat lip..."
+        },
+        {
+          "rank": 5,
+          "score": 0.0370180644094944,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosis 1 Æ ..."
+        }
+      ]
+    },
+    {
+      "id": "E10",
+      "query": "Bila insulin basal diganti menjadi insulin premixed dua kali sehari, bagaimana pembagian dosisnya?",
+      "candidate_count": 17,
+      "raw_rank": 2,
+      "rerank_rank": 1,
+      "raw_mrr": 0.5,
+      "rerank_mrr": 1.0,
+      "raw_hit@1": 0,
+      "raw_hit@3": 1,
+      "raw_hit@5": 1,
+      "rerank_hit@1": 1,
+      "rerank_hit@3": 1,
+      "rerank_hit@5": 1,
+      "improved": true,
+      "target_found_candidate": true,
+      "target_found_topk": true,
+      "raw_top5": [
+        {
+          "rank": 1,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia"
+        },
+        {
+          "rank": 2,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia 23 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Gambar III.2 Algoritma Strategi Umum Terapi Insulin Rawat Jalan INSULIN BASAL Biasanya dengan metformin +..."
+        },
+        {
+          "rank": 3,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantung dan gagal ginjal direkomendasikan pema..."
+        },
+        {
+          "rank": 4,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        },
+        {
+          "rank": 5,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        }
+      ],
+      "rerank_top5": [
+        {
+          "rank": 1,
+          "score": 0.9807721376419067,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Perkumpulan Endokrinologi Indonesia 23 Pedoman Petunjuk Praktis Terapi Insulin pada Pasien Diabetes Melitus - 2021 Gambar III.2 Algoritma Strategi Umum Terapi Insulin Rawat Jalan INSULIN BASAL Biasanya dengan metformin +..."
+        },
+        {
+          "rank": 2,
+          "score": 0.3416237533092499,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN 1 INJEKSI INSULIT KERJA CEPAT SEBELUM MAKAN TERBESAR Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosis 1 Æ ..."
+        },
+        {
+          "rank": 3,
+          "score": 0.26551929116249084,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "TAMBAHKAN t2 INJEKSI INSULIN KERJA CEPAT SEBELUM MAKAN (BASAL BOLUS) Awal : 4 unit, 0,1 unit/kgBB atau 10% dosis basal. Jika A1C <8% pertimbangkan untuk menurunkan basal dalam jumlah yang sama. Penyesuaian : naikkan dosi..."
+        },
+        {
+          "rank": 4,
+          "score": 0.1003926694393158,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "Bila GD < 200 ² 250 mg/dL, ganti Dextrose 5% dengan NaCL 0,45% 100 ² 200 mL/jam. Bila kadar Na > 145 mEq, infus NaCl 0,9% diganti dengan NaCl 0,45%. Pada pasien dengan gagal jantung dan gagal ginjal direkomendasikan pema..."
+        },
+        {
+          "rank": 5,
+          "score": 0.050038840621709824,
+          "source": "KB-03_PERKENI-2021_Terapi-Insulin.pdf",
+          "text": "pusat pelayanan medis yang tidak memungkinkan untuk melakukan pemberian drip insulin, antara lain sulit untuk melakukan pemantauan dan tidak tersedianya peralatan yang memadai. Metode ini diawali dengan pemberian insulin..."
+        }
+      ]
+    }
+  ]
+}

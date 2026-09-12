@@ -7,9 +7,16 @@ varian ``baseline_ablation_*``, serta banyak berkas bertanda ``_arsip``,
 dan bukan angka yang dilaporkan. Percampuran itu pernah menimbulkan kekeliruan
 provenans, maka berkas yang benar-benar menopang laporan dikumpulkan terpisah.
 
+Kriteria masuk: angka utama berkas itu muncul pada laporan yang dikumpulkan.
+Berkas hasil yang benar tetapi tidak dikutip laporan (misalnya kalibrasi
+konformal dengan pasien pengukur terpisah, atau validasi silang +60 menit)
+sengaja TIDAK disertakan, agar direktori ini tidak memuat angka yang
+bertentangan dengan laporan.
+
 Skrip ini menyalin, bukan memindahkan. Berkas asli tetap menjadi sumber
 kebenaran, dan salinannya diberi SHA-256 sehingga penyimpangan dapat dideteksi
-dengan menjalankan ulang skrip ini.
+dengan menjalankan ulang skrip ini. Salinan yang tidak lagi ada di daftar
+dihapus agar direktori selalu sama persis dengan daftar.
 
 Jalankan:
     conda run -n diabetes-ta python scripts/kumpulkan_hasil_akhir.py
@@ -34,79 +41,56 @@ BERKAS: list[tuple[str, str, str]] = [
      "T1_prediksi/holdout_semua_horizon.csv",
      "Tabel VI.3, kinerja hold-out ketiga model pada kedua horizon"),
     ("results/eval_prediksi/gradient_boosting_h6.json",
-     "T1_prediksi/gbm_produksi_h30m.json",
-     "Kinerja model produksi GBM, horizon 30 menit, beserta pembanding "
-     "RF dan LSTM"),
-    ("results/eval_prediksi/gradient_boosting_h12.json",
-     "T1_prediksi/gbm_produksi_h60m.json",
-     "Kinerja model produksi GBM, horizon 60 menit, beserta pembanding "
-     "RF dan LSTM"),
-    ("results/eval_prediksi/crossval_rf_vs_lstm_h6.json",
-     "T1_prediksi/rf_vs_lstm_h30m.json",
-     "Perbandingan RF terhadap LSTM, horizon 30 menit"),
-    ("results/eval_prediksi/crossval_rf_vs_lstm_h12.json",
-     "T1_prediksi/rf_vs_lstm_h60m.json",
-     "Perbandingan RF terhadap LSTM, horizon 60 menit"),
+     "T1_prediksi/crossfold_h30m.json",
+     "Tabel VI.4, validasi silang lintas-pasien horizon +30 menit"),
+    ("results/eval_prediksi/smbg_sweep.json",
+     "T1_prediksi/holdout_fingerstick.json",
+     "Tabel VI.5, baris hold-out skenario finger-stick"),
     ("results/eval_prediksi/crossval_smbg.json",
      "T1_prediksi/crossfold_fingerstick.json",
-     "Kinerja kanal finger-stick"),
-    ("results/eval_prediksi/conformal_h6.json",
-     "T1_prediksi/konformal_h30m.json",
-     "Kalibrasi ketidakpastian, horizon 30 menit"),
-    ("results/eval_prediksi/conformal_h12.json",
-     "T1_prediksi/konformal_h60m.json",
-     "Kalibrasi ketidakpastian, horizon 60 menit"),
-    ("results/eval_prediksi/cakupan_conformal.json",
-     "T1_prediksi/cakupan_konformal.json",
-     "Gambar VI.5 dan VI.6"),
-    ("results/eval_prediksi/hipoglikemia_h6.json",
-     "T1_prediksi/hipoglikemia_h30m.json",
-     "Deteksi hipoglikemia, horizon 30 menit"),
-    ("results/eval_prediksi/hipoglikemia_h12.json",
-     "T1_prediksi/hipoglikemia_h60m.json",
-     "Deteksi hipoglikemia, horizon 60 menit"),
+     "Tabel VI.5, baris cross-fold skenario finger-stick"),
     ("results/eval_prediksi/condition_classifier.json",
      "T1_prediksi/pengklasifikasi_kondisi.json",
-     "Pengklasifikasi kondisi terprediksi"),
+     "Tabel VI.8, regresi-lalu-ambang vs pengklasifikasi kondisi"),
+    ("results/eval_prediksi/hypo_improve.json",
+     "T1_prediksi/sapuan_ambang_hipoglikemia.json",
+     "Sapuan ambang peringatan 70, 85, dan 90 mg/dL pada Bab VI"),
     ("results/eval_prediksi/h30m/clarke_grid_gbm.png",
      "T1_prediksi/clarke_grid_h30m.png",
-     "Gambar VI.1, panel horizon 30 menit"),
+     "Gambar VI.1a, Clarke Error Grid horizon +30 menit"),
     ("results/eval_prediksi/h60m/clarke_grid_gbm.png",
      "T1_prediksi/clarke_grid_h60m.png",
-     "Gambar VI.2, panel horizon 60 menit"),
+     "Gambar VI.1b, Clarke Error Grid horizon +60 menit"),
 
     # --------------------------------------------------------- T2 retrieval --
     ("results/retrieval_realcases_kb12/crossfold.json",
      "T2_retrieval/crossfold.json",
-     "Tabel VI.10, Lampiran B.1, dan angka MRR pada abstrak"),
+     "Tabel VI.10, Lampiran B.1, abstrak, dan ablasi horizon conditioning"),
     ("results/retrieval_realcases_kb12/summary.json",
      "T2_retrieval/summary.json",
-     "Ringkasan penelusuran"),
+     "Kasus nyata dua pasien hold-out (120 kasus) dan kontrol lengan acak"),
     ("results/retrieval_realcases_kb12/per_case_divergen.csv",
      "T2_retrieval/per_kasus_divergen.csv",
-     "Rincian per kasus divergen"),
+     "Rincian per kasus divergen di balik Tabel VI.10"),
     ("results/retrieval_realcases_kb12/per_case_natural.csv",
      "T2_retrieval/per_kasus_natural.csv",
-     "Rincian per kasus natural"),
+     "Rincian per kasus natural di balik Tabel VI.10"),
+    ("results/reranker_ablation.json",
+     "T2_retrieval/ablasi_reranker.json",
+     "Ablasi reranker pada Bab VI"),
 
     # -------------------------------------------------------- T3 generation --
     ("results/eval_prediksi/generation_novelty.json",
      "T3_generation/generation_novelty.json",
      "sim_ref dan action coverage pada enam kasus, RAG standar vs terkondisi"),
-    ("results/eval_prediksi/generation_safety.json",
-     "T3_generation/generation_safety.json",
-     "Gambar VI.9"),
     ("results/ragas/kestabilan.json",
      "T3_generation/kestabilan_ragas.json",
-     "Gambar VI.10"),
+     "Kestabilan penilai RAGAS antar-run pada Bab VI"),
 
     # ------------------------------------------------------- operasional ----
     ("results/benchmark/latency_endtoend_gemini.json",
      "operasional/latensi_ujung_ke_ujung.json",
-     "Gambar VI.11, waktu tanggap pipeline"),
-    ("results/benchmark/deployability.json",
-     "operasional/keterterapan.json",
-     "Angka komputasi lokal"),
+     "Waktu tanggap ujung-ke-ujung dan komputasi lokal pada Bab VI"),
 
     # ----------------------------------------------------- evaluasi ahli ----
     ("results/hasil_form/terbaru/statistik.json",
@@ -124,7 +108,8 @@ BERKAS: list[tuple[str, str, str]] = [
     # ----------------------------------------------------------- lain-lain --
     ("results/ringkasan_untuk_bab6.json",
      "ringkasan_untuk_bab6.json",
-     "Ringkasan lintas-tujuan yang dipakai beberapa gambar"),
+     "Tabel kalibrasi konformal (faktor q, cakupan, lebar) dan ringkasan "
+     "lintas-tujuan"),
 ]
 
 
@@ -143,6 +128,11 @@ def tulis_manifest(baris: list[tuple[str, str, str, str]]) -> None:
         "Seluruh hasil akhir yang dipakai pada laporan tugas akhir, terpisah",
         "dari jejak eksperimen di `results/`. Isi direktori ini **salinan**;",
         "sumber kebenarannya tetap berkas asal pada kolom Sumber.",
+        "",
+        "Kriteria masuk: angka utama berkas muncul pada laporan yang",
+        "dikumpulkan. Berkas hasil yang benar tetapi tidak dikutip laporan",
+        "sengaja tidak disertakan, agar direktori ini tidak memuat angka yang",
+        "bertentangan dengan laporan.",
         "",
         "Direktori ini dibangkitkan skrip. Jangan menyunting isinya dengan",
         "tangan, karena perubahan akan tertimpa. Untuk memperbarui:",
@@ -173,6 +163,11 @@ def tulis_manifest(baris: list[tuple[str, str, str, str]]) -> None:
         "  dari `kb12` lengan BM25; varian lain adalah eksperimen.",
         "- Seluruh `baseline_ablation_*`, `tuning_log.json`, dan berkas",
         "  bertanda `_arsip`, `_PARSIAL`, `_TIDAK_LAYAK`, `_kuota_habis`.",
+        "- Hasil yang benar tetapi tidak dikutip laporan: validasi silang",
+        "  horizon +60 menit, kalibrasi konformal dengan pasien pengukur",
+        "  terpisah (`cakupan_conformal.json`), pemeriksaan keterlacakan angka",
+        "  (`generation_safety.json`), dan tolok ukur keterterapan",
+        "  (`deployability.json`).",
         "- Berkas mentah kuesioner. CSV dan PDF sumbernya memuat nama lengkap",
         "  dan alamat surel responden, jadi tidak pernah dilacak git. Hanya",
         "  statistik agregatnya yang disertakan.",
@@ -180,6 +175,26 @@ def tulis_manifest(baris: list[tuple[str, str, str, str]]) -> None:
     ]
     (TUJUAN / "README.md").write_text(
         "\n".join(lines).replace("\n", "\r\n"), encoding="utf-8")
+
+
+def bersihkan(dipakai: set[Path]) -> list[str]:
+    """Hapus salinan yang tidak lagi ada di daftar. Kembalikan yang gagal."""
+    gagal = []
+    if not TUJUAN.exists():
+        return gagal
+    for p in TUJUAN.rglob("*"):
+        if p.is_file() and p not in dipakai and p.name != "README.md":
+            try:
+                p.unlink()
+                print("dibuang (tidak lagi di daftar):",
+                      p.relative_to(TUJUAN).as_posix())
+            except OSError as e:
+                gagal.append("%s (%s)" % (p.relative_to(TUJUAN).as_posix(),
+                                          e.strerror))
+    for d in sorted(TUJUAN.rglob("*"), reverse=True):
+        if d.is_dir() and not any(d.iterdir()):
+            d.rmdir()
+    return gagal
 
 
 def main() -> int:
@@ -191,10 +206,12 @@ def main() -> int:
     baris: list[tuple[str, str, str, str]] = []
     hilang: list[str] = []
     beda: list[str] = []
+    dipakai: set[Path] = set()
 
     for rel_sumber, rel_tujuan, menopang in BERKAS:
         src = ROOT / rel_sumber
         dst = TUJUAN / rel_tujuan
+        dipakai.add(dst)
         if not src.exists():
             hilang.append(rel_sumber)
             continue
@@ -215,19 +232,28 @@ def main() -> int:
             print("  ", x)
 
     if args.periksa:
+        sisa = [p.relative_to(TUJUAN).as_posix() for p in TUJUAN.rglob("*")
+                if p.is_file() and p not in dipakai and p.name != "README.md"]
+        if sisa:
+            beda.extend("%s (tidak ada di daftar)" % s for s in sisa)
         if beda:
-            print("MENYIMPANG DARI SUMBER:")
+            print("MENYIMPANG:")
             for x in beda:
                 print("  ", x)
             return 1
-        print("%d berkas sama dengan sumbernya" % len(baris))
+        print("%d berkas sama dengan sumbernya, tidak ada salinan asing"
+              % len(baris))
         return 1 if hilang else 0
 
+    gagal = bersihkan(dipakai)
     tulis_manifest(baris)
-    print("%d berkas disalin ke %s"
-          % (len(baris), TUJUAN.relative_to(ROOT)))
+    print("%d berkas disalin ke %s" % (len(baris), TUJUAN.relative_to(ROOT)))
     print("manifest: results/__Hasil_Akhir__/README.md")
-    return 1 if hilang else 0
+    if gagal:
+        print("TIDAK BISA DIHAPUS, hapus manual:")
+        for x in gagal:
+            print("  ", x)
+    return 1 if (hilang or gagal) else 0
 
 
 if __name__ == "__main__":
