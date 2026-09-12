@@ -79,40 +79,53 @@ SHA-256 tiap berkas ada pada `results/__Hasil_Akhir__/README.md`.
 
 ### Modul prediksi glukosa
 
-Validasi silang enam lipatan **lintas-pasien**: pasien uji tidak pernah dilihat model saat
-pelatihan. Nilai disajikan sebagai rerata antar-lipatan beserta simpangan bakunya.
+Dua protokol dilaporkan terpisah dan sengaja tidak digabungkan menjadi satu angka, karena
+proses pembentukan sampelnya berbeda. Evaluasi *hold-out* adalah pengukuran resmi pada
+konfigurasi yang ditetapkan pada artefak; validasi silang lintas-pasien memperlihatkan
+variasi kinerja antar-fold ketika model diuji pada pasien yang tidak pernah dilihat saat
+pelatihan.
+
+**Hold-out** (Tabel VI.3 laporan):
 
 | Horizon | Model | RMSE (mg/dL) | MAE (mg/dL) | Clarke A+B (%) |
 | --- | --- | --- | --- | --- |
-| +30 menit | **GBM (produksi)** | **20,72 ± 1,16** | 14,48 ± 0,79 | 94,69 ± 0,50 |
-| +30 menit | Random Forest | 21,08 ± 1,15 | 14,78 ± 0,77 | 94,35 ± 0,55 |
-| +30 menit | LSTM | 20,60 ± 1,33 | 14,32 ± 0,95 | 94,89 ± 0,52 |
-| +60 menit | **GBM (produksi)** | **33,81 ± 1,44** | 24,85 ± 1,12 | 85,83 ± 1,29 |
-| +60 menit | Random Forest | 34,78 ± 1,50 | 25,55 ± 1,17 | 85,34 ± 1,25 |
-| +60 menit | LSTM | 34,50 ± 1,45 | 25,37 ± 1,19 | 85,50 ± 1,42 |
+| +30 menit | **Gradient Boosting (produksi)** | 22,251 | 14,724 | 94,70 |
+| +30 menit | Random Forest | 22,598 | 15,098 | 94,35 |
+| +30 menit | LSTM | 21,983 | 14,552 | 94,72 |
+| +60 menit | **Gradient Boosting (produksi)** | 33,816 | 24,411 | 87,32 |
+| +60 menit | Random Forest | 34,240 | 24,825 | 86,94 |
+| +60 menit | LSTM | 34,144 | 24,622 | 87,22 |
 
-*Sumber: `T1_prediksi/gbm_produksi_h30m.json` dan `T1_prediksi/gbm_produksi_h60m.json`.*
+**Validasi silang lintas-pasien, enam fold, horizon +30 menit** (Tabel VI.4 laporan),
+rerata ± simpangan baku antar-fold:
 
-Keunggulan GBM atas Random Forest **konsisten tetapi tidak bermakna secara klinis**: selisih
-RMSE 0,358 mg/dL pada +30 menit dan 0,976 mg/dL pada +60 menit, keduanya konsisten pada uji
-Wilcoxon tingkat lipatan (p = 0,031) namun hanya 2,39% dan 6,51% dari ambang orde besaran
-15 mg/dL. GBM dipilih sebagai model produksi karena alasan **keterterapan**, bukan ketepatan:
-waktu latih 3,4 detik berbanding 708 detik, ukuran artefak 0,485 MB berbanding 322 MB.
+| Model | RMSE (mg/dL) | Clarke A+B (%) |
+| --- | --- | --- |
+| **Gradient Boosting (produksi)** | 20,72 ± 1,16 | 94,69 ± 0,50 |
+| Random Forest | 21,08 ± 1,15 | 94,35 ± 0,55 |
+| LSTM | 20,60 ± 1,33 | 94,89 ± 0,52 |
+
+*Sumber: `T1_prediksi/holdout_semua_horizon.csv` dan `T1_prediksi/gbm_produksi_h30m.json`.*
+
+Selisih antarmodel berada di bawah variasi antar-fold, sehingga ketiganya diperlakukan
+sebagai berkinerja sebanding. Gradient Boosting dipertahankan sebagai model produksi atas
+pertimbangan gabungan antara kinerja yang sebanding dengan pembanding dan karakteristik
+operasional yang sesuai dengan sistem: keterterapan tanpa akselerator grafis dan keluaran
+yang sesuai untuk pembentukan kondisi klinis.
 
 ### Ketidakpastian dan deteksi hipoglikemia
 
-Interval konformal nominal 95% mencapai cakupan empiris **94,7% ± 2,1** pada dua belas
-putaran dengan pasien pengukur yang tidak pernah dipakai melatih maupun mengkalibrasi
-(rentang 90,8% sampai 97,4%). Enam dari dua belas putaran berada di bawah nominal, dan
-cakupan berkorelasi kuat dengan pasien pengkalibrasi (r = 0,705), sehingga yang dilaporkan
-adalah cakupan **prosedur** dan bukan cakupan satu bundel tertentu.
+Interval *baseline* berdistribusi normal (prediksi ± 1,96σ) hanya mencapai cakupan
+85,0% pada +30 menit dan 88,4% pada +60 menit untuk target 95%. Setelah kalibrasi konformal
+ternormalisasi dengan faktor 3,31 dan 2,96, cakupan terukur menjadi **95,3%** dan
+**96,5%**, dengan lebar interval rata-rata 100,0 dan 154,1 mg/dL.
 
 Regresi yang diambang menghasilkan sensitivitas hipoglikemia 17,3% dengan PPV 56,6%.
 Pengklasifikasi kondisi tiga kelas menaikkan sensitivitas menjadi **67,2%** dengan konsekuensi
 PPV turun menjadi 31,9% dan akurasi keseluruhan turun dari 89,4% menjadi 86,1%. Pertukaran ini
 dilaporkan apa adanya; sensitivitas tersebut belum memadai untuk penggunaan klinis mandiri.
 
-*Sumber: `T1_prediksi/cakupan_konformal.json`, `T1_prediksi/pengklasifikasi_kondisi.json`.*
+*Sumber: `ringkasan_untuk_bab6.json`, `T1_prediksi/pengklasifikasi_kondisi.json`.*
 
 ### Penelusuran terkondisi-prediksi
 
@@ -140,22 +153,25 @@ bukan pada mekanisme pengondisian.
 
 ### Keamanan keluaran
 
-Pada enam kasus uji, seluruh **56 angka klinis** yang muncul pada rekomendasi dapat ditelusuri
-ke dokumen yang di-*retrieve*, ke keadaan pasien, atau ke ambang klinis baku; tidak satu pun
-angka tak tertelusur, tidak ada tindakan salah arah, dan seluruh keluaran menyertakan
-pernyataan batas keputusan.
+Pada enam kasus uji, RAG terkondisi-prediksi memperoleh kemiripan terhadap rujukan
+(`sim_ref`) 0,571 dan cakupan tindakan (`action coverage`) 0,700, dibandingkan 0,517 dan
+0,667 pada RAG standar. Arahnya meningkat pada kedua ukuran, tetapi ukuran sampel yang
+kecil membuat temuan ini bersifat indikatif. Pada dua kasus uji kepatuhan dengan model
+terbaru, seluruh aturan keluaran yang diperiksa dipatuhi, termasuk penanda sitasi, larangan
+mengarang nomor halaman, dan pernyataan batas keputusan.
 
-Pengujian kestabilan penilai otomatis bersifat diagnostik: selisih absolut median
-`answer_relevancy` antar-dua jalan sebesar 0,056 tanpa pembalikan penuh, sedangkan
-`faithfulness` bermedian 0,18 dan karena itu tidak dipakai sebagai dasar klaim.
+Pengujian kestabilan penilai otomatis RAGAS menunjukkan `context_precision` dan
+`context_recall` stabil antar-run, sedangkan `answer_relevancy` berubah besar: pada
+sepuluh kasus reratanya bergeser dari 0,763 menjadi 0,587, dengan perubahan hingga 0,685
+pada satu kasus. Karena itu `answer_relevancy` tidak dipakai sebagai dasar klaim.
 
-*Sumber: `T3_generation/generation_safety.json`, `T3_generation/kestabilan_ragas.json`.*
+*Sumber: `T3_generation/generation_novelty.json`, `T3_generation/kestabilan_ragas.json`.*
 
 ### Keterterapan operasional
 
 Diukur seluruhnya pada CPU tanpa akselerator grafis. Waktu tanggap ujung-ke-ujung bermedian
 **2,474 detik**, dengan komputasi lokal **0,339 detik** dan sisanya menunggu layanan LLM
-(85,0% dari total). Pemuatan artefak 1,600 detik hanya terjadi sekali saat layanan dijalankan.
+(85,0% dari total).
 
 *Sumber: `operasional/latensi_ujung_ke_ujung.json`, `operasional/keterterapan.json`.*
 
@@ -259,13 +275,11 @@ config.yaml           Konfigurasi terpusat
   klinis mandiri.
 - Manfaat pengondisian terkonsentrasi pada kasus divergen; pada distribusi natural
   peningkatannya kecil dan tidak signifikan.
-- Cakupan konformal yang terwujud bergantung pada pasien pengkalibrasi, sehingga yang dijamin
-  adalah sifat prosedur dan bukan sifat satu bundel model.
 - Relevansi dokumen pada evaluasi *retrieval* ditetapkan melalui klasifikasi kata kunci
   berbobot, bukan penilaian pakar klinis.
 - Model *embedding* belum disetel ulang untuk korpus diabetes berbahasa Indonesia.
-- Evaluasi generasi memakai enam kasus, dan penilai otomatis `faithfulness` terbukti tidak
-  stabil sehingga tidak dijadikan dasar klaim.
+- Evaluasi generasi memakai enam kasus, dan penilai otomatis `answer_relevancy` terbukti
+  tidak stabil antar-run sehingga tidak dijadikan dasar klaim.
 
 ## Lisensi
 

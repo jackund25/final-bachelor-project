@@ -21,6 +21,7 @@ conda run -n diabetes-ta python scripts/kumpulkan_hasil_akhir.py --periksa
 
 | Berkas | Menopang | Sumber | SHA-256 |
 | --- | --- | --- | --- |
+| `T1_prediksi/holdout_semua_horizon.csv` | Tabel VI.3, kinerja hold-out ketiga model pada kedua horizon | `results/eval_prediksi/summary_all_horizons.csv` | `a54c7d17b39e73cf` |
 | `T1_prediksi/gbm_produksi_h30m.json` | Kinerja model produksi GBM, horizon 30 menit, beserta pembanding RF dan LSTM | `results/eval_prediksi/gradient_boosting_h6.json` | `b8cfe5e9c427e083` |
 | `T1_prediksi/gbm_produksi_h60m.json` | Kinerja model produksi GBM, horizon 60 menit, beserta pembanding RF dan LSTM | `results/eval_prediksi/gradient_boosting_h12.json` | `75326e557db4e7aa` |
 | `T1_prediksi/rf_vs_lstm_h30m.json` | Perbandingan RF terhadap LSTM, horizon 30 menit | `results/eval_prediksi/crossval_rf_vs_lstm_h6.json` | `86caa55feffb4eaa` |
@@ -38,6 +39,7 @@ conda run -n diabetes-ta python scripts/kumpulkan_hasil_akhir.py --periksa
 | `T2_retrieval/summary.json` | Ringkasan penelusuran | `results/retrieval_realcases_kb12/summary.json` | `4f41378d91c6e309` |
 | `T2_retrieval/per_kasus_divergen.csv` | Rincian per kasus divergen | `results/retrieval_realcases_kb12/per_case_divergen.csv` | `f4ca55ecd8dfaa9d` |
 | `T2_retrieval/per_kasus_natural.csv` | Rincian per kasus natural | `results/retrieval_realcases_kb12/per_case_natural.csv` | `3ff37b2ec42615e7` |
+| `T3_generation/generation_novelty.json` | sim_ref dan action coverage pada enam kasus, RAG standar vs terkondisi | `results/eval_prediksi/generation_novelty.json` | `b3520242bfa621b3` |
 | `T3_generation/generation_safety.json` | Gambar VI.9 | `results/eval_prediksi/generation_safety.json` | `c9fdf28a17c53f85` |
 | `T3_generation/kestabilan_ragas.json` | Gambar VI.10 | `results/ragas/kestabilan.json` | `3ee8ddc7f57a468f` |
 | `operasional/latensi_ujung_ke_ujung.json` | Gambar VI.11, waktu tanggap pipeline | `results/benchmark/latency_endtoend_gemini.json` | `06f410f743204b69` |

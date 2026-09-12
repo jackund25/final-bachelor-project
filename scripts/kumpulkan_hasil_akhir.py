@@ -30,6 +30,9 @@ TUJUAN = ROOT / "results/__Hasil_Akhir__"
 #  bagian laporan yang ditopang)
 BERKAS: list[tuple[str, str, str]] = [
     # ---------------------------------------------------------- T1 prediksi --
+    ("results/eval_prediksi/summary_all_horizons.csv",
+     "T1_prediksi/holdout_semua_horizon.csv",
+     "Tabel VI.3, kinerja hold-out ketiga model pada kedua horizon"),
     ("results/eval_prediksi/gradient_boosting_h6.json",
      "T1_prediksi/gbm_produksi_h30m.json",
      "Kinerja model produksi GBM, horizon 30 menit, beserta pembanding "
@@ -87,6 +90,9 @@ BERKAS: list[tuple[str, str, str]] = [
      "Rincian per kasus natural"),
 
     # -------------------------------------------------------- T3 generation --
+    ("results/eval_prediksi/generation_novelty.json",
+     "T3_generation/generation_novelty.json",
+     "sim_ref dan action coverage pada enam kasus, RAG standar vs terkondisi"),
     ("results/eval_prediksi/generation_safety.json",
      "T3_generation/generation_safety.json",
      "Gambar VI.9"),
