@@ -115,17 +115,18 @@ yang sesuai untuk pembentukan kondisi klinis.
 
 ### Ketidakpastian dan deteksi hipoglikemia
 
-Interval *baseline* berdistribusi normal (prediksi ± 1,96σ) hanya mencapai cakupan
-85,0% pada +30 menit dan 88,4% pada +60 menit untuk target 95%. Setelah kalibrasi konformal
-ternormalisasi dengan faktor 3,31 dan 2,96, cakupan terukur menjadi **95,3%** dan
-**96,5%**, dengan lebar interval rata-rata 100,0 dan 154,1 mg/dL.
+Cakupan interval konformal diukur dengan pasien pengukur yang tidak pernah dipakai melatih
+maupun mengkalibrasi, diulang dua belas kali dengan pasangan pasien berbeda. Pada target 95%,
+cakupan empiris rerata **94,7% ± 2,1** pada +30 menit dan **94,5% ± 2,8** pada +60 menit;
+rentang antar-putaran melingkupi target pada kedua horizon. Faktor kalibrasi 2,15 dan 2,14
+menghasilkan lebar interval rata-rata 73,8 dan 120,6 mg/dL.
 
 Regresi yang diambang menghasilkan sensitivitas hipoglikemia 17,3% dengan PPV 56,6%.
 Pengklasifikasi kondisi tiga kelas menaikkan sensitivitas menjadi **67,2%** dengan konsekuensi
 PPV turun menjadi 31,9% dan akurasi keseluruhan turun dari 89,4% menjadi 86,1%. Pertukaran ini
 dilaporkan apa adanya; sensitivitas tersebut belum memadai untuk penggunaan klinis mandiri.
 
-*Sumber: `ringkasan_untuk_bab6.json`, `T1_prediksi/pengklasifikasi_kondisi.json`.*
+*Sumber: `T1_prediksi/cakupan_konformal.json`, `T1_prediksi/konformal_h30m.json`, `T1_prediksi/konformal_h60m.json`, `T1_prediksi/pengklasifikasi_kondisi.json`.*
 
 ### Penelusuran terkondisi-prediksi
 

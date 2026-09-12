@@ -217,9 +217,10 @@ Tabel~\ref{tab:tab6.6_hasil_kalibrasi_ketidakpastian}.
 
 \input{tables/bab6/tab6.6_hasil_kalibrasi_ketidakpastian.tex}
 
-Pada horizon +30 menit, faktor kalibrasi sebesar 3,31 menghasilkan cakupan terukur 95,3\% dengan lebar interval rata-rata 100,0 mg/dL. Pada horizon +60 menit,
-faktor kalibrasi sebesar 2,96 menghasilkan cakupan 96,5\% dengan lebar rata-rata 154,1 mg/dL. Perbedaan faktor tidak berarti interval horizon +60 menit
-lebih sempit karena faktor tersebut dikalikan dengan simpangan baku yang juga berubah menurut horizon.
+Pada horizon +30 menit, faktor kalibrasi sebesar 2,15 menghasilkan lebar interval rata-rata 73,8 mg/dL. Pada horizon +60 menit, faktor kalibrasi
+sebesar 2,14 menghasilkan lebar rata-rata 120,6 mg/dL. Faktor yang hampir sama tidak berarti kedua interval sama lebarnya, karena faktor tersebut
+dikalikan dengan simpangan baku yang berubah menurut horizon. Cakupan empiris pada tabel diukur dengan pasien pengukur terpisah dan dibahas pada
+subbab berikut.
 
 Untuk interpretasi implementasi, perlu dibedakan antara artefak kalibrasi lama dan hasil kalibrasi terbaru. Kalibrasi lama menggunakan konfigurasi yang tidak
 sepenuhnya selaras dengan bundle produksi, sehingga tidak digunakan sebagai bukti akhir mengenai cakupan model produksi. Hasil kalibrasi terbaru pada dua horizon
@@ -228,28 +229,29 @@ tersebut digunakan untuk menunjukkan perilaku interval berdasarkan konfigurasi y
 \subsection{Cakupan Interval Prediksi}
 \label{subsec:bab6-coverage-interval-prediksi}
 
-Cakupan interval dibandingkan dengan baseline berbasis distribusi normal, yaitu interval $pred \pm 1,96\sigma$. Baseline tersebut menghasilkan cakupan 85,0\%
-pada +30 menit dan 88,4\% pada +60 menit untuk target 95\%. Setelah kalibrasi conformal ternormalisasi, cakupan meningkat menjadi 95,3\% dan 96,5\%.
-Perbandingan tersebut ditunjukkan pada Gambar~\ref{fig:bab6-coverage-interval-konformal}.
+Cakupan interval diukur dengan pasien pengukur yang tidak pernah dipakai melatih maupun mengkalibrasi model. Pengukuran diulang dua belas kali dengan
+pasangan pasien kalibrasi dan pasien pengukur yang berbeda. Pada target 95\%, cakupan empiris rerata adalah 94,7\% pada +30 menit dan 94,5\% pada
++60 menit, dengan simpangan baku antar-putaran 2,1 dan 2,8 poin persen. Hasilnya ditunjukkan pada Gambar~\ref{fig:bab6-coverage-interval-konformal}.
 
-Hasil ini menunjukkan bahwa kalibrasi memperbaiki kesesuaian cakupan terhadap target 95\% pada kedua horizon yang diuji. Cakupan yang sedikit melebihi target
-pada +60 menit tidak diperlakukan sebagai bukti bahwa interval selalu lebih aman, melainkan sebagai hasil pengukuran pada himpunan evaluasi yang digunakan.
+Hasil ini menunjukkan bahwa kalibrasi menghasilkan cakupan yang mendekati target pada kedua horizon. Kedua nilai berada sedikit di bawah nominal, tetapi
+rentang antar-putaran melingkupi target, sehingga selisih tersebut diperlakukan sebagai variasi yang bergantung pada pasien pengkalibrasi, bukan sebagai
+bukti kalibrasi yang gagal.
 
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.86\textwidth]{images/bab6/fig6.5_coverage_interval_konformal.png}
-    \caption{Perbandingan cakupan interval baseline dan interval konformal.}
+    \caption{Cakupan empiris interval konformal pada dua belas putaran dengan pasien pengukur terpisah.}
     \label{fig:bab6-coverage-interval-konformal}
 \end{figure}
 
-Gambar~\ref{fig:bab6-coverage-interval-konformal} memperlihatkan bahwa kedua horizon mengalami peningkatan cakupan setelah kalibrasi, dan bahwa hanya interval
-konformal yang melewati garis target 95\%. Posisi terhadap garis target itulah yang menjadi dasar penilaian kalibrasi, bukan besarnya kenaikan semata.
+Gambar~\ref{fig:bab6-coverage-interval-konformal} memperlihatkan titik cakupan kedua horizon beserta simpangan baku dan rentang antar-putarannya
+terhadap garis target 95\%. Posisi terhadap garis target dan lebar sebarannya itulah yang menjadi dasar penilaian kalibrasi.
 
 \subsection{Lebar Interval Prediksi}
 \label{subsec:bab6-lebar-interval-prediksi}
 
-Selain cakupan, lebar interval diperiksa karena peningkatan coverage dapat dicapai dengan rentang yang semakin lebar. Pada hasil kalibrasi terbaru,
-lebar rata-rata interval adalah 100,0 mg/dL pada +30 menit dan 154,1 mg/dL pada +60 menit.
+Selain cakupan, lebar interval diperiksa karena cakupan yang tinggi dapat dicapai dengan rentang yang semakin lebar. Pada kalibrasi model produksi,
+lebar rata-rata interval adalah 73,8 mg/dL pada +30 menit dan 120,6 mg/dL pada +60 menit.
 
 \begin{figure}[!htbp]
     \centering
@@ -855,8 +857,9 @@ Pada skenario finger-stick, model produksi memperoleh RMSE 71,60 $\pm$ 11,50 mg/
 evaluasi lintas-pasien. Hasil tersebut menunjukkan bahwa model masih memberikan informasi prediktif pada input jarang, tetapi error lebih besar
 dibandingkan skenario CGM pada horizon yang lebih pendek.
 
-Untuk ketidakpastian, kalibrasi konformal pada +30 dan +60 menit menghasilkan coverage 95,3\% dan 96,5\% pada target 95\%, dengan lebar interval
-rata-rata masing-masing 100,0 dan 154,1 mg/dL. Peningkatan coverage tersebut diikuti interval yang lebih lebar pada horizon yang lebih panjang.
+Untuk ketidakpastian, kalibrasi konformal pada +30 dan +60 menit menghasilkan coverage 94,7\% dan 94,5\% pada target 95\% dengan pasien pengukur
+terpisah, dengan lebar interval rata-rata masing-masing 73,8 dan 120,6 mg/dL. Cakupan yang mendekati nominal tersebut diikuti interval yang lebih
+lebar pada horizon yang lebih panjang.
 Dengan demikian, T1 terpenuhi pada tingkat artefak penelitian, tetapi belum dapat ditafsirkan sebagai validasi klinis umum.
 
 \subsection{Pemenuhan Tujuan T2}

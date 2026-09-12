@@ -31,6 +31,9 @@ conda run -n diabetes-ta python scripts/kumpulkan_hasil_akhir.py --periksa
 | `T1_prediksi/holdout_fingerstick.json` | Tabel VI.5, baris hold-out skenario finger-stick | `results/eval_prediksi/smbg_sweep.json` | `753a2879ab55fc5e` |
 | `T1_prediksi/crossfold_fingerstick.json` | Tabel VI.5, baris cross-fold skenario finger-stick | `results/eval_prediksi/crossval_smbg.json` | `971f679f7e1d3c7f` |
 | `T1_prediksi/pengklasifikasi_kondisi.json` | Tabel VI.8, regresi-lalu-ambang vs pengklasifikasi kondisi | `results/eval_prediksi/condition_classifier.json` | `3079f0a686a66763` |
+| `T1_prediksi/cakupan_konformal.json` | Gambar VI.5 dan Tabel VI.6 kolom cakupan: 12 putaran dengan pasien pengukur terpisah | `results/eval_prediksi/cakupan_conformal.json` | `556978fd7e95c59e` |
+| `T1_prediksi/konformal_h30m.json` | Tabel VI.6 dan Gambar VI.6: faktor q dan lebar interval, horizon +30 | `results/eval_prediksi/conformal_h6.json` | `19bb6d289cb3fea1` |
+| `T1_prediksi/konformal_h60m.json` | Tabel VI.6 dan Gambar VI.6: faktor q dan lebar interval, horizon +60 | `results/eval_prediksi/conformal_h12.json` | `6bb1c7ad720eaca2` |
 | `T1_prediksi/sapuan_ambang_hipoglikemia.json` | Sapuan ambang peringatan 70, 85, dan 90 mg/dL pada Bab VI | `results/eval_prediksi/hypo_improve.json` | `2a1f3b39ccfb0c32` |
 | `T1_prediksi/clarke_grid_h30m.png` | Gambar VI.1a, Clarke Error Grid horizon +30 menit | `results/eval_prediksi/h30m/clarke_grid_gbm.png` | `0b1b08efd1764467` |
 | `T1_prediksi/clarke_grid_h60m.png` | Gambar VI.1b, Clarke Error Grid horizon +60 menit | `results/eval_prediksi/h60m/clarke_grid_gbm.png` | `22f79d33cbe73421` |
@@ -45,7 +48,6 @@ conda run -n diabetes-ta python scripts/kumpulkan_hasil_akhir.py --periksa
 | `evaluasi_ahli/statistik_n12.json` | Tabel VI.16 sampai VI.19 | `results/hasil_form/terbaru/statistik.json` | `7d1dcd99ae07ed94` |
 | `evaluasi_ahli/statistik_n12_skema_lama.json` | Gambar VI.14 | `results/hasil_form/terbaru/statistik_kompat.json` | `e8712734f092b6c4` |
 | `korpus/manifest.csv` | Tabel D.1, korpus pedoman klinis | `data/knowledge_base/manifest.csv` | `82f706c4c4db3a84` |
-| `ringkasan_untuk_bab6.json` | Tabel kalibrasi konformal (faktor q, cakupan, lebar) dan ringkasan lintas-tujuan | `results/ringkasan_untuk_bab6.json` | `f3d237bbe338b827` |
 
 ## Yang sengaja tidak ada di sini
 
@@ -54,10 +56,13 @@ conda run -n diabetes-ta python scripts/kumpulkan_hasil_akhir.py --periksa
 - Seluruh `baseline_ablation_*`, `tuning_log.json`, dan berkas
   bertanda `_arsip`, `_PARSIAL`, `_TIDAK_LAYAK`, `_kuota_habis`.
 - Hasil yang benar tetapi tidak dikutip laporan: validasi silang
-  horizon +60 menit, kalibrasi konformal dengan pasien pengukur
-  terpisah (`cakupan_conformal.json`), pemeriksaan keterlacakan angka
+  horizon +60 menit, pemeriksaan keterlacakan angka
   (`generation_safety.json`), dan tolok ukur keterterapan
   (`deployability.json`).
+- `ringkasan_untuk_bab6.json`. Snapshot 6 Agustus itu memuat blok
+  kalibrasi konformal dari era Random Forest, identik dengan
+  `conformal_h{6,12}_RF_arsip.json`; angkanya tidak berlaku untuk model
+  produksi dan pernah bocor ke teks laporan.
 - Berkas mentah kuesioner. CSV dan PDF sumbernya memuat nama lengkap
   dan alamat surel responden, jadi tidak pernah dilacak git. Hanya
   statistik agregatnya yang disertakan.

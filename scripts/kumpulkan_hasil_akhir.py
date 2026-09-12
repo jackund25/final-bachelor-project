@@ -52,6 +52,16 @@ BERKAS: list[tuple[str, str, str]] = [
     ("results/eval_prediksi/condition_classifier.json",
      "T1_prediksi/pengklasifikasi_kondisi.json",
      "Tabel VI.8, regresi-lalu-ambang vs pengklasifikasi kondisi"),
+    ("results/eval_prediksi/cakupan_conformal.json",
+     "T1_prediksi/cakupan_konformal.json",
+     "Gambar VI.5 dan Tabel VI.6 kolom cakupan: 12 putaran dengan pasien "
+     "pengukur terpisah"),
+    ("results/eval_prediksi/conformal_h6.json",
+     "T1_prediksi/konformal_h30m.json",
+     "Tabel VI.6 dan Gambar VI.6: faktor q dan lebar interval, horizon +30"),
+    ("results/eval_prediksi/conformal_h12.json",
+     "T1_prediksi/konformal_h60m.json",
+     "Tabel VI.6 dan Gambar VI.6: faktor q dan lebar interval, horizon +60"),
     ("results/eval_prediksi/hypo_improve.json",
      "T1_prediksi/sapuan_ambang_hipoglikemia.json",
      "Sapuan ambang peringatan 70, 85, dan 90 mg/dL pada Bab VI"),
@@ -105,11 +115,6 @@ BERKAS: list[tuple[str, str, str]] = [
      "korpus/manifest.csv",
      "Tabel D.1, korpus pedoman klinis"),
 
-    # ----------------------------------------------------------- lain-lain --
-    ("results/ringkasan_untuk_bab6.json",
-     "ringkasan_untuk_bab6.json",
-     "Tabel kalibrasi konformal (faktor q, cakupan, lebar) dan ringkasan "
-     "lintas-tujuan"),
 ]
 
 
@@ -164,10 +169,13 @@ def tulis_manifest(baris: list[tuple[str, str, str, str]]) -> None:
         "- Seluruh `baseline_ablation_*`, `tuning_log.json`, dan berkas",
         "  bertanda `_arsip`, `_PARSIAL`, `_TIDAK_LAYAK`, `_kuota_habis`.",
         "- Hasil yang benar tetapi tidak dikutip laporan: validasi silang",
-        "  horizon +60 menit, kalibrasi konformal dengan pasien pengukur",
-        "  terpisah (`cakupan_conformal.json`), pemeriksaan keterlacakan angka",
+        "  horizon +60 menit, pemeriksaan keterlacakan angka",
         "  (`generation_safety.json`), dan tolok ukur keterterapan",
         "  (`deployability.json`).",
+        "- `ringkasan_untuk_bab6.json`. Snapshot 6 Agustus itu memuat blok",
+        "  kalibrasi konformal dari era Random Forest, identik dengan",
+        "  `conformal_h{6,12}_RF_arsip.json`; angkanya tidak berlaku untuk model",
+        "  produksi dan pernah bocor ke teks laporan.",
         "- Berkas mentah kuesioner. CSV dan PDF sumbernya memuat nama lengkap",
         "  dan alamat surel responden, jadi tidak pernah dilacak git. Hanya",
         "  statistik agregatnya yang disertakan.",
