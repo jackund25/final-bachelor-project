@@ -222,17 +222,22 @@ uvicorn backend.main:app --reload
 cd frontend && npm install && npm run dev
 ```
 
-Evaluasi yang menghasilkan angka pada bagian Hasil:
+Evaluasi yang telah diverifikasi menghasilkan ulang angka laporan secara identik dari kode
+pada `main` (dijalankan ulang 12 September 2026 di salinan terisolasi, 1.184 angka, nol selisih):
 
 ```bash
-python scripts/eval_gradient_boosting.py --config config.yaml
-python scripts/crossval_rf_vs_lstm.py --config config.yaml
-python scripts/conformal_calibration.py
-python scripts/train_condition_classifier.py
-python scripts/eval_retrieval_realcases.py --config config.yaml
-python scripts/ablation_rag_fullkb.py --config config.yaml
-python scripts/eval_smbg_deployment.py
+python scripts/analisis_hasil_form_csv.py
+python scripts/crossval_smbg.py
+python scripts/conformal_calibration.py --horizon 6 --model gbm
+python scripts/conformal_calibration.py --horizon 12 --model gbm
+python scripts/eval_cakupan_conformal.py
 ```
+
+Berkas hasil lainnya di `results/__Hasil_Akhir__/` menyimpan konfigurasi efektif dan sidik
+jari eksperimennya, tetapi skrip penghasilnya bergantung pada antarmuka `src/` dan kunci
+`config.yaml` yang berubah pada commit `8d88802` (23 Agustus 2026), sesudah hasil itu
+dibuat. Menjalankannya ulang memerlukan keadaan kode sebelum commit tersebut; pemulihan
+kompatibilitasnya direncanakan pada revisi.
 
 Memeriksa bahwa hasil akhir masih sama dengan berkas sumbernya:
 
