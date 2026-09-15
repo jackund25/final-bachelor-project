@@ -51,9 +51,9 @@ Dari model konseptual tersebut teridentifikasi empat persoalan utama, yang selan
     \item \textbf{M3 -- Prediksi terputus dari rekomendasi.} Sekalipun taksiran kadar glukosa tersedia, penelitian terdahulu umumnya menyajikannya sebagai angka yang berdiri sendiri, 
     tanpa keterkaitan eksplisit dengan panduan tata laksana yang relevan terhadap kondisi yang ditaksir. Pola ini telah diuraikan pada Subbab~\ref{sec:bab2-penelitian-terkait}. 
     Akibatnya, penerjemahan dari angka prediksi menjadi tindakan tetap dibebankan sepenuhnya kepada dokter.
-    \item \textbf{M4 -- Solusi berinfrastruktur berat tidak dapat diterapkan.} Kerangka berbasis \emph{personal health knowledge graph} yang dikembangkan \textcite{rad2024} menunjukkan 
-    efektivitas yang tinggi, tetapi mensyaratkan interoperabilitas HL7 FHIR, penelusuran SPARQL di atas ontologi formal, serta aliran data pemantauan kontinu. Ketiganya tidak 
-    tersedia pada lingkungan dengan sumber daya terbatas yang menjadi sasaran penelitian ini.
+    \item \textbf{M4 -- Solusi berinfrastruktur berat tidak dapat diterapkan.} Kerangka berbasis \emph{personal health knowledge graph} yang dikembangkan \textcite{rad2024} menjanjikan
+    personalisasi yang luas, tetapi mensyaratkan tiga hal: interoperabilitas HL7 FHIR, penelusuran SPARQL di atas ontologi formal, dan aliran data pemantauan kontinu.
+    Ketiganya tidak tersedia pada lingkungan dengan sumber daya terbatas yang menjadi sasaran penelitian ini.
 \end{enumerate}
 
 Keempat persoalan tersebut menegaskan adanya jarak antara kemampuan yang telah dicapai penelitian terdahulu dan kemampuan yang dapat diterapkan pada konteks sasaran.
@@ -69,9 +69,9 @@ atribut mutu yang harus dipenuhi.
 Pengguna utama sistem adalah dokter atau tenaga medis yang menangani pasien DMT1. Pasien menerima keluaran sistem secara tidak langsung melalui alur \textit{doctor-mediated}, yaitu
 setelah rekomendasi divalidasi oleh dokter.
 
-Bagi dokter, kebutuhan yang belum terpenuhi mencakup tiga hal. Pertama, alat bantu yang mengubah catatan logbook mentah menjadi taksiran kadar glukosa jangka pendek. Kedua,
-peringatan dini terhadap risiko yang diperkirakan akan terjadi. Ketiga, rekomendasi yang dapat ditelusuri sampai ke dokumen pedoman sumbernya. Ketiga kebutuhan tersebut perlu tersedia
-dalam waktu konsultasi yang singkat dan tanpa perangkat tambahan yang mahal.
+Bagi dokter, ada tiga kebutuhan yang belum terpenuhi: alat bantu yang mengubah catatan \textit{logbook} mentah menjadi taksiran kadar glukosa jangka pendek, peringatan dini
+terhadap risiko yang diperkirakan akan terjadi, dan rekomendasi yang dapat ditelusuri sampai ke dokumen pedoman sumbernya. Ketiganya perlu tersedia dalam waktu konsultasi
+yang singkat dan tanpa perangkat tambahan yang mahal.
 
 Bagi pasien, kebutuhan utamanya adalah memperoleh umpan balik yang bersifat antisipatif tetapi tetap aman karena rekomendasi telah melewati penilaian klinis. Kebutuhan tersebut juga
 perlu dipenuhi tanpa mensyaratkan kepemilikan perangkat pemantauan glukosa kontinu, sesuai dengan konteks penerapan yang ditetapkan pada penelitian ini.
@@ -92,11 +92,11 @@ representasi yang diperlukan sebelum prediksi dilakukan, sedangkan KF-03 menghas
 pembentukan kueri yang menjadi penghubung antara modul prediksi dan penelusuran. KF-05 dan KF-06 menyediakan konteks pedoman serta rekomendasi tertelusur, sementara KF-07 dan KF-08
 mengatur penyajian kondisi serta validasi oleh dokter.
 
-Kolom asal dan tujuan pada Tabel~\ref{tab:tab3.1_kebutuhan_fungsional} membentuk penelusuran dua arah. Kolom asal menghubungkan setiap kebutuhan dengan persoalan M1--M4, sedangkan kolom
+Kolom asal dan tujuan pada Tabel~\ref{tab:tab3.1_kebutuhan_fungsional} membentuk keterlacakan dua arah. Kolom asal menghubungkan setiap kebutuhan dengan persoalan M1--M4, sedangkan kolom
 tujuan menghubungkannya dengan tujuan penelitian T1--T3. Dengan demikian, kebutuhan fungsional tidak ditetapkan secara terpisah dari persoalan dan tujuan penelitian.
 
-Secara khusus, KF-04 merupakan kebutuhan yang membedakan alur yang dirancang dari RAG yang menggunakan kueri berbasis kondisi saat ini. Kebutuhan tersebut menetapkan bahwa sumber
-pengondisian kueri adalah kadar glukosa terprediksi sehingga proses penelusuran dapat diarahkan pada kondisi yang akan datang.
+Secara khusus, KF-04 merupakan kebutuhan yang membedakan alur yang dirancang dari RAG yang menggunakan kueri berbasis kondisi saat ini. Kebutuhan tersebut menetapkan bahwa kueri
+dibentuk dari kadar glukosa terprediksi sehingga penelusuran diarahkan pada kondisi yang akan datang.
 
 \subsection{Kebutuhan Nonfungsional}
 \label{subsec:bab3-kebutuhan-nonfungsional}
@@ -116,29 +116,24 @@ risiko keluaran model bahasa, sedangkan KNF-05, KNF-07, dan KNF-10 menetapkan ka
 \subsection{Ketersediaan dan Pemilihan Dataset} 
 \label{subsec:bab3-ketersediaan-pemilihan-dataset}
 
-Penyusunan data logbook DMT1 dari rekam medis nyata tidak memungkinkan dalam lingkup tugas akhir ini karena keterbatasan akses terhadap data dan persyaratan etik penelitian. Penelitian
-ini karena itu menggunakan dataset publik OhioT1DM sebagai sumber data utama \parencite{marling2020}.
+Penyusunan data \textit{logbook} DMT1 dari rekam medis nyata tidak memungkinkan dalam lingkup tugas akhir ini karena keterbatasan akses terhadap data dan persyaratan etik
+penelitian. Karena itu, penelitian ini menggunakan dataset publik OhioT1DM sebagai sumber data utama \parencite{marling2020}.
 
-Pemilihan OhioT1DM didasarkan pada tiga pertimbangan. Pertama, dataset memuat data dari dua belas penyandang DMT1 pengguna pompa insulin sehingga sesuai dengan populasi yang menjadi
-cakupan penelitian. Kedua, dataset menyediakan kanal kadar glukosa serta catatan insulin, asupan karbohidrat, dan aktivitas yang diperlukan untuk membentuk representasi keadaan pasien.
+Pemilihan OhioT1DM didasarkan pada tiga pertimbangan. Pertama, dataset memuat data dari dua belas penyandang DMT1 dengan catatan insulin, asupan, dan aktivitas yang terdokumentasi, sehingga penyakit dan jenis variabelnya
+sesuai dengan cakupan penelitian; perbedaan konteks terapi (pengguna pompa insulin dengan CGM) terhadap populasi sasaran dinyatakan sebagai batasan validitas eksternal. Kedua, dataset menyediakan kanal kadar glukosa serta catatan insulin, asupan karbohidrat, dan aktivitas yang diperlukan untuk membentuk representasi keadaan pasien.
 Ketiga, OhioT1DM merupakan benchmark yang digunakan dalam penelitian prediksi glukosa sehingga hasil eksperimen dapat dibandingkan dengan penelitian terdahulu \parencite{marling2020}.
 
-Hasil eksplorasi dataset menunjukkan terdapat 171.099 baris dari 12 pasien tanpa nilai hilang. Sebanyak 166.533 baris merupakan pengukuran continuous glucose monitoring (CGM), sedangkan
-4.566 baris merupakan pengukuran finger-stick. Ringkasan karakteristik kedua kanal disajikan pada Tabel~\ref{tab:tab3.3_karakteristik_dataset}.
+Hasil eksplorasi dataset menunjukkan terdapat 171.099 baris pengukuran glukosa dari dua belas pasien; kolom glukosanya tidak memiliki nilai hilang, sedangkan kanal kejadian
+bernilai nol di luar waktu kejadiannya. Sebanyak 166.533 baris merupakan pengukuran CGM dan 4.566 baris merupakan pengukuran \textit{finger-stick}. Ringkasan karakteristik kedua kanal disajikan pada Tabel~\ref{tab:tab3.3_karakteristik_dataset}.
 
 \input{tables/bab3/tab3.3_karakteristik_dataset.tex}
 
 Perbedaan kepadatan kedua kanal merupakan pertimbangan penting dalam rancangan penelitian. Median selang antar-pengukuran CGM adalah 5,0 menit, sedangkan median selang finger-stick
-adalah 124,8 menit. Dengan demikian, kedua kanal tidak dapat diperlakukan sebagai deret pengamatan dengan struktur temporal yang identik. Kanal CGM menyediakan jumlah observasi yang
-jauh lebih besar sehingga dipilih sebagai dasar pelatihan model, sedangkan finger-stick digunakan untuk merepresentasikan kondisi pemantauan mandiri dengan pembacaan yang benar-benar
-tersedia pada dataset.
+adalah 124,8 menit. Dengan demikian, kedua kanal tidak dapat diperlakukan sebagai deret pengamatan dengan struktur temporal yang identik. Kanal CGM dipilih sebagai dasar pelatihan model karena jumlah observasinya jauh lebih besar dan pengukurannya teratur. Skenario pemantauan mandiri dievaluasi dengan pembacaan
+\textit{finger-stick} yang benar-benar ada pada dataset, bukan hasil penjarangan buatan dari kanal CGM, agar tidak menambah asumsi sintetis ketika data nyata telah tersedia.
 
-Model prediksi dilatih menggunakan kanal CGM karena kepadatan dan keteraturan pengukurannya lebih memadai untuk pembelajaran. Skenario pemantauan mandiri kemudian dievaluasi menggunakan
-pembacaan finger-stick yang tersedia secara nyata, bukan hasil penjarangan buatan dari kanal CGM. Keputusan tersebut menghindari penambahan asumsi sintetis ketika data pemantauan
-mandiri yang nyata telah tersedia.
-
-Perlu diperhatikan bahwa CGM dan finger-stick mengukur besaran fisiologis pada media yang berbeda. Karena itu, penyamaan keduanya sebagai dasar evaluasi pada skenario pemantauan mandiri
-merupakan asumsi metodologis yang perlu dinyatakan dan dipertimbangkan ketika hasil diinterpretasikan.
+Perlu diperhatikan bahwa CGM (cairan interstisial) dan \textit{finger-stick} (darah kapiler) mengukur glukosa pada media yang berbeda. Karena itu, memakai model yang dilatih
+pada CGM untuk mengevaluasi skenario \textit{finger-stick} adalah asumsi metodologis yang perlu dinyatakan dan dipertimbangkan ketika hasil ditafsirkan.
 
 \subsection{Analisis Pemilihan Fitur} 
 \label{subsec:bab3-analisis-pemilihan-fitur}
@@ -146,12 +141,12 @@ merupakan asumsi metodologis yang perlu dinyatakan dan dipertimbangkan ketika ha
 Pemilihan fitur didasarkan pada dua pertimbangan, yaitu basis fisiologis dan basis empiris. Secara fisiologis, dinamika kadar glukosa dipengaruhi oleh interaksi antara kadar glukosa,
 insulin, dan asupan karbohidrat, sedangkan aktivitas fisik menjadi faktor pendukung yang turut memengaruhi keadaan glukosa \parencite{bergman1979,dallaman2014,colberg2016}.
 
-Pencatatan mentah kejadian insulin dan karbohidrat memiliki keterbatasan untuk merepresentasikan pengaruh yang masih berlangsung karena nilai kejadian bernilai nol di luar waktu
-kejadian. Oleh karena itu, penelitian menggunakan representasi insulin-on-board (IOB) dan carbohydrate-on-board (COB) untuk mempertahankan informasi mengenai efek residual, disertai
-kadar glukosa, laju perubahan glukosa, aktivitas fisik, serta penyandian siklis waktu.
+Catatan mentah kejadian insulin dan karbohidrat hanya bernilai pada saat kejadian dan nol di luar itu, sehingga tidak merepresentasikan pengaruh yang masih berlangsung sesudahnya.
+Oleh karena itu, penelitian menggunakan representasi \textit{insulin-on-board} (IOB) dan \textit{carbohydrate-on-board} (COB) untuk mempertahankan informasi efek residual,
+disertai kadar glukosa, laju perubahan glukosa, aktivitas fisik, serta penyandian siklis waktu.
 
-Selain pertimbangan fisiologis, kelayakan representasi fitur dinilai berdasarkan kerapatan pengisian kanal dan kontribusinya terhadap prediksi. Penelaahan awal terhadap kerapatan
-pengisian kanal kejadian pada OhioT1DM ditunjukkan pada Gambar~\ref{fig:fig3.2_kerapatan_kanal}.
+Selain pertimbangan fisiologis, kelayakan tiap fitur dinilai dari seberapa sering kanalnya terisi (proporsi baris bernilai bukan nol) dan dari kontribusinya terhadap prediksi.
+Penelaahan awal terhadap proporsi pengisian kanal kejadian pada OhioT1DM ditunjukkan pada Gambar~\ref{fig:fig3.2_kerapatan_kanal}.
 
 \begin{figure}[htbp]
     \centering
@@ -160,17 +155,18 @@ pengisian kanal kejadian pada OhioT1DM ditunjukkan pada Gambar~\ref{fig:fig3.2_k
     \label{fig:fig3.2_kerapatan_kanal}
 \end{figure}
 
-Gambar~\ref{fig:fig3.2_kerapatan_kanal} memperlihatkan bahwa kerapatan setiap kanal kejadian berbeda jauh. Pada kanal CGM, insulin dan basal rate hadir hampir pada seluruh baris,
-sedangkan carbs, bolus dose, dan activity hanya muncul pada sebagian kecil baris. Kanal stress sangat jarang, sedangkan sleep, work, dan illness tidak memiliki nilai lebih besar dari
-nol pada kanal CGM. Kondisi tersebut menjadi dasar untuk membedakan variabel yang dapat dipertahankan sebagai masukan model dari variabel yang terlalu jarang untuk digunakan secara
+Gambar~\ref{fig:fig3.2_kerapatan_kanal} memperlihatkan bahwa proporsi pengisian tiap kanal kejadian berbeda jauh. Pada kanal CGM, kanal insulin dan laju basal
+(\texttt{basal\_rate}) terisi hampir pada seluruh baris, sedangkan karbohidrat (\texttt{carbs}), dosis bolus (\texttt{bolus\_dose}), dan aktivitas (\texttt{activity}) hanya
+terisi pada sebagian kecil baris. Kanal stres (\texttt{stress}) sangat jarang terisi, sedangkan kanal tidur, kerja, dan sakit (\texttt{sleep}, \texttt{work}, \texttt{illness})
+tidak memiliki nilai bukan nol pada kanal CGM. Kondisi tersebut menjadi dasar untuk membedakan variabel yang dapat dipertahankan sebagai masukan model dari variabel yang terlalu jarang untuk digunakan secara
 andal.
 
 Representasi IOB dan COB dipilih untuk mempertahankan efek residual insulin dan karbohidrat yang tidak tercermin jika kejadian hanya dicatat pada saat terjadinya. Aktivitas tetap
-dipertahankan sebagai konteks pendukung karena masih tersedia pada sebagian kecil pengamatan. Sebaliknya, stress tidak digunakan sebagai predictor final karena hanya muncul pada enam
-baris kanal CGM, sedangkan sleep, work, dan illness tidak muncul pada kanal tersebut.
+dipertahankan sebagai konteks pendukung karena masih tersedia pada sebagian kecil pengamatan. Sebaliknya, stres tidak digunakan sebagai fitur akhir karena hanya terisi pada enam baris kanal CGM, sedangkan tidur, kerja, dan sakit tidak terisi sama sekali pada kanal
+tersebut.
 
-Kontribusi fitur tidak dianggap sebagai hasil yang telah diketahui pada tahap analisis. Kontribusi tersebut menjadi bagian dari evaluasi yang dilakukan setelah model dibangun sehingga
-keputusan awal mengenai fitur dapat diverifikasi secara empiris.
+Seberapa besar tiap fitur menyumbang pada prediksi belum diketahui pada tahap analisis ini; hal itu baru diperiksa pada evaluasi setelah model dibangun, sehingga keputusan awal
+mengenai fitur dapat diverifikasi secara empiris.
 
 \subsection{Analisis Horizon dan Skema Prediksi} 
 \label{subsec:bab3-analisis-horizon-skema-prediksi}
@@ -179,13 +175,12 @@ Horizon prediksi ditetapkan untuk merepresentasikan rentang waktu yang memiliki 
 produksi pada kanal CGM menggunakan horizon +30 menit dan +60 menit. Dua horizon tersebut digunakan untuk mewakili prediksi jangka pendek pada dua jarak waktu tanpa memperluas sasaran
 penelitian ke horizon yang lebih panjang.
 
-Untuk skenario pemantauan mandiri berbasis finger-stick, konfigurasi produksi menggunakan horizon +240 menit dengan panjang sekuens delapan. Konfigurasi ini dipisahkan dari konfigurasi
-CGM karena median selang pengamatan finger-stick jauh lebih panjang dan pengamatannya tidak teratur. Penggunaan panjang sekuens delapan juga ditetapkan sebagai bagian dari konfigurasi
-produksi pada skenario tersebut.
+Untuk skenario pemantauan mandiri berbasis \textit{finger-stick}, konfigurasi produksi menggunakan horizon sekitar +240 menit dengan panjang sekuens delapan pengamatan. Konfigurasi
+ini dipisahkan dari konfigurasi CGM karena median selang pengamatan \textit{finger-stick} jauh lebih panjang dan pengamatannya tidak teratur.
 
-Pemilihan konfigurasi horizon dan sekuens merupakan keputusan metodologis karena keduanya menentukan informasi historis yang diberikan kepada model dan jarak prediksi yang harus
-dicapai. Eksperimen lama atau konfigurasi percobaan lain tidak diposisikan sebagai konfigurasi produksi final. Dengan demikian, konfigurasi produksi ditetapkan secara eksplisit sebelum
-hasil evaluasi digunakan untuk menilai kinerja model.
+Pemilihan horizon dan panjang sekuens merupakan keputusan metodologis karena keduanya menentukan informasi historis yang diberikan kepada model dan jarak prediksi yang harus
+dicapai. Konfigurasi produksi ini ditetapkan secara eksplisit sebelum hasil evaluasi dipakai untuk menilai kinerja model, sehingga konfigurasi percobaan lain yang pernah dicoba
+selama pengembangan tidak dilaporkan sebagai konfigurasi final.
 
 \section{Analisis Pemilihan Solusi}
 \label{sec:bab3-analisis-pemilihan-solusi}
@@ -208,7 +203,7 @@ tersebut mewakili rentang solusi dari pemantauan berbasis aturan hingga integras
     Pendekatan ini menyediakan kemampuan antisipatif, tetapi keluaran prediksi tetap berdiri sendiri tanpa penelusuran pengetahuan klinis.
 
     \item \textbf{P3: Model bahasa besar tanpa penelusuran.} Pertanyaan diberikan langsung kepada model bahasa besar dan jawaban dihasilkan dari pengetahuan yang tersimpan pada parameter
-    model. Pendekatan ini dapat menghasilkan bahasa yang mudah dipahami, tetapi tidak memberikan grounding pada dokumen sumber dan tidak menghubungkan keluaran dengan keadaan pasien.
+    model. Pendekatan ini dapat menghasilkan bahasa yang mudah dipahami, tetapi jawabannya tidak bersandar pada dokumen sumber dan tidak dihubungkan dengan keadaan pasien.
 
     \item \textbf{P4: RAG dengan kueri statis.} Model bahasa besar dilengkapi penelusuran pada korpus pedoman klinis dengan kueri yang disusun dari pertanyaan pengguna atau keadaan yang
     sedang berlaku. Pendekatan ini menyediakan keterlacakan ke dokumen sumber, tetapi masih merespons keadaan yang telah diamati.
@@ -226,15 +221,15 @@ Keenam alternatif tersebut selanjutnya dinilai menggunakan kriteria yang diturun
 \subsection{Kriteria Penilaian dan Pembobotan}
 \label{subsec:bab3-kriteria-penilaian-pembobotan}
 
-Kriteria penilaian diturunkan dari kebutuhan fungsional dan nonfungsional agar proses pemilihan dapat ditelusuri kembali ke persoalan yang mendasarinya, bukan hanya pada preferensi
-penulis. Lima kriteria dan bobot yang digunakan disajikan pada Tabel~\ref{tab:tab3.4_kriteria_penilaian}.
+Kriteria penilaian diturunkan dari kebutuhan fungsional dan nonfungsional agar proses pemilihan dapat ditelusuri kembali ke persoalan yang mendasarinya, bukan sekadar
+mencerminkan preferensi penulis. Lima kriteria dan bobot yang digunakan disajikan pada Tabel~\ref{tab:tab3.4_kriteria_penilaian}.
 
 \input{tables/bab3/tab3.4_kriteria_penilaian.tex}
 
 Bobot ditetapkan sebelum penilaian alternatif dilakukan dan dinormalisasi sehingga jumlahnya 1,00. C1 dan C2 memperoleh bobot terbesar karena secara langsung menjawab kebutuhan
 antisipatif dan kebutuhan pengondisian rekomendasi pada kondisi terprediksi. C3 dan C4 memperoleh bobot menengah karena keterlacakan serta keterterapan merupakan prasyarat penting 
-bagi konteks penggunaan penelitian. C5 memperoleh bobot lebih kecil karena keamanan klinis dalam rancangan ini terutama ditegakkan melalui alur \textit{doctor-mediated} dan 
-pembatasan keluaran.
+bagi konteks penggunaan penelitian. C5 memperoleh bobot lebih kecil bukan karena keamanan klinis kurang penting, melainkan karena pada rancangan ini keamanan ditegakkan oleh alur \textit{doctor-mediated}
+dan pembatasan keluaran yang berlaku sama bagi semua alternatif, sehingga kriteria ini kurang membedakan antar-alternatif.
 
 \subsection{Penilaian Alternatif Pendekatan dengan \textit{Weighted Sum Model}}
 \label{subsec:bab3-penilaian-wsm}
@@ -266,11 +261,10 @@ ditetapkan pada penelitian ini.
 Setelah pendekatan P6 ditetapkan, keputusan selanjutnya adalah memilih komponen teknis yang mewujudkan pendekatan tersebut. Alternatif dipertimbangkan untuk model prediksi, model
 bahasa, model embedding, strategi pengambilan pengetahuan, pengklasifikasi kondisi, dan orkestrasi alur.
 
-Untuk model prediksi, alternatif yang dipertimbangkan adalah Random Forest, Long Short-Term Memory, dan Gradient Boosting Machine. Untuk model bahasa, alternatifnya adalah layanan model
-bahasa besar berbasis awan atau model bahasa yang dijalankan secara lokal. Untuk embedding, alternatifnya adalah model lokal atau layanan embedding berbasis awan. Untuk pengambilan 
-pengetahuan, alternatifnya adalah RAG di atas korpus dokumen tidak terstruktur atau penelusuran SPARQL di atas graf pengetahuan. Pengklasifikasi kondisi dibandingkan antara 
-penetapan ambang langsung atas keluaran regresi dan pengklasifikasi terpisah. Sementara itu, orkestrasi alur dibandingkan antara penulisan sebagai kode program dan penggunaan perkakas 
-alur kerja visual.
+Alternatif yang dipertimbangkan pada tiap komponen adalah sebagai berikut: model prediksi (\textit{Random Forest}, LSTM, atau \textit{Gradient Boosting Machine}); model bahasa
+(layanan berbasis awan atau model yang dijalankan lokal); model \textit{embedding} (model lokal atau layanan awan); pengambilan pengetahuan (RAG di atas korpus dokumen tidak
+terstruktur atau penelusuran SPARQL di atas graf pengetahuan); pengklasifikasi kondisi (ambang langsung atas keluaran regresi atau pengklasifikasi terpisah); dan orkestrasi alur
+(kode program atau perkakas alur kerja visual).
 
 \subsection{Penentuan Keputusan Teknis}
 \label{subsec:bab3-penentuan-keputusan-teknis}
@@ -281,9 +275,10 @@ memenuhi sebagian, dan ``--'' tidak memenuhi. Tanda tebal menunjukkan alternatif
 
 \input{tables/bab3/tab3.6_matriks_keputusan_teknis.tex}
 
-Matriks tersebut menunjukkan bahwa Gradient Boosting dipilih untuk model prediksi karena memenuhi keterterapan dan memberikan keluaran yang sesuai untuk pembentukan kondisi, sedangkan
-LSTM gugur terutama karena keterjelasan yang paling rendah (KNF-02) dan keterterapan yang hanya sebagian terpenuhi pada batasan lingkungan penelitian. Layanan model bahasa berbasis awan dipilih karena tidak membebani perangkat lokal, sementara model 
-embedding lokal dipilih karena tidak memerlukan biaya per permintaan dan dapat berjalan pada lingkungan komputasi penelitian.
+Tabel~\ref{tab:tab3.6_matriks_keputusan_teknis} menunjukkan bahwa \textit{Gradient Boosting} dipilih untuk model prediksi karena memenuhi keterterapan dan memberikan keluaran
+yang sesuai untuk pembentukan kondisi. LSTM gugur terutama karena keterjelasannya paling rendah (KNF-02) dan keterterapannya hanya sebagian terpenuhi pada batasan lingkungan
+penelitian. Layanan model bahasa berbasis awan dipilih karena tidak membebani perangkat lokal, sementara model \textit{embedding} lokal dipilih karena tidak memerlukan biaya per
+permintaan dan dapat berjalan pada lingkungan komputasi penelitian.
 
 Untuk pengambilan pengetahuan, RAG di atas korpus dokumen tidak terstruktur dipilih karena tidak memerlukan pembangunan ontologi dan integrasi rekam medis. Pengklasifikasi kondisi
 terpisah dipilih karena kelas kondisi dapat dioptimalkan langsung untuk kebutuhan pembentukan kueri. Orkestrasi melalui kode program dipilih karena mendukung pemisahan logika domain 
