@@ -134,12 +134,15 @@
 % --- biblatex tidak memiliki berkas pelokalan untuk bahasa Indonesia, sehingga
 % ia memperingatkan "Language 'indonesian' not supported" lalu meminta rerun
 % pada tiap kompilasi tanpa pernah tuntas. Pemetaan ini menyuruhnya memakai
-% english.lbx untuk bahasa indonesian; keluarannya sama sebab selama ini pun
-% ia jatuh ke english, dan terjemahan istilah di bawah tetap berlaku. ---
-\DeclareLanguageMapping{indonesian}{english}
+% cms-american.lbx (pelokalan biblatex-chicago, yang juga dipakai untuk
+% english) bagi bahasa indonesian. Terjemahan istilah di bawah HARUS
+% didaftarkan atas nama bahasa yang dimuat, yaitu indonesian; bila didaftarkan
+% atas nama english, hook-nya tidak pernah dijalankan dan sitasi kembali
+% mencetak "et al."/"and". ---
+\DeclareLanguageMapping{indonesian}{cms-american}
 
 % --- Terjemahan istilah daftar pustaka ke Bahasa Indonesia ---
-\DefineBibliographyStrings{english}{
+\DefineBibliographyStrings{indonesian}{
   and          = {dan},
   andothers    = {dkk.},
   editor       = {penyunting},
