@@ -6,18 +6,18 @@
 \label{sec:bab2-dmt1}
 
 Diabetes melitus tipe 1 (DMT1) merupakan kondisi kronis yang ditandai oleh kerusakan sel beta pankreas sehingga terjadi defisiensi insulin endogen dan individu memerlukan 
-terapi insulin eksogen secara berkelanjutan \parencite{ada2026}. Berbeda dari diabetes melitus tipe 2 yang memiliki mekanisme patofisiologi yang lebih beragam, kehilangan 
-fungsi sel beta pada DMT1 menyebabkan kebutuhan insulin menjadi bagian mendasar dari pengelolaan penyakit. Pengelolaan DMT1 tidak hanya berkaitan dengan pemberian insulin, 
-tetapi juga mencakup pemantauan kadar glukosa, pengaturan asupan karbohidrat, aktivitas fisik, serta penyesuaian terapi terhadap perubahan keadaan individu. Perubahan pada 
-faktor-faktor tersebut dapat memengaruhi kadar glukosa dalam rentang waktu yang berbeda, sehingga pengelolaan DMT1 bersifat dinamis dan memerlukan pemantauan berkelanjutan 
-\parencite{ada2026,colberg2016}. 
+terapi insulin eksogen secara berkelanjutan \parencite{ada2026}. Berbeda dari diabetes melitus tipe 2 yang patofisiologinya lebih beragam, pada DMT1 hilangnya
+fungsi sel beta membuat pemberian insulin menjadi bagian mendasar dari pengelolaan penyakit. Pengelolaan DMT1 tidak hanya berkaitan dengan pemberian insulin, tetapi
+juga mencakup pemantauan kadar glukosa, pengaturan asupan karbohidrat, aktivitas fisik, serta penyesuaian terapi terhadap perubahan keadaan individu. Perubahan pada
+faktor-faktor tersebut memengaruhi kadar glukosa dalam rentang waktu yang berbeda-beda, sehingga pengelolaan DMT1 bersifat dinamis dan memerlukan pemantauan
+berkelanjutan \parencite{ada2026,colberg2016}. Faktor psikologis juga dapat berhubungan dengan perubahan kadar dan variabilitas glukosa \parencite{velasco2022}.
 
-Faktor psikologis juga dapat berhubungan dengan perubahan kadar dan variabilitas glukosa \parencite{velasco2022}. Kondisi glukosa yang terlalu tinggi maupun terlalu rendah 
-memiliki konsekuensi klinis yang berbeda. Pengendalian glikemik yang lebih baik berkaitan dengan penurunan risiko komplikasi jangka panjang, sedangkan intensifikasi 
-pengelolaan juga dapat meningkatkan paparan terhadap hipoglikemia \parencite{nathan2014}. 
+Kadar glukosa yang terlalu tinggi dan terlalu rendah memiliki konsekuensi klinis yang berbeda. Pengendalian glikemik yang lebih baik berkaitan dengan penurunan risiko
+komplikasi jangka panjang, tetapi intensifikasi pengelolaan juga meningkatkan paparan terhadap hipoglikemia \parencite{nathan2014}. Oleh karena itu, tujuan pemantauan
+bukan semata-mata memperoleh kadar glukosa yang rendah, melainkan mempertahankan kadar glukosa pada rentang yang aman sekaligus mengenali perubahan yang berpotensi
+menimbulkan risiko.
 
-Oleh karena itu, tujuan pemantauan bukan semata-mata memperoleh kadar glukosa yang rendah, tetapi mempertahankan kadar glukosa pada kondisi yang aman sekaligus mengenali 
-perubahan yang berpotensi menimbulkan risiko. Konteks pengelolaan DMT1 di Indonesia turut dipengaruhi oleh variasi akses terhadap layanan dan teknologi. Literatur mengenai 
+Konteks pengelolaan DMT1 di Indonesia turut dipengaruhi oleh variasi akses terhadap layanan dan teknologi. Literatur mengenai 
 pengelolaan DMT1 pada anak di Indonesia menunjukkan adanya tantangan dalam diagnosis, pendampingan, dan kesinambungan perawatan \parencite{pulungan2021,faizi2025}. 
 Pada lingkungan dengan sumber daya terbatas, keterbatasan insulin, logistik, kapasitas layanan, dan kesinambungan perawatan juga dapat memengaruhi pengelolaan 
 DMT1 \parencite{owusu2024}.
@@ -35,7 +35,7 @@ yang berbeda.
 
 CGM menggunakan sensor untuk memperoleh pengukuran glukosa secara berulang pada interval yang relatif rapat sehingga perubahan kadar glukosa dapat diamati sebagai deret waktu. 
 Karakteristik tersebut memungkinkan pengamatan terhadap tren perubahan dan memperkaya informasi temporal dibandingkan pengukuran yang dilakukan hanya pada waktu-waktu tertentu. 
-Perkembangan teknologi diabetes juga menunjukkan bahwa perangkat pemantauan kontinu dapat memperluas kemampuan pemantauan dan pengelolaan glukosa \parencite{samajdar2025}.
+Perangkat pemantauan kontinu terbukti memperluas kemampuan pengelolaan glukosa \parencite{samajdar2025}.
 Dalam konteks pemodelan, kepadatan pengukuran CGM memberikan lebih banyak observasi pada suatu rentang waktu sehingga perubahan temporal dapat direpresentasikan dengan lebih 
 rinci. Namun, ketersediaan CGM tidak bersifat universal. Biaya perangkat, biaya penggunaan berulang, serta kesenjangan akses teknologi menjadi faktor yang dapat membatasi 
 penggunaannya, terutama pada lingkungan dengan sumber daya terbatas \parencite{santoscastro2025}.
@@ -46,17 +46,15 @@ penggunaannya, terutama pada lingkungan dengan sumber daya terbatas \parencite{s
 SMBG dilakukan melalui pengukuran glukosa menggunakan sampel darah kapiler yang diambil secara berkala, umumnya dengan tusukan ujung jari. Berbeda dari CGM, pengukuran SMBG 
 hanya tersedia pada waktu ketika pengguna melakukan pengukuran. Dengan demikian, deret pengukuran SMBG memiliki kepadatan yang lebih rendah dan jarak antarpengukuran dapat 
 bervariasi. Karakteristik tersebut menghasilkan kondisi ketika terdapat interval waktu tanpa observasi glukosa secara langsung. Dalam konteks pemodelan deret waktu, interval 
-tersebut menyebabkan informasi mengenai perubahan yang terjadi di antara dua pengukuran menjadi tidak lengkap. Meskipun demikian, SMBG dapat menjadi sumber data yang lebih 
-realistis pada lingkungan yang menghadapi keterbatasan biaya dan akses terhadap teknologi pemantauan kontinu. Di Indonesia, keterjangkauan perangkat dan biaya penggunaan 
+tersebut menyebabkan informasi mengenai perubahan yang terjadi di antara dua pengukuran menjadi tidak lengkap. Meskipun demikian, SMBG merupakan sumber data yang lebih sesuai
+dengan lingkungan yang menghadapi keterbatasan biaya dan akses terhadap teknologi pemantauan kontinu. Di Indonesia, keterjangkauan perangkat dan biaya penggunaan 
 perangkat pemantauan merupakan salah satu faktor yang memengaruhi akses terhadap teknologi diabetes \parencite{ramadaniati2024}.
 
 \subsection{Perbandingan Karakteristik CGM dan SMBG}
 \label{subsec:bab2-perbandingan-cgm-smbg}
 
-Perbedaan utama antara \textit{continuous glucose monitoring} (CGM) dan \textit{self-monitoring blood glucose} (SMBG) terletak pada kontinuitas dan kepadatan pengukuran. 
-CGM menghasilkan pengamatan kadar glukosa secara berulang dengan interval yang relatif rapat sehingga perubahan kadar glukosa dapat direpresentasikan sebagai deret waktu yang 
-lebih kontinu. Sebaliknya, SMBG menghasilkan pengukuran pada waktu-waktu tertentu ketika pengguna melakukan pengambilan sampel darah sehingga observasi yang tersedia bersifat 
-diskret dan jarak antarpengukuran dapat bervariasi \parencite{marling2020}.
+Perbedaan utama antara CGM dan SMBG terletak pada kontinuitas dan kepadatan pengukuran. CGM menghasilkan deret waktu yang rapat, sedangkan SMBG menghasilkan
+pengamatan diskret pada waktu-waktu tertentu dengan jarak antarpengukuran yang bervariasi \parencite{marling2020}.
 
 % Deklarasi float dimajukan ke awal subbab. LaTeX hanya boleh menempatkan float
 % di bagian atas halaman apabila float sudah dideklarasikan sebelum halaman
@@ -136,9 +134,9 @@ Hubungan konseptual antara asupan karbohidrat, insulin, glukosa, dan aktivitas f
     \label{fig:bab2.3-dinamika-glukosa}
 \end{figure}
 
-Gambar~\ref{fig:bab2.3-dinamika-glukosa} menunjukkan bahwa perubahan kadar glukosa dipengaruhi oleh interaksi antara asupan karbohidrat, insulin, dan aktivitas fisik;
-faktor psikologis yang disebut sebelumnya tidak digambarkan karena tidak tersedia sebagai variabel terukur pada data yang digunakan. Aktivitas fisik dapat memengaruhi penggunaan glukosa dan respons terhadap insulin. Efek aktivitas bergantung pada karakteristik aktivitas dan keadaan individu, 
-sehingga pengaruhnya perlu dipertimbangkan sebagai bagian dari konteks temporal \parencite{colberg2016}.
+Gambar~\ref{fig:bab2.3-dinamika-glukosa} menunjukkan bahwa perubahan kadar glukosa dipengaruhi oleh interaksi antara asupan karbohidrat, insulin, dan aktivitas fisik.
+Faktor psikologis tidak digambarkan karena tidak tersedia sebagai variabel terukur pada data yang digunakan. Aktivitas fisik memengaruhi penggunaan glukosa dan respons
+terhadap insulin; efeknya bergantung pada jenis aktivitas dan keadaan individu, sehingga perlu dipertimbangkan sebagai bagian dari konteks temporal \parencite{colberg2016}.
 
 Insulin merupakan faktor penting lainnya dalam dinamika glukosa karena pemberian insulin memengaruhi laju penurunan glukosa. Pemodelan fisiologis juga menunjukkan bahwa respons
 glukosa terhadap insulin memiliki dinamika terhadap waktu, sehingga efek suatu pemberian insulin tidak selalu tercermin pada satu titik pengukuran saja \parencite{bergman1979}.
@@ -149,7 +147,7 @@ teramati langsung, terdapat efek residual dari kejadian sebelumnya. Efek tersebu
 setelah kejadian awal berlangsung. Dengan demikian, informasi historis tidak hanya digunakan untuk mengetahui nilai glukosa sebelumnya, tetapi juga untuk merepresentasikan dampak 
 kejadian yang masih berlangsung.
 
-Representasi efek residual tersebut diilustrasikan melalui insulin-on-board (IOB) dan carbohydrate-on-board (COB) pada Gambar~\ref{fig:bab2.4-iob-cob}.
+Representasi efek residual tersebut diilustrasikan melalui \textit{insulin-on-board} (IOB) dan \textit{carbohydrate-on-board} (COB) pada Gambar~\ref{fig:bab2.4-iob-cob}.
 
 \begin{figure}[htbp]
     \centering
@@ -180,9 +178,9 @@ Konsep umum penggunaan riwayat glukosa dan variabel pendukung untuk memperkiraka
 Gambar~\ref{fig:bab2.5-konsep-prediksi-glukosa} menunjukkan bahwa model dapat menggunakan riwayat glukosa dan variabel pendukung sebagai masukan untuk memperkirakan kadar glukosa 
 pada waktu mendatang. Dengan demikian, keluaran prediksi tidak hanya bergantung pada nilai pengukuran terakhir, tetapi pada informasi historis yang tersedia sebelum waktu target.
 
-Horizon prediksi menentukan jarak antara waktu pengukuran terakhir dan waktu target yang ingin diperkirakan. Untuk satu horizon, model diarahkan untuk memprediksi satu target 
-tertentu, sedangkan beberapa horizon dapat diprediksi secara langsung sebagai beberapa keluaran atau melalui proses rekursif yang menggunakan prediksi sebelumnya sebagai masukan 
-berikutnya. Perbedaan formulasi tersebut memengaruhi akumulasi galat dan interpretasi hasil sehingga perlu dinyatakan secara eksplisit pada saat evaluasi.
+Horizon prediksi menentukan jarak antara waktu pengukuran terakhir dan waktu target yang ingin diperkirakan. Model dapat dilatih untuk satu horizon tertentu, atau untuk
+beberapa horizon sekaligus. Pada kasus kedua, tiap horizon dapat diprediksi langsung sebagai keluaran terpisah, atau secara rekursif dengan memakai prediksi horizon
+sebelumnya sebagai masukan. Perbedaan formulasi tersebut memengaruhi akumulasi galat dan penafsiran hasil, sehingga perlu dinyatakan secara eksplisit pada saat evaluasi.
 
 Pada data dengan karakteristik temporal yang berbeda, generalisasi juga menjadi perhatian. Model yang memperoleh pola dari satu sebaran data belum tentu mempertahankan kinerja 
 yang sama pada data dengan karakteristik pengukuran atau distribusi fitur yang berbeda. Karena itu, prediksi glukosa perlu dipahami tidak hanya dari akurasi pada data pelatihan, 
@@ -191,13 +189,12 @@ tetapi juga dari kemampuan model mempertahankan performa pada kondisi data yang 
 \section{Pendekatan Pembelajaran Mesin untuk Prediksi Glukosa}
 \label{sec:bab2-pendekatan-ml-prediksi-glukosa}
 
-Pembelajaran mesin dapat digunakan untuk mempelajari hubungan antara representasi data historis dan target kadar glukosa pada horizon tertentu. Berdasarkan karakteristik 
-temporal dan formulasi prediksi yang telah dibahas pada Subbab~\ref{sec:bab2-karakteristik-pemodelan-glukosa}, pendekatan yang digunakan untuk memodelkan hubungan tersebut dapat 
-memiliki cara representasi temporal dan kebutuhan komputasi yang berbeda. Tiga keluarga pendekatan yang relevan dalam konteks penelitian ini adalah Random Forest, Gradient 
-Boosting, dan Long Short-Term Memory (LSTM).
+Pembelajaran mesin dapat digunakan untuk mempelajari hubungan antara representasi data historis dan target kadar glukosa pada horizon tertentu. Pendekatan yang tersedia
+berbeda dalam cara merepresentasikan informasi temporal (Subbab~\ref{sec:bab2-karakteristik-pemodelan-glukosa}) dan dalam kebutuhan komputasinya. Tiga keluarga
+pendekatan yang relevan bagi penelitian ini adalah \textit{Random Forest}, \textit{Gradient Boosting}, dan \textit{Long Short-Term Memory} (LSTM).
 
-Ketiga pendekatan tersebut dipilih sebagai landasan perbandingan karena mewakili dua cara utama dalam memanfaatkan informasi temporal. Random Forest dan Gradient Boosting 
-menggunakan representasi fitur yang diberikan sebagai masukan, sedangkan LSTM dapat mempelajari dependensi pada urutan temporal secara langsung. Perbedaan karakteristik 
+Ketiga pendekatan tersebut dipilih sebagai landasan perbandingan karena mewakili dua cara utama memanfaatkan informasi temporal: \textit{Random Forest} dan \textit{Gradient
+Boosting} bekerja pada fitur tabular yang disusun dari riwayat, sedangkan LSTM mempelajari dependensi pada urutan temporal secara langsung. Perbedaan karakteristik 
 tersebut perlu dipahami sebelum pemilihan pendekatan dilakukan pada tahap perancangan penelitian.
 
 \subsection{Random Forest}
@@ -234,11 +231,11 @@ pelatihan, dan penggunaan sumber daya komputasi.
 \label{subsec:bab2-lstm}
 
 \textit{Long Short-Term Memory} (LSTM) merupakan arsitektur jaringan saraf rekuren yang dirancang untuk mempertahankan informasi pada rentang waktu yang lebih panjang melalui 
-mekanisme gerbang. \textcite{hochreiter1997} memperkenalkan LSTM untuk mengatasi kesulitan pembelajaran dependensi jangka panjang yang dapat terjadi pada jaringan rekuren 
-konvensional \parencite{hochreiter1997}.
+mekanisme gerbang. \textcite{hochreiter1997} memperkenalkan LSTM untuk mengatasi kesulitan pembelajaran dependensi jangka panjang yang dapat terjadi pada jaringan rekuren
+konvensional.
 
 Karakteristik tersebut membuat LSTM relevan untuk data yang memiliki urutan temporal. Pada prediksi glukosa, urutan historis dapat diberikan sebagai sekuens sehingga model 
-mempelajari hubungan antarwaktu secara langsung, tidak hanya melalui fitur statistik atau ringkasan manual. Pendekatan berbasis deep learning telah digunakan dalam berbagai 
+mempelajari hubungan antarwaktu secara langsung, tidak hanya melalui fitur statistik atau ringkasan manual. Pendekatan berbasis \textit{deep learning} telah digunakan dalam berbagai
 penelitian prediksi glukosa, tetapi peningkatan kompleksitas arsitektur tidak selalu menjamin generalisasi yang lebih baik ketika kondisi data dan populasi berubah \parencite{ghimire2024}.
 
 Keterbatasan LSTM terutama berkaitan dengan kompleksitas pelatihan, kebutuhan data, serta biaya komputasi yang lebih tinggi dibandingkan beberapa pendekatan berbasis pohon. 
@@ -315,8 +312,9 @@ Nilai prediksi tunggal tidak memberikan informasi mengenai tingkat keyakinan mod
 rentang nilai yang masih mungkin terjadi sehingga pengguna mendapatkan informasi tambahan mengenai reliabilitas prediksi. Dalam konteks pendukung keputusan, informasi tersebut 
 dapat membantu membedakan prediksi yang relatif stabil dari prediksi yang memiliki ketidakpastian lebih tinggi.
 
-Salah satu pendekatan untuk membentuk interval prediksi dengan jaminan statistik tertentu adalah \textit{conformal prediction}. Pendekatan ini membangun himpunan atau interval 
-prediksi berdasarkan ukuran nonkonformitas dan data kalibrasi sehingga cakupan statistik dapat dikendalikan berdasarkan asumsi yang diperlukan oleh metode \parencite{angelopoulos2021}. 
+Salah satu pendekatan untuk membentuk interval prediksi dengan jaminan statistik tertentu adalah \textit{conformal prediction}. Pendekatan ini membentuk interval prediksi dari
+sebaran galat pada data kalibrasi, sehingga proporsi nilai aktual yang tercakup interval dapat ditargetkan (misalnya 95\%) dengan asumsi yang relatif ringan
+\parencite{angelopoulos2021}. 
 Namun, interval prediksi harus tetap dipahami sebagai ukuran ketidakpastian statistik, bukan sebagai jaminan bahwa seluruh kemungkinan kondisi klinis telah tercakup.
 
 Dalam konteks prediksi glukosa, interpretasi ketidakpastian harus dipisahkan dari keputusan klinis. Interval yang lebih sempit tidak selalu berarti model lebih aman secara 
@@ -388,8 +386,8 @@ menentukan keputusan klinis, tetapi menyediakan struktur komunikasi yang konsist
 \label{subsec:bab2-keselamatan-cdss}
 
 Sistem klinis berbasis AI menghadapi risiko yang tidak hanya berasal dari kesalahan prediksi, tetapi juga dari ketidakpastian, perubahan konteks, keterbatasan data, dan cara 
-keluaran digunakan. Kerangka evaluasi seperti DECIDE-AI menekankan pentingnya evaluasi bertahap terhadap sistem AI klinis sebelum digunakan secara luas, termasuk perhatian 
-terhadap kinerja sistem dalam konteks penggunaan yang realistis \parencite{vasey2022}.
+keluaran digunakan. Kerangka seperti DECIDE-AI menekankan bahwa sistem AI klinis perlu dievaluasi bertahap sebelum digunakan luas, termasuk diuji pada konteks penggunaan yang
+realistis \parencite{vasey2022}.
 
 Keterlacakan juga penting karena pengguna perlu mengetahui dasar informasi yang digunakan sistem. Pada sistem yang menggabungkan prediksi dan pengetahuan klinis, keluaran 
 sebaiknya dapat dibedakan antara nilai hasil prediksi, interpretasi kondisi, informasi yang berasal dari sumber pengetahuan, dan rekomendasi yang dihasilkan untuk ditinjau 
@@ -432,14 +430,14 @@ tidak hanya bergantung pada kemampuan model bahasa, tetapi juga pada kemampuan s
 
 Pada lingkungan pengetahuan klinis, fungsi \textit{retriever} menjadi penting karena sistem perlu menemukan bagian pedoman yang berhubungan dengan kondisi pasien atau
 pertanyaan yang diberikan. Penelitian mengenai RAG untuk interpretasi pedoman klinis menunjukkan bahwa penelusuran dokumen klinis dapat digunakan untuk memperkuat dasar
-keluaran model bahasa dalam sistem pendukung keputusan \parencite{kresevic2024}. Penelitian pada pedoman diabetes juga menunjukkan penggunaan RAG untuk membumikan keluaran
-model pada dokumen klinis yang relevan \parencite{lee2024,wang2024}.
+keluaran model bahasa dalam sistem pendukung keputusan \parencite{kresevic2024}. Penelitian pada pedoman diabetes juga menunjukkan penggunaan RAG agar keluaran model
+bersandar pada dokumen klinis yang relevan \parencite{lee2024,wang2024}.
 
 \subsection{Chunking dan Metadata Halaman}
 \label{subsec:bab2-chunking-metadata}
 
-Dokumen yang akan ditelusuri umumnya dipecah menjadi unit-unit informasi yang lebih kecil atau \textit{chunks}. Ukuran unit tersebut perlu mempertahankan konteks yang cukup
-untuk dipahami ketika diambil, tetapi tidak terlalu besar sehingga banyak informasi yang tidak relevan ikut masuk ke konteks model. Karena itu, chunking merupakan
+Dokumen yang akan ditelusuri umumnya dipecah menjadi unit-unit informasi yang lebih kecil atau \textit{chunks}. Ukuran unit tersebut perlu cukup besar agar konteksnya tetap dapat
+dipahami ketika diambil, tetapi tidak terlalu besar agar informasi yang tidak relevan tidak ikut masuk ke konteks model. Karena itu, chunking merupakan
 bagian penting dari desain sistem retrieval \parencite{gao2023,xiong2024}.
 
 Metadata dapat disimpan bersama setiap \textit{chunk} untuk mempertahankan informasi mengenai asal konteks. Pada dokumen klinis, metadata dapat mencakup identitas dokumen,
@@ -495,8 +493,8 @@ Transformasi dapat dilakukan dengan menambahkan konteks, memperjelas maksud kuer
 proses tersebut dapat digunakan untuk merepresentasikan konteks yang diperlukan agar penelusuran dokumen lebih spesifik terhadap keadaan yang sedang ditinjau. Dengan demikian, 
 kueri yang digunakan oleh retriever tidak selalu identik dengan pertanyaan awal pengguna, tetapi dapat merupakan representasi yang telah diperkaya sesuai kebutuhan retrieval.
 
-Penggunaan \textit{query transformation} tetap perlu mempertahankan hubungan antara kueri awal dan informasi yang digunakan untuk membentuk transformasi. Hal tersebut penting 
-agar perubahan kueri tidak menghasilkan konteks yang keluar dari kebutuhan informasi dan agar hasil retrieval tetap dapat ditelusuri kembali kepada dasar pembentukannya.
+Kueri hasil transformasi harus tetap dapat dikaitkan dengan pertanyaan awal dan dengan informasi yang dipakai untuk mengubahnya. Dengan demikian, penelusuran tidak
+melenceng dari kebutuhan informasi semula, dan hasil retrieval dapat ditelusuri kembali ke alasan pembentukan kuerinya.
 
 \subsection{MMR dan Reranking}
 \label{subsec:bab2-mmr-reranking}
@@ -516,8 +514,8 @@ menjadi bagian penting dalam keseluruhan pipeline RAG.
 konsensus, atau dokumen klinis terstruktur. Karakteristik domain klinis membuat aspek keterlacakan, relevansi, dan kesesuaian konteks menjadi penting karena keluaran yang
 tidak didukung sumber dapat menyebabkan interpretasi yang keliru.
 
-Tinjauan mengenai RAG pada bidang kesehatan menunjukkan bahwa RAG dapat digunakan untuk menghubungkan model bahasa dengan sumber pengetahuan eksternal, tetapi penerapannya
-tetap menghadapi tantangan berupa kualitas retrieval, evaluasi keluaran, keamanan, dan kesesuaian konteks klinis \parencite{amugongo2025}. Pada domain diabetes, penelitian
+Tinjauan RAG pada bidang kesehatan menunjukkan bahwa RAG dapat menghubungkan model bahasa dengan sumber pengetahuan eksternal. Namun, penerapannya masih menghadapi
+tantangan pada kualitas retrieval, evaluasi keluaran, keamanan, dan kesesuaian konteks klinis \parencite{amugongo2025}. Pada domain diabetes, penelitian
 menunjukkan bahwa penggabungan model bahasa dengan dokumen pedoman dapat membantu mengurangi halusinasi dan meningkatkan mutu keluaran ketika konteks yang relevan berhasil
 ditelusuri \parencite{lee2024,wang2024}.
 
@@ -532,8 +530,8 @@ Konsep-konsep tersebut menjadi dasar untuk memahami \textit{grounded generation}
 berdasarkan konteks yang diberikan. Kemampuan generatif LLM memungkinkan pembentukan jawaban dalam bahasa alami, tetapi keluaran model tidak selalu dijamin sesuai dengan fakta
 atau sumber pengetahuan yang relevan.
 
-\textit{Grounded generation} mengarahkan proses pembangkitan agar keluaran didasarkan pada konteks atau sumber pengetahuan yang tersedia. Dalam arsitektur RAG, grounding
-dilakukan dengan memberikan hasil retrieval sebagai bagian dari konteks model sehingga jawaban diharapkan merujuk pada informasi yang benar-benar ditemukan dari korpus.
+\textit{Grounded generation} mengarahkan proses \textit{generation} agar keluaran didasarkan pada konteks atau sumber pengetahuan yang tersedia. Dalam arsitektur RAG,
+\textit{grounding} dilakukan dengan memberikan hasil retrieval sebagai bagian dari konteks model sehingga jawaban merujuk pada informasi yang benar-benar ditemukan di korpus.
 Pendekatan tersebut merupakan salah satu cara untuk mengurangi ketergantungan pada pengetahuan internal model dan membatasi keluaran agar tetap terkait dengan sumber eksternal
 \parencite{lewis2020,gao2023}.
 
@@ -551,12 +549,12 @@ disimpulkan dari data. Pembatasan seperti ini tidak menggantikan evaluasi, tetap
 \label{subsec:bab2-hallucination-traceability}
 
 Halusinasi merujuk pada keluaran model yang terdengar masuk akal tetapi tidak didukung oleh informasi yang benar atau tersedia. Pada sistem klinis, risiko tersebut menjadi
-penting karena jawaban yang tampak meyakinkan dapat diterima pengguna meskipun dasar informasinya tidak sesuai. Studi RAG pada pedoman diabetes menunjukkan bahwa grounding
-pada dokumen yang relevan dapat digunakan sebagai pendekatan untuk mengurangi halusinasi \parencite{lee2024}.
+penting karena jawaban yang tampak meyakinkan dapat diterima pengguna meskipun dasar informasinya tidak sesuai. Studi RAG pada pedoman diabetes menunjukkan bahwa \textit{grounding}
+pada dokumen yang relevan dapat mengurangi halusinasi \parencite{lee2024}.
 
 Keterlacakan berarti pengguna dapat menelusuri dasar suatu pernyataan kembali ke sumber yang digunakan oleh sistem. Dalam konteks RAG, keterlacakan dapat dibantu melalui
-metadata sumber, identitas dokumen, bagian dokumen, atau nomor halaman yang menyertai konteks yang diambil. Dengan demikian, citation bukan hanya elemen presentasi, tetapi
-juga dapat berfungsi sebagai mekanisme pemeriksaan terhadap dasar informasi yang digunakan sistem.
+metadata sumber, identitas dokumen, bagian dokumen, atau nomor halaman yang menyertai konteks yang diambil. Dengan demikian, sitasi bukan hanya elemen tampilan, tetapi
+juga berfungsi sebagai sarana memeriksa dasar informasi yang digunakan sistem.
 
 \subsection{Fallback dan Pembatasan Keluaran Klinis}
 \label{subsec:bab2-fallback-clinical-output}
@@ -566,7 +564,7 @@ ketika retrieval tidak menghasilkan konteks yang memadai atau ketika informasi y
 menyatakan keterbatasan, atau menggunakan mekanisme fallback yang telah ditentukan.
 
 Pada lingkungan klinis, pembatasan keluaran menjadi semakin penting karena sistem pendukung keputusan seharusnya tidak menyajikan keluaran generatif sebagai keputusan klinis
-yang berdiri sendiri. Penelitian pada RAG klinis dan diabetes menunjukkan pentingnya grounding pada dokumen yang relevan serta pengendalian terhadap halusinasi
+yang berdiri sendiri. Penelitian pada RAG klinis dan diabetes menunjukkan pentingnya \textit{grounding} pada dokumen yang relevan serta pengendalian terhadap halusinasi
 \parencite{kresevic2024,lee2024,wang2024}. Dengan demikian, LLM dalam CDSS lebih tepat diposisikan sebagai komponen pembangkit informasi yang tetap berada dalam alur
 peninjauan klinisi.
 
@@ -614,7 +612,7 @@ konteks penggunaan yang realistis sebelum penerapan lebih luas \parencite{vasey2
 \label{subsec:bab2-clinical-usability}
 
 Kualitas teknis tidak selalu menunjukkan apakah sebuah sistem mudah digunakan oleh pengguna sasaran. Usability dapat menjadi bagian dari evaluasi karena sistem pendukung
-keputusan pada akhirnya digunakan oleh tenaga kesehatan dalam alur kerja tertentu. Salah satu instrumen yang banyak digunakan untuk mengukur persepsi usability adalah
+keputusan pada akhirnya digunakan oleh tenaga kesehatan dalam alur kerja tertentu. Salah satu instrumen yang banyak digunakan untuk mengukur persepsi \textit{usability} adalah
 \textit{System Usability Scale} (SUS) yang menyediakan skor ringkas berdasarkan sejumlah pernyataan standar \parencite{brooke1996}.
 
 Dalam konteks CDSS, usability perlu dipertimbangkan bersama keterlacakan dan keselamatan. Sistem yang akurat tetapi sulit dipahami atau sulit diperiksa dapat mengurangi
@@ -646,7 +644,7 @@ pendekatan tersebut untuk mempelajari dinamika glukosa. Penelitian tersebut mene
 
 Perhatian terhadap kemampuan generalisasi juga menjadi penting pada prediksi glukosa. \textcite{ghimire2024} menunjukkan bahwa performa model dapat berubah ketika model diterapkan 
 pada data dengan karakteristik yang berbeda dari data yang digunakan dalam pelatihan. Temuan tersebut menunjukkan bahwa evaluasi prediksi tidak cukup hanya mempertimbangkan 
-performa pada data pelatihan atau pembagian data internal, tetapi juga perlu memperhatikan perbedaan distribusi data dan kemampuan generalisasi \parencite{ghimire2024}.
+performa pada data pelatihan atau pembagian data internal, tetapi juga perlu memperhatikan perbedaan distribusi data dan kemampuan generalisasi.
 
 \subsection{Pengelolaan Diabetes Berbasis Representasi Pengetahuan}
 \label{subsec:bab2-penelitian-knowledge-representation}
@@ -665,11 +663,10 @@ pengetahuan klinis terkurasi tanpa mengharuskan integrasi infrastruktur kesehata
 
 \textcite{kresevic2024} menunjukkan bahwa RAG dapat digunakan untuk membantu penafsiran pedoman klinis oleh model bahasa dalam konteks sistem pendukung keputusan. Pada penelitian
 tersebut, penelusuran digunakan untuk menyediakan konteks pedoman yang relevan bagi proses pembangkitan, dengan kondisi yang sedang berlaku menjadi bagian dari dasar
-pembentukan kueri. Temuan tersebut menunjukkan manfaat grounding pada dokumen klinis, tetapi pengondisian retrieval masih didasarkan pada kondisi yang
-tersedia saat konsultasi.
+pembentukan kueri. Temuan tersebut menunjukkan manfaat \textit{grounding} pada dokumen klinis, tetapi kueri retrieval masih dibentuk dari kondisi yang tersedia saat konsultasi.
 
-Pada domain diabetes, \textcite{lee2024} mengembangkan pendekatan RAG yang dibumikan pada pedoman diabetes dan menggunakan pertanyaan sebagai sumber kueri. Penelitian tersebut
-menunjukkan bahwa pembumian pada pedoman dapat membantu mengurangi halusinasi pada keluaran model bahasa. \textcite{wang2024} juga menunjukkan pemanfaatan RAG untuk
+Pada domain diabetes, \textcite{lee2024} mengembangkan RAG yang bersandar pada pedoman diabetes dan menggunakan pertanyaan sebagai sumber kueri. Penelitian tersebut
+menunjukkan bahwa penyandaran pada pedoman membantu mengurangi halusinasi pada keluaran model bahasa. \textcite{wang2024} juga menunjukkan pemanfaatan RAG untuk
 edukasi diabetes dengan keluaran yang dinilai dari akurasi, kelengkapan, dan keterpahaman, dengan pertanyaan pengguna sebagai dasar penelusuran. Kedua
 penelitian tersebut memperlihatkan pentingnya sumber klinis terkurasi, tetapi mekanisme retrieval tetap dipicu oleh pertanyaan atau kondisi yang sedang berlaku, bukan oleh
 keadaan fisiologis yang diprediksi.
@@ -683,8 +680,7 @@ dipicu berdasarkan kebutuhan model.
 
 Meskipun bersifat antisipatif dalam proses pembangkitan, kondisi yang digunakan untuk memicu retrieval pada pendekatan tersebut berasal dari prediksi atau kebutuhan model
 bahasa terhadap teks yang sedang dihasilkan, bukan dari prediktor fisiologis eksternal. Perbedaan ini penting karena penelitian ini menempatkan hasil prediksi kadar glukosa
-sebagai keadaan masa depan yang digunakan sebelum penelusuran pedoman klinis dilakukan. Dengan demikian, query transformation yang dibahas pada penelitian ini memiliki sumber
-conditioning yang berbeda dari retrieval antisipatif berbasis kebutuhan generasi.
+sebagai keadaan masa depan yang digunakan sebelum penelusuran pedoman klinis dilakukan. Dengan demikian, \textit{query transformation} pada penelitian ini bersumber pada kondisi yang berbeda dari retrieval antisipatif berbasis kebutuhan model bahasa.
 
 \subsection{Integrasi Prediksi dan Pengetahuan Klinis}
 \label{subsec:bab2-integrasi-prediksi-pengetahuan}
@@ -694,8 +690,8 @@ menghasilkan estimasi keadaan glukosa masa depan \parencite{woldaregay2019,ghimi
 kondisi yang sedang berlaku dengan dokumen klinis yang relevan \parencite{kresevic2024,lee2024,wang2024}. Pendekatan berbasis \textit{knowledge graph} menunjukkan integrasi
 yang lebih luas antara data pasien dan pengetahuan, tetapi membutuhkan representasi formal serta infrastruktur yang lebih berat \parencite{rad2024}.
 
-Dari kelompok penelitian tersebut terlihat bahwa ruang integrasi antara keadaan fisiologis yang diprediksi dan retrieval pedoman klinis masih memiliki karakteristik yang
-berbeda dari pendekatan yang telah ada. Penelitian ini menempatkan prediksi sebagai sumber kondisi eksternal untuk membentuk kueri sebelum retrieval dilakukan, lalu
+Dari kelompok penelitian tersebut terlihat bahwa integrasi antara keadaan fisiologis yang diprediksi dan retrieval pedoman klinis belum dikerjakan oleh pendekatan yang
+telah ada. Penelitian ini menempatkan prediksi sebagai sumber kondisi eksternal untuk membentuk kueri sebelum retrieval dilakukan, lalu
 menggunakan hasil retrieval sebagai dasar penyusunan rekomendasi yang tetap ditinjau oleh dokter. Posisi tersebut dijelaskan lebih lanjut melalui perumusan \textit{research
 gap} dan matriks posisi penelitian pada bagian berikutnya.
 
@@ -712,7 +708,7 @@ atau kondisi klinis dengan sumber pengetahuan yang relevan \parencite{woldaregay
 
 Pendekatan berbasis pengetahuan terstruktur menunjukkan bahwa data pasien dapat dihubungkan dengan pengetahuan untuk menghasilkan layanan personal, tetapi pendekatan tersebut dapat 
 memerlukan representasi formal dan integrasi data yang lebih kompleks \parencite{rad2024}. Di sisi lain, retrieval antisipatif menunjukkan bahwa proses retrieval dapat dikondisikan
-secara dinamis, tetapi mekanisme conditioning yang digunakan berasal dari kebutuhan model bahasa selama proses generasi \parencite{jiang2023}.
+secara dinamis, tetapi kondisi pemicunya berasal dari kebutuhan model bahasa selama proses \textit{generation} \parencite{jiang2023}.
 
 Berdasarkan perbedaan tersebut, terdapat ruang integrasi antara prediksi keadaan fisiologis masa depan dan penelusuran pedoman klinis. Secara khusus, hasil prediksi dapat dipandang 
 sebagai informasi keadaan yang tersedia sebelum kondisi tersebut benar-benar terjadi, sedangkan retrieval dapat digunakan untuk menemukan pengetahuan klinis yang relevan terhadap 
@@ -730,7 +726,7 @@ alur pendukung keputusan, dengan mempertimbangkan keterbatasan data dan infrastr
 \label{sec:bab2-posisi-penelitian}
 
 Berdasarkan research gap yang telah dirumuskan, penelitian ini ditempatkan pada pertemuan antara prediksi kadar glukosa, penelusuran pengetahuan klinis, dan sistem pendukung 
-keputusan. Posisi tersebut tidak menggantikan fungsi penelitian terdahulu, tetapi mengintegrasikan fungsi yang sebelumnya lebih sering dikembangkan secara terpisah.
+keputusan. Penelitian ini tidak menggantikan fungsi yang telah dikembangkan penelitian terdahulu, tetapi mengintegrasikan fungsi-fungsi yang sebelumnya dikembangkan secara terpisah.
 
 Perbedaan posisi penelitian terhadap pendekatan terdahulu dirangkum pada Tabel~\ref{tab:tab2.6_posisi_penelitian}.
 
