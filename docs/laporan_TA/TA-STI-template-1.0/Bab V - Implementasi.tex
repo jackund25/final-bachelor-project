@@ -69,6 +69,10 @@ Parameter yang memengaruhi perilaku jalur produksi dikelola melalui konfigurasi 
 dapat dilakukan tanpa mengubah logika pemrosesan utama dan agar nilai yang digunakan saat \textit{runtime} dapat ditelusuri kembali. Parameter yang hanya berkaitan dengan
 eksperimen tertentu tidak dimasukkan apabila tidak memengaruhi jalur produksi final.
 
+Ringkasan konfigurasi tersebut ditunjukkan pada Tabel~\ref{tab:tab5.3_konfigurasi_utama_implementasi}.
+
+\input{tables/bab5/tab5.3_konfigurasi_utama_implementasi.tex}
+
 Konfigurasi model produksi menetapkan \texttt{HistGradientBoostingRegressor} dengan \texttt{random\_state=42}. Hyperparameter model lainnya mengikuti nilai bawaan
 scikit-learn sebagaimana kebijakan implementasi yang terdokumentasi. Untuk retrieval, konfigurasi final menggunakan \textit{chunk} berukuran 900 karakter dengan overlap
 120 karakter, batas kalimat pada proses pemotongan, indeks produksi yang terdiri atas 2.233 potongan, serta Okapi BM25 dengan \texttt{top\_k=5}. Konfigurasi tersebut
@@ -259,15 +263,8 @@ Konfigurasi model produksi tidak menggunakan pencarian hyperparameter khusus. Im
 mengikuti nilai bawaan scikit-learn. Pernyataan tersebut digunakan untuk mendokumentasikan konfigurasi sebenarnya dan menghindari kesan bahwa model telah melalui
 optimasi hyperparameter yang tidak dilakukan. Random seed 42 juga dipertahankan pada proses terkait yang memerlukan determinisme.
 
-Target prediksi ditetapkan sebagai perubahan kadar glukosa ($\Delta g$) terhadap kadar glukosa terakhir yang diketahui. Perubahan tersebut didefinisikan sebagai
-\[
-\Delta g_{t+h}=g_{t+h}-g_t,
-\]
-dengan $g_t$ sebagai kadar glukosa pada waktu acuan dan $h$ sebagai horizon prediksi. Pada saat inferensi, perubahan yang diprediksi digunakan untuk memperoleh
-kadar glukosa absolut melalui
-\[
-\hat{g}_{t+h}=g_t+\Delta\hat{g}_{t+h}.
-\]
+Target prediksi ditetapkan sebagai perubahan kadar glukosa ($\Delta g$) terhadap kadar glukosa terakhir yang diketahui, sesuai Persamaan~\ref{eq:bab4-delta-glukosa}.
+Pada saat inferensi, perubahan yang diprediksi digunakan untuk memperoleh kadar glukosa absolut melalui Persamaan~\ref{eq:bab4-rekonstruksi-glukosa}.
 
 Pendekatan target perubahan digunakan agar keluaran model berfokus pada perubahan dari keadaan terakhir yang diketahui, sementara nilai absolut tetap dapat dipulihkan
 secara langsung dari hasil prediksi. Dengan demikian, hubungan antara keluaran model dan nilai yang ditampilkan pada sistem dapat ditelusuri tanpa memerlukan tahap
@@ -395,16 +392,14 @@ prediksi kadar glukosa digunakan sebagai sumber pengondisian kondisi klinis. Den
 tetapi juga membawa konteks kondisi yang diturunkan dari keadaan glukosa terprediksi.
 
 Mekanisme tersebut dibedakan dari \textit{standard query}. Pada mode standar, kondisi diturunkan dari kadar glukosa saat ini, sedangkan pada mode
-\textit{prediction-conditioned}, kondisi diturunkan dari kadar glukosa yang diprediksi. Perbedaan ini dirancang agar retrieval dapat diarahkan pada kondisi
+terkondisi-prediksi, kondisi diturunkan dari kadar glukosa yang diprediksi. Perbedaan ini dirancang agar retrieval dapat diarahkan pada kondisi
 yang diperkirakan akan terjadi, terutama ketika kondisi masa depan berbeda dari kondisi saat ini. Konsep tersebut merupakan realisasi mekanisme utama artefak
 T2 dalam penelitian.
 
-Secara operasional, sistem menggunakan pertanyaan pengguna dan kondisi hasil prediksi untuk membentuk kueri retrieval. Bentuk dasarnya dapat dinyatakan sebagai
-\[
-q_{\mathrm{pc}} = q_{\mathrm{user}} + C(\hat{g}_{t+h}),
-\]
-dengan $q_{\mathrm{user}}$ sebagai pertanyaan pengguna, $\hat{g}_{t+h}$ sebagai kadar glukosa terprediksi, dan $C(\cdot)$ sebagai pemetaan kadar
-glukosa menjadi konteks kondisi klinis.
+Secara operasional, sistem menggunakan pertanyaan pengguna dan kondisi hasil prediksi untuk membentuk kueri retrieval. Bentuk ini merupakan realisasi
+Persamaan~\ref{eq:bab4-query-pred-conditioned}: kebutuhan informasi $q$ diwujudkan sebagai pertanyaan pengguna, \textit{clinical state} $\hat{s}_{t+h}$
+diringkas menjadi label kondisi yang dipetakan dari kadar glukosa terprediksi $\hat{g}_{t+h}$, dan fungsi transformasi $T$ diwujudkan sebagai penyambungan
+teks pertanyaan dengan konteks kondisi tersebut, sebagaimana dirinci pada Algoritma~\ref{alg:alg5.3_query_transformation_terkondisi_prediksi}.
 
 Pada jalur evaluasi, pembentukan kueri menggunakan nilai glukosa numerik dan frasa kondisi yang telah ditentukan. Contohnya, prediksi 58 mg/dL menghasilkan
 konteks hipoglikemia yang kemudian digunakan dalam kueri. Pembentukan tersebut menjaga agar perubahan nilai prediksi secara langsung dapat mengubah kondisi
@@ -473,8 +468,9 @@ pemilihan evidence tetap konsisten dengan hasil retrieval dan tidak memperkenalk
 \label{subsec:bab5-grounded-generation}
 
 Evidence yang telah dipilih kemudian digunakan sebagai konteks untuk pembangkitan assessment oleh model bahasa. Model bahasa pada konfigurasi produksi final adalah
-\textit{Gemini 3.5 Flash-Lite} dengan \texttt{temperature=0,2}, \texttt{top\_k=5}, dan batas keluaran \texttt{max\_tokens=2048}. Konfigurasi tersebut digunakan untuk
-membentuk keluaran yang tetap mengikuti evidence yang ditemukan pada tahap retrieval.
+\textit{Gemini 3.5 Flash-Lite} dengan \texttt{temperature=0.2} dan batas keluaran \texttt{max\_tokens=2048}; konteks yang diberikan adalah lima potongan
+evidence teratas hasil retrieval (\texttt{top\_k=5}). Konfigurasi tersebut digunakan untuk membentuk keluaran yang tetap mengikuti evidence yang ditemukan
+pada tahap retrieval.
 
 \input{tables/bab5/tab5.10_konfigurasi_generation_dan_evidence.tex}
 
@@ -616,7 +612,7 @@ Antarmuka juga menampilkan peringatan penelitian pada bagian atas halaman. Perin
 klinis dan melekat pada seluruh halaman, bukan hanya pada halaman assessment. Penandaan itu merupakan realisasi batas keluaran yang dirancang pada
 Subbab~\ref{subsec:bab4-guardrail-keselamatan}, yaitu sistem tidak ditampilkan sebagai penentu keputusan klinis.
 
-\subsection{Struktur Navigasi dan Halaman}
+\subsection{Struktur Navigasi dan Halaman Pemilihan Pasien}
 \label{subsec:bab5-struktur-navigasi-halaman}
 
 Antarmuka dibagi menjadi beberapa halaman yang mengikuti alur penggunaan sistem dari pengelolaan data pasien sampai peninjauan hasil assessment. Pemisahan halaman
@@ -641,7 +637,7 @@ memenuhi persyaratan panjang jendela prediksi.
 Panel juga mencantumkan keterangan bahwa seluruh prediksi dan rekomendasi pada halaman tersebut merujuk pada pasien yang sedang dipilih. Keterangan itu
 mencegah keluaran satu pasien terbaca sebagai keluaran pasien lain ketika pengguna berpindah identitas di tengah peninjauan.
 
-\subsection{Halaman Pemilihan dan Ringkasan Pasien}
+\subsection{Halaman Riwayat Logbook Pasien}
 \label{subsec:bab5-pemilihan-dan-ringkasan-pasien}
 
 Setelah pasien dipilih, sistem menyediakan tampilan riwayat untuk memperlihatkan catatan pengamatan yang menjadi dasar pemrosesan lebih lanjut. Informasi tersebut

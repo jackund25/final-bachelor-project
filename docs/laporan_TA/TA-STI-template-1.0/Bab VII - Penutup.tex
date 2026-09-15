@@ -62,9 +62,11 @@ meningkat apabila kondisi masa depan yang benar diketahui. Karena kondisi oracle
 diposisikan sebagai performa sistem produksi. Sebaliknya, hasil oracle menunjukkan bahwa kualitas kondisi yang diberikan kepada retriever merupakan
 salah satu faktor yang membatasi performa keseluruhan mekanisme.
 
-Berdasarkan hasil tersebut, \textbf{Tujuan T2 dinyatakan terpenuhi pada ruang evaluasi penelitian}. Mekanisme penelusuran terkondisi-prediksi terbukti
-dapat meningkatkan relevansi pemeringkatan evidence pada kondisi ketika keadaan masa depan berbeda dari keadaan saat ini. Namun, manfaat tersebut
-bersifat kontekstual dan bergantung pada ketepatan kondisi yang diprediksi serta konfigurasi knowledge base dan retrieval yang digunakan.
+Berdasarkan hasil tersebut, \textbf{Tujuan T2 dinyatakan terpenuhi pada ruang evaluasi penelitian}. Mekanisme penelusuran terkondisi-prediksi meningkatkan
+relevansi pemeringkatan evidence pada kondisi ketika keadaan masa depan berbeda dari keadaan saat ini, secara konsisten pada seluruh fold dan pada kasus
+nyata. Namun, manfaat tersebut bersifat kontekstual: analisis ablasi menunjukkan bahwa sebagian keunggulan pada himpunan divergen berasal dari bergesernya
+kueri menjauh dari kondisi saat ini, bukan seluruhnya dari ketepatan nilai prediksi, dan besarnya manfaat bergantung pada ketepatan kondisi yang diprediksi
+serta konfigurasi \textit{knowledge base} dan retrieval yang digunakan.
 
 \subsection{Kesimpulan Tujuan T3: Integrasi CDSS Termediasi Dokter}
 \label{subsec:bab7-kesimpulan-t3}
@@ -88,11 +90,15 @@ kepercayaan 95\% 49,36 sampai 61,05 menunjukkan bahwa usability masih memiliki r
 68. Karena evaluasi hanya melibatkan dua belas responden, hasil tersebut diposisikan sebagai evaluasi awal terhadap keterpahaman dan penerimaan artefak,
 bukan sebagai validasi klinis yang mewakili seluruh populasi pengguna.
 
+Berdasarkan hasil tersebut, \textbf{Tujuan T3 dinyatakan terpenuhi pada ruang evaluasi penelitian}. Integrasi modul prediksi, RAG, dan antarmuka CDSS dapat
+dijalankan sebagai alur \textit{doctor-mediated}, dengan evidence dan fallback dipertahankan hingga keluaran akhir. Namun, usability, cakupan evaluasi ahli,
+ketidakpastian lintas-modalitas, dan deployment masih menjadi batas yang perlu dipertimbangkan sebelum sistem digunakan pada lingkungan klinis nyata.
+
 \subsection{Pemenuhan Kebutuhan Sistem}
 \label{subsec:bab7-pemenuhan-kebutuhan-sistem}
 
 Pemenuhan kebutuhan sistem dinilai dengan menghubungkan kebutuhan yang dirumuskan pada tahap analisis dan perancangan dengan bukti implementasi serta
-evaluasi pada Bab VI. Kebutuhan prediksi, pembentukan clinical state, retrieval berbasis kondisi masa depan, grounded generation, citation, fallback,
+evaluasi pada Bab~\ref{chap:evaluasi}. Kebutuhan prediksi, pembentukan clinical state, retrieval berbasis kondisi masa depan, grounded generation, citation, fallback,
 dan doctor mediation telah direalisasikan dan diuji pada ruang lingkup penelitian.
 
 Kebutuhan uncertainty terpenuhi pada horizon yang memiliki artefak kalibrasi yang sesuai. Sebaliknya, pada jalur finger-stick sekitar 240 menit,
@@ -103,10 +109,6 @@ Kebutuhan operational juga terpenuhi untuk lingkungan demonstrasi yang digunakan
 lingkungan lokal dan diakses melalui ngrok. Jalur ini memungkinkan demonstrasi end-to-end, tetapi belum dapat dianggap sebagai deployment produksi
 berketersediaan tinggi. Waktu respons median sekitar 2,47 detik pada benchmark terbaru menunjukkan bahwa alur dapat dijalankan secara interaktif
 dalam lingkungan evaluasi, dengan generation LLM sebagai komponen yang paling dominan terhadap waktu tunggu.
-
-Secara keseluruhan, \textbf{Tujuan T3 dinyatakan terpenuhi pada ruang evaluasi penelitian}. Integrasi prediction, RAG, dan antarmuka CDSS dapat dijalankan
-sebagai alur doctor-mediated, dengan evidence dan fallback dipertahankan hingga keluaran akhir. Namun, usability, cakupan evaluasi ahli, uncertainty
-lintas-modalitas, dan deployment masih menjadi batas yang perlu dipertimbangkan sebelum sistem digunakan pada lingkungan klinis nyata.
 
 \section{Keterbatasan Penelitian}
 \label{sec:bab7-keterbatasan-penelitian}
@@ -139,7 +141,7 @@ Hasil oracle juga menunjukkan bahwa performa retrieval masih dibatasi oleh ketep
 tidak tepat, query dapat diarahkan ke evidence yang kurang relevan meskipun mekanisme retrieval berjalan sesuai rancangan.
 
 \textbf{Pembangkitan dan evaluasi RAG.} Sebagian evaluasi generation dilakukan menggunakan konfigurasi yang berbeda dari jalur produksi terbaru. Eksperimen yang menghasilkan metrik generation
-menggunakan Gemini 2.5 Flash-Lite dengan \texttt{top\_k=4}, sedangkan jalur produksi terbaru menggunakan Gemini 3.5 Flash-Lite dengan \texttt{top\_k=5}.
+menggunakan \texttt{gemini-2.5-flash-lite} dengan \texttt{top\_k=4}, sedangkan jalur produksi terbaru menggunakan \texttt{gemini-3.5-flash-lite} dengan \texttt{top\_k=5}.
 Karena itu, angka generation dari eksperimen tersebut hanya berlaku pada protokol yang diuji dan tidak diperlakukan sebagai benchmark langsung untuk
 konfigurasi produksi terbaru.
 
@@ -148,8 +150,8 @@ dibandingkan metrik berbasis konteks pada kasus yang diuji. Oleh karena itu, RAG
 dasar untuk menyatakan kualitas generation.
 
 \textbf{Evaluasi ahli dan kebergunaan.} Evaluasi ahli melibatkan dua belas responden sehingga hasilnya digunakan sebagai evaluasi awal terhadap keterpahaman dan penerimaan sistem. Jumlah
-tersebut memenuhi anjuran ukuran sampel SUS untuk perbandingan antarmuka, tetapi belum cukup untuk menyimpulkan kesiapan klinis pada populasi pengguna
-yang luas. Selain itu, sebagian besar responden belum memiliki pengalaman
+tersebut memadai untuk membandingkan antarmuka menurut kajian keandalan SUS, tetapi bukan jaminan presisi skor absolut dan belum cukup untuk menyimpulkan
+kesiapan klinis pada populasi pengguna yang luas. Selain itu, sebagian besar responden belum memiliki pengalaman
 menggunakan CDSS sebelumnya dan hanya sebagian kecil memiliki pengalaman langsung dengan pasien diabetes yang menggunakan CGM.
 
 Rerata SUS sebesar 55,21 menunjukkan masih terdapat ruang perbaikan usability. Simpangan bakunya 9,20 dengan rentang skor individu 40,0 sampai 72,5,

@@ -52,6 +52,11 @@ ke pembangkitan keluaran yang dibumikan pada konteks dokumen.
 Keluaran pembangkitan kemudian melalui resolusi sitasi sehingga informasi pendukung dapat ditelusuri kembali ke sumber dokumen. Hasil akhir sistem berupa \textit{assessment output} yang
 memuat informasi prediksi, keadaan klinis, assessment atau rekomendasi, bukti pendukung, sitasi, informasi keselamatan, dan asumsi yang relevan.
 
+Arsitektur ini dirancang untuk lingkungan komputasi terbatas (KNF-01 dan KNF-09). Seluruh komponen lokal, yaitu modul prediksi berbasis \textit{gradient boosting}
+dan indeks penelusuran leksikal, dipilih agar dapat berjalan pada CPU tanpa akselerator grafis dan dapat dipindahkan antar-lingkungan hanya dengan artefak model,
+indeks, dan berkas konfigurasi. Satu-satunya komponen yang memerlukan layanan luar adalah model bahasa untuk generation, yang diakses melalui API berbayar per
+pemakaian sehingga tidak menuntut perangkat keras khusus di sisi pengguna.
+
 \subsection{Aliran Data End-to-End}
 \label{subsec:bab4-aliran-data-end-to-end}
 
@@ -99,6 +104,10 @@ Keluaran hasil pembangkitan selanjutnya melalui \textit{citation resolution}. Ta
 dapat ditelusuri kembali ke dokumen yang menjadi dasar penelusuran. Setelah resolusi sitasi selesai, data telah berubah menjadi \textit{assessment output} yang memadukan hasil prediksi,
 keadaan klinis, assessment atau rekomendasi, evidence pendukung, sitasi, informasi keselamatan, dan asumsi yang relevan.
 
+Dari sisi waktu tanggap (KNF-10), aliran ini disusun agar seluruh tahap sebelum generation, yaitu rekayasa fitur, prediksi, pembentukan keadaan klinis, dan
+retrieval, berjalan lokal dan ringan sehingga satu-satunya waktu tunggu yang bermakna adalah pemanggilan model bahasa. Dengan demikian, waktu respons keseluruhan
+tetap dalam orde beberapa detik dan memungkinkan penggunaan saat konsultasi berlangsung.
+
 Dengan demikian, aliran data pada sistem tidak hanya menunjukkan urutan proses, tetapi juga menunjukkan perubahan representasi data dari riwayat pemantauan menjadi fitur, hasil
 prediksi, keadaan klinis, kueri terkondisi, evidence, dan akhirnya assessment yang memiliki keterlacakan sumber. Sistem berhenti pada \textit{assessment output}; penggunaan hasil
 tersebut oleh dokter berada pada konteks \textit{doctor-mediated} dan bukan merupakan tahapan komputasi di dalam sistem.
@@ -111,7 +120,7 @@ Tabel~\ref{tab:tab4.2_pemetaan_kebutuhan_rancangan} memetakan tiap kebutuhan fun
 
 \input{tables/bab4/tab4.2_pemetaan_kebutuhan_rancangan.tex}
 
-Tabel tersebut memperlihatkan bahwa kebutuhan fungsional terdistribusi mengikuti tiga tujuan artefak. KF-01 sampai KF-03 direalisasikan pada perancangan modul
+Tabel~\ref{tab:tab4.2_pemetaan_kebutuhan_rancangan} memperlihatkan bahwa kebutuhan fungsional terdistribusi mengikuti tiga tujuan artefak. KF-01 sampai KF-03 direalisasikan pada perancangan modul
 prediksi, KF-04 sampai KF-06 pada perancangan RAG terkondisi-prediksi, sedangkan KF-07 dan KF-08 pada perancangan integrasi CDSS. Kebutuhan nonfungsional
 umumnya tidak dipenuhi oleh satu komponen tunggal. Keterlacakan sitasi, misalnya, ditentukan bersama oleh cara dokumen disegmentasi dan cara sitasi diverifikasi,
 sedangkan keamanan klinis ditentukan oleh guardrail keluaran sekaligus oleh penempatan dokter sebagai penentu akhir.
@@ -183,20 +192,20 @@ sekuens yang dipaksakan untuk seluruh modalitas karena karakteristik temporal ke
 \subsection{Sasaran Prediksi \texorpdfstring{$\Delta$}{Delta}Glukosa dan Rekonstruksi} 
 \label{subsec:bab4-target-prediksi-rekonstruksi}
 
-Model dirancang untuk mempelajari perubahan kadar glukosa, bukan langsung nilai absolutnya. Untuk suatu waktu acuan $t$ dan horizon $h$, perubahan glukosa didefinisikan sebagai
+Model dirancang untuk mempelajari perubahan kadar glukosa, bukan langsung nilai absolutnya. Untuk suatu waktu acuan $t$ dan horizon $h$, perubahan glukosa didefinisikan pada Persamaan~\ref{eq:bab4-delta-glukosa}, dengan $g_t$ menyatakan kadar glukosa pada waktu acuan dan $g_{t+h}$ menyatakan kadar glukosa pada waktu target.
 
-\begin{equation} \Delta g_{t+h} = g_{t+h} - g_t,
+\begin{equation} \Delta g_{t+h} = g_{t+h} - g_t
     \label{eq:bab4-delta-glukosa}
 \end{equation}
 \eqcaption{Definisi perubahan (delta) kadar glukosa.}
-dengan $g_t$ menyatakan kadar glukosa pada waktu acuan dan $g_{t+h}$ menyatakan kadar glukosa pada waktu target. Model kemudian menghasilkan taksiran $\widehat{\Delta g}_{t+h}$.
 
-Nilai glukosa terprediksi direkonstruksi dari perubahan tersebut menggunakan: 
+Model menghasilkan taksiran $\widehat{\Delta g}_{t+h}$, dan nilai glukosa terprediksi direkonstruksi dari perubahan tersebut melalui Persamaan~\ref{eq:bab4-rekonstruksi-glukosa}.
 
-\begin{equation} \widehat{g}_{t+h} = g_t + \widehat{\Delta g}_{t+h}.
+\begin{equation} \widehat{g}_{t+h} = g_t + \widehat{\Delta g}_{t+h}
     \label{eq:bab4-rekonstruksi-glukosa}
 \end{equation}
 \eqcaption{Rekonstruksi nilai glukosa terprediksi dari delta.}
+
 Pendekatan ini membuat model berfokus pada dinamika perubahan dari keadaan terkini, sementara nilai absolut pada waktu acuan tetap dipertahankan sebagai titik referensi.
 
 \subsection{Ketidakpastian Prediksi} 
@@ -214,7 +223,9 @@ proses komputasi modul.
 \label{subsec:bab4-representasi-kondisi-klinis}
 
 Hasil prediksi numerik diterjemahkan menjadi representasi keadaan klinis terstruktur yang menjadi penghubung antara modul prediksi dan mekanisme RAG. Representasi tersebut memuat
-informasi yang diperlukan untuk menggambarkan kondisi glukosa yang diperkirakan, termasuk hasil prediksi dan konteks ketidakpastian yang relevan.
+kategori kondisi (hipoglikemia, normal, hiperglikemia), arah dan laju perubahan glukosa, tingkat kegentingan, nilai prediksi pada horizon yang dipakai, serta interval
+ketidakpastian bila tersedia (KF-07). Dari representasi ini pula diturunkan dua peringatan: peringatan dini hipoglikemia bila kadar terprediksi berada di bawah ambang
+peringatan, dan peringatan divergensi bila kategori kondisi terprediksi berbeda dari kategori kondisi saat ini.
 
 \textit{Clinical state} dirancang sebagai representasi perantara, bukan sebagai rekomendasi. Nilai ini digunakan untuk mengondisikan \textit{query transformation} pada tahap RAG
 sehingga informasi klinis yang ditelusuri sesuai dengan kondisi yang diperkirakan. Pemisahan tersebut menjaga modul prediksi tetap bertanggung jawab terhadap pembentukan keadaan
@@ -263,8 +274,10 @@ Pada tahap retrieval, kueri digunakan untuk memperoleh sejumlah kandidat evidenc
 berdasarkan relevansi terhadap kueri. Reranking merupakan tahap setelah retrieval awal dan tidak dimaksudkan untuk menghasilkan informasi yang tidak terdapat pada kandidat; oleh karena
 itu, kualitas kandidat awal tetap membatasi kualitas hasil akhir \parencite{carbonell1998}.
 
-Strategi retrieval yang digunakan sebagai jalur produksi ditetapkan berdasarkan keputusan pada Bab III, sedangkan alternatif retrieval menjadi pembanding dalam evaluasi. Dengan
-demikian, keputusan pemilihan retrieval merupakan bagian dari rancangan yang dapat ditelusuri terhadap kebutuhan dan kriteria yang telah ditetapkan.
+Rancangan ini menyediakan dua jalur penelusuran (semantik dan leksikal) beserta tahap \textit{reranking} sebagai ruang pilihan. Strategi yang benar-benar dipakai pada jalur produksi
+ditetapkan pada tahap implementasi berdasarkan perbandingan selama pengembangan (Subbab~\ref{subsec:bab5-implementasi-retrieval}); pada konfigurasi final hanya jalur leksikal
+yang aktif, sedangkan jalur semantik dan \textit{reranking} dipertahankan sebagai pembanding dalam evaluasi. Dengan demikian, keputusan pemilihan retrieval tetap dapat ditelusuri
+terhadap kebutuhan dan kriteria pada Bab~\ref{chap:analisis-masalah}.
 
 \subsection{Transformasi Kueri Berbasis Kondisi Terprediksi} 
 \label{subsec:bab4-query-transformation-prediksi}
@@ -303,13 +316,14 @@ Perbedaan kedua alur terletak pada sumber conditioning yang digunakan sebelum re
 kueri. Pada pendekatan yang diusulkan, kondisi tersebut digantikan atau diperkaya oleh keadaan yang diprediksi sehingga retrieval dapat diarahkan pada informasi yang berkaitan dengan
 kondisi masa depan.
 
-Secara konseptual, transformasi kueri pada penelitian ini dapat dituliskan sebagai: 
-\begin{equation} q_{\mathrm{pred}} = T(q,\hat{s}_{t+h}),
+Secara konseptual, transformasi kueri pada penelitian ini dituliskan pada Persamaan~\ref{eq:bab4-query-pred-conditioned}, dengan $q$ menyatakan kebutuhan informasi awal, $\hat{s}_{t+h}$ menyatakan \textit{clinical state} yang dibentuk dari hasil prediksi pada horizon $h$, dan $T$ menyatakan fungsi transformasi kueri.
+
+\begin{equation} q_{\mathrm{pred}} = T(q,\hat{s}_{t+h})
     \label{eq:bab4-query-pred-conditioned}
 \end{equation}
 \eqcaption{Transformasi kueri terkondisi-prediksi.}
-dengan $q$ menyatakan kebutuhan informasi awal, $\hat{s}_{t+h}$ menyatakan \textit{clinical state} yang dibentuk dari hasil prediksi pada horizon $h$, dan $T$ menyatakan
-fungsi transformasi kueri. Bentuk ini menempatkan informasi masa depan yang diperkirakan sebagai konteks sebelum retrieval dilakukan.
+
+Bentuk ini menempatkan informasi masa depan yang diperkirakan sebagai konteks sebelum retrieval dilakukan.
 
 \subsection{Perbandingan RAG Standar dan Terkondisi-Prediksi} 
 \label{subsec:bab4-perbandingan-rag}
@@ -318,19 +332,16 @@ Perbandingan baseline dan pendekatan yang diusulkan dirancang dengan mempertahan
 Pada baseline, konteks utama berasal dari kondisi glukosa yang tersedia pada saat penelusuran. Pada pendekatan yang diusulkan, konteks utama berasal dari \textit{clinical state} hasil
 prediksi.
 
-Perbedaan tersebut dapat diringkas melalui: 
-\begin{equation} q_{\mathrm{baseline}} = T(q,s_t),
-    \label{eq:bab4-query-baseline} \end{equation}
-\eqcaption{Transformasi kueri baseline (RAG standar).}
-dan:
-    \begin{equation} q_{\mathrm{pred}} = T(q,\hat{s}_{t+h}),
-        \label{eq:bab4-query-pred-conditioned-2}
-\end{equation}
-\eqcaption{Transformasi kueri terkondisi-prediksi (pembanding).}
-dengan $s_t$ menyatakan kondisi yang tersedia pada saat pengamatan dan $\hat{s}_{t+h}$ menyatakan kondisi
-yang diperkirakan pada waktu mendatang. Perumusan ini menempatkan sumber conditioning sebagai variabel rancangan yang membedakan kedua pendekatan.
+Perbedaan tersebut diringkas oleh Persamaan~\ref{eq:bab4-query-baseline} untuk RAG standar dan Persamaan~\ref{eq:bab4-query-pred-conditioned} untuk pendekatan yang diusulkan, dengan $s_t$ menyatakan kondisi yang tersedia pada saat pengamatan dan $\hat{s}_{t+h}$ menyatakan kondisi yang diperkirakan pada waktu mendatang.
 
-Rancangan pembandingan tersebut memungkinkan pengaruh pengondisian-prediksi dinilai secara lebih terarah. Klaim mengenai keunggulan pendekatan yang diusulkan tidak ditetapkan pada tahap
+\begin{equation} q_{\mathrm{baseline}} = T(q,s_t)
+    \label{eq:bab4-query-baseline}
+\end{equation}
+\eqcaption{Transformasi kueri RAG standar.}
+
+Perumusan ini menempatkan sumber conditioning sebagai variabel rancangan yang membedakan kedua pendekatan.
+
+Rancangan perbandingan tersebut memungkinkan pengaruh kondisi terprediksi pada kueri dinilai secara lebih terarah. Klaim mengenai keunggulan pendekatan yang diusulkan tidak ditetapkan pada tahap
 rancangan, tetapi ditentukan berdasarkan hasil evaluasi pada bab berikutnya. Pendekatan ini konsisten dengan tujuan penelitian yang membandingkan mekanisme terkondisi-prediksi dengan
 RAG standar.
 
@@ -340,8 +351,9 @@ RAG standar.
 Evidence yang telah dipilih digabungkan dengan \textit{clinical state} dan konteks kebutuhan informasi sebagai masukan bagi proses generation. Komponen pembangkitan dirancang untuk
 menggunakan evidence sebagai dasar keluaran sehingga assessment tidak hanya bergantung pada pengetahuan internal model bahasa.
 
-Prompt dirancang untuk membatasi keluaran agar tetap berada dalam konteks evidence yang diberikan. Keluaran juga membedakan informasi hasil prediksi, informasi yang ditemukan pada
-pedoman, dan informasi yang tidak dapat disimpulkan dari data. Pembatasan prompt menjadi salah satu lapisan pengendalian keluaran dan tidak menggantikan evaluasi sistem
+Prompt dirancang untuk membatasi keluaran agar tetap berada dalam konteks evidence yang diberikan dan mewajibkan keluaran berbahasa Indonesia (KNF-05) meskipun
+sebagian besar dokumen sumber berbahasa Inggris. Keluaran juga membedakan informasi hasil prediksi, informasi yang ditemukan pada pedoman, dan informasi yang tidak
+dapat disimpulkan dari data. Pembatasan prompt menjadi salah satu lapisan pengendalian keluaran dan tidak menggantikan evaluasi sistem
 \parencite{lewis2020,gao2023}.
 
 Hasil generation berupa assessment atau rekomendasi yang disusun berdasarkan konteks terprediksi dan evidence terpilih. Dengan demikian, generation berfungsi menghasilkan informasi yang

@@ -9,56 +9,48 @@
 \setcounter{section}{0}
 \vspace{2em}
 
-
-
+% Kolom halaman diisi dari teks PDF hasil kompilasi terakhir; periksa ulang
+% setelah kompilasi final.
 
 \begin{longtable}{@{} l >{\raggedright\arraybackslash}p{9cm} c @{}}
 \multicolumn{1}{l}{\textbf{Notasi}} & \multicolumn{1}{l}{\textbf{Deskripsi}} & \multicolumn{1}{l}{\parbox[c]{2.5cm}{\raggedright \textbf{Pemakaian pertama kali}}} \\[0.5em]
 
-% Rekayasa fitur dan model prediksi (Persamaan V.1--V.4)
-$\tau_I$ & Konstanta waktu peluruhan \emph{insulin-on-board} (240 menit) & 36 \\
-$\tau_C$ & Konstanta waktu peluruhan \emph{carbs-on-board} (180 menit) & 36 \\
-$d_i$ & Dosis insulin yang diberikan pada waktu $t_i$ & 36 \\
-$c_i$ & Jumlah karbohidrat yang dikonsumsi pada waktu $t_i$ & 36 \\
-$t_i$ & Waktu pemberian insulin atau karbohidrat & 36 \\
-$g_t$ & Kadar glukosa aktual pada waktu $t$ & 37 \\
-$\mathrm{trend}_t$ & Tren glukosa: selisih terhadap tiga langkah sebelumnya & 37 \\
-$\widehat{\Delta g}$ & Perubahan kadar glukosa yang diprediksi model (target pelatihan) & 37 \\
-$\hat{g}_{t+h}$ & Kadar glukosa terprediksi untuk horizon $h$ & 37 \\
-$h$ & Horizon prediksi (langkah ke depan) & 37 \\
-$x_t$ & Vektor fitur (\emph{state} fisiologis) pada waktu $t$ & 37 \\
-$f_{\mathrm{RF}}$ & Fungsi prediksi model \emph{Random Forest} & 37 \\[1ex]
+% Pemilihan solusi (Persamaan III.1)
+$S_i$ & Skor WSM alternatif ke-$i$ & 55 \\
+$a_{ij}$ & Skor alternatif ke-$i$ pada kriteria ke-$j$ & 55 \\
+$w_j$ & Bobot kriteria ke-$j$ & 55 \\
+$N$ & Jumlah kriteria penilaian & 55 \\[1ex]
 
-% Notasi pipeline RAG Terkondisi-Prediksi (Algoritma V.1)
-$s_t$ & \emph{State} logbook pasien pada waktu $t$ & 40 \\
-$c$ & Klasifikasi kondisi klinis dari nilai terprediksi & 40 \\
-$q$ & Kueri \emph{retrieval} yang dikondisikan pada prediksi & 40 \\
-$E$ & Fungsi \emph{embedding} teks & 40 \\
-$\mathcal{K}$ & Indeks basis pengetahuan klinis (\emph{vector store}) & 40 \\
-$D$ & Himpunan dokumen hasil \emph{retrieval} & 40 \\
-$G$ & Model bahasa besar (generator) & 40 \\
-$r$ & Rekomendasi klinis tertelusur yang dihasilkan & 40 \\[1ex]
+% Modul prediksi (Persamaan IV.1--IV.2, Bab V)
+$t$ & Waktu acuan prediksi & 70 \\
+$h$ & Horizon prediksi & 70 \\
+$g_t$ & Kadar glukosa pada waktu acuan $t$ & 70 \\
+$g_{t+h}$ & Kadar glukosa aktual pada waktu $t+h$ & 70 \\
+$\Delta g_{t+h}$ & Perubahan kadar glukosa dari $t$ ke $t+h$ (target pelatihan) & 70 \\
+$\widehat{\Delta g}_{t+h}$ & Taksiran perubahan kadar glukosa oleh model & 70 \\
+$\hat{g}_{t+h}$ & Kadar glukosa terprediksi pada horizon $h$ & 70 \\
+$\tau$ & Konstanta waktu peluruhan eksponensial (240 menit untuk \emph{insulin-on-board}, 180 menit untuk \emph{carbohydrate-on-board}) & 89 \\
+$\Delta t$ & Selang waktu sejak kejadian insulin atau karbohidrat & 89 \\
+$\mathbf{X}$ & Sekuens vektor fitur masukan model & 93 \\
+$f$ & Fungsi prediksi model \emph{Gradient Boosting} & 93 \\[1ex]
 
-% Metrik prediksi (Persamaan VI.1--VI.3)
-$g_i,\ \hat{g}_i$ & Nilai glukosa aktual dan prediksi untuk sampel ke-$i$ & 46 \\
-$n$ & Jumlah sampel & 46 \\[1ex]
+% RAG terkondisi-prediksi (Persamaan IV.3--IV.4, Algoritma V.3--V.4)
+$q$ & Kebutuhan informasi awal atau pertanyaan pengguna & 74 \\
+$s_t$ & Kondisi klinis pada waktu pengamatan & 74 \\
+$\hat{s}_{t+h}$ & \emph{Clinical state} yang dibentuk dari hasil prediksi pada horizon $h$ & 74 \\
+$T$ & Fungsi transformasi kueri & 74 \\
+$q_{\mathrm{pred}}$ & Kueri \emph{retrieval} terkondisi-prediksi & 74 \\
+$q_{\mathrm{baseline}}$ & Kueri \emph{retrieval} RAG standar & 74 \\
+$C(\cdot)$ & Pemetaan kadar glukosa terprediksi menjadi kategori kondisi klinis & 99 \\
+$c$ & Kategori kondisi klinis hasil pemetaan & 99 \\
+$q'$ & Kueri \emph{retrieval} setelah disambung konteks kondisi & 99 \\
+$E$ & Himpunan \emph{evidence} hasil \emph{retrieval} & 104 \\
+$A$ & \emph{Assessment} yang dihasilkan model bahasa beserta sitasinya & 104 \\[1ex]
 
-% Kalibrasi ketidakpastian konformal (Persamaan VI.4--VI.5)
-$\alpha$ & Tingkat signifikansi; $1-\alpha$ menyatakan tingkat kepercayaan interval & 50 \\
-$q_{\alpha}$ & Kuantil ke-$(1-\alpha)$ dari residual kalibrasi & 50 \\
-$q'_{\alpha}$ & Kuantil ke-$(1-\alpha)$ dari residual kalibrasi ternormalisasi & 50 \\
-$\sigma(x)$ & Simpangan baku antar-pohon sebagai estimasi ketidakpastian & 50 \\
-$C(x)$ & Interval prediksi konformal untuk masukan $x$ & 50 \\[1ex]
-
-% Metrik retrieval (Persamaan VI.6--VI.7)
-$k$ & Jumlah dokumen teratas yang diambil (\emph{top-}$k$) & 52 \\
-$Q$ & Himpunan kueri evaluasi & 52 \\
-$\mathrm{rank}_q$ & Peringkat dokumen relevan pertama untuk kueri $q$ & 52 \\
-$rel_i$ & Skor relevansi dokumen pada peringkat ke-$i$ & 52 \\[1ex]
-
-% Operator
-$\sum$ & Operator penjumlahan & 36 \\
-$e$ & Bilangan Euler (basis fungsi eksponensial) & 36 \\
-$\lvert \cdot \rvert$ & Nilai absolut & 46 \\
+% Evaluasi (Bab VI)
+$k$ & Jumlah hasil teratas yang diperiksa pada Hit@$k$ & 135 \\
+$p$ & Nilai $p$ uji Wilcoxon \emph{signed-rank} berpasangan & 137 \\
+$d_z$ & Ukuran efek Cohen pada selisih berpasangan antar-\emph{fold} & 137 \\
+$\pm$ & Rerata $\pm$ simpangan baku antar-\emph{fold} & 121 \\
 
 \end{longtable}

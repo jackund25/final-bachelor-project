@@ -1,15 +1,15 @@
 \begin{table}[!htbp]
 \centering
-\caption{Hasil evaluasi generation dan pemeriksaan generation safety.}
+\caption{Hasil evaluasi \textit{generation} pada enam kasus dan pemeriksaan \textit{generation safety}.}
 \label{tab:tab6.12_evaluasi_generation_dan_safety}
     \begin{tabular}{lrr}
-    \hline
-    \textbf{Mode / Pemeriksaan} & \textbf{Nilai 1} & \textbf{Nilai 2} \\
-    \hline
-    RAG standar & sim\_ref 0,517 & action coverage 0,667 \\
-    RAG terkondisi-prediksi & sim\_ref 0,571 & action coverage 0,700 \\
-    \hline
+    \toprule
+    \textbf{Mode} & \textbf{\textit{sim\_ref}} & \textbf{\textit{Action coverage}} \\
+    \midrule
+    RAG standar & 0,517 & 0,667 \\
+    RAG terkondisi-prediksi & 0,571 & 0,700 \\
+    \bottomrule
     \end{tabular}
 
-    \noindent\tabnotestyle \textit{Generation safety model terbaru (2 kasus): seluruh aturan yang diperiksa dipatuhi.}\normalsize
+    \noindent\tabnotestyle \textit{Generation safety} model terbaru (dua kasus uji): seluruh aturan yang diperiksa dipatuhi.\normalsize
 \end{table}

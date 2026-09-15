@@ -39,19 +39,19 @@ periodik tetapi keputusan klinis utama tetap berlangsung pada titik kunjungan.
 \subsection{Identifikasi Persoalan}
 \label{subsec:bab3-identifikasi-persoalan}
 
-Dari model konseptual tersebut teridentifikasi empat persoalan utama.
+Dari model konseptual tersebut teridentifikasi empat persoalan utama, yang selanjutnya diberi kode M1 sampai M4.
 
 \begin{enumerate}
-    \item \textbf{Pengelolaan bersifat reaktif.} Penyesuaian terapi baru dilakukan setelah kadar glukosa terbukti menyimpang dari rentang sasaran pada catatan yang dibawa saat 
+    \item \textbf{M1 -- Pengelolaan bersifat reaktif.} Penyesuaian terapi baru dilakukan setelah kadar glukosa terbukti menyimpang dari rentang sasaran pada catatan yang dibawa saat 
     kunjungan. Dengan jarak antarkunjungan yang terhitung dalam minggu atau bulan, fluktuasi yang terjadi di antaranya tidak memperoleh tanggapan. Sifat reaktif ini bertentangan 
     dengan tuntutan pengelolaan DMT1 yang telah diuraikan pada Subbab~\ref{sec:bab2-dmt1}, yaitu menjaga kadar glukosa dalam rentang sempit tanpa melewati batas bawah.
-    \item \textbf{Penafsiran catatan bersifat manual dan tidak antisipatif.} Dokter menafsirkan deretan angka hasil pemantauan mandiri tanpa alat bantu, dalam waktu konsultasi 
+    \item \textbf{M2 -- Penafsiran catatan bersifat manual dan tidak antisipatif.} Dokter menafsirkan deretan angka hasil pemantauan mandiri tanpa alat bantu, dalam waktu konsultasi 
     yang terbatas. Penafsiran tersebut dapat mengenali pola yang telah terjadi, tetapi tidak menghasilkan taksiran mengenai kondisi yang akan datang. Padahal nilai klinis dari 
     antisipasi justru meningkat ketika pemantauan berlangsung jarang.
-    \item \textbf{Prediksi terputus dari rekomendasi.} Sekalipun taksiran kadar glukosa tersedia, penelitian terdahulu umumnya menyajikannya sebagai angka yang berdiri sendiri, 
+    \item \textbf{M3 -- Prediksi terputus dari rekomendasi.} Sekalipun taksiran kadar glukosa tersedia, penelitian terdahulu umumnya menyajikannya sebagai angka yang berdiri sendiri, 
     tanpa keterkaitan eksplisit dengan panduan tata laksana yang relevan terhadap kondisi yang ditaksir. Pola ini telah diuraikan pada Subbab~\ref{sec:bab2-penelitian-terkait}. 
     Akibatnya, penerjemahan dari angka prediksi menjadi tindakan tetap dibebankan sepenuhnya kepada dokter.
-    \item \textbf{Solusi berinfrastruktur berat tidak dapat diterapkan.} Kerangka berbasis \emph{personal health knowledge graph} yang dikembangkan \textcite{rad2024} menunjukkan 
+    \item \textbf{M4 -- Solusi berinfrastruktur berat tidak dapat diterapkan.} Kerangka berbasis \emph{personal health knowledge graph} yang dikembangkan \textcite{rad2024} menunjukkan 
     efektivitas yang tinggi, tetapi mensyaratkan interoperabilitas HL7 FHIR, penelusuran SPARQL di atas ontologi formal, serta aliran data pemantauan kontinu. Ketiganya tidak 
     tersedia pada lingkungan dengan sumber daya terbatas yang menjadi sasaran penelitian ini.
 \end{enumerate}
@@ -92,7 +92,7 @@ representasi yang diperlukan sebelum prediksi dilakukan, sedangkan KF-03 menghas
 pembentukan kueri yang menjadi penghubung antara modul prediksi dan penelusuran. KF-05 dan KF-06 menyediakan konteks pedoman serta rekomendasi tertelusur, sementara KF-07 dan KF-08
 mengatur penyajian kondisi serta validasi oleh dokter.
 
-Kolom asal dan tujuan pada Tabel~\ref{tab:tab3.1_kebutuhan_fungsional} membentuk penelusuran dua arah. Kolom asal menghubungkan setiap kebutuhan dengan persoalan P1--P4, sedangkan kolom
+Kolom asal dan tujuan pada Tabel~\ref{tab:tab3.1_kebutuhan_fungsional} membentuk penelusuran dua arah. Kolom asal menghubungkan setiap kebutuhan dengan persoalan M1--M4, sedangkan kolom
 tujuan menghubungkannya dengan tujuan penelitian T1--T3. Dengan demikian, kebutuhan fungsional tidak ditetapkan secara terpisah dari persoalan dan tujuan penelitian.
 
 Secara khusus, KF-04 merupakan kebutuhan yang membedakan alur yang dirancang dari RAG yang menggunakan kueri berbasis kondisi saat ini. Kebutuhan tersebut menetapkan bahwa sumber
@@ -213,8 +213,8 @@ tersebut mewakili rentang solusi dari pemantauan berbasis aturan hingga integras
     \item \textbf{P4: RAG dengan kueri statis.} Model bahasa besar dilengkapi penelusuran pada korpus pedoman klinis dengan kueri yang disusun dari pertanyaan pengguna atau keadaan yang
     sedang berlaku. Pendekatan ini menyediakan keterlacakan ke dokumen sumber, tetapi masih merespons keadaan yang telah diamati.
 
-    \item \textbf{P5: Model fisiologis mekanistik.} Dinamika glukosa dimodelkan melalui hubungan fisiologis yang dirumuskan secara eksplisit, seperti pendekatan Bergman dkk. (1979) dan
-    Dalla Man dkk. (2014). Pendekatan ini memiliki dasar fisiologis yang kuat, tetapi memerlukan pengukuran dan parameterisasi yang lebih lengkap daripada yang tersedia dalam konteks penelitian.
+    \item \textbf{P5: Model fisiologis mekanistik.} Dinamika glukosa dimodelkan melalui hubungan fisiologis yang dirumuskan secara eksplisit, seperti pendekatan \textcite{bergman1979} dan
+    \textcite{dallaman2014}. Pendekatan ini memiliki dasar fisiologis yang kuat, tetapi memerlukan pengukuran dan parameterisasi yang lebih lengkap daripada yang tersedia dalam konteks penelitian.
 
     \item \textbf{P6: RAG dengan kueri terkondisi-prediksi.} Taksiran kadar glukosa pada horizon tertentu diterjemahkan menjadi keadaan klinis terstruktur, kemudian keadaan tersebut
     digunakan untuk membentuk kueri penelusuran. Pendekatan ini menghubungkan kemampuan prediktif dengan pengetahuan klinis sehingga retrieval diarahkan pada keadaan yang diperkirakan 
@@ -240,16 +240,15 @@ pembatasan keluaran.
 \label{subsec:bab3-penilaian-wsm}
 
 Penilaian keenam alternatif dilakukan menggunakan \textit{Weighted Sum Model} (WSM), yaitu metode pengambilan keputusan multikriteria yang menghitung skor alternatif melalui penjumlahan
-nilai setiap kriteria yang telah dikalikan dengan bobotnya. Formulasi WSM yang digunakan adalah:
+nilai setiap kriteria yang telah dikalikan dengan bobotnya. Formulasi WSM yang digunakan ditunjukkan pada Persamaan~\ref{eq:bab3-wsm}, dengan $S_i$ menyatakan skor alternatif
+ke-$i$, $a_{ij}$ menyatakan skor alternatif ke-$i$ pada kriteria ke-$j$, $w_j$ menyatakan bobot kriteria ke-$j$, dan $N$ menyatakan jumlah kriteria. Seluruh kriteria dinilai pada
+skala 1 sampai 5 yang sama sehingga skor antar-kriteria dapat dijumlahkan \parencite{triantaphyllou1989}.
 
 \begin{equation}
-S_i = \sum_{j=1}^{N} a_{ij}w_j,
+S_i = \sum_{j=1}^{N} a_{ij}w_j
 \label{eq:bab3-wsm}
 \end{equation}
 \eqcaption{Formulasi skor \textit{Weighted Sum Model} (WSM).}
-
-dengan $S_i$ menyatakan skor alternatif ke-$i$, $a_{ij}$ menyatakan skor alternatif ke-$i$ pada kriteria ke-$j$, $w_j$ menyatakan bobot kriteria ke-$j$, dan $N$ menyatakan jumlah
-kriteria. Seluruh kriteria dinilai pada skala ordinal 1 sampai 5 sehingga hasil dapat dijumlahkan secara konsisten \parencite{triantaphyllou1989}.
 
 WSM digunakan sebagai alat bantu analisis pemilihan, bukan sebagai bukti performa sistem. Skor dan bobot merupakan keputusan analitis yang bergantung pada karakteristik persoalan dan
 kebutuhan penelitian. Hasil penilaian keenam alternatif disajikan pada Tabel~\ref{tab:tab3.5_penilaian_wsm}.
@@ -283,7 +282,7 @@ memenuhi sebagian, dan ``--'' tidak memenuhi. Tanda tebal menunjukkan alternatif
 \input{tables/bab3/tab3.6_matriks_keputusan_teknis.tex}
 
 Matriks tersebut menunjukkan bahwa Gradient Boosting dipilih untuk model prediksi karena memenuhi keterterapan dan memberikan keluaran yang sesuai untuk pembentukan kondisi, sedangkan
-LSTM gugur terutama karena keterterapan pada batasan lingkungan penelitian. Layanan model bahasa berbasis awan dipilih karena tidak membebani perangkat lokal, sementara model 
+LSTM gugur terutama karena keterjelasan yang paling rendah (KNF-02) dan keterterapan yang hanya sebagian terpenuhi pada batasan lingkungan penelitian. Layanan model bahasa berbasis awan dipilih karena tidak membebani perangkat lokal, sementara model 
 embedding lokal dipilih karena tidak memerlukan biaya per permintaan dan dapat berjalan pada lingkungan komputasi penelitian.
 
 Untuk pengambilan pengetahuan, RAG di atas korpus dokumen tidak terstruktur dipilih karena tidak memerlukan pembangunan ontologi dan integrasi rekam medis. Pengklasifikasi kondisi

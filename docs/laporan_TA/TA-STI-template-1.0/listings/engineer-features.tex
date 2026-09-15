@@ -1,9 +1,9 @@
 def engineer_features(self, df, insulin_tau_min=240.0, carbs_tau_min=180.0,
                       trend_steps=3, source_interval_min=5.0):
     """Fitur turunan berbasis fisiologi (per pasien, tanpa leakage).
-    iob : Insulin-on-Board, peluruhan ~insulin_tau_min  (Pers. V.1)
-    cob : Carbs-on-Board,   peluruhan ~carbs_tau_min     (Pers. V.2)
-    glucose_delta : tren glukosa (Pers. V.3); hour_sin/cos : pola diurnal.
+    iob : Insulin-on-Board, peluruhan eksponensial ~insulin_tau_min
+    cob : Carbs-on-Board,   peluruhan eksponensial ~carbs_tau_min
+    glucose_delta : tren glukosa; hour_sin/cos : pola diurnal.
     """
     df = df.sort_values(["patient_id", "timestamp"]).reset_index(drop=True)
     insulin_decay = float(np.exp(-source_interval_min / insulin_tau_min))

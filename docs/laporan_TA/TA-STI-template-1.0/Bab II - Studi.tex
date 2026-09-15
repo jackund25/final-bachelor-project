@@ -7,12 +7,12 @@
 
 Diabetes melitus tipe 1 (DMT1) merupakan kondisi kronis yang ditandai oleh kerusakan sel beta pankreas sehingga terjadi defisiensi insulin endogen dan individu memerlukan 
 terapi insulin eksogen secara berkelanjutan \parencite{ada2026}. Berbeda dari diabetes melitus tipe 2 yang memiliki mekanisme patofisiologi yang lebih beragam, kehilangan 
-fungsi sel beta pada DMT1 menyebabkan kebutuhan insulin menjadi bagian mendasar dari pengelolaan penyakit Pengelolaan DMT1 tidak hanya berkaitan dengan pemberian insulin, 
+fungsi sel beta pada DMT1 menyebabkan kebutuhan insulin menjadi bagian mendasar dari pengelolaan penyakit. Pengelolaan DMT1 tidak hanya berkaitan dengan pemberian insulin, 
 tetapi juga mencakup pemantauan kadar glukosa, pengaturan asupan karbohidrat, aktivitas fisik, serta penyesuaian terapi terhadap perubahan keadaan individu. Perubahan pada 
 faktor-faktor tersebut dapat memengaruhi kadar glukosa dalam rentang waktu yang berbeda, sehingga pengelolaan DMT1 bersifat dinamis dan memerlukan pemantauan berkelanjutan 
 \parencite{ada2026,colberg2016}. 
 
-Faktor psikologis juga dapat berhubungan dengan perubahan kadar dan variabilitas glukosa \parencite{velasco2022}.Kondisi glukosa yang terlalu tinggi maupun terlalu rendah 
+Faktor psikologis juga dapat berhubungan dengan perubahan kadar dan variabilitas glukosa \parencite{velasco2022}. Kondisi glukosa yang terlalu tinggi maupun terlalu rendah 
 memiliki konsekuensi klinis yang berbeda. Pengendalian glikemik yang lebih baik berkaitan dengan penurunan risiko komplikasi jangka panjang, sedangkan intensifikasi 
 pengelolaan juga dapat meningkatkan paparan terhadap hipoglikemia \parencite{nathan2014}. 
 
@@ -136,8 +136,8 @@ Hubungan konseptual antara asupan karbohidrat, insulin, glukosa, dan aktivitas f
     \label{fig:bab2.3-dinamika-glukosa}
 \end{figure}
 
-Gambar~\ref{fig:bab2.3-dinamika-glukosa} menunjukkan bahwa perubahan kadar glukosa dapat dipengaruhi oleh interaksi antara asupan karbohidrat, insulin, aktivitas fisik, dan 
-faktor psikologis. Aktivitas fisik dapat memengaruhi penggunaan glukosa dan respons terhadap insulin. Efek aktivitas bergantung pada karakteristik aktivitas dan keadaan individu, 
+Gambar~\ref{fig:bab2.3-dinamika-glukosa} menunjukkan bahwa perubahan kadar glukosa dipengaruhi oleh interaksi antara asupan karbohidrat, insulin, dan aktivitas fisik;
+faktor psikologis yang disebut sebelumnya tidak digambarkan karena tidak tersedia sebagai variabel terukur pada data yang digunakan. Aktivitas fisik dapat memengaruhi penggunaan glukosa dan respons terhadap insulin. Efek aktivitas bergantung pada karakteristik aktivitas dan keadaan individu, 
 sehingga pengaruhnya perlu dipertimbangkan sebagai bagian dari konteks temporal \parencite{colberg2016}.
 
 Insulin merupakan faktor penting lainnya dalam dinamika glukosa karena pemberian insulin memengaruhi laju penurunan glukosa. Pemodelan fisiologis juga menunjukkan bahwa respons
@@ -212,7 +212,7 @@ memodelkan urutan temporal seperti model rekuren, tetapi informasi temporal dapa
 Karakteristik tersebut membuat Random Forest relevan sebagai salah satu pendekatan pembanding untuk masalah prediksi berbasis data terstruktur.
 
 Kelebihan Random Forest antara lain fleksibilitas terhadap hubungan nonlinear, kemampuan menangani sejumlah fitur secara bersamaan, dan pendekatan pelatihan yang relatif 
-udah dibandingkan model neural network. Namun, model berbasis pohon tidak secara langsung mempertahankan keadaan internal yang merepresentasikan urutan waktu. Dengan demikian, 
+mudah dibandingkan model \textit{neural network}. Namun, model berbasis pohon tidak secara langsung mempertahankan keadaan internal yang merepresentasikan urutan waktu. Dengan demikian, 
 kemampuan temporalnya sangat bergantung pada bagaimana informasi historis direpresentasikan sebagai fitur masukan.
 
 \subsection{Gradient Boosting}
@@ -234,7 +234,7 @@ pelatihan, dan penggunaan sumber daya komputasi.
 \label{subsec:bab2-lstm}
 
 \textit{Long Short-Term Memory} (LSTM) merupakan arsitektur jaringan saraf rekuren yang dirancang untuk mempertahankan informasi pada rentang waktu yang lebih panjang melalui 
-mekanisme gerbang. Hochreiter dan Schmidhuber memperkenalkan LSTM untuk mengatasi kesulitan pembelajaran dependensi jangka panjang yang dapat terjadi pada jaringan rekuren 
+mekanisme gerbang. \textcite{hochreiter1997} memperkenalkan LSTM untuk mengatasi kesulitan pembelajaran dependensi jangka panjang yang dapat terjadi pada jaringan rekuren 
 konvensional \parencite{hochreiter1997}.
 
 Karakteristik tersebut membuat LSTM relevan untuk data yang memiliki urutan temporal. Pada prediksi glukosa, urutan historis dapat diberikan sebagai sekuens sehingga model 
@@ -293,7 +293,7 @@ zona tersebut ditunjukkan pada Gambar~\ref{fig:bab2-clarke-error-grid}.
 \end{figure}
 
 Gambar~\ref{fig:bab2-clarke-error-grid} memperlihatkan bahwa evaluasi prediksi tidak hanya mempertimbangkan besarnya selisih numerik, tetapi juga posisi kesalahan terhadap nilai 
-aktual dan konsekuensi klinis yang mungkin ditimbulkannya.Pendekatan ini melengkapi metrik numerik karena dua prediksi dengan selisih absolut yang sama tidak selalu mempunyai konsekuensi 
+aktual dan konsekuensi klinis yang mungkin ditimbulkannya. Pendekatan ini melengkapi metrik numerik karena dua prediksi dengan selisih absolut yang sama tidak selalu mempunyai konsekuensi 
 klinis yang sama. Prediksi yang sedikit berbeda pada kondisi tertentu dapat tetap berada pada area yang secara klinis dapat diterima, sedangkan kesalahan pada kondisi tertentu dapat 
 lebih berisiko.
 
@@ -330,13 +330,6 @@ dapat menjadi pertimbangan dalam sistem pendukung keputusan.
 CDSS ditempatkan sebagai pendukung keputusan, bukan pengganti penilaian klinis. Prinsip tersebut penting dalam sistem yang memanfaatkan model pembelajaran mesin atau kecerdasan 
 buatan karena keluaran model dapat mengandung kesalahan atau ketidakpastian \parencite{sutton2020}.
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.75\textwidth]{images/bab2/fig2.7_arsitektur_konseptual_cdss.png}
-    \caption[Arsitektur konseptual sistem pendukung keputusan klinis.]{Arsitektur konseptual sistem pendukung keputusan klinis (Diadaptasi dari \citeauthor{sutton2020} \citeyear{sutton2020}).}
-    \label{fig:bab2-cdss}
-\end{figure}
-
 \subsection{Definisi dan Cakupan CDSS}
 \label{subsec:bab2-definisi-cdss}
 
@@ -346,6 +339,13 @@ informasi bagi CDSS, tetapi hasil prediksi tetap perlu ditempatkan dalam konteks
 
 Secara konseptual, CDSS menghubungkan data pasien dengan pengetahuan, aturan, atau model yang digunakan untuk menghasilkan informasi pendukung keputusan. Hubungan antara komponen tersebut dan tenaga kesehatan
 ditunjukkan pada Gambar~\ref{fig:bab2-cdss}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/bab2/fig2.7_arsitektur_konseptual_cdss.png}
+    \caption[Arsitektur konseptual sistem pendukung keputusan klinis.]{Arsitektur konseptual sistem pendukung keputusan klinis (Diadaptasi dari \citeauthor{sutton2020} \citeyear{sutton2020}).}
+    \label{fig:bab2-cdss}
+\end{figure}
 
 Gambar~\ref{fig:bab2-cdss} menempatkan keluaran sistem sebagai informasi yang disampaikan kepada tenaga kesehatan untuk dipertimbangkan dalam proses pengambilan keputusan. 
 Dengan demikian, model prediktif atau mekanisme berbasis pengetahuan berfungsi sebagai komponen pendukung, sedangkan keputusan klinis tetap berada pada pengguna yang bertanggung jawab.
@@ -375,10 +375,9 @@ berarti sebagian informasi fisiologis tidak tersedia dan sistem harus menyatakan
 \label{subsec:bab2-sbar}
 
 Informasi CDSS pada akhirnya dibaca dan ditafsirkan oleh manusia. Karena itu, struktur komunikasi dapat membantu mengorganisasi keluaran agar informasi yang penting disampaikan 
-secara konsisten. Salah satu kerangka komunikasi klinis yang dikenal luas adalah SBAR, yaitu \textit{Situation}, \textit{Background}, Assessment, dan \textit{Recommendation}. 
+secara konsisten. Salah satu kerangka komunikasi klinis yang dikenal luas adalah SBAR, yaitu \textit{Situation}, \textit{Background}, \textit{Assessment}, dan \textit{Recommendation}.
 Kerangka tersebut menyusun informasi secara berurutan sehingga penerima dapat mengenali keadaan, konteks, penilaian, dan tindakan yang diusulkan \parencite{muller2018}.
-
-Kerangka SBAR menyusun informasi klinis ke dalam empat unsur utama, yaitu Situation, Background, Assessment, dan Recommendation. Keempat unsur tersebut dirangkum pada Tabel~\ref{tab:tab2.2_sbar}.
+Keempat unsur tersebut dirangkum pada Tabel~\ref{tab:tab2.2_sbar}.
 
 \input{tables/bab2/tab2.2_sbar.tex}
 
@@ -627,8 +626,8 @@ evaluasi yang dibahas dalam literatur disajikan pada Tabel~\ref{tab:bab2.4-keran
 
 \input{tables/bab2/tab2.4_kerangka_evaluasi.tex}
 
-Tabel~\ref{tab:bab2.4-kerangka-evaluasi} memberikan ringkasan hubungan antara komponen sistem, metrik, dan aspek yang dinilai. Kerangka tersebut digunakan sebagai dasar konseptual 
-untuk membedakan evaluasi prediksi, retrieval, generation, keselamatan, dan usability. Dengan demikian, evaluasi sistem klinis berbasis RAG dapat dilakukan secara komprehensif 
+Tabel~\ref{tab:bab2.4-kerangka-evaluasi} memberikan ringkasan hubungan antara komponen sistem, metrik, dan aspek yang dinilai. Kerangka tersebut digunakan sebagai dasar konseptual
+untuk membedakan evaluasi prediksi (termasuk implikasi klinisnya), retrieval, generation, kestabilan, keselamatan, dan usability. Dengan demikian, evaluasi sistem klinis berbasis RAG dapat dilakukan secara komprehensif 
 dengan mempertimbangkan kualitas teknis, keterlacakan, keselamatan, dan pengalaman pengguna.
 
 \section{Penelitian Terkait}
@@ -642,19 +641,19 @@ antisipatif, serta pendekatan yang menghubungkan prediksi dan pengetahuan klinis
 \label{subsec:bab2-penelitian-prediksi-glukosa}
 
 Penelitian mengenai prediksi glukosa berbasis data menunjukkan bahwa riwayat pengukuran dan variabel pendukung dapat digunakan untuk memperkirakan dinamika kadar glukosa pada 
-penyandang diabetes. Woldaregay, Årsand, dan Walderhaug dkk. (2019) meninjau penggunaan metode berbasis data untuk prediksi glukosa pada diabetes dan menunjukkan kelayakan 
-pendekatan tersebut untuk mempelajari dinamika glukosa. Penelitian tersebut menempatkan prediksi kadar glukosa sebagai keluaran utama dari proses pemodelan \parencite{woldaregay2019}.
+penyandang diabetes. \textcite{woldaregay2019} meninjau penggunaan metode berbasis data untuk prediksi glukosa pada diabetes dan menunjukkan kelayakan 
+pendekatan tersebut untuk mempelajari dinamika glukosa. Penelitian tersebut menempatkan prediksi kadar glukosa sebagai keluaran utama dari proses pemodelan.
 
-Perhatian terhadap kemampuan generalisasi juga menjadi penting pada prediksi glukosa. Ghimire dkk. (2024) menunjukkan bahwa performa model dapat berubah ketika model diterapkan 
+Perhatian terhadap kemampuan generalisasi juga menjadi penting pada prediksi glukosa. \textcite{ghimire2024} menunjukkan bahwa performa model dapat berubah ketika model diterapkan 
 pada data dengan karakteristik yang berbeda dari data yang digunakan dalam pelatihan. Temuan tersebut menunjukkan bahwa evaluasi prediksi tidak cukup hanya mempertimbangkan 
 performa pada data pelatihan atau pembagian data internal, tetapi juga perlu memperhatikan perbedaan distribusi data dan kemampuan generalisasi \parencite{ghimire2024}.
 
 \subsection{Pengelolaan Diabetes Berbasis Representasi Pengetahuan}
 \label{subsec:bab2-penelitian-knowledge-representation}
 
-Sarani Rad dkk. mengembangkan kerangka pengelolaan diabetes berbasis \textit{personal health knowledge graph} yang menggabungkan representasi pengetahuan, integrasi data
+\textcite{rad2024} mengembangkan kerangka pengelolaan diabetes berbasis \textit{personal health knowledge graph} yang menggabungkan representasi pengetahuan, integrasi data
 kesehatan, dan penelusuran berbasis SPARQL. Kerangka tersebut menunjukkan potensi personalisasi layanan kesehatan, tetapi penerapannya membutuhkan representasi pengetahuan
-formal, integrasi sumber data kesehatan, dan pemantauan kontinu yang relatif berat \parencite{rad2024}. Selain itu, penelusuran diarahkan pada informasi dan keadaan
+formal, integrasi sumber data kesehatan, dan pemantauan kontinu yang relatif berat. Selain itu, penelusuran diarahkan pada informasi dan keadaan
 pasien yang telah direpresentasikan dalam graf, bukan secara khusus pada penelusuran pedoman klinis untuk menentukan informasi tindakan yang relevan.
 
 Pendekatan tersebut memperlihatkan bahwa pengelolaan berbasis pengetahuan dapat menghubungkan informasi pasien dengan layanan personal, tetapi kebutuhan infrastruktur dan
@@ -664,23 +663,23 @@ pengetahuan klinis terkurasi tanpa mengharuskan integrasi infrastruktur kesehata
 \subsection{RAG untuk Pengetahuan Klinis dan Diabetes}
 \label{subsec:bab2-penelitian-rag-klinis}
 
-Kresevic dkk. menunjukkan bahwa RAG dapat digunakan untuk membantu penafsiran pedoman klinis oleh model bahasa dalam konteks sistem pendukung keputusan. Pada penelitian
+\textcite{kresevic2024} menunjukkan bahwa RAG dapat digunakan untuk membantu penafsiran pedoman klinis oleh model bahasa dalam konteks sistem pendukung keputusan. Pada penelitian
 tersebut, penelusuran digunakan untuk menyediakan konteks pedoman yang relevan bagi proses pembangkitan, dengan kondisi yang sedang berlaku menjadi bagian dari dasar
-pembentukan kueri \parencite{kresevic2024}. Temuan tersebut menunjukkan manfaat grounding pada dokumen klinis, tetapi pengondisian retrieval masih didasarkan pada kondisi yang
+pembentukan kueri. Temuan tersebut menunjukkan manfaat grounding pada dokumen klinis, tetapi pengondisian retrieval masih didasarkan pada kondisi yang
 tersedia saat konsultasi.
 
-Pada domain diabetes, Lee dkk. mengembangkan pendekatan RAG yang dibumikan pada pedoman diabetes dan menggunakan pertanyaan sebagai sumber kueri. Penelitian tersebut
-menunjukkan bahwa pembumian pada pedoman dapat membantu mengurangi halusinasi pada keluaran model bahasa \parencite{lee2024}. Wang dkk. juga menunjukkan pemanfaatan RAG untuk
-edukasi diabetes dengan keluaran yang dinilai dari akurasi, kelengkapan, dan keterpahaman, dengan pertanyaan pengguna sebagai dasar penelusuran \parencite{wang2024}. Kedua
+Pada domain diabetes, \textcite{lee2024} mengembangkan pendekatan RAG yang dibumikan pada pedoman diabetes dan menggunakan pertanyaan sebagai sumber kueri. Penelitian tersebut
+menunjukkan bahwa pembumian pada pedoman dapat membantu mengurangi halusinasi pada keluaran model bahasa. \textcite{wang2024} juga menunjukkan pemanfaatan RAG untuk
+edukasi diabetes dengan keluaran yang dinilai dari akurasi, kelengkapan, dan keterpahaman, dengan pertanyaan pengguna sebagai dasar penelusuran. Kedua
 penelitian tersebut memperlihatkan pentingnya sumber klinis terkurasi, tetapi mekanisme retrieval tetap dipicu oleh pertanyaan atau kondisi yang sedang berlaku, bukan oleh
 keadaan fisiologis yang diprediksi.
 
 \subsection{Retrieval Antisipatif dan Query Transformation}
 \label{subsec:bab2-penelitian-retrieval-antisipatif}
 
-Jiang dkk. memperkenalkan \textit{active retrieval augmented generation}, yaitu mekanisme yang memungkinkan retrieval dilakukan secara aktif ketika model bahasa membutuhkan
+\textcite{jiang2023} memperkenalkan \textit{active retrieval augmented generation}, yaitu mekanisme yang memungkinkan retrieval dilakukan secara aktif ketika model bahasa membutuhkan
 informasi tambahan selama proses pembangkitan. Pendekatan tersebut memperluas gagasan bahwa retrieval tidak selalu harus dilakukan satu kali pada awal proses, tetapi dapat
-dipicu berdasarkan kebutuhan model \parencite{jiang2023}.
+dipicu berdasarkan kebutuhan model.
 
 Meskipun bersifat antisipatif dalam proses pembangkitan, kondisi yang digunakan untuk memicu retrieval pada pendekatan tersebut berasal dari prediksi atau kebutuhan model
 bahasa terhadap teks yang sedang dihasilkan, bukan dari prediktor fisiologis eksternal. Perbedaan ini penting karena penelitian ini menempatkan hasil prediksi kadar glukosa
