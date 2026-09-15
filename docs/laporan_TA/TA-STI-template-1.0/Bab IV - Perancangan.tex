@@ -11,20 +11,19 @@ mekanisme \textit{query transformation} berbasis kondisi terprediksi (T2), dan i
 
 Gambaran keseluruhan komponen dan hubungan antarkomponen ditunjukkan pada Gambar~\ref{fig:fig4.1_arsitektur_sistem}.
 
-% Pada \textwidth gambar ini hanya setinggi sekitar setengah \textheight,
-% sehingga tidak memerlukan halaman float tersendiri. Penempatan diubah dari
-% [p] ke [htbp] dan \clearpage manual dihapus agar gambar berbagi halaman
-% dengan teks, bukan menyisakan halaman setengah kosong sebelum dan sesudahnya.
-\begin{figure}[!htbp]
-    \centering
+% Gambar ini sengaja TIDAK dibuat mengambang (bukan lingkungan figure):
+% sebagai float ia dilempar ke halaman tersendiri dan memotong paragraf
+% IV.1.1 di tengah. Dengan \captionof dari paket caption, gambar menempel
+% tepat di bawah kalimat yang merujuknya dan paragraf berikutnya utuh.
+\begin{center}
     \includegraphics[
         width=\textwidth,
-        height=0.50\textheight,
+        height=0.44\textheight,
         keepaspectratio
     ]{images/bab4/fig4.1_arsitektur_sistem.png}
-    \caption{Gambaran umum arsitektur sistem RAG terkondisi-prediksi.}
+    \captionof{figure}{Gambaran umum arsitektur sistem RAG terkondisi-prediksi.}
     \label{fig:fig4.1_arsitektur_sistem}
-\end{figure}
+\end{center}
 
 Arsitektur dirancang pada tingkat fungsi sehingga hubungan antara data masukan, proses pengolahan, artefak yang dihasilkan, dan keluaran sistem dapat ditelusuri. Rancangan mencakup dua
 sumber artefak utama, yaitu dataset OhioT1DM untuk membentuk modul prediksi dan dokumen pedoman klinis untuk membentuk basis pengetahuan. Kedua artefak tersebut kemudian digunakan pada
