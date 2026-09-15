@@ -6,8 +6,8 @@
 \label{sec:bab4-gambaran-umum-arsitektur}
 
 Secara umum, arsitektur mengintegrasikan modul prediksi kadar glukosa dengan mekanisme \textit{Retrieval-Augmented Generation} (RAG) terkondisi-prediksi untuk menghasilkan \textit{assessment output} 
-yang dapat digunakan sebagai pendukung keputusan klinis. Pembagian komponen tersebut mengikuti tiga tujuan artefak penelitian, yaitu modul prediksi, mekanisme \textit{query transformation} 
-berbasis kondisi terprediksi, dan integrasi ke dalam konteks \textit{doctor-mediated}.
+yang dapat digunakan sebagai pendukung keputusan klinis. Sistem dibagi menjadi tiga komponen yang masing-masing mewujudkan satu tujuan artefak penelitian: modul prediksi (T1),
+mekanisme \textit{query transformation} berbasis kondisi terprediksi (T2), dan integrasi ke dalam CDSS beralur \textit{doctor-mediated} (T3).
 
 Gambaran keseluruhan komponen dan hubungan antarkomponen ditunjukkan pada Gambar~\ref{fig:fig4.1_arsitektur_sistem}.
 
@@ -38,18 +38,17 @@ prediksi, dataset OhioT1DM melalui tahap prapemrosesan, rekayasa fitur, pembentu
 adalah model prediksi terpilih yang digunakan pada proses prediksi sistem.
 
 Pada sisi pengetahuan klinis, dokumen pedoman melalui prapemrosesan dokumen, pembentukan representasi pengetahuan, dan pengindeksan. Proses tersebut menghasilkan basis pengetahuan yang
-menyediakan indeks untuk penelusuran informasi klinis. Pengindeksan dibangun dari himpunan potongan dokumen yang sama sehingga metadata sumber dan struktur informasi dapat dipertahankan
-sepanjang proses retrieval.
+menyediakan indeks untuk penelusuran informasi klinis. Indeks dibangun dari potongan dokumen yang sudah dilengkapi metadata sumber, sehingga metadata dan struktur informasi tetap terbawa sepanjang proses retrieval.
 
 Setelah artefak prediksi dan basis pengetahuan tersedia, masukan berupa catatan logbook pasien diproses melalui \textit{modality routing} untuk menentukan sumber pengukuran
 glukosa yang digunakan. Data kemudian diproses menjadi fitur yang diperlukan oleh model prediksi. Modul prediksi menghasilkan kadar glukosa terprediksi beserta informasi ketidakpastian
 yang menyertainya. Hasil tersebut selanjutnya digunakan untuk membentuk representasi keadaan klinis terstruktur.
 
 Keadaan klinis terprediksi menjadi dasar bagi \textit{query transformation}. Tahap ini mengubah kebutuhan penelusuran menjadi kueri yang dikondisikan pada keadaan yang diperkirakan akan
-terjadi. Kueri tersebut kemudian digunakan untuk mengambil bukti dari basis pengetahuan. Bukti yang diperoleh diproses melalui reranking dan seleksi evidence sebelum diteruskan
-ke pembangkitan keluaran yang dibumikan pada konteks dokumen.
+terjadi. Kueri tersebut kemudian digunakan untuk mengambil \textit{evidence} dari basis pengetahuan. \textit{Evidence} yang diperoleh diurutkan dan diseleksi sebelum diteruskan ke
+tahap \textit{generation}, yaitu penyusunan keluaran yang bersandar pada konteks dokumen.
 
-Keluaran pembangkitan kemudian melalui resolusi sitasi sehingga informasi pendukung dapat ditelusuri kembali ke sumber dokumen. Hasil akhir sistem berupa \textit{assessment output} yang
+Keluaran \textit{generation} kemudian melalui \textit{citation resolution} sehingga informasi pendukung dapat ditelusuri kembali ke sumber dokumen. Hasil akhir sistem berupa \textit{assessment output} yang
 memuat informasi prediksi, keadaan klinis, assessment atau rekomendasi, bukti pendukung, sitasi, informasi keselamatan, dan asumsi yang relevan.
 
 Arsitektur ini dirancang untuk lingkungan komputasi terbatas (KNF-01 dan KNF-09). Seluruh komponen lokal, yaitu modul prediksi berbasis \textit{gradient boosting}
@@ -61,7 +60,7 @@ pemakaian sehingga tidak menuntut perangkat keras khusus di sisi pengguna.
 \label{subsec:bab4-aliran-data-end-to-end}
 
 Aliran data end-to-end menggambarkan perubahan bentuk data sejak catatan \textit{patient logbook} diterima hingga sistem menghasilkan \textit{assessment output}. Fokus rancangan pada
-tahap ini adalah transformasi representasi data pada setiap proses, sehingga hubungan antara masukan, hasil antara, dan keluaran sistem dapat dipahami secara berurutan. Aliran tersebut
+tahap ini adalah perubahan bentuk data pada setiap proses, sehingga hubungan antara masukan, keluaran tiap tahap, dan keluaran akhir sistem dapat dipahami secara berurutan. Aliran tersebut
 ditunjukkan pada Gambar~\ref{fig:fig4.2_aliran_data-end-to-end}.
 
 \begin{figure}[!htbp]
@@ -75,32 +74,31 @@ ditunjukkan pada Gambar~\ref{fig:fig4.2_aliran_data-end-to-end}.
 \end{figure}
 
 Pada tahap awal, \textit{patient logbook} merupakan data masukan yang memuat riwayat pemantauan pasien. Data tersebut belum berada dalam bentuk yang langsung dapat diproses oleh model
-karena sumber pengukuran glukosa dapat berasal dari modalitas yang berbeda. Oleh karena itu, \textit{modality routing} mengubah masukan awal menjadi jalur data yang sesuai dengan sumber
-pengukuran yang digunakan pada skenario prediksi.
+karena sumber pengukuran glukosa dapat berasal dari modalitas yang berbeda. Oleh karena itu, \textit{modality routing} memilih jalur pemrosesan yang sesuai dengan sumber pengukuran glukosa yang
+digunakan pada skenario prediksi.
 
 Data yang telah diarahkan kemudian mengalami \textit{feature extraction}. Pada tahap ini, riwayat pemantauan diubah menjadi representasi fitur yang dapat digunakan oleh modul prediksi.
 Representasi tersebut memuat informasi kadar glukosa dan karakteristik turunannya, serta fitur yang merepresentasikan konteks fisiologis dan temporal sesuai dengan rancangan modul
 prediksi.
 
 Representasi fitur selanjutnya diproses oleh model prediksi untuk menghasilkan dua jenis informasi, yaitu kadar glukosa terprediksi dan informasi ketidakpastian prediksi. Dengan
-demikian, keluaran pada tahap prediksi bukan lagi berupa riwayat pengukuran, melainkan representasi kuantitatif mengenai keadaan glukosa pada horizon yang ditentukan beserta informasi
-mengenai ketidakpastian hasil tersebut.
+demikian, keluaran tahap prediksi bukan lagi riwayat pengukuran, melainkan taksiran kuantitatif keadaan glukosa pada horizon yang ditentukan beserta ketidakpastiannya.
 
 Hasil prediksi kemudian diubah menjadi \textit{clinical state} terstruktur. Transformasi ini diperlukan agar keluaran numerik dapat digunakan oleh tahap penelusuran sebagai konteks
 kondisi yang diperkirakan. \textit{Clinical state} menjadi representasi perantara antara modul prediksi dan mekanisme RAG, sehingga hasil prediksi dapat memengaruhi informasi yang
 dicari tanpa langsung menjadi rekomendasi.
 
 Representasi \textit{clinical state} selanjutnya digunakan dalam \textit{query transformation}. Pada tahap ini, konteks keadaan terprediksi diubah menjadi kueri yang ditujukan untuk
-penelusuran pengetahuan klinis. Kueri yang dihasilkan menjadi representasi masukan bagi tahap retrieval dan menjadi pembeda utama antara penelusuran berbasis kondisi yang sedang diamati
-dengan penelusuran yang dikondisikan pada kondisi terprediksi.
+penelusuran pengetahuan klinis. Kueri yang dihasilkan menjadi masukan bagi tahap retrieval dan menjadi pembeda utama antara penelusuran berbasis kondisi yang sedang diamati
+dan penelusuran berbasis kondisi terprediksi.
 
 Hasil retrieval berupa kumpulan kandidat evidence dari basis pengetahuan. Kandidat tersebut belum langsung diteruskan ke pembangkitan karena perlu disusun berdasarkan relevansinya
-terhadap kebutuhan penelusuran. Oleh karena itu, proses reranking mengubah kumpulan kandidat menjadi evidence yang lebih terurut untuk digunakan sebagai konteks pembangkitan.
+terhadap kebutuhan penelusuran. Oleh karena itu, proses \textit{reranking} mengurutkan ulang kandidat menurut relevansinya sebelum dipakai sebagai konteks \textit{generation}.
 
 Evidence terpilih kemudian digabungkan dengan konteks keadaan klinis pada tahap \textit{grounded generation}. Pada tahap ini, representasi evidence dan konteks digunakan untuk membentuk
 keluaran assessment yang didasarkan pada informasi yang diperoleh dari basis pengetahuan, bukan hanya pada pengetahuan internal model bahasa.
 
-Keluaran hasil pembangkitan selanjutnya melalui \textit{citation resolution}. Tahap ini mempertahankan keterhubungan antara keluaran dengan sumber evidence sehingga informasi pendukung
+Keluaran \textit{generation} selanjutnya melalui \textit{citation resolution}. Tahap ini mempertahankan keterhubungan antara keluaran dengan sumber evidence sehingga informasi pendukung
 dapat ditelusuri kembali ke dokumen yang menjadi dasar penelusuran. Setelah resolusi sitasi selesai, data telah berubah menjadi \textit{assessment output} yang memadukan hasil prediksi,
 keadaan klinis, assessment atau rekomendasi, evidence pendukung, sitasi, informasi keselamatan, dan asumsi yang relevan.
 
@@ -108,8 +106,8 @@ Dari sisi waktu tanggap (KNF-10), aliran ini disusun agar seluruh tahap sebelum 
 retrieval, berjalan lokal dan ringan sehingga satu-satunya waktu tunggu yang bermakna adalah pemanggilan model bahasa. Dengan demikian, waktu respons keseluruhan
 tetap dalam orde beberapa detik dan memungkinkan penggunaan saat konsultasi berlangsung.
 
-Dengan demikian, aliran data pada sistem tidak hanya menunjukkan urutan proses, tetapi juga menunjukkan perubahan representasi data dari riwayat pemantauan menjadi fitur, hasil
-prediksi, keadaan klinis, kueri terkondisi, evidence, dan akhirnya assessment yang memiliki keterlacakan sumber. Sistem berhenti pada \textit{assessment output}; penggunaan hasil
+Dengan demikian, aliran data pada sistem memperlihatkan bukan hanya urutan proses, tetapi juga perubahan bentuk data: dari riwayat pemantauan menjadi fitur, hasil
+prediksi, keadaan klinis, kueri terkondisi, \textit{evidence}, dan akhirnya \textit{assessment} yang dapat ditelusuri ke sumbernya. Sistem berhenti pada \textit{assessment output}; penggunaan hasil
 tersebut oleh dokter berada pada konteks \textit{doctor-mediated} dan bukan merupakan tahapan komputasi di dalam sistem.
 
 \subsection{Pemetaan Kebutuhan terhadap Rancangan}
@@ -150,8 +148,8 @@ menyediakan keadaan kuantitatif dan informasi ketidakpastiannya sebagai masukan 
 \label{subsec:bab4-prapemrosesan-kualitas-data}
 
 Prapemrosesan dirancang untuk menjaga konsistensi waktu, struktur data, dan kelayakan riwayat sebelum data diteruskan ke model. Data diproses berdasarkan pasien dan sumber pengukuran
-sehingga urutan waktu tetap terjaga. Nilai glukosa tidak dibentuk secara sintetis dan tidak diimputasi ketika hilang, sedangkan interpolasi hanya diterapkan pada variabel numerik
-non-glukosa sesuai batas interpolasi yang telah ditentukan.
+sehingga urutan waktu tetap terjaga. Nilai glukosa tidak dibentuk secara sintetis dan tidak diimputasi ketika hilang; interpolasi hanya diterapkan pada variabel numerik
+selain glukosa, dan hanya untuk celah yang lebih pendek dari batas interpolasi yang ditetapkan pada konfigurasi (dirinci pada Bab~\ref{chap:implementasi}).
 
 Selain itu, kelayakan jendela historis dijaga menggunakan batas interval dan celah waktu pengamatan. Informasi mengenai batas tersebut disimpan bersama artefak inferensi dan digunakan
 kembali ketika penyajian dilakukan. Dengan rancangan tersebut, jendela yang tidak memenuhi persyaratan temporal dapat ditolak sebelum prediksi dihasilkan, sehingga ketidaksesuaian
@@ -168,7 +166,8 @@ Fitur final yang digunakan oleh modul prediksi terdiri atas sembilan variabel, y
 residual insulin dan karbohidrat setelah kejadian awal, sedangkan fitur tren dan laju perubahan digunakan untuk menangkap dinamika kadar glukosa. Penggunaan fitur tersebut sejalan
 dengan sifat temporal pengaruh insulin, karbohidrat, dan aktivitas terhadap glukosa \parencite{bergman1979,dallaman2014,colberg2016}.
 
-Penyandian waktu dalam bentuk sinus dan cosinus digunakan untuk merepresentasikan posisi waktu dalam siklus harian tanpa memperlakukan batas pergantian hari sebagai jarak yang terputus.
+Penyandian waktu dalam bentuk sinus dan kosinus digunakan untuk merepresentasikan posisi waktu dalam siklus harian, sehingga pukul 23.59 dan 00.01 dikenali sebagai
+waktu yang berdekatan, bukan berjauhan.
 Fitur \textit{time\_since\_prev\_glucose} digunakan untuk mempertahankan informasi mengenai ketidakberaturan interval pengamatan, terutama pada pembacaan finger-stick. Dengan demikian,
 vektor fitur tidak hanya memuat keadaan glukosa saat ini, tetapi juga konteks fisiologis dan temporal yang relevan untuk prediksi.
 
@@ -227,7 +226,7 @@ kategori kondisi (hipoglikemia, normal, hiperglikemia), arah dan laju perubahan 
 ketidakpastian bila tersedia (KF-07). Dari representasi ini pula diturunkan dua peringatan: peringatan dini hipoglikemia bila kadar terprediksi berada di bawah ambang
 peringatan, dan peringatan divergensi bila kategori kondisi terprediksi berbeda dari kategori kondisi saat ini.
 
-\textit{Clinical state} dirancang sebagai representasi perantara, bukan sebagai rekomendasi. Nilai ini digunakan untuk mengondisikan \textit{query transformation} pada tahap RAG
+\textit{Clinical state} dirancang sebagai representasi perantara, bukan sebagai rekomendasi. Representasi ini menjadi masukan \textit{query transformation} pada tahap RAG
 sehingga informasi klinis yang ditelusuri sesuai dengan kondisi yang diperkirakan. Pemisahan tersebut menjaga modul prediksi tetap bertanggung jawab terhadap pembentukan keadaan
 kuantitatif, sementara interpretasi berbasis pengetahuan dilakukan pada tahap berikutnya.
 
@@ -238,19 +237,19 @@ Mekanisme RAG terkondisi-prediksi dirancang untuk menghubungkan keadaan glukosa 
 realisasi tujuan artefak kedua (T2), yaitu menggunakan kondisi masa depan yang diperkirakan sebagai konteks sebelum penelusuran dilakukan. Berbeda dari RAG yang menggunakan pertanyaan
 atau kondisi yang tersedia saat penelusuran, mekanisme ini menempatkan hasil prediksi sebagai sumber pembentukan kueri sebelum retrieval \parencite{lewis2020,gao2023}.
 
-Perancangan mekanisme terdiri atas pembentukan basis pengetahuan, penyiapan representasi dokumen untuk retrieval, transformasi kueri berdasarkan clinical state, penelusuran dan
-reranking evidence, pembangkitan keluaran yang dibumikan pada evidence, serta mekanisme keterlacakan dan fallback. Tahapan tersebut dirancang sebagai rangkaian yang mengubah hasil
+Perancangan mekanisme terdiri atas pembentukan basis pengetahuan, penyiapan representasi dokumen untuk retrieval, transformasi kueri berdasarkan \textit{clinical state},
+penelusuran dan \textit{reranking} \textit{evidence}, \textit{grounded generation}, serta mekanisme keterlacakan dan \textit{fallback}. Tahapan tersebut dirancang sebagai rangkaian yang mengubah hasil
 prediksi menjadi konteks penelusuran dan akhirnya menjadi assessment yang didukung sumber klinis.
 
 \subsection{Kurasi Basis Pengetahuan} 
 \label{subsec:bab4-kurasi-basis-pengetahuan}
 
 Basis pengetahuan dibentuk dari dokumen pedoman klinis yang dipilih berdasarkan relevansi terhadap kebutuhan pengelolaan diabetes dan assessment glukosa. Dokumen yang telah dikumpulkan
-menjadi sumber pengetahuan eksternal yang digunakan ketika informasi yang diperlukan tidak cukup direpresentasikan oleh data pasien atau hasil prediksi.
+menjadi sumber pengetahuan eksternal yang melengkapi data pasien dan hasil prediksi, sebab keduanya tidak memuat pengetahuan tata laksana.
 
 Kurasi mempertahankan identitas dan konteks asal setiap dokumen. Dengan demikian, informasi yang digunakan sebagai evidence tetap dapat dikaitkan dengan dokumen sumbernya. Keterlacakan
-tersebut penting pada clinical knowledge retrieval karena relevansi, kesesuaian konteks, dan kemampuan menelusuri kembali dasar informasi merupakan bagian dari kualitas sistem
-\parencite{amugongo2025}.
+tersebut penting pada penelusuran pengetahuan klinis karena relevansi, kesesuaian konteks, dan kemampuan menelusuri kembali dasar informasi merupakan bagian dari kualitas
+sistem \parencite{amugongo2025}.
 
 \subsection{Segmentasi Dokumen dan Metadata Halaman} 
 \label{subsec:bab4-segmentasi-dokumen-metadata}
@@ -259,10 +258,10 @@ Dokumen pedoman tidak diproses sebagai satu unit utuh, tetapi diubah menjadi pot
 konteks yang cukup pada setiap potongan sehingga informasi tetap dapat dipahami ketika digunakan sebagai evidence pada tahap berikutnya.
 
 Setiap potongan dilengkapi metadata yang mengidentifikasi sumbernya, termasuk identitas dokumen, tahun atau informasi sumber, bagian dokumen, nomor halaman, dan identitas potongan.
-Metadata tersebut digunakan kembali pada tahap pemilihan evidence dan citation resolution sehingga keluaran dapat ditelusuri ke lokasi asal informasi.
+Metadata tersebut digunakan kembali pada tahap pemilihan \textit{evidence} dan \textit{citation resolution} sehingga keluaran dapat ditelusuri ke lokasi asal informasi.
 
-Dengan rancangan tersebut, unit retrieval terdiri atas konten dan metadata sumber. Hubungan ini memungkinkan evidence yang dipilih tetap membawa provenance ketika diteruskan ke proses
-generation.
+Dengan rancangan tersebut, unit retrieval terdiri atas konten dan metadata sumber, sehingga \textit{evidence} yang dipilih tetap membawa asal-usulnya ketika diteruskan ke
+proses \textit{generation}.
 
 \subsection{Desain Penelusuran} 
 \label{subsec:bab4-desain-penelusuran}
@@ -313,7 +312,7 @@ dikondisikan pada keadaan yang diperkirakan.
 \end{figure}
 
 Perbedaan kedua alur terletak pada sumber conditioning yang digunakan sebelum retrieval. Pada RAG konvensional, kondisi yang tersedia pada saat pengamatan menjadi konteks pembentukan
-kueri. Pada pendekatan yang diusulkan, kondisi tersebut digantikan atau diperkaya oleh keadaan yang diprediksi sehingga retrieval dapat diarahkan pada informasi yang berkaitan dengan
+kueri. Pada pendekatan yang diusulkan, kondisi saat ini digantikan oleh keadaan yang diprediksi sebagai dasar kueri, sehingga retrieval diarahkan pada informasi yang berkaitan dengan
 kondisi masa depan.
 
 Secara konseptual, transformasi kueri pada penelitian ini dituliskan pada Persamaan~\ref{eq:bab4-query-pred-conditioned}, dengan $q$ menyatakan kebutuhan informasi awal, $\hat{s}_{t+h}$ menyatakan \textit{clinical state} yang dibentuk dari hasil prediksi pada horizon $h$, dan $T$ menyatakan fungsi transformasi kueri.
@@ -328,8 +327,8 @@ Bentuk ini menempatkan informasi masa depan yang diperkirakan sebagai konteks se
 \subsection{Perbandingan RAG Standar dan Terkondisi-Prediksi} 
 \label{subsec:bab4-perbandingan-rag}
 
-Perbandingan baseline dan pendekatan yang diusulkan dirancang dengan mempertahankan tujuan penelusuran dan sumber knowledge base, sementara sumber conditioning pada kueri dibedakan.
-Pada baseline, konteks utama berasal dari kondisi glukosa yang tersedia pada saat penelusuran. Pada pendekatan yang diusulkan, konteks utama berasal dari \textit{clinical state} hasil
+Perbandingan antara RAG standar dan pendekatan yang diusulkan dirancang dengan menyamakan tujuan penelusuran dan basis pengetahuan; yang dibedakan hanya kondisi yang dipakai
+untuk membentuk kueri. Pada RAG standar, konteks utama berasal dari kondisi glukosa yang tersedia pada saat penelusuran. Pada pendekatan yang diusulkan, konteks utama berasal dari \textit{clinical state} hasil
 prediksi.
 
 Perbedaan tersebut diringkas oleh Persamaan~\ref{eq:bab4-query-baseline} untuk RAG standar dan Persamaan~\ref{eq:bab4-query-pred-conditioned} untuk pendekatan yang diusulkan, dengan $s_t$ menyatakan kondisi yang tersedia pada saat pengamatan dan $\hat{s}_{t+h}$ menyatakan kondisi yang diperkirakan pada waktu mendatang.
@@ -339,25 +338,25 @@ Perbedaan tersebut diringkas oleh Persamaan~\ref{eq:bab4-query-baseline} untuk R
 \end{equation}
 \eqcaption{Transformasi kueri RAG standar.}
 
-Perumusan ini menempatkan sumber conditioning sebagai variabel rancangan yang membedakan kedua pendekatan.
+Perumusan ini menempatkan kondisi yang dipakai membentuk kueri sebagai satu-satunya variabel rancangan yang membedakan kedua pendekatan.
 
 Rancangan perbandingan tersebut memungkinkan pengaruh kondisi terprediksi pada kueri dinilai secara lebih terarah. Klaim mengenai keunggulan pendekatan yang diusulkan tidak ditetapkan pada tahap
 rancangan, tetapi ditentukan berdasarkan hasil evaluasi pada bab berikutnya. Pendekatan ini konsisten dengan tujuan penelitian yang membandingkan mekanisme terkondisi-prediksi dengan
 RAG standar.
 
-\subsection{Pembangkitan Rekomendasi Grounded} 
+\subsection{\textit{Grounded Generation}} 
 \label{subsec:bab4-grounded-generation}
 
-Evidence yang telah dipilih digabungkan dengan \textit{clinical state} dan konteks kebutuhan informasi sebagai masukan bagi proses generation. Komponen pembangkitan dirancang untuk
-menggunakan evidence sebagai dasar keluaran sehingga assessment tidak hanya bergantung pada pengetahuan internal model bahasa.
+\textit{Evidence} yang telah dipilih digabungkan dengan \textit{clinical state} dan kebutuhan informasi sebagai masukan proses \textit{generation}. Komponen ini dirancang
+agar keluaran bersandar pada \textit{evidence}, sehingga \textit{assessment} tidak hanya bergantung pada pengetahuan internal model bahasa.
 
 Prompt dirancang untuk membatasi keluaran agar tetap berada dalam konteks evidence yang diberikan dan mewajibkan keluaran berbahasa Indonesia (KNF-05) meskipun
 sebagian besar dokumen sumber berbahasa Inggris. Keluaran juga membedakan informasi hasil prediksi, informasi yang ditemukan pada pedoman, dan informasi yang tidak
 dapat disimpulkan dari data. Pembatasan prompt menjadi salah satu lapisan pengendalian keluaran dan tidak menggantikan evaluasi sistem
 \parencite{lewis2020,gao2023}.
 
-Hasil generation berupa assessment atau rekomendasi yang disusun berdasarkan konteks terprediksi dan evidence terpilih. Dengan demikian, generation berfungsi menghasilkan informasi yang
-mendukung assessment, bukan menghasilkan keputusan klinis secara otomatis.
+Hasil \textit{generation} berupa \textit{assessment} atau rekomendasi yang disusun berdasarkan konteks terprediksi dan \textit{evidence} terpilih. Dengan demikian,
+\textit{generation} berfungsi menghasilkan informasi pendukung, bukan keputusan klinis otomatis.
 
 \subsection{Keterlacakan dan Verifikasi Sitasi} 
 \label{subsec:bab4-keterlacakan-verifikasi-sitasi}
@@ -375,14 +374,14 @@ diposisikan sebagai informasi yang didukung oleh knowledge base.
 \subsection{Mekanisme Fallback Retrieval dan Generation} 
 \label{subsec:bab4-fallback-retrieval-generation}
 
-Rancangan RAG menyediakan perilaku alternatif ketika kondisi yang diperlukan untuk menghasilkan assessment tidak terpenuhi. Pada tahap retrieval, tidak ditemukannya evidence yang
-memadai diperlakukan berbeda dari ditemukannya evidence relevan. Sistem tidak diarahkan untuk mengisi kekosongan tersebut dengan informasi yang tidak memiliki dasar pada knowledge base.
+Rancangan RAG menyediakan perilaku alternatif ketika kondisi yang diperlukan untuk menghasilkan assessment tidak terpenuhi. Pada tahap retrieval, sistem membedakan keadaan ketika \textit{evidence} yang memadai ditemukan dari keadaan ketika tidak ditemukan; pada keadaan kedua, kekosongan itu
+tidak diisi dengan informasi yang tidak berdasar pada basis pengetahuan.
 
-Pada tahap generation, kegagalan memperoleh konteks yang memadai atau kegagalan pembangkitan ditangani dengan keluaran yang menyatakan keterbatasan informasi yang tersedia. Dengan
-demikian, sistem dapat menghasilkan keluaran yang lebih terbatas daripada menghasilkan rekomendasi yang tidak memiliki dukungan sumber.
+Pada tahap \textit{generation}, kegagalan memperoleh konteks yang memadai atau kegagalan pemanggilan model ditangani dengan keluaran yang menyatakan keterbatasan
+informasi. Dengan demikian, sistem memilih menghasilkan keluaran yang lebih terbatas daripada rekomendasi yang tidak memiliki dukungan sumber.
 
 Rancangan fallback juga mempertahankan pemisahan antara kegagalan data, retrieval, dan generation. Pemisahan tersebut membantu menjelaskan penyebab keluaran terbatas kepada pengguna dan
-mendukung ketahanan sistem terhadap kondisi yang tidak sesuai dengan jalur normal. Mekanisme tersebut sejalan dengan pembahasan fallback dan pembatasan keluaran klinis pada Bab II.
+mendukung ketahanan sistem terhadap kondisi yang tidak sesuai dengan jalur normal. Mekanisme tersebut sejalan dengan pembahasan \textit{fallback} dan pembatasan keluaran klinis pada Subbab~\ref{subsec:bab2-fallback-clinical-output}.
 
 \section{Perancangan Integrasi CDSS} 
 \label{sec:bab4-perancangan-integrasi-cdss}
@@ -401,7 +400,7 @@ tersebut disajikan secara bersama dalam keluaran akhir tanpa mengubahnya menjadi
 
 Integrasi antara modul prediksi dan RAG dimulai setelah riwayat pasien diproses dan model menghasilkan kadar glukosa terprediksi beserta interval ketidakpastiannya. Keluaran tersebut
 digunakan untuk membentuk \textit{clinical state} yang selanjutnya menjadi konteks pada \textit{query transformation}. Kueri yang dihasilkan digunakan untuk menelusuri knowledge base,
-kemudian evidence yang diperoleh dirangking dan diteruskan ke proses \textit{grounded generation}.
+kemudian \textit{evidence} yang diperoleh diurutkan dan diteruskan ke proses \textit{grounded generation}.
 
 Dengan rancangan tersebut, T1 dan T2 membentuk rangkaian yang saling bergantung. Modul prediksi menyediakan informasi keadaan yang diperkirakan, sedangkan mekanisme RAG menggunakan
 keadaan tersebut untuk mengarahkan penelusuran pengetahuan klinis. Hasil prediksi dan evidence tetap dipertahankan sebagai dua sumber informasi yang berbeda hingga tahap pembentukan
@@ -414,9 +413,9 @@ Keluaran akhir sistem dirancang sebagai \textit{assessment output} yang memaduka
 informasi keselamatan, dan asumsi. Struktur tersebut mengikuti komponen keluaran yang telah ditetapkan pada rancangan arsitektur dan digunakan untuk menyajikan hasil sistem kepada
 pengguna.
 
-\textit{Prediction} memuat hasil estimasi kadar glukosa dan informasi ketidakpastian, sedangkan \textit{clinical state} menyajikan keadaan terstruktur yang digunakan untuk mengarahkan
-penelusuran. \textit{Recommendation} merupakan hasil assessment berbasis konteks prediksi dan evidence. \textit{Evidence and citation} menunjukkan dasar informasi yang digunakan,
-sementara \textit{safety information} dan \textit{assumptions} menyampaikan batas interpretasi serta kondisi yang menyertai keluaran.
+Bagian prediksi memuat taksiran kadar glukosa dan ketidakpastiannya, sedangkan \textit{clinical state} menyajikan keadaan terstruktur yang digunakan untuk mengarahkan
+penelusuran. Bagian rekomendasi merupakan hasil \textit{assessment} berbasis konteks prediksi dan \textit{evidence}. Bagian \textit{evidence} dan sitasi menunjukkan dasar
+informasi yang digunakan, sementara bagian informasi keselamatan dan asumsi menyampaikan batas penafsiran serta kondisi yang menyertai keluaran.
 
 Struktur tersebut dirancang agar asal informasi tetap dapat dibedakan. Nilai yang dihasilkan oleh modul prediksi tidak disamakan dengan informasi yang diperoleh dari dokumen pedoman,
 sedangkan keluaran generatif ditempatkan sebagai penyusunan assessment berdasarkan kedua sumber tersebut.
@@ -432,18 +431,18 @@ Informasi ketidakpastian dipertahankan bersama hasil prediksi sehingga keluaran 
 agar assessment dapat diperiksa kembali terhadap sumber pengetahuan yang digunakan. Informasi keselamatan dan asumsi ditampilkan sebagai bagian dari keluaran untuk memperjelas kondisi
 serta batas penggunaan assessment.
 
-Guardrail juga membatasi interpretasi hasil pada konteks yang tersedia. Apabila kondisi yang diperlukan untuk menghasilkan prediction atau evidence yang memadai tidak terpenuhi, sistem
-tidak diarahkan untuk mengisi kekosongan tersebut dengan informasi yang tidak memiliki dasar.
+\textit{Guardrail} juga membatasi penafsiran hasil pada konteks yang tersedia. Apabila syarat untuk menghasilkan prediksi atau \textit{evidence} yang memadai tidak
+terpenuhi, sistem tidak mengisi kekosongan itu dengan informasi yang tidak berdasar.
 
 \subsection{Konteks Penggunaan Termediasi Dokter} 
 \label{subsec:bab4-konteks-penggunaan-doctor-mediated}
 
 Sistem dirancang untuk digunakan dalam konteks \textit{doctor-mediated}, yaitu ketika dokter menjadi pihak yang menggunakan dan meninjau \textit{assessment output} yang dihasilkan
 sistem. Alur penggunaan tersebut dimulai dari pemilihan atau pendaftaran pasien, pemilihan kanal glukosa, pencatatan atau pembaruan \textit{patient logbook}, dan pelaksanaan
-\textit{clinical assessment}. Tahap-tahap interaksi tersebut menjadi konteks penggunaan sebelum sistem menjalankan proses prediction dan RAG.
+\textit{clinical assessment}. Tahap-tahap interaksi tersebut menjadi konteks penggunaan sebelum sistem menjalankan proses prediksi dan RAG.
 
-Alur penggunaan sampai keluaran assessment ditunjukkan pada Gambar~\ref{fig:fig4.5_flow-cdss}. Diagram tersebut menempatkan proses internal prediction dan RAG sebagai satu kesatuan dari
-sudut pandang pengguna, karena rincian transformasi data dan mekanisme retrieval telah dijelaskan pada Gambar~\ref{fig:fig4.2_aliran_data-end-to-end} serta
+Alur penggunaan sampai keluaran \textit{assessment} ditunjukkan pada Gambar~\ref{fig:fig4.5_flow-cdss}. Pada diagram tersebut, proses internal prediksi dan RAG
+digambarkan sebagai satu kesatuan dari sudut pandang pengguna; rinciannya telah dijelaskan pada Gambar~\ref{fig:fig4.2_aliran_data-end-to-end} serta
 Gambar~\ref{fig:fig4.3_rag-konvensional}--\ref{fig:fig4.4_rag-terkondisi-prediksi}.
 
 \begin{figure}[!htbp] 
@@ -456,16 +455,15 @@ Gambar~\ref{fig:fig4.3_rag-konvensional}--\ref{fig:fig4.4_rag-terkondisi-prediks
     \label{fig:fig4.5_flow-cdss} 
 \end{figure}
 
-Setelah \textit{assessment output} tersedia, dokter meninjau informasi prediksi, clinical state, rekomendasi, evidence, sitasi, informasi keselamatan, dan asumsi yang ditampilkan
-sistem. Hasil tersebut menjadi bahan pertimbangan pada proses pengambilan keputusan klinis. Dengan demikian, keputusan klinis berada setelah tahap peninjauan dokter dan tidak menjadi
+Setelah \textit{assessment output} tersedia, dokter meninjau informasi prediksi, \textit{clinical state}, rekomendasi, \textit{evidence}, sitasi, informasi keselamatan,
+dan asumsi yang ditampilkan sistem. Hasil tersebut menjadi bahan pertimbangan pada proses pengambilan keputusan klinis. Dengan demikian, keputusan klinis berada setelah tahap peninjauan dokter dan tidak menjadi
 keluaran komputasional dari sistem.
 
 \subsection{Integrasi Fallback dan Status Data} 
 \label{subsec:bab4-integrasi-fallback-status-data}
 
-Integrasi CDSS juga mempertimbangkan kondisi ketika sistem tidak dapat menghasilkan assessment lengkap. Status keluaran dibedakan berdasarkan sumber keterbatasannya, antara lain tidak
-tersedianya data pasien atau kanal yang diminta, riwayat yang tidak memenuhi jumlah atau kelayakan temporal, artefak model yang tidak tersedia, evidence retrieval yang tidak memadai,
-serta kegagalan pembangkitan.
+Integrasi CDSS juga mempertimbangkan kondisi ketika sistem tidak dapat menghasilkan assessment lengkap. Status keluaran dibedakan menurut sumber keterbatasannya. Sumber itu dapat berupa data pasien atau kanal yang diminta tidak tersedia, riwayat yang tidak memenuhi
+jumlah atau kelayakan temporal, artefak model yang tidak tersedia, \textit{evidence} hasil retrieval yang tidak memadai, atau kegagalan \textit{generation}.
 
 Pada kondisi data tidak mencukupi atau jendela tidak layak, sistem tidak menghasilkan prediksi seolah-olah masukan memenuhi persyaratan. Pada kondisi retrieval tidak menghasilkan
 evidence yang memadai, keluaran tidak diarahkan untuk menghasilkan rekomendasi yang tidak memiliki dukungan sumber. Apabila model bahasa tidak tersedia, sistem dapat menggunakan
