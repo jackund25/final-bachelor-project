@@ -6,24 +6,17 @@
 \label{sec:bab5-lingkungan-realisasi-sistem}
 
 Implementasi sistem direalisasikan pada lingkungan komputasi kelas konsumen dengan pemisahan antara antarmuka pengguna, layanan aplikasi, logika inti, dan komponen
-penyimpanan. Pemisahan tersebut digunakan untuk merealisasikan rancangan pada Bab IV menjadi perangkat lunak yang dapat dijalankan dan diuji secara terpisah.
+penyimpanan. Pemisahan tersebut digunakan untuk merealisasikan rancangan pada Bab~\ref{chap:perancangan} menjadi perangkat lunak yang dapat dijalankan dan diuji secara terpisah.
 Pembahasan pada bagian ini mencakup perangkat keras, perangkat lunak, struktur implementasi, serta konfigurasi utama yang membentuk lingkungan sistem final.
 
 \subsection{Lingkungan Perangkat Keras}
 \label{subsec:bab5-lingkungan-perangkat-keras}
 
-Sistem dibangun dan diuji menggunakan laptop ASUS VivoBook M3400QA dengan prosesor AMD Ryzen 5 5600H dan memori 16 GB. Sistem operasi yang digunakan adalah Windows
-dengan lingkungan pengembangan berbasis Python. Perangkat grafis terintegrasi tersedia pada mesin, tetapi tidak digunakan sebagai akselerator utama pada pelatihan
-model maupun proses embedding. Dengan demikian, lingkungan komputasi yang digunakan merepresentasikan perangkat kelas konsumen dan tidak mensyaratkan GPU khusus.
-
-Pemilihan lingkungan tersebut konsisten dengan karakteristik implementasi yang diarahkan agar dapat dijalankan tanpa ketergantungan pada akselerator grafis khusus.
-Catatan pengembangan menunjukkan bahwa pelatihan dan embedding dijalankan pada CPU, sehingga spesifikasi perangkat yang digunakan memadai untuk pembangunan dan
-pengujian sistem pada lingkup penelitian ini.
+Sistem dibangun dan diuji pada laptop kelas konsumen dengan prosesor AMD Ryzen 5 5600H, memori 16 GB, dan sistem operasi Windows 11; spesifikasinya dirangkum pada
+Tabel~\ref{tab:tab5.1_spesifikasi_perangkat_keras}. Perangkat grafis terintegrasi tersedia pada mesin, tetapi seluruh pelatihan model dan pemrosesan dijalankan pada
+CPU. Dengan demikian, lingkungan komputasi yang digunakan mewakili perangkat kelas konsumen dan tidak mensyaratkan GPU khusus, sesuai kebutuhan KNF-01.
 
 \input{tables/bab5/tab5.1_spesifikasi_perangkat_keras.tex}
-
-Tabel~\ref{tab:tab5.1_spesifikasi_perangkat_keras} merangkum spesifikasi perangkat keras yang digunakan. Informasi yang dicantumkan dibatasi pada komponen yang
-relevan terhadap lingkungan komputasi dan tidak memasukkan identitas perangkat yang tidak diperlukan untuk reproduksi teknis.
 
 \subsection{Lingkungan Perangkat Lunak}
 \label{subsec:bab5-lingkungan-perangkat-lunak}
@@ -60,7 +53,7 @@ memungkinkan modul prediksi dan pipeline RAG digunakan melalui layanan backend y
 Gambar~\ref{fig:fig5.1_struktur_implementasi_sistem} menunjukkan hubungan antara antarmuka pengguna, layanan backend, modul prediksi, pipeline RAG, dan komponen penyimpanan. 
 Pengguna berinteraksi dengan sistem melalui frontend berbasis PWA yang berkomunikasi dengan backend menggunakan API. Backend kemudian mengoordinasikan modul prediksi dan 
 pipeline RAG sesuai kebutuhan assessment. Modul prediksi menggunakan data pasien dan artefak model, sedangkan pipeline RAG menggunakan basis pengetahuan untuk memperoleh 
-evidence yang diperlukan. Struktur ini menjadi dasar implementasi modul prediksi pada V.2, pipeline RAG pada V.3, dan antarmuka CDSS pada V.4.
+evidence yang diperlukan. Struktur ini menjadi dasar implementasi modul prediksi (Subbab~\ref{sec:bab5-implementasi-modul-prediksi}), pipeline RAG (Subbab~\ref{sec:bab5-implementasi-rag}), dan antarmuka CDSS (Subbab~\ref{sec:bab5-implementasi-integrasi-cdss-pwa}).
 
 \subsection{Konfigurasi Utama Implementasi}
 \label{subsec:bab5-konfigurasi-utama-implementasi}
@@ -73,17 +66,14 @@ Ringkasan konfigurasi tersebut ditunjukkan pada Tabel~\ref{tab:tab5.3_konfiguras
 
 \input{tables/bab5/tab5.3_konfigurasi_utama_implementasi.tex}
 
-Konfigurasi model produksi menetapkan \texttt{HistGradientBoostingRegressor} dengan \texttt{random\_state=42}. Hyperparameter model lainnya mengikuti nilai bawaan
-scikit-learn sebagaimana kebijakan implementasi yang terdokumentasi. Untuk retrieval, konfigurasi final menggunakan \textit{chunk} berukuran 900 karakter dengan overlap
-120 karakter, batas kalimat pada proses pemotongan, indeks produksi yang terdiri atas 2.233 potongan, serta Okapi BM25 dengan \texttt{top\_k=5}. Konfigurasi tersebut
-dipertahankan sebagai keadaan final yang digunakan sistem.
+Konfigurasi model produksi menetapkan \texttt{HistGradientBoostingRegressor} dengan \texttt{random\_state=42}; \textit{hyperparameter} lainnya mengikuti nilai bawaan
+scikit-learn. Untuk retrieval, konfigurasi final menggunakan potongan (\textit{chunk}) berukuran 900 karakter dengan tumpang-tindih 120 karakter, pemotongan pada
+batas kalimat, indeks produksi berisi 2.233 potongan, serta Okapi BM25 dengan \texttt{top\_k=5}.
 
-Beberapa keputusan konfigurasi tersebut merupakan hasil evaluasi selama proses pengembangan. Ukuran \textit{chunk} 900 karakter, misalnya, dipertahankan setelah dibandingkan dengan ukuran alternatif dan tetap
-memberikan konfigurasi yang sesuai dengan kebutuhan retrieval pada eksperimen yang dilakukan. Demikian pula, parameter temperature 0,2 digunakan untuk menjaga
-pembangkitan tetap konservatif pada konteks klinis.
-
-Konfigurasi final harus dibedakan dari catatan percobaan sebelumnya. Untuk penulisan bab implementasi, nilai yang dicantumkan pada bagian ini mengikuti artefak dan
-konfigurasi yang benar-benar digunakan pada jalur produksi final.
+Beberapa nilai tersebut merupakan hasil perbandingan selama pengembangan. Ukuran potongan 900 karakter, misalnya, dipertahankan setelah dibandingkan dengan ukuran
+alternatif dan memberikan hasil retrieval yang paling sesuai pada eksperimen yang dilakukan. Demikian pula, \textit{temperature} 0,2 dipilih agar keluaran model bahasa
+tetap konservatif pada konteks klinis. Seluruh nilai yang dicantumkan pada bab ini adalah nilai yang benar-benar dipakai pada jalur produksi final, bukan nilai dari
+percobaan-percobaan sebelumnya.
 
 \section{Implementasi Modul Prediksi}
 \label{sec:bab5-implementasi-modul-prediksi}
@@ -108,8 +98,8 @@ Kontrak input yang digunakan oleh modul dirangkum pada Tabel~\ref{tab:tab5.4_kon
 \input{tables/bab5/tab5.4_kontrak_input_modul_prediksi.tex}
 
 Tabel~\ref{tab:tab5.4_kontrak_input_modul_prediksi} membedakan sumber data, variabel dasar, dan keluaran yang diharapkan. Pemeriksaan kontrak dilakukan sebelum pemrosesan
-agar ketidaksesuaian skema tidak diteruskan ke tahap prediksi. Pada data logbook manual, sistem juga harus mempertahankan kesesuaian nama dan sumber variabel dengan
-kontrak model; variabel yang bukan fitur model tetap dapat menjadi catatan tetapi tidak digunakan sebagai masukan prediktor.
+agar ketidaksesuaian skema tidak diteruskan ke tahap prediksi. Pada data \textit{logbook} manual, nama dan sumber variabel harus sesuai dengan kontrak model. Variabel yang bukan fitur model tetap boleh dicatat, tetapi tidak
+digunakan sebagai masukan prediktor.
 
 \subsection{Prapemrosesan Data}
 \label{subsec:bab5-prapemrosesan-modul-prediksi}
@@ -131,8 +121,8 @@ daripada menginterpolasi jeda panjang.
 
 Rekayasa fitur merupakan tahap yang mengubah variabel dasar hasil prapemrosesan menjadi representasi yang digunakan oleh model prediksi. Konfigurasi final menggunakan
 sembilan fitur, yaitu \texttt{glucose}, \texttt{glucose\_delta}, \texttt{iob}, \texttt{cob}, \texttt{activity}, \texttt{hour\_sin}, \texttt{hour\_cos},
-\texttt{glucose\_rate}, dan \texttt{time\_since\_prev\_glucose}. Kesembilan fitur tersebut terverifikasi pada bundle prediksi produksi dan artefak pengklasifikasi
-kondisi. Rangkaian transformasi dilakukan per pasien agar hubungan temporal tidak tercampur antar pasien.
+\texttt{glucose\_rate}, dan \texttt{time\_since\_prev\_glucose}. Kesembilan fitur tersebut tersimpan pada \textit{bundle} model produksi dan pada artefak pengklasifikasi kondisi (Subbab~\ref{subsec:bab5-clinical-state}), sehingga
+keduanya memakai definisi fitur yang sama. Rangkaian transformasi dilakukan per pasien agar hubungan temporal tidak tercampur antar-pasien.
 
 Pemilihan fitur mempertimbangkan dua hal, yaitu representasi dinamika glukosa dan kelayakan fitur pada data yang tersedia. Secara fisiologis, perubahan glukosa dipengaruhi
 oleh interaksi kadar glukosa, insulin, asupan karbohidrat, dan aktivitas fisik. Oleh karena itu, fitur tidak hanya merepresentasikan nilai glukosa terakhir, tetapi juga
@@ -143,16 +133,16 @@ informasi mengenai kejadian yang masih memberikan pengaruh dan arah perubahan gl
 Tabel~\ref{tab:tab5.5_definisi_fitur_modul_prediksi} menjelaskan hubungan setiap fitur dengan informasi yang direpresentasikannya. IOB dan COB mempertahankan
 efek residual insulin dan karbohidrat, sedangkan \texttt{glucose\_delta} dan \texttt{glucose\_rate} menangkap dinamika perubahan glukosa. Fitur sinus dan cosinus
 digunakan untuk merepresentasikan konteks waktu secara siklis, sedangkan \texttt{time\_since\_prev\_glucose} mempertahankan informasi mengenai ketidakberaturan
-pengamatan. Secara umum, tabel tersebut menunjukkan bahwa fitur dibentuk untuk melengkapi tiga jenis informasi, yaitu keadaan glukosa, pengaruh fisiologis yang
-masih berlangsung, dan konteks temporal. Pemisahan ini membantu menjaga agar vektor masukan tetap ringkas tetapi tetap membawa informasi yang relevan terhadap
-perubahan glukosa.
+pengamatan. Secara umum, fitur-fitur tersebut mencakup tiga jenis informasi, yaitu keadaan glukosa, pengaruh fisiologis yang masih berlangsung, dan konteks temporal.
+Pengelompokan ini menjaga vektor masukan tetap ringkas namun memuat informasi yang relevan terhadap perubahan glukosa.
 
 \subsubsection{Representasi Efek Residual Insulin dan Karbohidrat}
 \label{subsubsec:bab5-iob-cob}
 
 Kejadian insulin dan karbohidrat dicatat sebagai peristiwa pada waktu tertentu, tetapi pengaruhnya tidak berhenti pada saat pencatatan. Karena itu, kejadian mentah
 diubah menjadi \textit{insulin-on-board} (IOB) dan \textit{carbohydrate-on-board} (COB) untuk mempertahankan estimasi efek residual pada waktu berikutnya.
-Pendekatan tersebut konsisten dengan landasan fisiologis yang digunakan pada perancangan fitur di Bab III dan Bab IV \cite{bergman1979,dallaman2014}.
+Pendekatan tersebut konsisten dengan landasan fisiologis yang digunakan pada Subbab~\ref{subsec:bab3-analisis-pemilihan-fitur} dan
+Subbab~\ref{subsec:bab4-rekayasa-fitur-prediksi} \cite{bergman1979,dallaman2014}.
 
 Implementasi menggunakan peluruhan eksponensial sederhana berbasis waktu. Untuk interval sumber 5 menit, faktor peluruhan dihitung sebagai
 $\exp(-\Delta t/\tau)$, dengan $\tau$ sebesar 240 menit untuk insulin dan 180 menit untuk karbohidrat. Nilai tersebut merupakan parameter implementasi yang
@@ -165,22 +155,20 @@ informasi kejadian historis ke dalam model.
 \subsubsection{Representasi Dinamika Glukosa}
 \label{subsubsec:bab5-dinamika-glukosa}
 
-Fitur \texttt{glucose\_delta} merepresentasikan perubahan kadar glukosa antar-pengamatan, sedangkan \texttt{glucose\_rate} merepresentasikan laju perubahan
-terhadap waktu. Keduanya ditambahkan agar model tidak hanya menerima nilai kadar glukosa, tetapi juga arah dan kecepatan perubahannya.
-
-Perhitungan menggunakan urutan waktu setiap pasien dan mempertimbangkan selang waktu aktual. Dengan cara tersebut, perubahan yang sama pada dua interval waktu
-yang berbeda tidak diperlakukan sebagai perubahan dengan laju yang identik. Konfigurasi tren menggunakan tiga langkah historis pada sumber dengan interval nominal
-5 menit, sehingga rentang nominalnya sekitar 15 menit.
+Fitur \texttt{glucose\_delta} merepresentasikan selisih kadar glukosa terhadap tiga pengamatan sebelumnya (pada CGM dengan interval nominal 5 menit, rentangnya
+sekitar 15 menit), sedangkan \texttt{glucose\_rate} merepresentasikan laju perubahan per satuan waktu dengan memperhitungkan selang waktu aktual antar-pengamatan.
+Keduanya ditambahkan agar model tidak hanya menerima nilai kadar glukosa, tetapi juga arah dan kecepatan perubahannya; dengan laju berbasis waktu aktual, selisih
+yang sama pada dua selang waktu berbeda tidak diperlakukan sebagai laju yang sama.
 
 \subsubsection{Representasi Aktivitas Fisik}
 \label{subsubsec:bab5-aktivitas}
 
 Fitur \texttt{activity} dipertahankan sebagai konteks pendukung karena aktivitas fisik dapat memengaruhi penggunaan glukosa dan respons terhadap insulin.
-Ketersediaan aktivitas pada dataset memang lebih jarang dibandingkan pengukuran glukosa, insulin, dan basal rate, tetapi masih memiliki pengamatan nonnol sehingga
-tidak diperlakukan sebagai variabel yang tidak dapat digunakan.
+Catatan aktivitas pada dataset memang jauh lebih jarang daripada pengukuran glukosa, insulin, dan laju basal, tetapi masih memiliki pengamatan bernilai bukan nol
+sehingga tetap dapat digunakan.
 
-Fitur ini digunakan dalam bentuk numerik yang tersedia setelah prapemrosesan. Penelitian tidak membuat nilai aktivitas baru untuk mengisi kejadian yang tidak tercatat,
-sehingga fitur tetap merepresentasikan informasi yang benar-benar tersedia pada data.
+Fitur ini dipakai dalam bentuk numerik apa adanya setelah prapemrosesan. Kejadian aktivitas yang tidak tercatat tidak diisi dengan nilai buatan, sehingga fitur
+tetap merepresentasikan informasi yang benar-benar tersedia pada data.
 
 \subsubsection{Representasi Waktu Diurnal}
 \label{subsubsec:bab5-diurnal}
@@ -217,8 +205,8 @@ Keluaran tahap ini adalah vektor fitur yang menjadi dasar pembentukan sekuens pa
 disimpan bersama artefak inferensi sehingga konfigurasi pelatihan dan penyajian dapat dipertahankan.
 
 Fitur \texttt{stress} tidak termasuk dalam vektor final. Pada dataset, variabel tersebut hanya muncul pada sedikit pengamatan sehingga tidak memberikan variasi yang
-cukup untuk digunakan sebagai prediktor. Penghapusannya menjaga agar fitur model tetap didasarkan pada informasi yang benar-benar tersedia, sementara keputusan
-tersebut tidak menghapus informasi lain dari pipeline yang memang masih diperlukan di luar prediktor.
+cukup untuk digunakan sebagai prediktor. Dengan demikian, fitur model tetap didasarkan pada informasi yang benar-benar tersedia; variabel \texttt{stress} sendiri tetap tersimpan pada data mentah
+meskipun tidak dipakai sebagai prediktor.
 
 \subsection{Pembentukan Sekuens dan Horizon Prediksi}
 \label{subsec:bab5-sekuens-horizon-prediksi}
@@ -251,24 +239,20 @@ menentukan parameter transformasi.
 \label{subsec:bab5-model-prediksi}
 
 Model produksi yang digunakan pada sistem final adalah \textit{HistGradientBoostingRegressor} dari scikit-learn. Random Forest dan LSTM dipertahankan sebagai model
-pembanding pada eksperimen prediksi, sedangkan persistence digunakan sebagai pembanding khusus pada jalur finger-stick. Pemisahan ini diperlukan agar model yang
-digunakan aplikasi tidak tertukar dengan model yang digunakan untuk membandingkan perilaku prediksi pada tahap evaluasi.
+pembanding pada eksperimen prediksi, sedangkan persistence digunakan sebagai pembanding khusus pada jalur finger-stick. Pemisahan ini menegaskan model mana yang dipakai aplikasi dan model mana yang hanya dipakai sebagai pembanding pada tahap evaluasi.
 
-Pemilihan model produksi tidak didasarkan pada klaim bahwa satu model selalu memiliki galat paling kecil. Selama pengembangan, model dibandingkan dengan protokol
-yang sama dan keputusan produksi mempertimbangkan kesesuaian performa dengan kebutuhan sistem, ukuran artefak, waktu pelatihan, kemampuan dijalankan pada CPU,
-dan kompatibilitas dengan proses pembentukan kondisi yang digunakan oleh tahap berikutnya. Berdasarkan pertimbangan tersebut, HistGradientBoostingRegressor
-ditetapkan sebagai model produksi. Hasil perbandingan performa antar-model dibahas pada Bab VI.
+Model produksi tidak dipilih atas dasar klaim bahwa galatnya selalu paling kecil. Selama pengembangan, ketiga model dibandingkan dengan protokol yang sama, dan
+keputusan produksi mempertimbangkan kesesuaian kinerja dengan kebutuhan sistem, ukuran artefak, waktu pelatihan, kemampuan berjalan pada CPU, serta kecocokan dengan
+proses pembentukan kondisi pada tahap berikutnya. Hasil perbandingan kinerja antar-model dibahas pada Bab~\ref{chap:evaluasi}.
 
-Konfigurasi model produksi tidak menggunakan pencarian hyperparameter khusus. Implementasi menetapkan \texttt{random\_state=42}, sedangkan hyperparameter lainnya
-mengikuti nilai bawaan scikit-learn. Pernyataan tersebut digunakan untuk mendokumentasikan konfigurasi sebenarnya dan menghindari kesan bahwa model telah melalui
-optimasi hyperparameter yang tidak dilakukan. Random seed 42 juga dipertahankan pada proses terkait yang memerlukan determinisme.
+Model produksi tidak melalui pencarian \textit{hyperparameter} khusus: implementasi hanya menetapkan \texttt{random\_state=42}, sedangkan \textit{hyperparameter}
+lainnya mengikuti nilai bawaan scikit-learn. \textit{Seed} 42 juga dipakai pada proses lain yang memerlukan determinisme.
 
 Target prediksi ditetapkan sebagai perubahan kadar glukosa ($\Delta g$) terhadap kadar glukosa terakhir yang diketahui, sesuai Persamaan~\ref{eq:bab4-delta-glukosa}.
 Pada saat inferensi, perubahan yang diprediksi digunakan untuk memperoleh kadar glukosa absolut melalui Persamaan~\ref{eq:bab4-rekonstruksi-glukosa}.
 
-Pendekatan target perubahan digunakan agar keluaran model berfokus pada perubahan dari keadaan terakhir yang diketahui, sementara nilai absolut tetap dapat dipulihkan
-secara langsung dari hasil prediksi. Dengan demikian, hubungan antara keluaran model dan nilai yang ditampilkan pada sistem dapat ditelusuri tanpa memerlukan tahap
-rekonstruksi yang terpisah dari konteks pengukuran terakhir.
+Target berupa perubahan dipilih agar model berfokus pada dinamika dari keadaan terakhir yang diketahui, sementara nilai absolut dipulihkan dengan satu penjumlahan
+terhadap kadar terakhir. Dengan demikian, hubungan antara keluaran model dan nilai yang ditampilkan sistem tetap sederhana dan dapat ditelusuri.
 
 Proses normalisasi, prediksi perubahan, dan rekonstruksi kadar glukosa diringkas pada Algoritma~\ref{alg:alg5.2_prediksi_dan_rekonstruksi}.
 
@@ -281,8 +265,9 @@ prediksi. Keluaran tersebut menjadi masukan bagi tahap estimasi ketidakpastian d
 \label{subsec:bab5-ketidakpastian-prediksi}
 
 Selain menghasilkan estimasi kadar glukosa, modul prediksi menyediakan informasi mengenai ketidakpastian untuk menunjukkan rentang hasil yang dapat menyertai prediksi. Implementasi
-menggunakan \textit{quantile spread} sebagai rentang awal dan kemudian menerapkan faktor kalibrasi konformal yang tersimpan sebagai artefak inferensi. Pendekatan tersebut
-memisahkan pembentukan rentang dari proses kalibrasi sehingga keterbatasan ketersediaan artefak dapat ditangani tanpa membuat nilai rentang secara manual.
+membentuk rentang awal dari sebaran prediksi kuantil, lalu menyesuaikannya dengan faktor kalibrasi konformal yang tersimpan sebagai artefak inferensi. Pembentukan
+rentang dan kalibrasinya sengaja dipisahkan: bila artefak kalibrasi untuk suatu horizon tidak tersedia, sistem tidak menampilkan interval sama sekali alih-alih
+menampilkan rentang yang belum terkalibrasi.
 
 Pada setiap horizon, dua model kuantil pada batas 0,025 dan 0,975 digunakan untuk membentuk rentang awal. Rentang tersebut kemudian disesuaikan menggunakan faktor kalibrasi
 konformal apabila artefak yang sesuai tersedia. Artefak kalibrasi dibaca pada saat penyajian sehingga proses inferensi menggunakan konfigurasi kalibrasi yang telah disiapkan
@@ -294,8 +279,8 @@ artefak pendukungnya tidak tersedia.
 
 Implementasi final masih memiliki keterbatasan pada keselarasan artefak kalibrasi. Artefak kalibrasi yang tersedia untuk horizon 30 menit menggunakan konfigurasi tujuh fitur,
 sedangkan bundle model produksi menggunakan sembilan fitur. Selain itu, belum tersedia artefak kalibrasi untuk jalur finger-stick dengan horizon sekitar 240 menit. Oleh karena
-itu, ketersediaan interval tidak diperlakukan sama untuk semua modalitas dan horizon. Keterbatasan tersebut dipertahankan secara eksplisit pada implementasi agar keluaran
-ketidakpastian tidak diperlakukan sebagai informasi yang lebih kuat daripada evidence kalibrasinya.
+itu, ketersediaan interval tidak diperlakukan sama untuk semua modalitas dan horizon. Keterbatasan tersebut dinyatakan secara eksplisit pada implementasi agar interval yang ditampilkan tidak
+terkesan lebih meyakinkan daripada dasar kalibrasinya.
 
 Dengan demikian, keluaran modul prediksi pada tahap ini terdiri atas nilai prediksi dan, apabila didukung artefak kalibrasi yang sesuai, interval ketidakpastian. Nilai tersebut
 kemudian digunakan bersama informasi temporal dan modalitas untuk membentuk \textit{clinical state}.
@@ -307,38 +292,34 @@ Hasil prediksi tidak langsung diberikan kepada pipeline RAG sebagai angka tungga
 yang menggabungkan informasi prediksi dengan konteks yang diperlukan oleh modul berikutnya. Clinical state berfungsi sebagai kontrak antarmodul sehingga format informasi
 yang diteruskan dari prediksi ke transformasi kueri terkondisi-prediksi tetap konsisten.
 
-Clinical state memuat informasi mengenai sumber pengukuran glukosa, nilai glukosa terakhir yang diketahui, prediksi pada horizon tujuan, horizon prediksi, interval
-ketidakpastian apabila tersedia, kondisi klinis apabila artefak klasifikasi yang sesuai tersedia, serta konteks temporal yang diperlukan pada tahap berikutnya. Struktur
-informasi tersebut dirangkum pada Tabel~\ref{tab:tab5.7_struktur_clinical_state}.
+Unsur-unsur \textit{clinical state} dirangkum pada Tabel~\ref{tab:tab5.7_struktur_clinical_state}. Intinya adalah sumber pengukuran glukosa, nilai glukosa terakhir,
+prediksi beserta horizonnya, interval ketidakpastian bila tersedia, kategori kondisi klinis bila artefak pengklasifikasi yang sesuai tersedia, serta konteks temporal
+yang diperlukan tahap berikutnya.
 
 \input{tables/bab5/tab5.7_struktur_clinical_state.tex}
 
-Tabel~\ref{tab:tab5.7_struktur_clinical_state} menunjukkan bahwa clinical state tidak dimaksudkan untuk menggantikan seluruh logbook pasien. Representasi tersebut hanya
+Tabel~\ref{tab:tab5.7_struktur_clinical_state} menunjukkan bahwa \textit{clinical state} tidak dimaksudkan untuk menggantikan seluruh logbook pasien. Representasi tersebut hanya
 membawa informasi yang diperlukan untuk menghubungkan keluaran prediksi dengan proses retrieval dan assessment. Dengan cara ini, data mentah tetap dapat dipertahankan
 sebagai sumber riwayat, sedangkan modul downstream menerima struktur konteks yang lebih ringkas.
 
-Pembentukan clinical state juga mempertahankan perbedaan antara modalitas pengukuran. Artefak pengklasifikasi kondisi yang tersedia pada jalur produksi berasal dari model
-yang dilatih untuk CGM. Pemeriksaan sumber pengukuran dilakukan sebelum pengklasifikasi dipanggil sehingga artefak tersebut tidak diterapkan pada jendela finger-stick.
-Pada jalur finger-stick, sistem tidak menganggap classifier CGM sebagai sumber kondisi yang valid.
+Pembentukan \textit{clinical state} juga membedakan modalitas pengukuran. Pengklasifikasi kondisi yang tersedia pada jalur produksi dilatih pada data CGM, sehingga
+sumber pengukuran diperiksa lebih dulu dan pengklasifikasi hanya dipanggil pada jendela CGM. Pada jalur \textit{finger-stick}, kondisi tidak dibentuk dari
+pengklasifikasi tersebut agar pipeline tidak menghasilkan kondisi klinis yang tidak didukung artefak yang sesuai.
 
-Informasi prediksi dan kondisi yang tersedia kemudian menjadi konteks bagi tahap berikutnya. Pada CGM, kondisi hasil pengklasifikasi dapat digunakan bersama prediksi untuk
-membentuk konteks retrieval. Pada finger-stick, keterbatasan ketersediaan classifier tersebut dipertahankan sehingga pipeline tidak membuat kondisi klinis yang tidak
-didukung oleh artefak yang sesuai.
-
-Representasi clinical state menjadi titik penghubung antara modul prediksi dan pipeline RAG. Tahap selanjutnya menggunakan representasi tersebut untuk membentuk query yang
-dikondisikan oleh keadaan prediksi pasien.
+\textit{Clinical state} menjadi titik penghubung antara modul prediksi dan pipeline RAG; tahap selanjutnya memakainya untuk membentuk kueri yang dikondisikan pada
+keadaan terprediksi pasien.
 
 \section{Implementasi RAG Terkondisi-Prediksi}
 \label{sec:bab5-implementasi-rag}
 
-Bagian ini memerikan realisasi pipeline RAG terkondisi-prediksi yang telah dirancang pada Bab~\ref{chap:perancangan}. Pembahasan dimulai dari pembentukan basis
+Bagian ini menguraikan realisasi pipeline RAG terkondisi-prediksi yang telah dirancang pada Bab~\ref{chap:perancangan}. Pembahasan dimulai dari pembentukan basis
 pengetahuan dan struktur evidence, dilanjutkan dengan transformasi kueri yang menggunakan kondisi hasil prediksi, retrieval, reranking, generation, resolusi
 sitasi, dan mekanisme fallback. Urutan tersebut mengikuti arah aliran data pada pipeline sehingga setiap tahap dapat ditelusuri dari masukan sampai keluaran.
 
 \subsection{Pembentukan Basis Pengetahuan}
 \label{subsec:bab5-pembentukan-basis-pengetahuan}
 
-Basis pengetahuan digunakan sebagai sumber dokumen klinis yang menjadi dasar bagi tahap retrieval dan grounded generation. Pada implementasi final, dokumen pedoman
+Basis pengetahuan digunakan sebagai sumber dokumen klinis yang menjadi dasar bagi tahap retrieval dan \textit{grounded generation}. Pada implementasi final, dokumen pedoman
 diproses secara offline sebelum dapat digunakan oleh layanan RAG. Proses ini memisahkan pekerjaan persiapan dokumen dari proses pencarian yang dilakukan saat sistem
 digunakan.
 
@@ -388,8 +369,8 @@ retriever Okapi BM25.
 \label{subsec:bab5-query-transformation-terkondisi-prediksi}
 
 Setelah \textit{clinical state} terbentuk, sistem mengubah masukan pengguna menjadi kueri yang digunakan untuk menelusuri basis pengetahuan. Pada implementasi ini,
-prediksi kadar glukosa digunakan sebagai sumber pengondisian kondisi klinis. Dengan demikian, kueri retrieval tidak hanya merepresentasikan pertanyaan pengguna,
-tetapi juga membawa konteks kondisi yang diturunkan dari keadaan glukosa terprediksi.
+kondisi klinis diturunkan dari prediksi kadar glukosa. Dengan demikian, kueri retrieval tidak hanya memuat pertanyaan pengguna, tetapi juga konteks kondisi yang
+diturunkan dari keadaan glukosa terprediksi.
 
 Mekanisme tersebut dibedakan dari \textit{standard query}. Pada mode standar, kondisi diturunkan dari kadar glukosa saat ini, sedangkan pada mode
 terkondisi-prediksi, kondisi diturunkan dari kadar glukosa yang diprediksi. Perbedaan ini dirancang agar retrieval dapat diarahkan pada kondisi
@@ -409,16 +390,15 @@ Algoritma~\ref{alg:alg5.3_query_transformation_terkondisi_prediksi}.
 \input{algorithms/bab5/alg5.3_query_transformation_terkondisi_prediksi.tex}
 
 Algoritma~\ref{alg:alg5.3_query_transformation_terkondisi_prediksi} menunjukkan bahwa sumber kondisi berasal dari prediksi, bukan dari pengukuran saat ini.
-Pemisahan tersebut penting karena tujuan mekanisme adalah mengondisikan retrieval berdasarkan keadaan yang diperkirakan pada horizon berikutnya.
+Pemisahan tersebut penting karena tujuan mekanisme adalah mengarahkan retrieval pada keadaan yang diperkirakan terjadi pada horizon berikutnya.
 
-Pada jalur runtime aplikasi, representasi kueri yang diteruskan oleh \textit{pipeline} harus dibedakan dari kueri evaluasi. Runtime menggunakan pertanyaan pengguna
-yang telah diberi konteks kondisi, sedangkan pembentuk kueri pada eksperimen menggunakan bentuk yang lebih kaya untuk mengisolasi pengaruh sumber kondisi.
-Oleh karena itu, hasil evaluasi harus dibaca sebagai bukti terhadap mekanisme pengondisian berbasis prediksi dan bukan otomatis sebagai pengukuran identik terhadap
-setiap bentuk teks kueri yang digunakan aplikasi.
+Kueri pada aplikasi dan kueri pada eksperimen evaluasi tidak identik. Aplikasi memakai pertanyaan pengguna yang disambung dengan konteks kondisi, sedangkan
+eksperimen memakai kueri baku yang memuat nilai glukosa numerik dan frasa kondisi tetap agar pengaruh sumber kondisi dapat diisolasi dari variasi pertanyaan
+pengguna. Karena itu, hasil evaluasi merupakan bukti bagi mekanisme pembentukan kueri dari kondisi terprediksi, bukan pengukuran atas setiap bentuk teks kueri
+yang mungkin diketik pengguna.
 
-Pada implementasi final, penempelan konteks kondisi dilakukan satu kali pada kueri yang diteruskan ke retrieval. Kondisi yang sama tidak diulang pada tahap
-retriever, sehingga frekuensi istilah kondisi tidak diperbesar secara tidak sengaja. Kondisi \textit{normal} juga diperlakukan secara eksplisit ketika
-mekanisme pemetaan kondisi membutuhkannya.
+Pada implementasi final, konteks kondisi disambungkan satu kali pada kueri yang diteruskan ke retrieval dan tidak diulang pada tahap \textit{retriever}, sehingga
+frekuensi istilah kondisi tidak membesar tanpa sengaja. Kondisi \textit{normal} juga dituliskan secara eksplisit pada kueri, bukan dikosongkan.
 
 \subsection{Implementasi Retrieval}
 \label{subsec:bab5-implementasi-retrieval}
@@ -431,7 +411,7 @@ BM25 dipilih sebagai metode retrieval produksi setelah beberapa strategi dibandi
 dipertahankan karena ringan, dapat dijalankan pada CPU, dan memberikan hasil retrieval yang sesuai pada korpus pedoman yang digunakan. Selain itu,
 tokenisasi pada jalur produksi mempertahankan angka di dalam kueri sehingga nilai ambang klinis dapat tetap menjadi bagian dari pencocokan leksikal.
 
-Proses retrieval produksi tidak menggunakan embedding sebagai mesin penelusuran, MMR, RRF, maupun reranking. ChromaDB tetap digunakan sebagai penyimpanan
+Jalur retrieval produksi tidak memakai penelusuran berbasis \textit{embedding}, MMR, RRF, maupun \textit{reranking}. ChromaDB tetap digunakan sebagai penyimpanan
 potongan dan metadata, sedangkan pencarian produksi dilakukan oleh BM25 atas seluruh potongan yang tersedia. Implementasi mengambil kandidat dengan urutan
 skor BM25 dan meneruskan lima evidence teratas ke tahap berikutnya.
 
@@ -457,24 +437,23 @@ Hasil retrieval menghasilkan kumpulan kandidat evidence yang kemudian digunakan 
 reranking tidak diaktifkan. Dengan demikian, evidence yang digunakan berasal langsung dari lima potongan dengan skor BM25 tertinggi. Keputusan ini dipertahankan agar
 jalur produksi tetap sederhana dan ringan serta tidak menambahkan tahap pemrosesan yang tidak diperlukan pada konfigurasi akhir.
 
-Komponen reranker tetap tersedia pada implementasi sebagai alternatif, tetapi statusnya \textit{disabled} pada jalur produksi. Selama pengembangan, reranking telah diuji
-pada beberapa konfigurasi dan tidak memberikan alasan yang cukup untuk diaktifkan pada jalur yang digunakan sistem. Oleh karena itu, keberadaan kode reranker tidak
-ditafsirkan sebagai bukti bahwa reranking merupakan bagian dari output produksi.
+Komponen \textit{reranker} tetap tersedia pada kode sebagai alternatif, tetapi dinonaktifkan pada jalur produksi. Selama pengembangan, \textit{reranking} diuji pada
+beberapa konfigurasi dan tidak memberikan perbaikan yang cukup untuk diaktifkan; hasil pengujiannya dilaporkan sebagai ablasi pada Bab~\ref{chap:evaluasi}.
 
-Evidence selection pada jalur produksi mengikuti urutan skor retrieval. Lima evidence teratas dipertahankan bersama metadata sumber dari knowledge base. Dengan cara ini,
-pemilihan evidence tetap konsisten dengan hasil retrieval dan tidak memperkenalkan tahap pemeringkatan tambahan.
+Seleksi \textit{evidence} pada jalur produksi mengikuti urutan skor retrieval: lima \textit{evidence} teratas dipertahankan bersama metadata sumbernya, tanpa
+tahap pemeringkatan tambahan.
 
-\subsection{Implementasi Pembangkitan Terbumikan}
+\subsection{Implementasi \textit{Grounded Generation}}
 \label{subsec:bab5-grounded-generation}
 
-Evidence yang telah dipilih kemudian digunakan sebagai konteks untuk pembangkitan assessment oleh model bahasa. Model bahasa pada konfigurasi produksi final adalah
+\textit{Evidence} yang telah dipilih kemudian digunakan sebagai konteks bagi model bahasa untuk menyusun \textit{assessment}. Model bahasa pada konfigurasi produksi final adalah
 \textit{Gemini 3.5 Flash-Lite} dengan \texttt{temperature=0.2} dan batas keluaran \texttt{max\_tokens=2048}; konteks yang diberikan adalah lima potongan
 evidence teratas hasil retrieval (\texttt{top\_k=5}). Konfigurasi tersebut digunakan untuk membentuk keluaran yang tetap mengikuti evidence yang ditemukan
 pada tahap retrieval.
 
 \input{tables/bab5/tab5.10_konfigurasi_generation_dan_evidence.tex}
 
-Tabel~\ref{tab:tab5.10_konfigurasi_generation_dan_evidence} merangkum konfigurasi pembangkitan dan evidence pada jalur produksi. Konfigurasi tersebut menetapkan
+Tabel~\ref{tab:tab5.10_konfigurasi_generation_dan_evidence} merangkum konfigurasi \textit{generation} dan \textit{evidence} pada jalur produksi. Konfigurasi tersebut menetapkan
 penelusuran leksikal sebagai sumber evidence, lima potongan sebagai konteks, dan pembatasan keluaran yang menjaga assessment tetap terikat pada dokumen sumber.
 
 Prompt generation tidak hanya menerima pertanyaan pengguna. Konteks prediksi dan informasi klinis yang telah dirangkum pada \textit{clinical state} disertakan bersama
@@ -484,22 +463,23 @@ bukan sebagai pengganti evidence. Jawaban yang berkaitan dengan pedoman harus te
 Output generation disusun dalam format assessment terstruktur yang mempertahankan bagian seperti ringkasan keadaan, assessment, rekomendasi berbasis evidence, dan bagian
 \textit{Yang tidak dapat disimpulkan}. Bagian terakhir digunakan untuk menyatakan informasi yang tidak dapat ditentukan secara andal dari data dan evidence yang tersedia.
 
-Pemilihan temperature yang rendah dipertahankan untuk membuat pembangkitan lebih konsisten pada konteks klinis. Keputusan tersebut merupakan konfigurasi implementasi dan
-tidak dimaksudkan sebagai bukti bahwa keluaran selalu benar; kualitas dan kepatuhan terhadap evidence dievaluasi secara terpisah pada Bab VI.
+\textit{Temperature} yang rendah dipilih agar keluaran lebih konsisten pada konteks klinis. Kualitas keluaran dan kepatuhannya terhadap \textit{evidence} dievaluasi
+secara terpisah pada Bab~\ref{chap:evaluasi}.
 
 \subsection{Implementasi Resolusi Sitasi}
 \label{subsec:bab5-citation-resolution}
 
-Citation resolution dilakukan setelah generation untuk menghubungkan sitasi yang muncul pada assessment dengan evidence yang digunakan sebagai konteks. Sistem
-mempertahankan metadata dokumen dan halaman sejak tahap knowledge-base ingestion sehingga citation dapat ditelusuri kembali ke sumber yang relevan.
+\textit{Citation resolution} dilakukan setelah \textit{generation} untuk menghubungkan sitasi yang muncul pada \textit{assessment} dengan \textit{evidence} yang
+digunakan sebagai konteks. Sistem mempertahankan metadata dokumen dan halaman sejak tahap pembentukan basis pengetahuan sehingga sitasi dapat ditelusuri kembali ke
+sumbernya.
 
-Tahap ini tidak membuat sumber baru. Citation hanya dapat merujuk pada evidence yang telah tersedia pada pipeline. Dengan demikian, hubungan antara pernyataan,
+Tahap ini tidak membuat sumber baru; sitasi hanya dapat merujuk pada \textit{evidence} yang telah tersedia pada pipeline. Dengan demikian, hubungan antara pernyataan,
 evidence, dan lokasi sumber tetap dapat diperiksa kembali oleh pengguna.
 
-Selain resolusi metadata, sistem melakukan pemeriksaan terhadap angka yang disertai citation sebelum assessment dikembalikan. Pemeriksaan tersebut digunakan untuk
+Selain resolusi metadata, sistem memeriksa angka yang disertai sitasi sebelum \textit{assessment} dikembalikan. Pemeriksaan tersebut digunakan untuk
 mendeteksi ketidaksesuaian antara nilai yang disebutkan pada keluaran dan evidence yang dirujuk.
 
-Prosedur ringkas pembangkitan assessment dan resolusi citation ditunjukkan pada Algoritma~\ref{alg:alg5.4_grounded_generation_dan_citation}.
+Prosedur ringkas \textit{generation} dan \textit{citation resolution} ditunjukkan pada Algoritma~\ref{alg:alg5.4_grounded_generation_dan_citation}.
 
 \input{algorithms/bab5/alg5.4_grounded_generation_dan_citation.tex}
 
@@ -518,7 +498,7 @@ metadata sumber, sedangkan kondisi tanpa evidence tidak diperlakukan sebagai keb
 sumber yang dibuat secara sintetik.
 
 Fallback juga diterapkan ketika komponen upstream tidak dapat menyediakan seluruh informasi yang diharapkan. Sebagai contoh, interval prediksi yang tidak memiliki artefak
-kalibrasi tidak diisi dengan nilai pengganti, sebagaimana telah dijelaskan pada V.2.6. Prinsip yang sama diterapkan pada pipeline RAG: keterbatasan harus diteruskan
+kalibrasi tidak diisi dengan nilai pengganti, sebagaimana telah dijelaskan pada Subbab~\ref{subsec:bab5-ketidakpastian-prediksi}. Prinsip yang sama diterapkan pada pipeline RAG: keterbatasan harus diteruskan
 ke output daripada disembunyikan melalui nilai atau klaim buatan.
 
 Keluaran akhir tetap merupakan rekomendasi yang harus ditinjau oleh dokter. Sistem tidak mengubah hasil retrieval dan generation menjadi keputusan klinis otonom, sehingga
@@ -527,26 +507,24 @@ fallback berfungsi untuk mengendalikan keluaran ketika evidence atau konteks tid
 \section{Implementasi Integrasi CDSS dan PWA}
 \label{sec:bab5-implementasi-integrasi-cdss-pwa}
 
-Bagian ini memerikan penggabungan modul prediksi dan pipeline RAG menjadi satu layanan CDSS, struktur keluaran assessment yang dikirimkan ke antarmuka, guardrail
+Bagian ini menguraikan penggabungan modul prediksi dan pipeline RAG menjadi satu layanan CDSS, struktur keluaran assessment yang dikirimkan ke antarmuka, guardrail
 yang membatasi keluaran, serta realisasi antarmuka sebagai \textit{Progressive Web Application}.
 
 \subsection{Integrasi Modul Prediksi dan RAG}
 \label{subsec:bab5-integrasi-prediksi-rag}
 
-Integrasi kedua modul dilakukan pada satu endpoint assessment klinis. Endpoint tersebut menerima daftar observasi pasien beserta penanda sumber glukosa, melakukan
-perutean modalitas antara jalur CGM dan jalur finger-stick, menjalankan modul prediksi, lalu menggunakan kondisi hasil prediksi sebagai sumber
-\textit{conditioning} bagi pipeline RAG. Keluaran akhir berupa satu objek assessment yang memuat hasil prediksi dan rekomendasi bersama evidence pendukungnya.
+Integrasi kedua modul dilakukan pada satu endpoint assessment klinis. \textit{Endpoint} tersebut menerima daftar observasi pasien beserta penanda sumber glukosa. Ia lalu memilih jalur CGM atau \textit{finger-stick}, menjalankan
+modul prediksi, dan meneruskan kondisi hasil prediksi sebagai dasar pembentukan kueri pada pipeline RAG. Keluaran akhir berupa satu objek assessment yang memuat hasil prediksi dan rekomendasi bersama evidence pendukungnya.
 
 Batas semantik antara kondisi saat ini dan kondisi terprediksi dijaga secara eksplisit pada tingkat integrasi. Ketika modul prediksi tidak dapat menghasilkan
 prediksi, endpoint beralih ke mode \textit{current-state} dan menandai mode tersebut pada keluaran. Pada mode ini glukosa saat ini tidak pernah diteruskan ke
-pipeline sebagai nilai prediksi, sehingga fallback tidak mengubah makna \textit{conditioning} yang menjadi inti mekanisme RAG terkondisi-prediksi.
+pipeline sebagai nilai prediksi, sehingga \textit{fallback} tidak mengaburkan makna kondisi terprediksi yang menjadi inti mekanisme RAG terkondisi-prediksi.
 
-Modul prediksi dan pipeline RAG diinisialisasi sebagai komponen yang dibangun sekali lalu digunakan bersama oleh permintaan berikutnya. Keduanya menggunakan
-kunci pembangunan yang terpisah karena artefak prediksi berukuran kecil dan siap dalam hitungan detik, sedangkan pembangunan indeks basis pengetahuan memerlukan
-waktu yang jauh lebih lama. Pemisahan tersebut mencegah permintaan prediksi tertahan di belakang pembangunan indeks. Rujukan ke komponen hanya dipublikasikan
-setelah pembangunan selesai agar permintaan yang datang bersamaan tidak memakai komponen setengah jadi dan memicu pembangunan indeks kedua secara paralel.
-Ketika komponen masih dalam proses penyiapan, permintaan menunggu sampai batas waktu yang ditetapkan lebih pendek daripada batas waktu permintaan pada
-lingkungan penyajian, lalu menerima status \textit{service unavailable} beserta keterangan bahwa sistem sedang disiapkan.
+Modul prediksi dan pipeline RAG diinisialisasi sebagai komponen yang dibangun sekali lalu digunakan bersama oleh permintaan berikutnya. Inisialisasi keduanya dijaga oleh kunci (\textit{lock}) yang terpisah, karena artefak prediksi berukuran kecil dan siap dalam hitungan detik sedangkan pembangunan
+indeks basis pengetahuan memerlukan waktu jauh lebih lama; dengan demikian permintaan prediksi tidak tertahan oleh pembangunan indeks. Rujukan ke komponen baru
+dipublikasikan setelah pembangunan selesai, sehingga permintaan yang datang bersamaan tidak memakai komponen setengah jadi dan tidak memicu pembangunan indeks kedua.
+Selama komponen masih disiapkan, permintaan menunggu sampai batas waktu tertentu (lebih pendek daripada batas waktu permintaan pada lingkungan penyajian), lalu
+menerima status \textit{service unavailable} beserta keterangan bahwa sistem sedang disiapkan.
 
 \subsection{Struktur Keluaran Assessment}
 \label{subsec:bab5-struktur-assessment-output}
@@ -556,9 +534,8 @@ horizon yang digunakan, label kondisi, dan interval prediksi apabila artefak kal
 risiko, penanda grounded, daftar sitasi, potongan evidence yang digunakan, hasil verifikasi sitasi, serta durasi setiap tahap pipeline.
 
 Struktur tersebut juga membawa penanda yang menjelaskan asal keluaran. Penanda mode membedakan assessment yang dihasilkan pada jalur terkondisi-prediksi dari
-assessment pada mode \textit{current-state}. Penanda narasi membedakan teks yang dihasilkan model bahasa dari teks yang dibentuk melalui templat ketika model
-bahasa tidak tersedia; pada kondisi kedua rujukan tetap sah dan tetap ditampilkan, sedangkan yang dihindari adalah anggapan bahwa teks tersebut merupakan hasil
-penalaran model. Durasi per tahap digunakan antarmuka untuk menunjukkan bahwa proses sedang berjalan pada permintaan yang memerlukan waktu lebih lama.
+assessment pada mode \textit{current-state}. Penanda narasi membedakan teks yang dihasilkan model bahasa dari teks templat yang dipakai ketika model bahasa tidak tersedia. Pada kondisi kedua, rujukan
+tetap sah dan tetap ditampilkan; penanda hanya mencegah teks templat itu dianggap sebagai hasil penalaran model. Durasi per tahap digunakan antarmuka untuk menunjukkan bahwa proses sedang berjalan pada permintaan yang memerlukan waktu lebih lama.
 
 Assessment yang dihasilkan disimpan bersama identitas pasien dan sumber glukosa. Catatan yang disimpan memuat glukosa saat ini, prediksi pada horizon yang
 digunakan, kondisi, rekomendasi, penanda grounded, dan daftar sumber. Penyimpanan tersebut membuat keluaran sistem dapat ditinjau kembali setelah sesi
@@ -572,8 +549,9 @@ melainkan diturunkan dari penanda grounded pipeline RAG. Ketika evidence tidak m
 menampilkan narasi yang terlihat pasti.
 
 Nilai yang tidak dapat dihitung tidak diisi dengan nilai pengganti. Interval prediksi hanya disertakan ketika artefak kalibrasi tersedia, sebagaimana dijelaskan
-pada V.2.6, dan hasil verifikasi sitasi disertakan sebagaimana adanya tanpa dinormalkan menjadi keadaan berhasil. Label kondisi dari pengklasifikasi ditampilkan
-sejajar dengan nilai regresi karena label kondisi merupakan keluaran yang paling didukung data, sedangkan nilai regresi membawa ketidakpastian yang lebih besar.
+pada Subbab~\ref{subsec:bab5-ketidakpastian-prediksi}, dan hasil verifikasi sitasi disertakan apa adanya tanpa diubah menjadi keadaan berhasil. Label kondisi dari
+pengklasifikasi ditampilkan sejajar dengan nilai regresi, sebab pada evaluasi (Bab~\ref{chap:evaluasi}) label kondisi lebih peka terhadap hipoglikemia daripada
+kondisi yang diturunkan dari nilai regresi.
 
 Setiap keluaran assessment disertai pernyataan pembatas yang menegaskan bahwa prediksi dan rekomendasi berkedudukan sebagai \textit{decision support}, bukan
 diagnosis maupun instruksi terapi otomatis, dan bahwa keputusan medis akhir tetap berada pada dokter. Pernyataan tersebut melekat pada struktur keluaran sehingga
@@ -654,7 +632,7 @@ Gambar~\ref{fig:bab5-history} menunjukkan riwayat logbook pasien yang telah dipi
 menggunakan keluaran prediksi dan assessment.
 
 Setiap entri riwayat memuat penanda waktu, label kondisi dari peninjauan sebelumnya, kanal pengukuran yang digunakan, serta kadar glukosa saat itu beserta nilai
-prediksi pada kedua horizon. Susunan tersebut membuat riwayat berfungsi sebagai catatan keluaran sistem, bukan hanya sebagai catatan pengukuran mentah.
+prediksi pada horizon yang tersedia untuk kanal tersebut. Susunan tersebut membuat riwayat berfungsi sebagai catatan keluaran sistem, bukan hanya sebagai catatan pengukuran mentah.
 
 Penyertaan kanal pengukuran pada setiap entri memiliki peran khusus. Kanal CGM dan finger-stick memiliki kerapatan pengamatan berbeda, dan perbedaan itu
 menentukan horizon prediksi yang layak dihitung. Dengan menampilkan kanal pada tingkat entri, pengguna dapat menilai apakah dua keluaran yang dibandingkan
@@ -676,7 +654,7 @@ yang terkait dengan prediksi. Penyajian tersebut membuat keluaran model dapat di
 Gambar~\ref{fig:bab5-trend-glukosa} menunjukkan visualisasi tren glukosa sebagai konteks sebelum hasil prediksi dan assessment ditinjau. Visualisasi ini
 memberikan representasi temporal dari data yang digunakan oleh modul prediksi.
 
-Grafik menampilkan dua puluh empat pengamatan terakhir beserta penanda nilai pada titik yang disorot pengguna. Rentang sumbu tegak menyesuaikan sebaran nilai
+Grafik menampilkan 24 pengamatan terakhir beserta penanda nilai pada titik yang disorot pengguna. Rentang sumbu tegak menyesuaikan sebaran nilai
 pada jendela tersebut dan tidak menggunakan rentang tetap, agar perubahan kecil pada kondisi mendekati normal tetap terbaca. Penanda nilai memuat waktu
 pengamatan dan kadar glukosa pada titik itu.
 
@@ -694,7 +672,7 @@ temporal, dan pengguna kehilangan dasar untuk mempertanyakan hasil yang menyimpa
 Gambar~\ref{fig:bab5-hasil-prediksi} menunjukkan hasil prediksi yang dikembalikan oleh sistem. Informasi pada halaman ini menjadi keluaran langsung modul prediksi
 sebelum digunakan sebagai salah satu konteks untuk pembentukan assessment.
 
-Panel menyajikan kadar glukosa saat ini bersama prediksi pada horizon tiga puluh dan enam puluh menit dalam satu kolom. Penyajian berdampingan tersebut membuat
+Panel menyajikan kadar glukosa saat ini bersama prediksi pada horizon +30 dan +60 menit dalam satu kolom. Penyajian berdampingan tersebut membuat
 arah perubahan terbaca langsung dari selisih ketiga nilai, tanpa pengguna perlu menghitungnya sendiri.
 
 Pada panel yang sama tersedia isian pertanyaan klinis bersifat opsional. Isian tersebut menjadi jalur bagi pengguna untuk menyatakan kebutuhan spesifik sebelum
@@ -790,8 +768,8 @@ FastAPI dan Uvicorn. Sebelum layanan dijalankan, environment diaktifkan agar ver
 Bundle model produksi dimuat oleh layanan prediksi pada saat inisialisasi, sedangkan basis pengetahuan dan konfigurasi digunakan oleh pipeline RAG. Artefak model
 dan komponen yang dibutuhkan tersebut dipisahkan dari antarmuka sehingga perubahan tampilan tidak mengubah proses inferensi dan retrieval.
 
-Pada deployment aktual yang digunakan untuk demonstrasi, backend lokal dapat diakses oleh frontend melalui endpoint yang diekspos untuk kebutuhan demonstrasi.
-Pendekatan tersebut digunakan untuk memungkinkan antarmuka yang berjalan pada peramban mengakses layanan backend tanpa mengubah logika inti sistem.
+Pada penyebaran yang digunakan untuk demonstrasi, \textit{backend} berjalan pada mesin lokal dan diekspos ke internet melalui terowongan ngrok, sedangkan
+\textit{frontend} berjalan pada layanan Vercel. Dengan demikian, antarmuka pada peramban dapat mengakses layanan \textit{backend} tanpa mengubah logika inti sistem.
 
 \subsection{Deployment Frontend dan PWA}
 \label{subsec:bab5-deployment-frontend-pwa}
@@ -814,8 +792,7 @@ Pada saat menjalankan backend secara lokal, environment proyek diaktifkan sebelu
 conda activate diabetes-ta
 \end{verbatim}
 
-Perintah tersebut hanya menunjukkan cara memuat environment yang digunakan dan bukan merupakan bagian dari logika prediksi atau RAG. Setelah layanan aktif,
-frontend diarahkan ke endpoint backend yang sesuai dengan konfigurasi deployment.
+Setelah layanan aktif, \textit{frontend} diarahkan ke \textit{endpoint backend} yang sesuai dengan konfigurasi penyebaran.
 
 \subsection{Skenario Demonstrasi}
 \label{subsec:bab5-skenario-demonstrasi}
@@ -831,7 +808,7 @@ masing-masing halaman dapat dibuka, tetapi juga memperlihatkan perpindahan infor
 \label{subsec:bab5-verifikasi-fungsional-sistem}
 
 Verifikasi fungsional dilakukan untuk memastikan komponen utama yang telah diimplementasikan dapat dijalankan sesuai kebutuhan sistem. Verifikasi tidak
-digunakan untuk menyimpulkan kualitas prediksi atau kualitas retrieval; pengukuran tersebut ditempatkan pada Bab VI.
+digunakan untuk menyimpulkan kualitas prediksi atau kualitas retrieval; pengukuran tersebut ditempatkan pada Bab~\ref{chap:evaluasi}.
 
 Pengujian mencakup pemuatan data pasien, pembentukan prediksi, pembentukan \textit{clinical state}, retrieval evidence, generation assessment, citation,
 serta perilaku pada kondisi data atau evidence yang tidak memadai. Ringkasan skenario verifikasi ditunjukkan pada Tabel~\ref{tab:tab5.11_verifikasi_fungsional_sistem}.
@@ -848,16 +825,16 @@ Verifikasi modul prediksi mencakup pemeriksaan apakah data dengan struktur valid
 prediksi dapat diteruskan ke tahap berikutnya. Pemeriksaan juga mencakup penolakan terhadap riwayat yang tidak memenuhi batas temporal yang telah ditetapkan.
 
 Hasil verifikasi digunakan untuk memastikan jalur prediksi yang diakses aplikasi konsisten dengan bundle yang dipasang. Evaluasi numerik terhadap hasil prediksi
-tidak disimpulkan pada bagian ini dan dibahas pada Bab VI.
+tidak disimpulkan pada bagian ini dan dibahas pada Bab~\ref{chap:evaluasi}.
 
 \subsection{Verifikasi Pipeline RAG}
 \label{subsec:bab5-verifikasi-pipeline-rag}
 
 Verifikasi RAG mencakup pembentukan kueri, pemanggilan retriever, pengembalian evidence dengan metadata, generation berbasis konteks, serta resolusi citation.
-Pemeriksaan dilakukan pada jalur produksi agar komponen yang dinyatakan sebagai production benar-benar menjadi komponen yang dipanggil oleh aplikasi.
+Pemeriksaan dilakukan pada jalur produksi agar komponen yang dinyatakan sebagai komponen produksi benar-benar komponen yang dipanggil aplikasi.
 
 Kondisi tanpa evidence dan kondisi ketika konteks tidak lengkap juga diperiksa untuk memastikan pipeline tidak mengisi kekosongan dengan sumber yang dibuat secara
-sintetik. Kualitas retrieval dan generation kemudian dievaluasi menggunakan metrik yang dibahas pada Bab VI.
+sintetik. Kualitas retrieval dan \textit{generation} kemudian dievaluasi menggunakan metrik yang dibahas pada Bab~\ref{chap:evaluasi}.
 
 \subsection{Verifikasi Integrasi CDSS}
 \label{subsec:bab5-verifikasi-integrasi-cdss}
@@ -866,12 +843,12 @@ Verifikasi integrasi memastikan keluaran prediksi dan RAG dapat ditampilkan pada
 terhadap aliran data dari pemilihan pasien hingga assessment dan rujukan dokumen klinis.
 
 Sistem tetap menempatkan dokter sebagai pengambil keputusan akhir. Assessment diperlakukan sebagai informasi pendukung dan bukan keputusan klinis
-otomatis. Prinsip ini konsisten dengan rancangan doctor-mediated yang menjadi bagian dari artefak sistem.
+otomatis. Prinsip ini konsisten dengan rancangan \textit{doctor-mediated} yang menjadi bagian dari artefak sistem.
 
 \subsection{Verifikasi pada Kondisi Degradasi}
 \label{subsec:bab5-verifikasi-kondisi-degradasi}
 
-Selain alur normal, sistem diperiksa pada kondisi ketika data historis tidak memenuhi syarat, artefak uncertainty tidak tersedia, retrieval tidak menghasilkan
+Selain alur normal, sistem diperiksa pada kondisi ketika data historis tidak memenuhi syarat, artefak kalibrasi ketidakpastian tidak tersedia, retrieval tidak menghasilkan
 evidence yang memadai, atau proses generation tidak dapat memberikan keluaran lengkap. Pada kondisi tersebut, sistem diharapkan mempertahankan penjelasan
 keterbatasan dan tidak memberikan keluaran yang tampak lebih pasti daripada informasi yang tersedia.
 
