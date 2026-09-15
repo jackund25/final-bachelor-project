@@ -3,7 +3,7 @@
 
 \begin{center}
 
-    \textbf{RAG TERKONDISI-PREDIKSI: INTEGRASI PREDIKSI KADAR GLUKOSA DAN REKOMENDASI KLINIS BERBASIS DOKUMEN UNTUK PENGELOLAAN DIABETES} \\
+    \textbf{RAG Terkondisi-Prediksi: Integrasi Prediksi Kadar Glukosa dan Rekomendasi Klinis Berbasis Dokumen untuk Pengelolaan Diabetes} \\
     \vspace{0.4cm}
     oleh \\
     \vspace{0.4cm}
@@ -13,19 +13,30 @@
 
 
 \begin{spacing}{1.0}
-Sistem pendukung keputusan klinis berbasis prediksi glukosa maupun \emph{Retrieval-Augmented Generation} (RAG) yang ada mengondisikan pengambilan pengetahuan pada kondisi 
-pasien \emph{saat ini}, sehingga rekomendasi bersifat reaktif dan buta terhadap kondisi yang akan datang. Sepanjang penelusuran literatur, belum dijumpai penelitian yang 
-mengondisikan proses \emph{retrieval} pada nilai glukosa yang \emph{diprediksi}. Tugas akhir ini mengisi celah metodologis tersebut dengan mengusulkan RAG 
-\emph{terkondisi-prediksi}, yakni mekanisme yang membangun kueri \emph{retrieval} dari nilai glukosa hasil prediksi sehingga dokumen yang diambil dan rekomendasi yang dihasilkan 
-bersifat antisipatif, dijalankan dalam alur yang divalidasi dokter. Prediksi glukosa dilakukan model \emph{Gradient Boosting} atas fitur berbasis fisiologi, dan sistem diuji 
-pada dataset OhioT1DM dengan pembagian per pasien sehingga pasien uji tidak pernah dilihat model. Model prediksi mencapai RMSE 20,72~mg/dL pada horizon $+30$ menit dengan 94,69\% 
-titik berada pada zona aman \emph{Clarke Error Grid}, setara secara klinis dengan \emph{baseline random forest} maupun LSTM, dan menurun menjadi RMSE 28,56~mg/dL pada skenario 
-\emph{deployment} SMBG nyata tanpa CGM. Pada kasus nyata, RAG terkondisi-prediksi mengungguli RAG standar pada kasus divergen secara konsisten di seluruh enam \emph{fold} 
-lintas-pasien (\emph{Mean Reciprocal Rank} 0,190 menjadi 0,284; $p=0{,}031$). Mekanismenya terbukti sahih: bila kondisi masa depan diketahui benar, penelusuran mencapai MRR 0,778, 
-sehingga seluruh selisih terhadapnya merupakan kelemahan prediksi dan bukan kelemahan mekanismenya. Penelusuran leksikal mengungguli penelusuran padat maupun penggabungan hibrida, 
-berlawanan dengan dugaan. Manfaatnya dibatasi oleh prediktornya, akar yang sama dengan rendahnya sensitivitas hipoglikemia; memprediksi \emph{kondisi} secara langsung melalui
-pengklasifikasi sadar-biaya menaikkannya dari 17,3\% ke 67,2\%. Batasan desain terverifikasi: seluruh komputasi lokal atas 2.233 potongan dokumen selesai dalam 0,339~detik 
-dengan jejak memori 484~MB tanpa GPU, tanpa CGM \emph{real-time}, maupun rekam medis elektronik, dan tiap rujukan dapat ditelusuri sampai halaman cetak pedomannya.
+Sistem pendukung keputusan klinis untuk diabetes yang memakai prediksi glukosa maupun
+\emph{Retrieval-Augmented Generation} (RAG) umumnya mengambil pengetahuan berdasarkan kondisi
+pasien saat ini, sehingga rekomendasinya bersifat reaktif. Belum dijumpai penelitian yang
+mengondisikan proses \emph{retrieval} pada kadar glukosa yang diprediksi. Tugas akhir ini
+mengusulkan RAG terkondisi-prediksi, yaitu mekanisme yang menyusun kueri \emph{retrieval} dari
+kadar glukosa hasil prediksi sehingga dokumen yang diambil dan rekomendasi yang dihasilkan bersifat
+antisipatif, dalam alur yang keluarannya selalu diverifikasi dokter. Prediksi glukosa dilakukan
+model \emph{Gradient Boosting} dengan fitur turunan fisiologis, sedangkan pengetahuan klinis
+diambil dari 2.233 potongan pedoman melalui \emph{retrieval} leksikal. Evaluasi pada dataset
+OhioT1DM memakai validasi silang lintas-pasien enam \emph{fold}. Pada horizon $+30$ menit, model
+mencapai RMSE 20,72~mg/dL dengan 94,69\% titik pada zona A+B \emph{Clarke Error Grid}, sebanding
+dengan \emph{Random Forest} dan LSTM; pada skenario pemantauan mandiri tanpa CGM (horizon sekitar
+240 menit) galat naik menjadi 71,60~mg/dL, tetapi tetap di bawah \emph{baseline} persistence
+(95,31~mg/dL). Pada kasus divergen, ketika kondisi mendatang berbeda dari kondisi saat ini, RAG
+terkondisi-prediksi mengungguli RAG standar secara konsisten pada keenam \emph{fold} (\emph{Mean
+Reciprocal Rank} 0,190 menjadi 0,284; $p=0{,}031$) dan pada 120 kasus nyata (0,186 menjadi 0,321;
+$p<0{,}001$). Lengan \emph{oracle} mencapai MRR 0,778, sehingga sebagian besar selisih yang tersisa
+berasal dari ketepatan prediksi, bukan dari mekanisme \emph{retrieval}. Keterbatasan yang sama
+tampak pada sensitivitas hipoglikemia, yaitu 17,3\% dengan ambang atas hasil regresi dan 67,2\%
+dengan pengklasifikasi kondisi langsung. Seluruh komputasi lokal berjalan tanpa GPU (median
+0,339~detik, memori 342~MB) dan setiap rujukan dapat ditelusuri sampai halaman cetak pedomannya.
+Evaluasi awal oleh dua belas tenaga kesehatan menilai rekomendasi sesuai pedoman dengan verifikasi
+dokter, dengan skor \emph{System Usability Scale} 55,21 yang menunjukkan kegunaan sistem masih
+perlu ditingkatkan.
 
-Kata kunci: RAG terkondisi-prediksi, prediksi kadar glukosa, \emph{Gradient Boosting}, sistem pendukung keputusan klinis, diabetes.
+\textbf{Kata kunci:} RAG terkondisi-prediksi, prediksi kadar glukosa, \emph{Gradient Boosting}, sistem pendukung keputusan klinis, diabetes.
 \end{spacing}
