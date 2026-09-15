@@ -12,15 +12,15 @@ evaluasinya, skenario dan protokol pengujian, metrik yang digunakan, serta pemer
 \label{subsec:bab6-tujuan-ruang-lingkup-evaluasi}
 
 Evaluasi dilakukan untuk menilai apakah artefak yang telah dirancang dan diimplementasikan mampu memenuhi tujuan penelitian pada kondisi pengujian yang telah
-ditetapkan. Evaluasi tidak diarahkan untuk menunjukkan bahwa sistem aman atau siap digunakan secara klinis secara mandiri, melainkan untuk memberikan bukti
+ditetapkan. Evaluasi tidak dimaksudkan untuk membuktikan bahwa sistem aman atau siap dipakai secara klinis tanpa pengawasan, melainkan untuk memberikan bukti
 empiris mengenai kinerja, perilaku, dan keterbatasan setiap komponen pada ruang lingkup penelitian.
 
 \subsection{Pemetaan Tujuan Artefak terhadap Evaluasi}
 \label{subsec:bab6-pemetaan-tujuan-artefak}
 
 Tiga tujuan artefak digunakan sebagai struktur utama evaluasi. Tujuan pertama (T1) berkaitan dengan modul prediksi kadar glukosa. Tujuan kedua (T2) berkaitan dengan
-mekanisme RAG terkondisi-prediksi yang menggunakan keadaan glukosa terprediksi sebagai sumber conditioning retrieval. Tujuan ketiga (T3) berkaitan dengan integrasi
-modul prediksi dan RAG ke dalam CDSS dengan alur doctor-mediated. Pemetaan tujuan artefak terhadap evaluasi ditunjukkan pada Tabel~\ref{tab:tab6.1_pemetaan_tujuan_artefak_dan_evaluasi}.
+mekanisme RAG terkondisi-prediksi yang membentuk kueri retrieval dari keadaan glukosa terprediksi. Tujuan ketiga (T3) berkaitan dengan integrasi
+modul prediksi dan RAG ke dalam CDSS dengan alur \textit{doctor-mediated}. Pemetaan tujuan artefak terhadap evaluasi ditunjukkan pada Tabel~\ref{tab:tab6.1_pemetaan_tujuan_artefak_dan_evaluasi}.
 
 \input{tables/bab6/tab6.1_pemetaan_tujuan_artefak_dan_evaluasi.tex}
 
@@ -29,38 +29,36 @@ dengan pengenalan kondisi glukosa. Evaluasi T2 mencakup kualitas retrieval pada 
 evaluasi lintas pasien, dan kontrol oracle. Evaluasi T3 mencakup kualitas generation dan citation, perilaku fallback, kinerja operasional, usability, serta penilaian
 ahli pada konteks penggunaan doctor-mediated.
 
-Dengan pembagian tersebut, hasil evaluasi setiap komponen tidak diperlakukan sebagai satu angka agregat. Suatu model dapat memiliki galat prediksi yang relatif baik
-tetapi tetap memiliki kelemahan pada deteksi hipoglikemia, sedangkan retrieval dapat memperoleh dokumen yang relevan tetapi generation belum tentu sepenuhnya terikat
-pada evidence. Evaluasi karena itu dilaporkan pada tingkat komponen dan kemudian disatukan pada bagian pembahasan.
+Dengan pembagian tersebut, hasil evaluasi setiap komponen tidak diperlakukan sebagai satu angka agregat. Sebuah model dapat memiliki galat prediksi yang kecil tetapi lemah dalam mendeteksi hipoglikemia; retrieval dapat menemukan dokumen yang relevan tetapi
+\textit{generation} belum tentu setia pada \textit{evidence}. Karena itu, evaluasi dilaporkan per komponen dan baru disatukan pada bagian pembahasan.
 
 \subsection{Skenario dan Protokol Evaluasi}
 \label{subsec:bab6-skenario-protokol-evaluasi}
 
 Protokol evaluasi menggunakan pemisahan berbasis pasien agar pasien yang digunakan sebagai pengujian tidak menjadi bagian dari pelatihan model. Pada evaluasi prediksi
-digunakan validasi silang enam lipatan, dengan setiap lipatan menggunakan sepuluh pasien untuk pelatihan dan dua pasien untuk pengujian. Model dilatih ulang pada
-setiap lipatan sehingga parameter model tidak dibawa dari lipatan sebelumnya.
+digunakan validasi silang enam \textit{fold}, dengan setiap \textit{fold} memakai sepuluh pasien untuk pelatihan dan dua pasien untuk pengujian. Model dilatih ulang
+pada setiap \textit{fold} sehingga parameter model tidak dibawa dari \textit{fold} sebelumnya.
 
-Dua bentuk evaluasi prediksi dipertahankan karena memiliki tujuan yang berbeda. Evaluasi hold-out digunakan sebagai pengukuran resmi pada konfigurasi yang ditetapkan
-pada artefak hasil evaluasi, sedangkan validasi silang lintas-pasien digunakan untuk melihat variasi kinerja antar-fold. Kedua hasil tersebut tidak digabungkan menjadi
-satu angka karena proses pembentukan sampelnya berbeda.
+Dua bentuk evaluasi prediksi dipertahankan karena tujuannya berbeda. Evaluasi \textit{hold-out} (dua pasien uji tetap) menjadi pengukuran resmi pada konfigurasi
+produksi, sedangkan validasi silang lintas-pasien memperlihatkan variasi kinerja antar-\textit{fold}. Kedua hasil tidak digabungkan menjadi satu angka karena
+cara pembentukan sampelnya berbeda.
 
 Pada skenario CGM, evaluasi dilakukan pada horizon +30 dan +60 menit. Pada skenario finger-stick, evaluasi menggunakan konfigurasi produksi dengan delapan observasi
 historis dan jendela target sekitar 240 menit. Persistence digunakan sebagai baseline khusus pada jalur finger-stick sehingga perbandingan dilakukan pada horizon
 yang sama.
 
-Evaluasi retrieval menggunakan enam lipatan lintas-pasien dan membandingkan lengan retrieval yang telah ditentukan sebelumnya. Perbandingan utama dilakukan antara
+Evaluasi retrieval menggunakan enam \textit{fold} lintas-pasien dan membandingkan lengan retrieval yang telah ditentukan sebelumnya. Perbandingan utama dilakukan antara
 RAG standar yang menggunakan kondisi saat ini dan RAG terkondisi-prediksi yang menggunakan kondisi hasil prediksi. Evaluasi kemudian dipisahkan antara himpunan
 natural dan himpunan divergen, yaitu kasus ketika kondisi saat ini berbeda dari kondisi masa depan. Evaluasi oracle digunakan sebagai kontrol untuk menilai kemampuan
 retrieval ketika kondisi masa depan diketahui secara benar.
 
-Protokol eksperimen ditetapkan sebelum hasil setiap percobaan dilihat. Catatan protokol tersebut digunakan untuk membatasi perubahan analisis setelah hasil diperoleh
-dan menjadi dasar untuk membedakan keputusan yang telah ditetapkan di muka dari temuan yang muncul selama evaluasi. Ringkasan protokol utama ditunjukkan pada
-Tabel~\ref{tab:tab6.2_ringkasan_protokol_evaluasi}.
+Protokol tiap eksperimen ditulis sebelum hasilnya dilihat. Catatan itu membatasi perubahan analisis setelah hasil diperoleh, sehingga keputusan yang ditetapkan di
+muka dapat dibedakan dari temuan yang muncul selama evaluasi. Ringkasan protokol utama ditunjukkan pada Tabel~\ref{tab:tab6.2_ringkasan_protokol_evaluasi}.
 
 \input{tables/bab6/tab6.2_ringkasan_protokol_evaluasi.tex}
 
-Tabel~\ref{tab:tab6.2_ringkasan_protokol_evaluasi} memperlihatkan bahwa tiap protokol memuat dugaan beserta ambang keputusan yang ditetapkan sebelum hasilnya dilihat, sehingga arah analisis pada
-bab ini dapat diperiksa ulang terhadap catatan yang mendahuluinya. Rincian tiap protokol beserta tanggal pencatatannya disajikan pada Lampiran~\ref{lamp:statistik}.
+Tabel~\ref{tab:tab6.2_ringkasan_protokol_evaluasi} memperlihatkan bahwa tiap protokol memuat dugaan dan ambang keputusan yang ditetapkan sebelum hasil dilihat,
+sehingga arah analisis pada bab ini dapat diperiksa ulang terhadap catatan yang mendahuluinya. Rincian tiap protokol beserta tanggal pencatatannya disajikan pada Lampiran~\ref{lamp:statistik}.
 
 \subsection{Metrik Evaluasi}
 \label{subsec:bab6-metrik-evaluasi}
@@ -68,30 +66,31 @@ bab ini dapat diperiksa ulang terhadap catatan yang mendahuluinya. Rincian tiap 
 Metrik evaluasi dipilih berdasarkan jenis keluaran yang dinilai. Pada modul prediksi, RMSE, MAE, dan MAPE digunakan untuk mengukur galat numerik, sedangkan Clarke
 Error Grid digunakan untuk melihat implikasi klinis dari selisih antara prediksi dan pengukuran aktual.
 
-Pada retrieval, Hit@k digunakan untuk melihat apakah dokumen relevan muncul pada sejumlah hasil teratas, MRR digunakan untuk memperhatikan posisi dokumen relevan
-pertama, dan nDCG digunakan ketika beberapa hasil memiliki tingkat relevansi yang berbeda. Penggunaan ketiga metrik tersebut memberikan pandangan yang berbeda
-terhadap keberadaan dan pemeringkatan evidence yang relevan.
+Pada retrieval digunakan tiga metrik: Hit@$k$ memeriksa apakah dokumen relevan muncul di antara $k$ hasil teratas, MRR memperhatikan posisi dokumen relevan
+pertama, dan nDCG dipakai ketika beberapa hasil memiliki tingkat relevansi berbeda. Ketiganya memberi sudut pandang yang berbeda terhadap keberadaan dan
+urutan \textit{evidence} yang relevan.
 
 Pada generation, evaluasi menggunakan faithfulness, context precision, dan context recall melalui RAGAS. Faithfulness digunakan untuk menilai keterikatan keluaran
 terhadap konteks yang diberikan, sedangkan context precision dan context recall digunakan untuk menilai kualitas konteks yang diperoleh relatif terhadap informasi
 rujukan. Hasil RAGAS diperlakukan sebagai salah satu sumber bukti, bukan sebagai satu-satunya ukuran kualitas sistem, karena sebagian metrik menggunakan LLM sebagai
 judge.
 
-Stabilitas dinilai melalui repeated-run pada masukan yang sama. Keamanan generation dinilai dengan memeriksa keluaran yang tidak didukung evidence, klaim yang
-melampaui konteks, dan kegagalan menyatakan keterbatasan. Citation dinilai dari keterhubungan antara citation, evidence, dan sumber dokumen.
+Kestabilan dinilai dengan menjalankan ulang evaluasi pada masukan yang sama. Keamanan \textit{generation} dinilai dengan memeriksa keluaran yang tidak didukung
+\textit{evidence}, klaim yang melampaui konteks, dan kegagalan menyatakan keterbatasan. Sitasi dinilai dari keterhubungan antara sitasi, \textit{evidence}, dan
+sumber dokumen.
 
 Pada evaluasi klinis, sensitivitas, spesifisitas, dan positive predictive value digunakan untuk menilai deteksi hipoglikemia. Pada evaluasi usability digunakan
 System Usability Scale (SUS). Kinerja operasional dinilai melalui waktu respons dan konsumsi memori pada konfigurasi lingkungan yang digunakan.
 
-Seluruh metrik tersebut diperlakukan sebagai indikator pada dimensi yang berbeda. Tidak ada satu metrik yang digunakan sebagai pengganti seluruh aspek kualitas
-sistem. Struktur ini memungkinkan pembahasan membedakan kesalahan prediksi, kualitas retrieval, keterikatan generation, keselamatan keluaran, dan kemudahan penggunaan.
+Seluruh metrik tersebut diperlakukan sebagai indikator pada dimensi yang berbeda; tidak ada satu metrik yang mewakili seluruh aspek kualitas sistem. Dengan
+demikian, pembahasan dapat membedakan kesalahan prediksi, kualitas retrieval, kesetiaan \textit{generation} pada \textit{evidence}, keselamatan keluaran, dan
+kemudahan penggunaan.
 
 \subsection{Pencegahan Kebocoran Informasi}
 \label{subsec:bab6-pencegahan-kebocoran-informasi}
 
-Pemisahan berbasis pasien diterapkan secara terpisah pada evaluasi prediksi dan retrieval. Nomor fold pada kedua evaluasi tersebut tidak menyatakan pasangan pasien
-yang sama, sehingga perbandingan antar-fold hanya dilakukan di dalam masing-masing protokol. Keterangan ini diperlukan agar hasil lintas-pasien tidak disalahartikan
-sebagai penggunaan partisi pasien yang identik untuk seluruh eksperimen.
+Pemisahan berbasis pasien diterapkan secara terpisah pada evaluasi prediksi dan evaluasi retrieval. Karena itu, \textit{fold} bernomor sama pada kedua evaluasi
+tidak berisi pasangan pasien yang sama, dan perbandingan antar-\textit{fold} hanya dilakukan di dalam masing-masing protokol.
 
 Pencegahan kebocoran informasi juga diperiksa pada preprocessing. Parameter StandardScaler dipelajari hanya dari data pelatihan dan disimpan bersama bundle inferensi,
 sedangkan pasien pengujian tidak digunakan untuk mempelajari parameter model. Dengan demikian, pengukuran pada data pengujian digunakan untuk mengevaluasi model,
@@ -131,8 +130,8 @@ fold yang telah diuraikan pada Subbab~\ref{subsec:bab6-skenario-protokol-evaluas
 
 Pada horizon +30 menit, Gradient Boosting memiliki RMSE 20,72 $\pm$ 1,16 mg/dL dan Clarke A+B 94,69 $\pm$ 0,50\%. Random Forest menghasilkan
 21,08 $\pm$ 1,15 mg/dL dan 94,35 $\pm$ 0,55\%, sedangkan LSTM menghasilkan 20,60 $\pm$ 1,33 mg/dL dan 94,89 $\pm$ 0,52\%. Meskipun LSTM memiliki
-nilai RMSE rata-rata sedikit lebih rendah, selisih antarmodel berada di bawah variasi antar-fold. Karena itu, ketiga model dianggap memiliki kinerja
-yang sebanding dalam konteks evaluasi ini, bukan sebagai urutan pemenang yang pasti.
+RMSE rata-rata sedikit lebih rendah, selisih antar-model lebih kecil daripada variasi antar-\textit{fold}. Karena itu, ketiga model dianggap sebanding dalam
+konteks evaluasi ini, bukan diurutkan sebagai pemenang yang pasti.
 
 Rincian per fold pada artefak hasil (tidak ditampilkan pada tabel) juga menunjukkan bahwa tidak ada model yang mendominasi seluruh fold: Gradient Boosting
 memiliki RMSE terbaik pada sebagian fold, sementara LSTM lebih rendah pada fold lainnya. Karena itu, variasi antar-fold ikut dipertimbangkan dalam
@@ -156,7 +155,7 @@ menafsirkan hasil, bukan hanya nilai rata-ratanya.
     \label{fig:bab6-clarke-error-grid}
 \end{figure}
 
-Gambar~\ref{fig:bab6-clarke-error-grid} memperlihatkan penyebaran kesalahan prediksi model produksi secara klinis pada kedua horizon. Pada horizon
+Gambar~\ref{fig:bab6-clarke-error-grid} memperlihatkan sebaran kesalahan prediksi model produksi menurut zona konsekuensi klinis pada kedua horizon. Pada horizon
 +30 menit (Gambar~\ref{fig:bab6-clarke-error-grid-30}), titik-titik terkonsentrasi pada zona A dan B; sebagian besar prediksi berada dekat dengan nilai
 aktual, tetapi agregat zona aman tidak meniadakan kesalahan pada kadar glukosa rendah. Pada horizon +60 menit (Gambar~\ref{fig:bab6-clarke-error-grid-60}),
 penyebaran kesalahan lebih lebar. Perubahan tersebut sejalan dengan penurunan nilai Clarke A+B pada horizon yang lebih panjang.
@@ -199,34 +198,29 @@ interval yang dihasilkan, serta batas interpretasi hasil tersebut.
 \label{subsec:bab6-protokol-kalibrasi-interval}
 
 Evaluasi ketidakpastian dilakukan untuk menilai apakah rentang prediksi yang ditampilkan sistem memberikan cakupan yang mendekati tingkat yang ditargetkan.
-Ketidakpastian awal dibentuk dari sebaran prediksi kuantil, kemudian dikalibrasi menggunakan split conformal pada masing-masing horizon. Faktor kalibrasi
-dibaca dari artefak hasil dan tidak diganti dengan nilai cadangan yang ditanam langsung di kode.
+Rentang awal dibentuk dari sebaran prediksi kuantil, kemudian dikalibrasi dengan \textit{split conformal prediction} pada masing-masing horizon. Faktor
+kalibrasi dibaca dari artefak hasil kalibrasi, bukan dari nilai tetap di dalam kode.
 
-Kalibrasi dipisahkan menurut horizon karena hubungan antara residual prediksi dan simpangan baku antar-pohon berubah ketika horizon berubah. Dengan demikian,
-satu faktor kalibrasi tidak digunakan untuk seluruh horizon. Hasil kalibrasi terbaru untuk target cakupan 95\% dirangkum pada
+Kalibrasi dipisahkan menurut horizon karena hubungan antara galat prediksi dan lebar rentang awal berubah ketika horizon berubah; satu faktor kalibrasi tidak
+dapat dipakai untuk seluruh horizon. Hasil kalibrasi terbaru untuk target cakupan 95\% dirangkum pada
 Tabel~\ref{tab:tab6.6_hasil_kalibrasi_ketidakpastian}.
 
 \input{tables/bab6/tab6.6_hasil_kalibrasi_ketidakpastian.tex}
 
 Pada horizon +30 menit, faktor kalibrasi sebesar 2,15 menghasilkan lebar interval rata-rata 73,8 mg/dL. Pada horizon +60 menit, faktor kalibrasi
 sebesar 2,14 menghasilkan lebar rata-rata 120,6 mg/dL. Faktor yang hampir sama tidak berarti kedua interval sama lebarnya, karena faktor tersebut
-dikalikan dengan simpangan baku yang berubah menurut horizon. Cakupan empiris pada tabel diukur dengan pasien pengukur terpisah dan dibahas pada
-subbab berikut.
-
-Untuk interpretasi implementasi, perlu dibedakan antara artefak kalibrasi lama dan hasil kalibrasi terbaru. Kalibrasi lama menggunakan konfigurasi yang tidak
-sepenuhnya selaras dengan bundle produksi, sehingga tidak digunakan sebagai bukti akhir mengenai cakupan model produksi. Hasil kalibrasi terbaru pada dua horizon
-tersebut digunakan untuk menunjukkan perilaku interval berdasarkan konfigurasi yang telah diperbarui.
+dikalikan dengan simpangan baku yang berubah menurut horizon. Cakupan empiris pada tabel diukur pada pasien pengukur yang terpisah dan dibahas pada subbab berikut. Angka pada Tabel~\ref{tab:tab6.6_hasil_kalibrasi_ketidakpastian}
+berasal dari kalibrasi terbaru dengan konfigurasi model produksi; hasil kalibrasi yang lebih lama (dengan konfigurasi fitur berbeda) tidak dipakai sebagai bukti.
 
 \subsection{Cakupan Interval Prediksi}
 \label{subsec:bab6-coverage-interval-prediksi}
 
-Cakupan interval diukur dengan pasien pengukur yang tidak pernah dipakai melatih maupun mengkalibrasi model. Pengukuran diulang dua belas kali dengan
-pasangan pasien kalibrasi dan pasien pengukur yang berbeda. Pada target 95\%, cakupan empiris rerata adalah 94,7\% pada +30 menit dan 94,5\% pada
+Cakupan interval diukur pada pasien pengukur yang tidak pernah dipakai untuk melatih maupun mengkalibrasi model. Pengukuran diulang dua belas kali dengan
+pasangan pasien kalibrasi dan pasien pengukur yang berbeda-beda. Pada target 95\%, cakupan empiris rerata adalah 94,7\% pada +30 menit dan 94,5\% pada
 +60 menit, dengan simpangan baku antar-putaran 2,1 dan 2,8 poin persen. Hasilnya ditunjukkan pada Gambar~\ref{fig:bab6-coverage-interval-konformal}.
 
-Hasil ini menunjukkan bahwa kalibrasi menghasilkan cakupan yang mendekati target pada kedua horizon. Kedua nilai berada sedikit di bawah nominal, tetapi
-rentang antar-putaran melingkupi target, sehingga selisih tersebut diperlakukan sebagai variasi yang bergantung pada pasien kalibrasi, bukan sebagai
-bukti kalibrasi yang gagal.
+Kalibrasi menghasilkan cakupan yang mendekati target pada kedua horizon. Kedua nilai sedikit di bawah 95\%, tetapi rentang antar-putaran melingkupi target.
+Selisih itu karenanya dibaca sebagai variasi yang bergantung pada pasien kalibrasi, bukan sebagai kegagalan kalibrasi.
 
 \begin{figure}[!htbp]
     \centering
@@ -262,7 +256,7 @@ Hasil evaluasi menunjukkan bahwa interval konformal ternormalisasi mencapai caku
 (94,7\% dan 94,5\%). Cakupan tersebut dicapai dengan lebar interval yang cukup besar, yaitu 73,8 mg/dL pada +30 menit dan 120,6 mg/dL pada +60 menit.
 
 Hasil ini tidak boleh ditafsirkan sebagai jaminan bahwa setiap keadaan klinis akan tercakup. Cakupan merupakan ukuran statistik pada skenario evaluasi yang
-digunakan. Selain itu, modalitas finger-stick dengan horizon produksi sekitar 240 menit belum memiliki artefak kalibrasi h48 yang sesuai sehingga sistem
+digunakan. Selain itu, modalitas \textit{finger-stick} dengan horizon produksi sekitar 240 menit belum memiliki artefak kalibrasi yang sesuai, sehingga sistem
 tidak menampilkan interval konformal pada jalur tersebut. Perilaku tersebut dipertahankan agar sistem tidak menampilkan rentang yang tidak memiliki dasar
 kalibrasi.
 
@@ -272,16 +266,15 @@ khususnya kemampuan mengenali hipoglikemia, dievaluasi secara terpisah.
 \section{Evaluasi Keamanan Klinis}
 \label{sec:bab6-evaluasi-keamanan-klinis}
 
-Bagian ini memeriksa perilaku sistem pada kelas kondisi yang paling berisiko, yaitu hipoglikemia. Pemeriksaan mencakup kinerja deteksi, perbandingan antara
-pendekatan regresi dan pengklasifikasi kondisi, analisis kesalahan \textit{false negative}, percobaan pengaturan ambang sebagai mitigasi, serta implikasinya
-terhadap posisi penggunaan sistem.
+Bagian ini memeriksa perilaku sistem pada kelas kondisi yang paling berisiko, yaitu hipoglikemia: kinerja deteksinya, perbandingan pendekatan regresi dengan
+pengklasifikasi kondisi, analisis negatif palsu, percobaan pengaturan ambang sebagai mitigasi, dan implikasinya bagi cara sistem digunakan.
 
 \subsection{Deteksi Hipoglikemia}
 \label{subsec:bab6-deteksi-hipoglikemia}
 
 Evaluasi keamanan klinis difokuskan pada kemampuan sistem mengenali kondisi hipoglikemia dari hasil prediksi glukosa. Fokus ini dipilih karena kesalahan pada kadar
-glukosa rendah dapat memiliki konsekuensi akut dan tidak dapat dinilai hanya dari metrik regresi agregat. Pada evaluasi ini dibandingkan dua pendekatan
-pembentukan kondisi, yaitu pendekatan berbasis hasil regresi yang kemudian diberikan ambang kondisi dan pengklasifikasi kondisi langsung.
+glukosa rendah dapat memiliki konsekuensi akut dan tidak dapat dinilai hanya dari metrik regresi agregat. Pada evaluasi ini dibandingkan dua cara membentuk kondisi: (1) regresi lalu ambang, yaitu hasil regresi glukosa dipetakan ke kategori kondisi
+melalui ambang tetap, dan (2) pengklasifikasi langsung, yaitu model klasifikasi yang memprediksi kategori kondisi secara langsung.
 
 \input{tables/bab6/tab6.8_perbandingan_deteksi_hipoglikemia.tex}
 
@@ -297,8 +290,8 @@ PPV hipoglikemia sebesar 56,6\%, sedangkan pengklasifikasi langsung menghasilkan
 sensitif terhadap hipoglikemia tetapi menghasilkan lebih banyak peringatan positif yang tidak sesuai dibandingkan pendekatan regresi lalu ambang.
 
 Sebagaimana terlihat pada Tabel~\ref{tab:tab6.8_perbandingan_deteksi_hipoglikemia}, perubahan pendekatan terutama berdampak pada sensitivitas hipoglikemia.
-Peningkatan sensitivitas tersebut disertai penurunan PPV serta penurunan akurasi keseluruhan, sehingga sistem tidak memilih satu ukuran dengan mengabaikan
-ukuran lainnya.
+Peningkatan sensitivitas tersebut disertai penurunan PPV dan akurasi keseluruhan, sehingga pemilihan pendekatan tidak dapat didasarkan pada satu ukuran
+saja.
 
 Selain itu, sensitivitas untuk kondisi normal dan hiperglikemia juga berubah. Pada pendekatan regresi lalu ambang, nilainya masing-masing adalah 93,7\% dan
 86,3\%. Pada pengklasifikasi langsung, nilainya menjadi 85,6\% dan 89,5\%. Perubahan tersebut memperlihatkan bahwa perbaikan pada satu kondisi dapat
@@ -307,8 +300,7 @@ disertai perubahan performa pada kondisi lain.
 \subsection{Analisis Negatif Palsu}
 \label{subsec:bab6-analisis-false-negative-hipoglikemia}
 
-False negative hipoglikemia menjadi perhatian utama karena kasus yang sebenarnya hipoglikemia tetapi tidak dikenali dapat menghilangkan kesempatan untuk
-memberikan peringatan dini. Hasil evaluasi menunjukkan bahwa pendekatan regresi lalu ambang memiliki sensitivitas yang rendah pada kelas ini. Oleh karena itu,
+Negatif palsu pada hipoglikemia menjadi perhatian utama: kasus hipoglikemia yang tidak dikenali menghilangkan kesempatan memberi peringatan dini. Hasil evaluasi menunjukkan bahwa pendekatan regresi lalu ambang memiliki sensitivitas yang rendah pada kelas ini. Oleh karena itu,
 agregat Clarke A+B yang tinggi tidak dapat digunakan sebagai satu-satunya dasar untuk menyatakan keamanan klinis.
 
 Temuan tersebut konsisten dengan karakteristik data, yaitu kejadian hipoglikemia relatif jarang. Model regresi yang mengoptimalkan galat kuadrat cenderung
@@ -323,14 +315,13 @@ dengan pendekatan regresi lalu ambang, pada himpunan uji hold-out berisi 27.193 
 (sensitivitas 14,0\% pada ambang 70 mg/dL) tidak identik dengan 17,3\% pada Tabel~\ref{tab:tab6.8_perbandingan_deteksi_hipoglikemia} yang diukur pada
 himpunan uji dan versi model yang berbeda. Menaikkan ambang peringatan dari 70 menjadi 85 mg/dL meningkatkan sensitivitas dari 14,0\% menjadi 59,4\%
 dengan spesifisitas 96,0\%. Ambang 90 mg/dL menghasilkan sensitivitas 72,1\% dan spesifisitas 93,4\%. Hasil ini menunjukkan bahwa pemilihan ambang
-merupakan pertukaran antara menangkap lebih banyak kasus berisiko dan menambah jumlah peringatan yang salah.
+merupakan pertukaran (\textit{trade-off}) antara menangkap lebih banyak kasus berisiko dan menambah jumlah peringatan yang salah.
 
 \subsection{Implikasi Safety-First dan Alur Termediasi Dokter}
 \label{subsec:bab6-implikasi-safety-first-design}
 
-Hasil evaluasi menunjukkan bahwa sistem tidak seharusnya memperlakukan prediksi sebagai keputusan klinis otomatis. Sensitivitas hipoglikemia yang masih
-belum memadai pada pendekatan produksi menjadi alasan untuk mempertahankan peringatan dini, penyajian ketidakpastian ketika artefaknya tersedia, dan alur
-doctor-mediated.
+Hasil evaluasi menunjukkan bahwa prediksi tidak boleh diperlakukan sebagai keputusan klinis otomatis. Sensitivitas hipoglikemia yang belum memadai
+menjadi alasan mempertahankan tiga pengaman: peringatan dini, penyajian ketidakpastian bila artefaknya tersedia, dan alur \textit{doctor-mediated}.
 
 Temuan evaluasi ahli (Tabel~\ref{tab:tab6.18_kesesuaian_rekomendasi}) juga mendukung pembatasan tersebut. Pada rekomendasi hipoglikemia, sembilan dari
 dua belas responden menilai rekomendasi sesuai pedoman tetapi tetap memerlukan verifikasi dokter, dua responden menilainya aman diikuti, dan satu responden
@@ -344,7 +335,7 @@ Sistem menunjukkan mekanisme mitigasi yang meningkatkan sensitivitas, namun hasi
 \section{Evaluasi RAG / Retrieval}
 \label{sec:bab6-evaluasi-rag-retrieval}
 
-Bagian ini menilai inti mekanisme yang diusulkan, yaitu apakah kondisi glukosa terprediksi dapat mengarahkan retrieval menuju evidence yang lebih relevan
+Bagian ini menilai inti mekanisme yang diusulkan: apakah kondisi glukosa terprediksi dapat mengarahkan retrieval menuju \textit{evidence} yang lebih relevan
 dibandingkan retrieval yang hanya menggunakan kondisi saat ini. Penilaian dilakukan pada dua himpunan kasus yang berbeda, dilanjutkan dengan validasi silang
 lintas-pasien, uji signifikansi berpasangan, kontrol oracle, analisis ablasi, dan pemeriksaan pada kasus nyata pasien hold-out.
 
@@ -373,7 +364,8 @@ identik dengan kueri RAG standar sehingga tidak ada perubahan arah retrieval yan
 \subsection{Skenario Divergen}
 \label{subsec:bab6-skenario-divergen}
 
-Himpunan divergen dibentuk dari jendela yang kondisi saat ininya berbeda dari kondisi pada horizon prediksi, yaitu kasus ketika antisipasi memiliki nilai.
+Himpunan divergen dibentuk dari jendela yang kondisi saat ininya berbeda dari kondisi pada horizon prediksi, yaitu kasus ketika antisipasi benar-benar
+dibutuhkan.
 Himpunan ini diseimbangkan antar kelas kondisi agar hasil tidak didominasi kelas normal. Pada data pasien hold-out, jendela divergen berjumlah 3.621 dari 27.193
 jendela, atau sekitar 13,3\% dari seluruh jendela pengamatan.
 
@@ -381,10 +373,9 @@ Pada validasi silang enam fold, RAG standar memperoleh MRR 0,190 $\pm$ 0,003, se
 pengklasifikasi kondisi meningkatkan MRR menjadi 0,312 $\pm$ 0,018 dan Hit@1 dari 0,095 menjadi 0,147. Pola peningkatan tersebut berlawanan arah dengan hasil pada
 himpunan natural.
 
-Perbedaan perilaku pada kedua himpunan tersebut merupakan hasil yang paling penting pada bagian ini. Mekanisme terkondisi-prediksi tidak berfungsi sebagai
-peningkatan retrieval yang merata, melainkan sebagai mekanisme yang bekerja pada kasus ketika kondisi masa depan berbeda dari kondisi saat ini. Karena kasus
-tersebut merupakan kasus yang secara klinis paling memerlukan antisipasi, keterbatasan cakupannya tidak menghapus manfaatnya, tetapi membatasi klaim yang dapat
-diajukan.
+Perbedaan perilaku pada kedua himpunan tersebut merupakan hasil yang paling penting pada bagian ini. Mekanisme terkondisi-prediksi bukan peningkatan retrieval yang merata; ia bekerja pada kasus ketika kondisi masa depan berbeda dari kondisi saat ini.
+Kasus seperti itu justru yang paling memerlukan antisipasi secara klinis, sehingga cakupan manfaat yang terbatas ini tidak meniadakan manfaatnya, tetapi
+membatasi klaim yang dapat diajukan.
 
 \subsection{Evaluasi Lintas-Fold}
 \label{subsec:bab6-evaluasi-crossfold-retrieval}
@@ -406,8 +397,8 @@ terpisah. Perbandingan antar-fold hanya dilakukan di dalam protokol yang sama.
 \subsection{Signifikansi Statistik}
 \label{subsec:bab6-signifikansi-retrieval}
 
-Karena setiap fold mengevaluasi lengan retrieval pada himpunan kasus yang sama, perbandingan antar-lengan dilakukan secara berpasangan menggunakan uji Wilcoxon
-signed-rank pada enam pasangan nilai MRR per fold. Ukuran efek dilaporkan sebagai Cohen's $d_z$ pada selisih berpasangan. Dengan enam pasangan, nilai $p$
+Karena setiap \textit{fold} mengevaluasi semua lengan retrieval pada himpunan kasus yang sama, perbandingan antar-lengan dilakukan berpasangan dengan uji
+Wilcoxon \textit{signed-rank} atas enam pasangan nilai MRR per \textit{fold}. Ukuran efek dilaporkan sebagai $d_z$ Cohen pada selisih berpasangan. Dengan enam pasangan, nilai $p$
 terkecil yang dapat dicapai adalah 0,031 sehingga uji ini hanya mampu membedakan pola yang konsisten pada seluruh fold. Hasil pengujian ditunjukkan pada
 Tabel~\ref{tab:tab6.10_uji_signifikansi_retrieval}.
 
@@ -430,13 +421,11 @@ arah efek, bukan sebagai pembuktian besaran efek.
 \label{subsec:bab6-oracle-evaluation}
 
 Lengan oracle menerima kondisi glukosa masa depan yang sebenarnya sebagai sumber conditioning. Lengan ini tidak dapat dijalankan pada penggunaan nyata karena
-kondisi tersebut baru diketahui setelah horizon prediksi berlalu. Fungsinya adalah memisahkan keterbatasan yang berasal dari mekanisme retrieval dari
-keterbatasan yang berasal dari ketepatan kondisi yang dipasok ke retriever.
+kondisi tersebut baru diketahui setelah horizon prediksi berlalu. Fungsinya adalah memisahkan dua sumber keterbatasan: mekanisme retrieval itu sendiri dan ketepatan kondisi yang dipasok kepadanya.
 
 Pada himpunan divergen, oracle memperoleh MRR 0,778 $\pm$ 0,000 dengan Hit@1 sebesar 0,667. Nilai tersebut jauh di atas 0,284 yang dicapai RAG terkondisi-prediksi,
-dengan selisih $+0,494$ dan konsisten pada seluruh fold. Selisih sebesar itu menunjukkan bahwa mekanisme retrieval yang digunakan sebenarnya mampu menemukan
-evidence yang tepat ketika kondisi yang diberikan benar, sehingga sebagian besar jarak menuju batas atas berasal dari kesalahan penentuan kondisi, bukan dari
-mekanisme penelusuran.
+dengan selisih $+0,494$ dan konsisten pada seluruh fold. Selisih sebesar itu menunjukkan bahwa mekanisme retrieval mampu menemukan \textit{evidence} yang tepat ketika kondisi yang diberikan benar. Dengan
+demikian, sebagian besar jarak menuju batas atas berasal dari kesalahan penentuan kondisi, bukan dari mekanisme penelusurannya.
 
 Pada himpunan natural, oracle memperoleh MRR 0,769 $\pm$ 0,087, yaitu hanya $+0,056$ di atas RAG terkondisi-prediksi. Jarak yang kecil tersebut menegaskan bahwa
 pada distribusi natural kondisi saat ini sudah merupakan penduga yang baik bagi kondisi masa depan, sehingga informasi tambahan dari prediksi maupun dari
@@ -455,13 +444,13 @@ menguntungkan dengan sendirinya, sedangkan pada distribusi natural kondisi yang 
 
 Kontrol kedua adalah lengan berderau yang menambahkan kesalahan buatan pada nilai prediksi sebelum kondisi ditentukan. Pada himpunan divergen, derau 10\%, 20\%,
 dan 40\% memperoleh MRR 0,382, 0,402, dan 0,360, yaitu seluruhnya di atas RAG standar dan tidak lebih rendah daripada RAG terkondisi-prediksi tanpa derau.
-Hasil ini merupakan temuan yang membatasi klaim: pada himpunan divergen yang diseimbangkan antar kelas, sebagian keunggulan berasal dari fakta bahwa kueri
-digeser menjauh dari kondisi saat ini, bukan semata dari ketepatan nilai prediksi. Pada himpunan natural, lengan berderau tidak berbeda dari RAG standar pada
+Temuan ini membatasi klaim: pada himpunan divergen yang diseimbangkan antar-kelas, sebagian keunggulan berasal dari bergesernya kueri menjauh dari
+kondisi saat ini, bukan semata dari ketepatan nilai prediksi. Pada himpunan natural, lengan berderau tidak berbeda dari RAG standar pada
 derau 10\% dan 20\% ($p=0,791$ dan $p=0,743$) dan baru menurun pada derau 40\% ($p=0,001$).
 
-Ablasi ketiga memeriksa penyertaan interval prediksi pada kueri. Penyertaan interval meningkatkan ketepatan kondisi dari 16,7\% menjadi 74,2\% dan menaikkan MRR
-divergen menjadi 0,412, tetapi tidak menaikkan Hit@5 yang tetap 0,650, dan menurunkan MRR natural dari 0,780 menjadi 0,314. Konfigurasi gabungan antara interval dan pengklasifikasi
-memberikan pola yang sama. Karena penggunaan sesungguhnya berlangsung pada distribusi natural, konfigurasi tersebut tidak diadopsi pada jalur produksi.
+Ablasi ketiga memeriksa penyertaan interval prediksi pada kueri. Pada himpunan divergen, penyertaan interval menaikkan ketepatan kondisi dari 16,7\% menjadi
+74,2\% dan MRR menjadi 0,412, tetapi Hit@5 tetap 0,650. Pada himpunan natural, MRR justru turun dari 0,780 menjadi 0,314. Konfigurasi gabungan interval dan
+pengklasifikasi memperlihatkan pola yang sama. Karena penggunaan sesungguhnya berlangsung pada distribusi natural, konfigurasi tersebut tidak diadopsi pada jalur produksi.
 
 Ablasi keempat memeriksa horizon yang digunakan sebagai sumber conditioning. Pada set pelaporan, kueri berbasis kondisi saat ini memperoleh MRR 0,564, kueri
 berbasis prediksi +30 menit memperoleh 0,552, dan kueri berbasis prediksi +60 menit memperoleh 0,542, sedangkan oracle pada +60 menit memperoleh 0,839. Tidak ada
@@ -472,10 +461,10 @@ Ablasi kelima memeriksa kontribusi reranker terhadap urutan hasil. Pada himpunan
 MRR 0,217 dengan Hit@1 sebesar 0, sedangkan penambahan reranker meningkatkan MRR menjadi 0,300 dengan Hit@1 sebesar 0,3. Jumlah kasus pada ablasi ini kecil
 sehingga hasilnya digunakan sebagai indikasi arah, bukan sebagai pengukuran yang setara dengan evaluasi lintas-pasien.
 
-Satu ablasi yang telah dijalankan tidak dilaporkan sebagai peringkat, yaitu perbandingan antar susunan kueri. Peringkat antar-varian pada percobaan tersebut
-berkorelasi 0,964 dengan banyaknya kata kunci pelabel relevansi yang muncul di dalam kueri (Spearman, $p=0,0005$, $n=7$). Karena pelabel yang sama menjadi
-penyebut seluruh metriknya, urutan antar-varian tidak dapat dipisahkan dari kecocokan kosakata terhadap pelabel, sehingga varian pemenang pada percobaan itu
-tidak diadopsi.
+Satu ablasi lain, yaitu perbandingan tujuh susunan kueri, tidak dilaporkan sebagai peringkat. Urutan kemenangan antar-varian berkorelasi 0,964 (Spearman,
+$p=0,0005$, $n=7$) dengan banyaknya kata kunci pelabel relevansi yang termuat di dalam kueri. Karena relevansi ditentukan oleh pelabel otomatis yang sama,
+varian yang memuat lebih banyak kata kunci pelabel hampir pasti unggul; urutan itu mencerminkan kecocokan kosakata dengan pelabel, bukan mutu penelusuran,
+sehingga varian pemenang tidak diadopsi.
 
 \subsection{Penelusuran pada Kasus Nyata}
 \label{subsec:bab6-real-case-retrieval}
@@ -497,10 +486,10 @@ evaluasi terpisah pada himpunan divergen diperlukan agar kasus yang jarang tetap
 \subsection{Interpretasi Hasil Retrieval}
 \label{subsec:bab6-interpretasi-hasil-retrieval}
 
-Hasil pada bagian ini mendukung klaim yang terbatas dan menolak klaim yang lebih luas. Klaim yang didukung adalah bahwa penggunaan kondisi glukosa terprediksi
-sebagai sumber conditioning meningkatkan kualitas retrieval pada kasus ketika kondisi masa depan berbeda dari kondisi saat ini, dengan konsistensi pada seluruh
-fold lintas-pasien dan replikasi pada kasus nyata pasien hold-out. Klaim yang tidak didukung adalah bahwa mekanisme tersebut meningkatkan retrieval secara umum;
-pada distribusi natural, hasilnya tidak dapat dibedakan dari RAG standar.
+Hasil pada bagian ini mendukung satu klaim terbatas dan menolak klaim yang lebih luas. Klaim yang didukung: membentuk kueri dari kondisi glukosa terprediksi
+meningkatkan kualitas retrieval pada kasus ketika kondisi masa depan berbeda dari kondisi saat ini, secara konsisten pada seluruh \textit{fold} lintas-pasien
+dan terulang pada kasus nyata pasien \textit{hold-out}. Klaim yang tidak didukung: mekanisme tersebut meningkatkan retrieval secara umum, sebab pada distribusi
+natural hasilnya tidak dapat dibedakan dari RAG standar.
 
 Batas atas mekanisme ini ditentukan oleh ketepatan kondisi yang dipasok, bukan oleh mekanisme penelusuran. Jarak sebesar $+0,494$ MRR antara lengan oracle dan
 lengan terkondisi-prediksi pada himpunan divergen menunjukkan bahwa perbaikan lanjutan lebih banyak tersedia pada sisi prediksi kondisi daripada pada sisi
@@ -511,21 +500,20 @@ mengungguli RAG standar pada himpunan tersebut, sebagian keunggulan berasal dari
 prediksi. Temuan ini tidak menghapus keunggulan yang terukur pada kasus nyata, tetapi membatasi tafsirnya dan menjadi salah satu dasar keterbatasan yang
 dilaporkan pada Subbab~\ref{sec:bab6-keterbatasan-evaluasi}.
 
-Seluruh angka pada bagian ini berlaku pada konfigurasi korpus, chunking, dan top-\(k\) yang digunakan pada evaluasi. Relevansi ditentukan oleh pelabel otomatis
-berbasis kondisi, bukan oleh penilaian pakar per potongan, sehingga metrik retrieval pada bab ini mengukur kesesuaian terhadap kondisi glukosa dan bukan
-kesesuaian klinis dokumen secara menyeluruh.
+Seluruh angka pada bagian ini berlaku pada konfigurasi korpus, chunking, dan top-\(k\) yang digunakan pada evaluasi. Relevansi ditentukan oleh pelabel otomatis berbasis kondisi, bukan oleh penilaian pakar per potongan. Karena itu, metrik retrieval pada bab ini mengukur
+kesesuaian dokumen terhadap kondisi glukosa, bukan kesesuaian klinisnya secara menyeluruh.
 
-\section{Evaluasi Pembangkitan, Sitasi, dan Fallback}
+\section{Evaluasi \textit{Generation}, Sitasi, dan \textit{Fallback}}
 \label{sec:bab6-evaluasi-generation-citation-fallback}
 
-Bagian ini menilai keluaran tahap generation, yaitu keterikatan narasi terhadap evidence, hasil pengukuran RAGAS beserta kestabilannya, keamanan keluaran,
-verifikasi sitasi, dan perilaku sistem ketika mekanisme fallback aktif.
+Bagian ini menilai keluaran tahap \textit{generation}: kesetiaan narasi pada \textit{evidence}, hasil RAGAS beserta kestabilannya, keamanan keluaran,
+verifikasi sitasi, dan perilaku sistem ketika mekanisme \textit{fallback} aktif.
 
-\subsection{Pembangkitan Terbumikan}
+\subsection{\textit{Grounded Generation}}
 \label{subsec:bab6-evaluasi-grounded-generation}
 
-Evaluasi tingkat generation dilakukan untuk menilai apakah keluaran model bahasa tetap terikat pada evidence yang diberikan oleh retrieval dan apakah keluaran
-dapat menyajikan informasi klinis tanpa memperluas klaim melampaui konteks. Evaluasi menggunakan enam kasus dan membandingkan RAG standar dengan
+Evaluasi tingkat \textit{generation} menilai apakah keluaran model bahasa tetap setia pada \textit{evidence} hasil retrieval dan tidak memperluas klaim
+melampaui konteks yang diberikan. Evaluasi menggunakan enam kasus dan membandingkan RAG standar dengan
 RAG terkondisi-prediksi. Protokol generation yang menghasilkan angka ini menggunakan \texttt{gemini-2.5-flash-lite} dengan empat dokumen hasil retrieval.
 Jalur produksi kemudian berpindah ke \texttt{gemini-3.5-flash-lite} dengan \texttt{top\_k=5}; karena itu angka generation pada subbab ini tidak dinyatakan
 sebagai benchmark untuk model produksi terbaru. Hasil ditunjukkan pada Tabel~\ref{tab:tab6.12_evaluasi_generation_dan_safety}.
@@ -570,7 +558,7 @@ metrik yang berbasis rujukan sebagai pendamping metrik retrieval.
 Gambar~\ref{fig:bab6-stabilitas-ragas} memperlihatkan perbedaan stabilitas antar-metrik. Perubahan terbesar terjadi pada \textit{answer relevancy},
 sedangkan \textit{context precision} dan \textit{context recall} tidak berubah pada kasus pengujian yang tersedia.
 
-\subsection{Keamanan Pembangkitan}
+\subsection{Keamanan \textit{Generation}}
 \label{subsec:bab6-generation-safety}
 
 Generation safety dinilai dengan memeriksa kepatuhan keluaran terhadap aturan sistem, termasuk penggunaan penanda citation, larangan membuat nomor
@@ -579,8 +567,8 @@ halaman atau bab secara bebas, penyusunan keluaran sebagai langkah aksi, disclai
 
 Selain kepatuhan format, pengujian menunjukkan manfaat safety pada kondisi ketika evidence tidak memuat jawaban secara langsung. Pada satu kasus, model
 \texttt{gemini-2.5-flash-lite} memberikan informasi dosis yang tidak didukung konteks, sedangkan \texttt{gemini-3.5-flash-lite} menyatakan bahwa
-informasi spesifik belum tersedia pada knowledge base. Pada kasus lain, model terbaru juga mengklasifikasikan kadar 58 mg/dL sebagai Level 1 sesuai
-ambang yang digunakan pada konteks evaluasi, sedangkan model sebelumnya menyatakannya sebagai Level 2.
+informasi spesifik belum tersedia pada knowledge base. Pada kasus lain, model terbaru mengklasifikasikan kadar 58 mg/dL sebagai hipoglikemia tingkat 1 (54--69 mg/dL) sesuai ambang pada konteks
+evaluasi, sedangkan model sebelumnya keliru menyebutnya tingkat 2 (di bawah 54 mg/dL).
 
 Temuan tersebut mendukung penggunaan guardrail dan verifikasi keluaran, tetapi cakupan pengujian hanya dua kasus untuk kepatuhan model terbaru.
 Karena itu, hasil tidak digeneralisasi sebagai jaminan keselamatan seluruh keluaran.
@@ -614,10 +602,10 @@ Fallback diuji pada kondisi ketika evidence tidak memadai atau konteks upstream 
 keterbatasan daripada menghasilkan klaim yang terlihat pasti. Evidence yang tersedia tetap dipertahankan bersama metadata, sedangkan ketiadaan evidence
 tidak diubah menjadi evidence sintetis.
 
-Perilaku serupa diterapkan pada informasi uncertainty. Ketika artefak kalibrasi tidak tersedia, interval tidak ditampilkan sebagai nilai pengganti.
+Perilaku serupa diterapkan pada informasi ketidakpastian. Ketika artefak kalibrasi tidak tersedia, interval tidak ditampilkan sebagai nilai pengganti.
 Dengan demikian, fallback mempertahankan keterbatasan hingga keluaran akhir dan mengurangi risiko pengguna menafsirkan keluaran sebagai kepastian klinis.
 
-Secara keseluruhan, hasil evaluasi generation, citation, dan fallback menunjukkan bahwa mekanisme grounding, citation, dan fallback telah tersedia, tetapi evaluasi generation
+Secara keseluruhan, ketiga mekanisme tersebut (\textit{grounding}, sitasi, dan \textit{fallback}) telah berfungsi, tetapi angka evaluasi \textit{generation}
 perlu dibaca dengan memperhatikan perbedaan konfigurasi model antara eksperimen dan jalur produksi.
 
 \section{Evaluasi Kinerja Operasional dan Ketahanan}
@@ -656,10 +644,9 @@ kalibrasi interval, dan retrieval. Karena itu, bottleneck operasional berada pad
 Konsumsi memori diperiksa terutama karena lingkungan cloud gratis yang dicoba pada tahap pengembangan memiliki batas memori yang rendah. Jejak penggunaan
 memori pada jalur backend produksi menunjukkan kenaikan bertahap dari proses Python awal sampai pembangunan pipeline RAG.
 
-Gambar~\ref{fig:bab6-jejak-memori-backend} memperlihatkan jejak memori aplikasi pada tiap tahap inisialisasi: sekitar 21 MB pada proses Python awal,
-47 MB setelah FastAPI, 96 MB setelah route, 157 MB setelah PredictionService, 266 MB ketika RAGPipeline dibuat, hingga 342 MB setelah proses build.
-Pada layanan Render gratis dengan batas 512 MB, sisa memori teoritis setelah jejak aplikasi tersebut tidak cukup untuk menanggung keseluruhan overhead
-lingkungan operasi, sehingga backend mengalami out-of-memory sebelum proses indeks selesai.
+Gambar~\ref{fig:bab6-jejak-memori-backend} memperlihatkan jejak memori aplikasi pada tiap tahap inisialisasi, dari sekitar 21 MB pada proses Python awal
+hingga 342 MB setelah indeks basis pengetahuan selesai dibangun. Pada layanan Render gratis dengan batas 512 MB, sisa sekitar 170 MB tidak cukup untuk
+\textit{overhead} lingkungan operasi, sehingga \textit{backend} kehabisan memori sebelum proses pembangunan indeks selesai.
 
 \begin{figure}[!htbp]
     \centering
@@ -682,8 +669,8 @@ terhadap tekanan memori lingkungan, bukan kegagalan logika sistem.
 
 Fallback pada jalur penyajian digunakan ketika artefak atau evidence yang diperlukan tidak tersedia. Pada halaman prediction, missing model bundle
 menghasilkan peringatan alih-alih membuat halaman berhenti secara diam-diam. Pada pipeline RAG, evidence yang tidak memadai diteruskan sebagai
-keterbatasan dan tidak digantikan dengan evidence sintetis. Perilaku ini melengkapi hasil evaluasi generation dan fallback serta tidak dinyatakan sebagai ukuran keberhasilan
-kuantitatif karena evaluasi fallback yang terpisah belum menghasilkan metrik cakupan yang cukup.
+keterbatasan dan tidak digantikan dengan evidence sintetis. Perilaku ini melengkapi hasil evaluasi \textit{generation} dan \textit{fallback}, tetapi tidak dilaporkan sebagai ukuran kuantitatif karena belum ada
+evaluasi \textit{fallback} terpisah dengan cakupan kasus yang memadai.
 
 \input{tables/bab6/tab6.15_pemeriksaan_ketahanan_dan_pengujian.tex}
 
@@ -703,7 +690,7 @@ Docker dan deployment cloud lain yang pernah digunakan selama pengembangan tidak
 yang digunakan pada evaluasi. Pemisahan ini penting agar hasil kinerja dilaporkan pada lingkungan yang benar-benar digunakan.
 
 Secara keseluruhan, hasil evaluasi operasional menunjukkan bahwa sistem dapat menjalankan alur assessment pada lingkungan komputasi penelitian dengan waktu
-respons median sekitar 2,47 detik. Namun, feasibility tersebut tetap bergantung pada availability layanan model bahasa dan perangkat backend. Temuan ini
+respons median sekitar 2,47 detik. Namun, kelayakan tersebut tetap bergantung pada ketersediaan layanan model bahasa dan perangkat \textit{backend}. Temuan ini
 menjadi konteks untuk evaluasi usability dan ahli pada bagian berikutnya.
 
 \section{Evaluasi Integrasi CDSS dan Ahli}
@@ -721,8 +708,8 @@ awal praktik klinis, sedangkan responden dengan kewenangan tata laksana penuh be
 menggunakan sistem CDSS atau aplikasi kesehatan digital sebelumnya dan tiga menyatakan pernah menggunakannya. Pengalaman menangani pasien diabetes dengan CGM
 juga terbatas, dengan satu responden pernah menangani pasien tersebut, satu responden jarang, dan sepuluh responden belum pernah.
 
-Informasi bidang okupasi diisi delapan responden, yaitu tiga pada Penyakit Dalam, satu dokter umum, satu kedokteran umum, satu koas, satu Obgin, dan satu
-umum. Karakteristik tersebut digunakan untuk memberikan konteks terhadap hasil evaluasi, bukan untuk mengklaim keterwakilan seluruh populasi tenaga
+Bidang okupasi diisi oleh delapan responden dengan jawaban bebas: tiga menulis Penyakit Dalam, tiga menulis dokter umum atau kedokteran umum, satu koas,
+dan satu Obstetri-Ginekologi. Karakteristik tersebut digunakan untuk memberikan konteks terhadap hasil evaluasi, bukan untuk mengklaim keterwakilan seluruh populasi tenaga
 kesehatan. Ringkasannya ditunjukkan pada Tabel~\ref{tab:tab6.16_karakteristik_responden}.
 
 \input{tables/bab6/tab6.16_karakteristik_responden.tex}
@@ -777,15 +764,14 @@ dihitung per responden mengikuti algoritma Brooke, kemudian diringkas atas dua b
 9,20, median 51,25, dan rentang 40,0 sampai 72,5. Nilai tersebut berada di bawah nilai rerata acuan 68 yang digunakan dalam interpretasi instrumen pada
 evaluasi ini.
 
-Ukuran sampel dua belas mengikuti temuan \textcite{tullis2004} bahwa kesimpulan SUS mencapai titik jenuh pada ukuran sampel dua belas, yaitu ketika
-kesimpulannya sama dengan kesimpulan atas data penuh sedikitnya 90\% kali. SUS merupakan satu dari dua instrumen yang mencapai titik itu pada sampel
-sebesar tersebut. Temuan tersebut menyangkut keandalan SUS ketika membandingkan antarmuka dan bukan jaminan
-presisi skor absolut, sehingga skor pada penelitian ini dilaporkan bersama selang kepercayaannya. Selang kepercayaan 95\% rerata SUS adalah 49,36 sampai
+Ukuran sampel dua belas mengikuti temuan \textcite{tullis2004}: pada dua belas responden, kesimpulan SUS tentang antarmuka mana yang lebih baik sudah
+sama dengan kesimpulan dari sampel penuh pada sedikitnya 90\% pengambilan sampel ulang, dan SUS adalah satu dari dua kuesioner yang mencapai kestabilan itu
+pada ukuran sampel tersebut. Temuan itu menyangkut keandalan SUS untuk membandingkan antarmuka, bukan jaminan presisi skor absolut, sehingga skor pada
+penelitian ini dilaporkan bersama selang kepercayaannya. Selang kepercayaan 95\% rerata SUS adalah 49,36 sampai
 61,05. Seluruh selang tersebut berada di bawah nilai acuan 68, sehingga simpulan bahwa usability sistem masih berada di bawah rata-rata tidak bergantung
 pada satu titik taksiran saja.
 
-Sumber data evaluasi ini berbentuk satu baris per responden. Skor SUS individual, simpangan baku antarresponden, dan selang kepercayaan karena itu
-dihitung langsung dari data tanpa memerlukan rekonstruksi. Ringkasan skor dan rerata tiap butir ditunjukkan pada Tabel~\ref{tab:tab6.19_ringkasan_sus}.
+Skor SUS tiap responden, simpangan baku antar-responden, dan selang kepercayaan dihitung langsung dari jawaban per responden. Ringkasan skor dan rerata tiap butir ditunjukkan pada Tabel~\ref{tab:tab6.19_ringkasan_sus}.
 
 \input{tables/bab6/tab6.19_ringkasan_sus.tex}
 
@@ -801,8 +787,8 @@ penggunaan awal.
     \label{fig:bab6-profil-butir-sus}
 \end{figure}
 
-Gambar~\ref{fig:bab6-profil-butir-sus} memperlihatkan variasi rerata antarbutir SUS. Visual mempertahankan arah butir positif dan negatif agar pembaca
-tidak menyimpulkan bahwa nilai rerata yang lebih tinggi selalu berarti usability lebih baik pada butir negatif.
+Gambar~\ref{fig:bab6-profil-butir-sus} memperlihatkan variasi rerata antar-butir SUS. Butir positif dan negatif ditampilkan terpisah, sebab pada butir
+negatif rerata yang lebih tinggi justru berarti \textit{usability} yang lebih rendah.
 
 \subsection{Aspek Integrasi CDSS}
 \label{subsec:bab6-aspek-integrasi-cdss}
@@ -812,8 +798,8 @@ realistisnya alur kerja. Rerata masing-masing aspek adalah 3,083; 3,333; 3,333; 
 serta realistisnya alur kerja, seluruh responden memberikan skor minimal 3. Aspek dasar rekomendasi memperoleh 83,3\% dan aspek populasi sumber data
 memperoleh 75,0\%.
 
-Temuan ini menunjukkan bahwa konsep integrasi CDSS diterima secara umum oleh responden, tetapi keterbatasan karakteristik populasi sumber data tetap yang
-paling terasa. Tiga responden memberikan skor 2 pada aspek tersebut sehingga penerimaannya menjadi yang terendah di antara kelimanya. Keterbatasan
+Temuan ini menunjukkan bahwa konsep integrasi CDSS diterima secara umum oleh responden; aspek yang paling banyak dipersoalkan adalah kesesuaian
+karakteristik populasi sumber data. Tiga responden memberikan skor 2 pada aspek tersebut sehingga penerimaannya menjadi yang terendah di antara kelimanya. Keterbatasan
 populasi OhioT1DM karena itu tetap perlu dipertahankan sebagai batas interpretasi sistem.
 
 \subsection{Masukan Terbuka dan Implikasi Perbaikan}
@@ -823,8 +809,8 @@ Sembilan dari dua belas responden memberikan masukan terbuka yang bersifat subst
 penggunaan, termasuk usulan petunjuk bergambar, penyederhanaan antarmuka dengan merujuk pada aplikasi CGM vendor yang telah beredar, serta peningkatan
 kualitas advice.
 
-Satu responden mengangkat cakupan klinis yang belum tertangani, yaitu bahwa sistem hanya merujuk pada terapi insulin sedangkan sebagian pasien memakai obat
-diabetes lain, dan bahwa riwayat konsumsi harian serta perbedaan respons antarindividu terhadap insulin belum menjadi masukan sistem. Pada butir gap
+Satu responden mengangkat cakupan klinis yang belum tertangani: sistem hanya merujuk pada terapi insulin padahal sebagian pasien memakai obat diabetes
+lain, dan riwayat konsumsi harian serta perbedaan respons antar-individu terhadap insulin belum menjadi masukan sistem. Pada butir gap
 populasi, dua responden menyoroti kebutuhan cakupan ras lain dan perbedaan gaya hidup antara populasi sumber data dan populasi sasaran.
 
 Masukan tersebut tidak diperlakukan sebagai ukuran kuantitatif tambahan, tetapi digunakan untuk mengidentifikasi area perbaikan sistem. Secara khusus,
@@ -839,9 +825,9 @@ pernah menangani pasien diabetes dengan CGM. Komposisi responden juga didominasi
 seluruhnya terdiri atas klinisi dengan kewenangan tata laksana penuh. Kondisi tersebut perlu dipertimbangkan ketika menafsirkan skor usability dan penilaian
 skenario.
 
-Data hasil kuesioner memuat identitas responden. Identitas tersebut tidak ditampilkan dalam laporan maupun dalam berkas statistik yang
-dibangkitkan, dan analisis hanya menggunakan kolom penilaian. Dengan keterbatasan tersebut, evaluasi ahli digunakan untuk menilai penerimaan dan keterpahaman artefak pada konteks pengujian yang
-tersedia, sedangkan validasi klinis lebih luas berada di luar ruang lingkup penelitian.
+Data kuesioner memuat identitas responden; identitas itu tidak ditampilkan dalam laporan maupun berkas statistik, dan analisis hanya memakai kolom
+penilaian. Dengan batasan-batasan di atas, evaluasi ahli digunakan untuk menilai penerimaan dan keterpahaman artefak pada konteks pengujian yang tersedia,
+sedangkan validasi klinis yang lebih luas berada di luar ruang lingkup penelitian.
 
 \section{Pembahasan Hasil}
 \label{sec:bab6-pembahasan-hasil}
@@ -861,10 +847,10 @@ Temuan tersebut menunjukkan bahwa pemilihan Gradient Boosting sebagai model prod
 Model dipertahankan berdasarkan kombinasi performa yang sebanding dengan pembanding dan pertimbangan operasional.
 
 Pada skenario finger-stick, model produksi memperoleh RMSE 71,60 $\pm$ 11,50 mg/dL dan mengungguli persistence sebesar 95,31 $\pm$ 13,64 mg/dL pada
-evaluasi lintas-pasien. Hasil tersebut menunjukkan bahwa model masih memberikan informasi prediktif pada input jarang, tetapi error lebih besar
-dibandingkan skenario CGM pada horizon yang lebih pendek.
+evaluasi lintas-pasien. Hasil tersebut menunjukkan bahwa model masih memberikan informasi prediktif pada masukan yang jarang, tetapi galatnya jauh lebih besar
+daripada skenario CGM dengan horizon yang lebih pendek.
 
-Untuk ketidakpastian, kalibrasi konformal pada +30 dan +60 menit menghasilkan coverage 94,7\% dan 94,5\% pada target 95\% dengan pasien pengukur
+Untuk ketidakpastian, kalibrasi konformal pada +30 dan +60 menit menghasilkan cakupan 94,7\% dan 94,5\% pada target 95\% dengan pasien pengukur
 terpisah, dengan lebar interval rata-rata masing-masing 73,8 dan 120,6 mg/dL. Cakupan yang mendekati nominal tersebut diikuti interval yang lebih
 lebar pada horizon yang lebih panjang.
 Dengan demikian, T1 terpenuhi pada tingkat artefak penelitian, tetapi belum dapat ditafsirkan sebagai validasi klinis umum.
@@ -879,17 +865,17 @@ dengan $p=0,031$. Penambahan pengklasifikasi kondisi meningkatkan MRR menjadi 0,
 
 Sebaliknya, pada distribusi natural, keuntungan penelusuran terkondisi-prediksi tidak konsisten. RAG standar memperoleh MRR 0,700 $\pm$ 0,076,
 sedangkan RAG terkondisi-prediksi memperoleh 0,714 $\pm$ 0,064 tanpa perbedaan signifikan pada protokol tersebut. Penggunaan pengklasifikasi kondisi
-justru menurunkan MRR pada distribusi natural. Pola ini memperjelas bahwa novelty sistem bukan peningkatan retrieval yang merata, melainkan kemampuan
+justru menurunkan MRR pada distribusi natural. Pola ini memperjelas bahwa kebaruan sistem bukan peningkatan retrieval yang merata, melainkan kemampuan
 menggeser fokus retrieval ketika kondisi masa depan berbeda dari kondisi saat ini.
 
 Oracle memberikan MRR 0,778 pada kasus divergen. Nilai tersebut digunakan sebagai kontrol untuk menunjukkan bahwa sebagian gap performa berasal dari
-ketidakakuratan kondisi yang dipasok oleh model prediksi atau pengklasifikasi. Dengan kata lain, mekanisme conditioning memiliki manfaat yang terukur,
-tetapi ceiling retrieval tetap dibatasi oleh kualitas prediksi kondisi.
+ketidakakuratan kondisi yang dipasok oleh model prediksi atau pengklasifikasi. Dengan kata lain, pembentukan kueri dari kondisi terprediksi memberi manfaat yang terukur,
+tetapi batas atasnya ditentukan oleh kualitas prediksi kondisi.
 
 \subsection{Pemenuhan Tujuan T3}
 \label{subsec:bab6-pemenuhan-t3}
 
-Tujuan T3 menilai integrasi prediction dan RAG menjadi CDSS doctor-mediated. Hasil evaluasi menunjukkan bahwa sistem dapat menjalankan alur assessment,
+Tujuan T3 menilai integrasi modul prediksi dan RAG menjadi CDSS \textit{doctor-mediated}. Hasil evaluasi menunjukkan bahwa sistem dapat menjalankan alur assessment,
 menghasilkan evidence yang dapat ditelusuri, mempertahankan fallback ketika evidence tidak memadai, dan menempatkan dokter sebagai pihak yang melakukan
 verifikasi akhir.
 
@@ -897,7 +883,7 @@ Pada evaluasi ahli dengan dua belas responden, seluruh responden memberikan skor
 hipoglikemia, sembilan responden menilai rekomendasi sesuai pedoman tetapi perlu verifikasi dokter, dua menilainya sesuai dan aman diikuti, dan satu
 menilainya kurang sesuai serta berpotensi berisiko. Pada hiperglikemia, sebelas responden meminta verifikasi dokter dan satu menilai rekomendasi sesuai
 serta aman diikuti.
-Hasil tersebut mendukung prinsip doctor-mediated, tetapi sekaligus menunjukkan bahwa keluaran tidak dapat dianggap sebagai instruksi klinis mandiri.
+Hasil tersebut mendukung prinsip \textit{doctor-mediated}, tetapi sekaligus menunjukkan bahwa keluaran tidak dapat dianggap sebagai instruksi klinis mandiri.
 
 Rerata SUS sebesar 55,21 dengan simpangan baku 9,20 menunjukkan bahwa usability sistem masih memiliki ruang perbaikan. Selang kepercayaan 95\% rerata
 tersebut, yaitu 49,36 sampai 61,05, seluruhnya berada di bawah nilai acuan 68. Hasil usability tetap diperlakukan sebagai evaluasi awal terhadap
@@ -907,12 +893,12 @@ keterpahaman artefak, bukan sebagai generalisasi persepsi populasi dokter.
 \label{subsec:bab6-kapan-rag-terkondisi-membantu}
 
 Hasil seluruh evaluasi menunjukkan pola yang konsisten: penelusuran terkondisi-prediksi paling bermanfaat ketika kondisi masa depan yang relevan
-berbeda dari kondisi saat ini. Pada situasi seperti ini, RAG standar cenderung mempertahankan target kondisi sekarang, sedangkan conditioning menggeser
-target menuju keadaan yang diperkirakan akan datang.
+berbeda dari kondisi saat ini. Pada situasi seperti ini, RAG standar tetap mencari pedoman untuk kondisi sekarang, sedangkan kueri terkondisi-prediksi mengarahkan penelusuran
+ke keadaan yang diperkirakan akan datang.
 
-Pada distribusi natural, mayoritas keadaan saat ini sudah cukup representatif sehingga perubahan query tidak selalu memberikan keuntungan. Penggunaan
-pengklasifikasi kondisi yang lebih agresif bahkan dapat memindahkan query menjauh dari kondisi yang sebenarnya sudah benar. Oleh karena itu, manfaat
-conditioning tidak seharusnya dinyatakan sebagai peningkatan universal untuk semua kasus.
+Pada distribusi natural, kondisi saat ini umumnya sudah mewakili kondisi mendatang sehingga perubahan kueri tidak selalu menguntungkan. Pengklasifikasi
+kondisi yang lebih agresif bahkan dapat menggeser kueri menjauh dari kondisi yang sebenarnya sudah benar. Oleh karena itu, manfaat mekanisme ini tidak
+boleh dinyatakan sebagai peningkatan universal untuk semua kasus.
 
 \subsection{Sumber Kegagalan Sistem}
 \label{subsec:bab6-sumber-kegagalan-sistem}
@@ -920,11 +906,11 @@ conditioning tidak seharusnya dinyatakan sebagai peningkatan universal untuk sem
 Evaluasi menunjukkan empat sumber keterbatasan yang berbeda. Pertama, kesalahan prediksi dapat menghasilkan kondisi masa depan yang kurang tepat dan
 kemudian memengaruhi retrieval. Kedua, retrieval dapat gagal menemukan evidence yang benar meskipun kondisi telah ditentukan. Ketiga, generation dapat
 menghasilkan keluaran yang tidak memadai ketika konteks yang diberikan tidak mendukung jawaban, meskipun guardrail dan fallback mengurangi perilaku tersebut.
-Keempat, latency dan keterbatasan lingkungan deployment membatasi cara sistem dapat digunakan.
+Keempat, waktu respons dan keterbatasan lingkungan penyebaran membatasi cara sistem dapat digunakan.
 
 Pada sisi keamanan, sensitivitas hipoglikemia yang rendah pada pendekatan regresi menunjukkan bahwa performa regresi agregat tidak cukup untuk menjamin
 deteksi kondisi berisiko. Pengklasifikasi kondisi meningkatkan sensitivitas dengan konsekuensi positive predictive value yang lebih rendah. Temuan ini
-menjadi alasan untuk mempertahankan pendekatan safety-first dan doctor-mediated.
+menjadi alasan untuk mengutamakan keselamatan dan mempertahankan alur \textit{doctor-mediated}.
 
 \subsection{Sintesis Keseluruhan Hasil}
 \label{subsec:bab6-sintesis-keseluruhan-hasil}
@@ -936,9 +922,9 @@ interpretasi.
 \input{tables/bab6/tab6.20_sintesis_pemenuhan_tujuan.tex}
 
 Tabel~\ref{tab:tab6.20_sintesis_pemenuhan_tujuan} menunjukkan bahwa T1, T2, dan T3 memiliki bukti keberhasilan pada dimensi yang berbeda, tetapi masing-masing
-tetap memiliki batas. T1 menunjukkan kemampuan prediksi dan penyampaian uncertainty pada horizon yang dikalibrasi; T2 menunjukkan manfaat conditioning
-terutama pada kasus divergen; sedangkan T3 menunjukkan bahwa integrasi dapat dijalankan dalam alur doctor-mediated dengan kebutuhan perbaikan usability
-dan verifikasi klinis.
+tetap memiliki batas. T1 menunjukkan kemampuan prediksi dan penyampaian ketidakpastian pada horizon yang dikalibrasi; T2 menunjukkan manfaat kueri terkondisi-prediksi
+terutama pada kasus divergen; T3 menunjukkan bahwa integrasi dapat dijalankan dalam alur \textit{doctor-mediated}, dengan catatan \textit{usability}
+masih perlu diperbaiki dan validasi klinis belum dilakukan.
 
 Dengan demikian, hasil penelitian paling tepat diposisikan sebagai validasi artefak pada ruang lingkup eksperimen yang ditetapkan. Sistem belum dibuktikan
 sebagai pengganti keputusan klinis, belum merupakan validasi klinis multisenter, dan belum menjamin performa yang sama pada populasi atau lingkungan yang
@@ -985,10 +971,10 @@ Interval konformal yang dievaluasi hanya tersedia pada horizon yang memiliki art
 95\% tercapai dengan konsekuensi lebar interval yang meningkat pada horizon lebih panjang.
 
 Sebaliknya, jalur finger-stick dengan horizon sekitar 240 menit belum memiliki artefak kalibrasi yang sesuai pada pipeline final. Sistem karena itu tidak
-mengisi interval dengan nilai pengganti. Keputusan tersebut menjaga keterlacakan hasil, tetapi juga berarti bahwa uncertainty belum tersedia secara
-seragam untuk seluruh jalur input.
+mengisi interval dengan nilai pengganti. Keputusan tersebut menjaga keterlacakan hasil, tetapi juga berarti bahwa ketidakpastian belum tersedia secara
+seragam untuk seluruh jalur masukan.
 
-Selain itu, coverage merupakan hasil statistik pada data evaluasi yang digunakan dan tidak dapat ditafsirkan sebagai jaminan bahwa setiap kejadian klinis
+Selain itu, cakupan merupakan hasil statistik pada data evaluasi yang digunakan dan tidak dapat ditafsirkan sebagai jaminan bahwa setiap kejadian klinis
 akan berada di dalam interval.
 
 \subsection{Keterbatasan Retrieval}
@@ -998,13 +984,13 @@ Penelusuran terkondisi-prediksi memberikan peningkatan yang paling jelas pada ka
 Pada distribusi natural, keuntungan tersebut kecil dan tidak selalu konsisten. Dengan demikian, pendekatan yang digunakan bukan pengganti universal untuk
 retrieval standar.
 
-Hasil oracle menunjukkan bahwa retrieval masih dibatasi oleh ketepatan kondisi yang diberikan kepada retriever. Jika kondisi yang diprediksi salah, query
-dapat diarahkan ke evidence yang kurang sesuai meskipun mekanisme retrieval bekerja sebagaimana dirancang.
+Hasil \textit{oracle} menunjukkan bahwa retrieval masih dibatasi oleh ketepatan kondisi yang diberikan kepada \textit{retriever}. Jika kondisi yang diprediksi
+salah, kueri diarahkan ke \textit{evidence} yang kurang sesuai meskipun mekanisme retrieval bekerja sebagaimana dirancang.
 
-Evaluasi juga bergantung pada konfigurasi korpus dan parameter retrieval final. Perubahan chunking, top-\(k\), atau susunan query dapat mengubah hasil sehingga
-angka yang dilaporkan harus selalu dibaca bersama protokol eksperimennya.
+Evaluasi juga bergantung pada konfigurasi korpus dan parameter retrieval final. Perubahan pemotongan dokumen, top-\(k\), atau susunan kueri dapat mengubah hasil,
+sehingga angka yang dilaporkan harus selalu dibaca bersama protokol eksperimennya.
 
-\subsection{Keterbatasan Pembangkitan}
+\subsection{Keterbatasan \textit{Generation}}
 \label{subsec:bab6-keterbatasan-generation}
 
 Pada sisi implementasi, terdapat perbedaan antara konfigurasi eksperimen generation dan konfigurasi jalur produksi terbaru. Evaluasi generation yang
@@ -1027,13 +1013,15 @@ penggunaan jangka panjang pada alur pelayanan nyata.
 \label{subsec:bab6-keterbatasan-deployment}
 
 Jalur deployment yang digunakan pada evaluasi adalah frontend pada Vercel dan backend yang berjalan pada laptop pengembang melalui ngrok. Arsitektur tersebut
-memungkinkan demonstrasi end-to-end, tetapi masih bergantung pada availability perangkat backend, koneksi internet, tunnel, dan layanan model bahasa.
+memungkinkan demonstrasi ujung ke ujung, tetapi masih bergantung pada ketersediaan perangkat \textit{backend}, koneksi internet, terowongan ngrok, dan
+layanan model bahasa.
 
 Percobaan deployment cloud gratis sebelumnya menunjukkan keterbatasan memori sehingga backend tidak dipertahankan pada lingkungan tersebut. Konsekuensinya,
-hasil latency dan feasibility yang dilaporkan pada penelitian ini merepresentasikan konfigurasi lingkungan evaluasi, bukan jaminan performa pada setiap
+hasil waktu respons dan kelayakan yang dilaporkan pada penelitian ini mewakili konfigurasi lingkungan evaluasi, bukan jaminan kinerja pada setiap
 infrastruktur.
 
-Waktu respons juga sangat dipengaruhi oleh generation LLM. Pada benchmark terbaru, sekitar 85,0\% waktu respons digunakan untuk menunggu generation.
+Waktu respons juga sangat dipengaruhi oleh \textit{generation} LLM. Pada pengukuran terbaru, sekitar 83\% dari median waktu respons digunakan untuk menunggu
+\textit{generation}.
 Perubahan model, kuota, jaringan, atau layanan penyedia dapat mengubah waktu respons tersebut.
 
 \subsection{Keterbatasan Keselamatan Klinis}
@@ -1043,8 +1031,8 @@ Hasil evaluasi menunjukkan bahwa prediksi regresi agregat yang baik tidak cukup 
 kondisi dapat meningkatkan sensitivitas, tetapi dengan konsekuensi positive predictive value yang lebih rendah. Karena itu, keluaran sistem tidak
 diposisikan sebagai keputusan klinis otomatis.
 
-Prinsip doctor-mediated dipertahankan sebagai batas penggunaan sistem. Evidence, prediction, uncertainty, dan rekomendasi disajikan untuk membantu
-penilaian, sedangkan keputusan akhir tetap memerlukan verifikasi klinis. Penelitian ini tidak melakukan uji klinis prospektif, tidak membandingkan sistem
+Prinsip \textit{doctor-mediated} dipertahankan sebagai batas penggunaan sistem. \textit{Evidence}, prediksi, ketidakpastian, dan rekomendasi disajikan untuk
+membantu penilaian, sedangkan keputusan akhir tetap memerlukan verifikasi klinis. Penelitian ini tidak melakukan uji klinis prospektif, tidak membandingkan sistem
 terhadap outcome pasien nyata, dan tidak membuktikan bahwa penggunaan sistem meningkatkan hasil klinis.
 
 \subsection{Ringkasan Keterbatasan}
@@ -1056,6 +1044,6 @@ penelitian pada ruang lingkup yang tepat dan mencegah interpretasi yang melampau
 \input{tables/bab6/tab6.21_ringkasan_keterbatasan_dan_dampak.tex}
 
 Tabel~\ref{tab:tab6.21_ringkasan_keterbatasan_dan_dampak} menunjukkan bahwa keterbatasan penelitian berasal dari beberapa lapisan sistem, yaitu data,
-model prediksi, uncertainty, retrieval, generation, evaluasi ahli, deployment, dan aspek keselamatan. Keterbatasan tersebut terutama membatasi
+model prediksi, ketidakpastian, retrieval, \textit{generation}, evaluasi ahli, penyebaran, dan aspek keselamatan. Keterbatasan tersebut terutama membatasi
 generalisasi hasil dan penggunaan sistem sebagai alat pendukung keputusan klinis. Karena sumbernya tersebar pada banyak lapisan dan bukan pada satu
 komponen saja, hasil penelitian diposisikan sebagai evaluasi artefak pada ruang lingkup yang telah ditentukan.
