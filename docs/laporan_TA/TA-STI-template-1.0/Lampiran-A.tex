@@ -1,17 +1,17 @@
 \cleardoublepage
 \chapter{KODE PROGRAM}
 
-Kode program sistem cukup panjang dan telah disimpan secara lengkap pada repositori daring, sehingga tidak disertakan seluruhnya di dalam laporan ini. Kode sumber lengkap, meliputi pemrosesan data, model prakiraan, kondisi klinis terstruktur, pipeline RAG \emph{terkondisi-prediksi}, serta antarmuka, tersedia di:
+Kode program sistem cukup panjang dan telah disimpan secara lengkap pada repositori daring, sehingga tidak disertakan seluruhnya di dalam laporan ini. Kode sumber lengkap, meliputi pemrosesan data, model prediksi, pembentukan \textit{clinical state}, pipeline RAG terkondisi-prediksi, serta antarmuka, tersedia di:
 \begin{center}
 \url{https://github.com/jackund25/final-bachelor-project}
 \end{center}
 
-Pada lampiran ini hanya disertakan dua potongan kode yang paling penting untuk dibaca cepat, yakni rekayasa fitur berbasis fisiologi dan pembentukan kueri terkondisi prediksi yang menjadi inti kebaruan. Alur menyeluruh pipeline dapat dilihat pada Gambar~\ref{fig:fig4.2_aliran_data-end-to-end}, sedangkan tiap tahapnya telah diringkas sebagai \textit{pseudocode} pada Algoritma~\ref{alg:alg5.1_rekayasa_fitur_modul_prediksi} sampai Algoritma~\ref{alg:alg5.4_grounded_generation_dan_citation}.
+Lampiran ini hanya menyertakan dua potongan kode yang paling penting, yakni rekayasa fitur berbasis fisiologi dan pembentukan kueri terkondisi-prediksi yang menjadi inti kebaruan. Alur menyeluruh pipeline dapat dilihat pada Gambar~\ref{fig:fig4.2_aliran_data-end-to-end}, sedangkan tiap tahapnya telah diringkas sebagai \textit{pseudocode} pada Algoritma~\ref{alg:alg5.1_rekayasa_fitur_modul_prediksi} sampai Algoritma~\ref{alg:alg5.4_grounded_generation_dan_citation}.
 
 \section{Rekayasa Fitur Berbasis Fisiologi}
-Potongan kode berikut menghitung fitur \emph{engineered} (IOB, COB, tren, dan komponen diurnal). Perhitungan dilakukan per pasien untuk mencegah kebocoran temporal.
+Potongan kode berikut menghitung fitur turunan (IOB, COB, tren, dan komponen diurnal). Perhitungan dilakukan per pasien untuk mencegah kebocoran temporal.
 \lstinputlisting[language=Python, caption={Rekayasa fitur berbasis fisiologi (IOB, COB, tren, diurnal)}, label={lst:engineer-features}]{listings/engineer-features.tex}
 
-\section{Pembentukan Kueri Terkondisi Prediksi}
-Potongan kode berikut merealisasikan inti kebaruan RAG \emph{terkondisi-prediksi}: kueri retrieval dibangun dari nilai glukosa yang \emph{diprediksi}, bukan kondisi saat ini (bandingkan Algoritma~\ref{alg:alg5.3_query_transformation_terkondisi_prediksi}).
-\lstinputlisting[language=Python, caption={Pembentukan kueri terkondisi prediksi (inti RAG terkondisi-prediksi)}, label={lst:conditioned-query}]{listings/conditioned-query.tex}
+\section{Pembentukan Kueri Terkondisi-Prediksi}
+Potongan kode berikut merealisasikan inti kebaruan RAG terkondisi-prediksi: kueri \textit{retrieval} dibangun dari nilai glukosa yang \emph{diprediksi}, bukan kondisi saat ini (bandingkan Algoritma~\ref{alg:alg5.3_query_transformation_terkondisi_prediksi}).
+\lstinputlisting[language=Python, caption={Pembentukan kueri terkondisi-prediksi}, label={lst:conditioned-query}]{listings/conditioned-query.tex}

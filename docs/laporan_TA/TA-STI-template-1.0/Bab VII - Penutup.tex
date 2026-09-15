@@ -11,9 +11,9 @@ pemeriksaan terhadap kebutuhan sistem yang telah ditetapkan pada Bab~\ref{chap:a
 \subsection{Kesimpulan Tujuan T1: Modul Prediksi Kadar Glukosa}
 \label{subsec:bab7-kesimpulan-t1}
 
-Tujuan T1 adalah membangun modul prediksi kadar glukosa yang dapat memanfaatkan data pemantauan dengan karakteristik waktu pengamatan yang berbeda,
-menghasilkan prediksi pada horizon yang ditetapkan, serta menyampaikan informasi ketidakpastian sebagai bagian dari keluaran sistem. Tujuan ini dievaluasi
-melalui pengujian pada data CGM dan finger-stick, perbandingan beberapa model prediksi, evaluasi lintas-pasien, serta evaluasi interval prediksi.
+Tujuan T1 adalah membangun modul prediksi kadar glukosa yang dapat mengolah data pemantauan dengan kerapatan pengamatan berbeda, menghasilkan prediksi pada
+horizon yang ditetapkan, dan menyertakan informasi ketidakpastian pada keluarannya. Tujuan ini dievaluasi melalui pengujian pada data CGM dan
+\textit{finger-stick}, perbandingan beberapa model, evaluasi lintas-pasien, serta evaluasi interval prediksi.
 
 Hasil evaluasi menunjukkan bahwa modul prediksi mampu menghasilkan prediksi glukosa pada ruang pengujian yang ditetapkan. Pada horizon +30 menit,
 performa tiga model pembanding berada pada tingkat yang relatif berdekatan. Pada validasi silang lintas-pasien, LSTM memperoleh RMSE rata-rata
@@ -30,22 +30,21 @@ Pada evaluasi lintas-pasien, model produksi menghasilkan RMSE 71,60 $\pm$ 11,50 
 95,31 $\pm$ 13,64 mg/dL. Hasil ini menunjukkan bahwa modul tetap memberikan informasi prediktif ketika kepadatan observasi lebih rendah, meskipun
 tingkat kesalahan lebih besar dibandingkan evaluasi CGM pada horizon yang lebih pendek.
 
-Komponen uncertainty juga berhasil diintegrasikan pada horizon yang memiliki artefak kalibrasi sesuai. Pada target coverage 95\%, hasil kalibrasi
-menghasilkan coverage 94,7\% pada horizon +30 menit dan 94,5\% pada horizon +60 menit dengan pasien pengukur terpisah. Lebar interval rata-rata
+Komponen ketidakpastian juga berhasil diintegrasikan pada horizon yang memiliki artefak kalibrasi yang sesuai. Pada target cakupan 95\%, kalibrasi
+menghasilkan cakupan 94,7\% pada horizon +30 menit dan 94,5\% pada horizon +60 menit dengan pasien pengukur terpisah. Lebar interval rata-rata
 meningkat dari 73,8 mg/dL menjadi 120,6 mg/dL ketika horizon diperpanjang. Dengan demikian, modul tidak hanya menghasilkan nilai prediksi, tetapi juga menyediakan rentang
 ketidakpastian pada kondisi yang didukung oleh artefak kalibrasi.
 
-Berdasarkan keseluruhan hasil tersebut, \textbf{Tujuan T1 dinyatakan terpenuhi pada ruang evaluasi penelitian}. Modul prediksi telah dapat menjalankan fungsi
-prediksi, menangani dua karakteristik input pemantauan yang diuji, dan menyertakan uncertainty pada horizon yang telah dikalibrasi. Namun, pemenuhan
-ini tidak dimaknai sebagai validasi klinis umum karena performa masih bergantung pada horizon, modalitas data, distribusi pasien, dan ketersediaan
-artefak kalibrasi.
+Berdasarkan keseluruhan hasil tersebut, \textbf{Tujuan T1 dinyatakan terpenuhi pada ruang evaluasi penelitian}. Modul prediksi dapat menjalankan fungsi prediksi,
+menangani kedua karakteristik masukan pemantauan yang diuji, dan menyertakan ketidakpastian pada horizon yang telah dikalibrasi. Namun, pemenuhan ini bukan
+validasi klinis umum: kinerjanya masih bergantung pada horizon, modalitas data, distribusi pasien, dan ketersediaan artefak kalibrasi.
 
 \subsection{Kesimpulan Tujuan T2: RAG Terkondisi-Prediksi}
 \label{subsec:bab7-kesimpulan-t2}
 
-Tujuan T2 adalah mengembangkan mekanisme \textit{Retrieval-Augmented Generation} (RAG) yang menggunakan keadaan glukosa terprediksi sebagai sumber
-\textit{conditioning} untuk mengarahkan retrieval terhadap evidence klinis yang relevan dengan kondisi yang akan datang. Dengan pendekatan tersebut,
-sistem tidak hanya menggunakan keadaan glukosa saat ini, tetapi juga mempertimbangkan keadaan yang diperkirakan pada horizon prediksi.
+Tujuan T2 adalah mengembangkan mekanisme \textit{Retrieval-Augmented Generation} (RAG) yang membentuk kueri dari keadaan glukosa terprediksi, sehingga
+retrieval diarahkan pada \textit{evidence} klinis yang relevan dengan kondisi yang akan datang. Dengan demikian, sistem tidak hanya memakai keadaan glukosa
+saat ini, tetapi juga keadaan yang diperkirakan pada horizon prediksi.
 
 Hasil evaluasi menunjukkan bahwa manfaat utama RAG terkondisi-prediksi muncul pada kasus divergen, yaitu ketika kondisi glukosa saat ini berbeda dari
 kondisi pada masa depan. Pada evaluasi lintas-pasien enam fold, RAG standar menghasilkan MRR sebesar 0,190 $\pm$ 0,003, sedangkan RAG
@@ -53,8 +52,8 @@ terkondisi-prediksi berbasis regresi menghasilkan MRR sebesar 0,284 $\pm$ 0,025.
 nilai $p=0,031$. Ketika pengklasifikasi kondisi digunakan bersama penelusuran terkondisi-prediksi, MRR meningkat menjadi 0,312 $\pm$ 0,018.
 
 Hasil tersebut berbeda dengan distribusi natural. Pada distribusi tersebut, RAG standar menghasilkan MRR 0,700 $\pm$ 0,076, sedangkan RAG
-terkondisi-prediksi menghasilkan 0,714 $\pm$ 0,064. Perbedaan yang relatif kecil tersebut menunjukkan bahwa conditioning tidak memberikan keuntungan
-yang sama besar ketika kondisi saat ini sudah cukup merepresentasikan kondisi masa depan. Penggunaan pengklasifikasi kondisi pada distribusi natural
+terkondisi-prediksi menghasilkan 0,714 $\pm$ 0,064. Perbedaan yang kecil tersebut menunjukkan bahwa kueri terkondisi-prediksi tidak memberikan keuntungan
+yang sama besar ketika kondisi saat ini sudah mewakili kondisi masa depan. Penggunaan pengklasifikasi kondisi pada distribusi natural
 bahkan dapat menurunkan performa retrieval.
 
 Evaluasi oracle memberikan MRR sebesar 0,778 pada kasus divergen. Nilai ini digunakan sebagai pembanding untuk menunjukkan bahwa retrieval masih dapat
@@ -75,40 +74,39 @@ Tujuan T3 adalah mengintegrasikan modul prediksi dan mekanisme RAG terkondisi-pr
 \textit{doctor-mediated}. Integrasi tersebut dirancang agar hasil prediksi, kondisi klinis, evidence, dan assessment dapat disajikan dalam satu
 alur penggunaan, sementara keputusan klinis akhir tetap berada pada dokter.
 
-Hasil implementasi dan verifikasi menunjukkan bahwa alur tersebut dapat dijalankan dari pemilihan pasien, pengolahan input, pembentukan prediksi,
-pembentukan kondisi klinis, retrieval evidence, generation assessment, hingga penyajian citation dan fallback. Pada kondisi ketika data prediksi atau
+Hasil implementasi dan verifikasi pada Bab~\ref{chap:implementasi} menunjukkan bahwa alur tersebut dapat dijalankan utuh: dari pemilihan pasien, pengolahan
+masukan, prediksi, pembentukan kondisi klinis, retrieval \textit{evidence}, \textit{generation}, hingga penyajian sitasi dan \textit{fallback}. Pada kondisi ketika data prediksi atau
 evidence tidak memadai, sistem mempertahankan keterbatasan tersebut dan tidak menggantinya dengan informasi sintetis. Perilaku ini mendukung posisi
 sistem sebagai alat bantu keputusan, bukan pengambil keputusan otomatis.
 
 Evaluasi ahli melibatkan dua belas responden. Pada skenario CGM dan finger-stick, seluruh responden memberikan skor minimal 3. Pada rekomendasi
-hipoglikemia, sembilan responden menilai rekomendasi sesuai pedoman tetapi tetap memerlukan verifikasi dokter, dua responden menilai rekomendasi sesuai
-pedoman dan aman diikuti, serta satu responden menilai rekomendasi kurang sesuai dan berpotensi berisiko. Pada hiperglikemia, sebelas responden meminta
-verifikasi dokter dan satu responden menilai rekomendasi sesuai pedoman dan aman diikuti. Hasil tersebut mendukung kebutuhan akan verifikasi dokter pada keluaran assessment.
+hipoglikemia, sembilan responden menilainya sesuai pedoman tetapi perlu verifikasi dokter, dua menilainya aman diikuti, dan satu menilainya kurang sesuai serta
+berpotensi berisiko. Pada hiperglikemia, sebelas responden meminta verifikasi dokter dan satu menilainya aman diikuti. Hasil tersebut menegaskan perlunya
+verifikasi dokter pada keluaran \textit{assessment}.
 
-Aspek otonomi dokter dan consent serta keamanan data memperoleh penilaian minimal 3 dari seluruh responden. Namun, rerata SUS sebesar 55,21 dengan selang
-kepercayaan 95\% 49,36 sampai 61,05 menunjukkan bahwa usability masih memiliki ruang perbaikan, sebab seluruh selang tersebut berada di bawah nilai acuan
-68. Karena evaluasi hanya melibatkan dua belas responden, hasil tersebut diposisikan sebagai evaluasi awal terhadap keterpahaman dan penerimaan artefak,
+Aspek otonomi dokter serta \textit{consent} dan keamanan data memperoleh skor minimal 3 dari seluruh responden. Namun, rerata SUS sebesar 55,21 (selang
+kepercayaan 95\%: 49,36 sampai 61,05) menunjukkan bahwa \textit{usability} masih perlu diperbaiki, sebab seluruh selang tersebut berada di bawah nilai acuan 68. Karena evaluasi hanya melibatkan dua belas responden, hasil tersebut diposisikan sebagai evaluasi awal terhadap keterpahaman dan penerimaan artefak,
 bukan sebagai validasi klinis yang mewakili seluruh populasi pengguna.
 
 Berdasarkan hasil tersebut, \textbf{Tujuan T3 dinyatakan terpenuhi pada ruang evaluasi penelitian}. Integrasi modul prediksi, RAG, dan antarmuka CDSS dapat
-dijalankan sebagai alur \textit{doctor-mediated}, dengan evidence dan fallback dipertahankan hingga keluaran akhir. Namun, usability, cakupan evaluasi ahli,
-ketidakpastian lintas-modalitas, dan deployment masih menjadi batas yang perlu dipertimbangkan sebelum sistem digunakan pada lingkungan klinis nyata.
+dijalankan sebagai alur \textit{doctor-mediated}, dengan \textit{evidence} dan \textit{fallback} dipertahankan hingga keluaran akhir. Namun, \textit{usability}, cakupan evaluasi ahli, ketidakpastian yang
+belum tersedia pada semua modalitas, dan lingkungan penyebaran masih menjadi batas yang perlu diperhatikan sebelum sistem digunakan pada lingkungan klinis nyata.
 
 \subsection{Pemenuhan Kebutuhan Sistem}
 \label{subsec:bab7-pemenuhan-kebutuhan-sistem}
 
 Pemenuhan kebutuhan sistem dinilai dengan menghubungkan kebutuhan yang dirumuskan pada tahap analisis dan perancangan dengan bukti implementasi serta
-evaluasi pada Bab~\ref{chap:evaluasi}. Kebutuhan prediksi, pembentukan clinical state, retrieval berbasis kondisi masa depan, grounded generation, citation, fallback,
-dan doctor mediation telah direalisasikan dan diuji pada ruang lingkup penelitian.
+evaluasi pada Bab~\ref{chap:evaluasi}. Kebutuhan fungsional, yaitu prediksi, pembentukan \textit{clinical state}, retrieval berbasis kondisi masa depan, \textit{grounded generation}, sitasi,
+\textit{fallback}, dan alur \textit{doctor-mediated}, telah direalisasikan dan diuji pada ruang lingkup penelitian.
 
-Kebutuhan uncertainty terpenuhi pada horizon yang memiliki artefak kalibrasi yang sesuai. Sebaliknya, pada jalur finger-stick sekitar 240 menit,
-interval konformal tidak ditampilkan karena artefak kalibrasi yang sesuai belum tersedia. Keputusan tersebut mempertahankan keterlacakan hasil
-meskipun menyebabkan uncertainty belum tersedia secara seragam pada seluruh jalur.
+Kebutuhan ketidakpastian terpenuhi pada horizon yang memiliki artefak kalibrasi yang sesuai. Pada jalur \textit{finger-stick} (horizon sekitar 240 menit),
+interval konformal tidak ditampilkan karena artefak kalibrasinya belum tersedia; keputusan ini menjaga keterlacakan hasil, tetapi berarti ketidakpastian
+belum tersedia seragam pada seluruh jalur.
 
-Kebutuhan operational juga terpenuhi untuk lingkungan demonstrasi yang digunakan. Frontend berjalan pada Vercel sedangkan backend dijalankan pada
-lingkungan lokal dan diakses melalui ngrok. Jalur ini memungkinkan demonstrasi end-to-end, tetapi belum dapat dianggap sebagai deployment produksi
-berketersediaan tinggi. Waktu respons median sekitar 2,47 detik pada benchmark terbaru menunjukkan bahwa alur dapat dijalankan secara interaktif
-dalam lingkungan evaluasi, dengan generation LLM sebagai komponen yang paling dominan terhadap waktu tunggu.
+Kebutuhan operasional terpenuhi untuk lingkungan demonstrasi yang digunakan: \textit{frontend} berjalan pada Vercel, sedangkan \textit{backend} berjalan
+pada mesin lokal dan diakses melalui ngrok. Jalur ini memungkinkan demonstrasi ujung ke ujung, tetapi belum dapat dianggap sebagai penyebaran produksi
+berketersediaan tinggi. Waktu respons median sekitar 2,47 detik pada pengukuran terbaru menunjukkan bahwa alur dapat dijalankan secara interaktif, dengan
+\textit{generation} LLM sebagai penyumbang waktu tunggu terbesar.
 
 \section{Keterbatasan Penelitian}
 \label{sec:bab7-keterbatasan-penelitian}
@@ -117,19 +115,19 @@ Penelitian ini menghasilkan artefak yang telah diuji pada ruang lingkup data, sk
 menunjukkan bahwa tujuan T1, T2, dan T3 dapat dicapai pada ruang evaluasi penelitian, beberapa keterbatasan tetap perlu diperhatikan ketika hasil
 ditafsirkan atau dikembangkan lebih lanjut.
 
-\textbf{Dataset dan generalisasi.} Evaluasi menggunakan dataset OhioT1DM sehingga karakteristik pasien dan pola pengukuran yang tersedia belum merepresentasikan seluruh populasi pasien
-diabetes. Kondisi ini membatasi generalisasi hasil terhadap populasi, perangkat, dan pola pemantauan yang berbeda. Keterbatasan tersebut juga terlihat
+\textbf{Dataset dan generalisasi.} Evaluasi hanya menggunakan dataset OhioT1DM, sehingga karakteristik pasien dan pola pengukurannya belum mewakili seluruh
+populasi pasien diabetes. Hal ini membatasi generalisasi hasil ke populasi, perangkat, dan pola pemantauan yang berbeda. Keterbatasan tersebut juga terlihat
 pada kejadian hipoglikemia yang relatif jarang, sehingga performa regresi agregat tidak selalu mencerminkan kemampuan mendeteksi kondisi berisiko.
 
 Validasi silang lintas-pasien membantu mengurangi ketergantungan model terhadap pasien tertentu, tetapi belum dapat disamakan dengan validasi pada
-populasi klinis yang lebih luas. Hal yang sama berlaku pada knowledge base RAG, karena hasil retrieval bergantung pada dokumen dan pedoman klinis yang
+populasi klinis yang lebih luas. Hal yang sama berlaku pada basis pengetahuan RAG, karena hasil retrieval bergantung pada dokumen dan pedoman klinis yang
 digunakan pada penelitian.
 
-\textbf{Modul prediksi dan ketidakpastian.} Performa prediksi berubah menurut horizon dan modalitas input. Error meningkat ketika horizon diperpanjang dan skenario finger-stick menghasilkan error
-lebih besar dibandingkan skenario CGM pada horizon yang lebih pendek. Selain itu, sensitivitas terhadap hipoglikemia masih menjadi tantangan sehingga
+\textbf{Modul prediksi dan ketidakpastian.} Kinerja prediksi berubah menurut horizon dan modalitas masukan: galat meningkat ketika horizon diperpanjang, dan
+skenario \textit{finger-stick} menghasilkan galat lebih besar daripada skenario CGM pada horizon yang lebih pendek. Selain itu, sensitivitas terhadap hipoglikemia masih menjadi tantangan sehingga
 hasil regresi tidak dapat digunakan sebagai satu-satunya indikator keselamatan.
 
-Uncertainty belum tersedia secara seragam untuk seluruh jalur input. Interval konformal telah dievaluasi pada horizon yang memiliki artefak kalibrasi
+Ketidakpastian belum tersedia secara seragam untuk seluruh jalur masukan. Interval konformal telah dievaluasi pada horizon yang memiliki artefak kalibrasi
 yang sesuai, sedangkan jalur finger-stick dengan horizon sekitar 240 menit belum memiliki artefak kalibrasi yang sesuai. Karena itu, sistem tidak
 mengisi interval dengan nilai pengganti ketika dasar kalibrasinya tidak tersedia.
 
@@ -138,101 +136,101 @@ Pada distribusi natural, peningkatannya relatif kecil dan penggunaan pengklasifi
 mekanisme yang diusulkan tidak dapat dianggap sebagai pengganti universal bagi RAG standar.
 
 Hasil oracle juga menunjukkan bahwa performa retrieval masih dibatasi oleh ketepatan kondisi yang diberikan kepada retriever. Ketika kondisi tersebut
-tidak tepat, query dapat diarahkan ke evidence yang kurang relevan meskipun mekanisme retrieval berjalan sesuai rancangan.
+tidak tepat, kueri diarahkan ke \textit{evidence} yang kurang relevan meskipun mekanisme retrieval berjalan sesuai rancangan.
 
-\textbf{Pembangkitan dan evaluasi RAG.} Sebagian evaluasi generation dilakukan menggunakan konfigurasi yang berbeda dari jalur produksi terbaru. Eksperimen yang menghasilkan metrik generation
-menggunakan \texttt{gemini-2.5-flash-lite} dengan \texttt{top\_k=4}, sedangkan jalur produksi terbaru menggunakan \texttt{gemini-3.5-flash-lite} dengan \texttt{top\_k=5}.
-Karena itu, angka generation dari eksperimen tersebut hanya berlaku pada protokol yang diuji dan tidak diperlakukan sebagai benchmark langsung untuk
-konfigurasi produksi terbaru.
+\textbf{\textit{Generation} dan evaluasi RAG.} Sebagian evaluasi \textit{generation} memakai konfigurasi yang berbeda dari jalur produksi terbaru:
+eksperimennya menggunakan \texttt{gemini-2.5-flash-lite} dengan \texttt{top\_k=4}, sedangkan jalur produksi terbaru menggunakan
+\texttt{gemini-3.5-flash-lite} dengan \texttt{top\_k=5}. Karena itu, angka \textit{generation} dari eksperimen tersebut hanya berlaku pada protokol yang
+diuji dan bukan tolok ukur langsung bagi konfigurasi produksi terbaru.
 
 Evaluasi RAGAS juga memiliki keterbatasan pada kestabilan beberapa metrik. \textit{Answer relevancy} menunjukkan perubahan antar-run yang lebih besar
 dibandingkan metrik berbasis konteks pada kasus yang diuji. Oleh karena itu, RAGAS digunakan sebagai bukti pendukung dan tidak dijadikan satu-satunya
-dasar untuk menyatakan kualitas generation.
+dasar untuk menyatakan kualitas \textit{generation}.
 
 \textbf{Evaluasi ahli dan kebergunaan.} Evaluasi ahli melibatkan dua belas responden sehingga hasilnya digunakan sebagai evaluasi awal terhadap keterpahaman dan penerimaan sistem. Jumlah
 tersebut memadai untuk membandingkan antarmuka menurut kajian keandalan SUS, tetapi bukan jaminan presisi skor absolut dan belum cukup untuk menyimpulkan
 kesiapan klinis pada populasi pengguna yang luas. Selain itu, sebagian besar responden belum memiliki pengalaman
 menggunakan CDSS sebelumnya dan hanya sebagian kecil memiliki pengalaman langsung dengan pasien diabetes yang menggunakan CGM.
 
-Rerata SUS sebesar 55,21 menunjukkan masih terdapat ruang perbaikan usability. Simpangan bakunya 9,20 dengan rentang skor individu 40,0 sampai 72,5,
+Rerata SUS sebesar 55,21 menunjukkan masih terdapat ruang perbaikan \textit{usability}. Simpangan bakunya 9,20 dengan rentang skor individu 40,0 sampai 72,5,
 sehingga sebaran persepsi antarresponden cukup lebar dan angka reratanya tidak mewakili pengalaman setiap responden.
 
-\textbf{Deployment dan operasional.} Deployment yang digunakan untuk evaluasi terdiri atas frontend pada Vercel dan backend yang berjalan pada laptop pengembang melalui ngrok. Konfigurasi
-tersebut memungkinkan demonstrasi end-to-end, tetapi masih bergantung pada perangkat backend, koneksi jaringan, tunnel, dan availability layanan model
-bahasa.
+\textbf{Penyebaran dan operasional.} Penyebaran yang digunakan untuk evaluasi terdiri atas \textit{frontend} pada Vercel dan \textit{backend} pada laptop
+pengembang yang diakses melalui ngrok. Konfigurasi ini memungkinkan demonstrasi ujung ke ujung, tetapi bergantung pada perangkat \textit{backend}, koneksi
+jaringan, terowongan ngrok, dan ketersediaan layanan model bahasa.
 
-Percobaan deployment cloud gratis sebelumnya mengalami keterbatasan memori ketika pipeline RAG dibangun. Akibatnya, lingkungan tersebut tidak digunakan
-sebagai jalur deployment final. Waktu respons yang diperoleh pada penelitian ini juga merepresentasikan lingkungan evaluasi dan dapat berubah ketika
+Percobaan penyebaran pada layanan awan gratis kehabisan memori ketika pipeline RAG dibangun, sehingga lingkungan tersebut tidak dipakai sebagai jalur
+penyebaran final. Waktu respons yang diperoleh pada penelitian ini juga merepresentasikan lingkungan evaluasi dan dapat berubah ketika
 infrastruktur, koneksi, model bahasa, atau layanan penyedia berubah.
 
 \textbf{Keselamatan klinis.} Hasil evaluasi menunjukkan bahwa performa regresi yang baik secara agregat belum menjamin sensitivitas yang memadai terhadap hipoglikemia. Pengklasifikasi
 kondisi dapat meningkatkan sensitivitas dengan konsekuensi positive predictive value yang lebih rendah. Selain itu, evaluasi ahli masih menemukan satu
 penilaian bahwa rekomendasi hipoglikemia kurang sesuai dan berpotensi berisiko.
 
-Atas dasar tersebut, sistem tidak diposisikan sebagai pengganti keputusan klinis. Alur doctor-mediated dipertahankan sebagai batas penggunaan, dengan
-dokter sebagai pihak yang melakukan verifikasi akhir terhadap assessment, evidence, dan rekomendasi.
+Atas dasar tersebut, sistem tidak diposisikan sebagai pengganti keputusan klinis. Alur \textit{doctor-mediated} dipertahankan sebagai batas penggunaan,
+dengan dokter sebagai pihak yang memverifikasi \textit{assessment}, \textit{evidence}, dan rekomendasi.
 
 Keterbatasan-keterbatasan tersebut menunjukkan bahwa hasil penelitian harus dipahami sebagai evaluasi artefak pada kondisi pengujian yang telah
 ditetapkan. Hasil tidak dimaksudkan untuk menyatakan validasi klinis umum, kesiapan penggunaan mandiri, atau performa yang identik pada populasi,
-infrastruktur, knowledge base, maupun konfigurasi model yang berbeda.
+infrastruktur, basis pengetahuan, maupun konfigurasi model yang berbeda.
 
 \section{Saran Pengembangan}
 \label{sec:bab7-saran-pengembangan}
 
 Saran pengembangan disusun berdasarkan keterbatasan dan temuan evaluasi yang diperoleh pada penelitian ini. Pengembangan berikut diarahkan untuk
-meningkatkan generalisasi, ketepatan prediksi dan retrieval, usability, serta kesiapan operasional tanpa mengubah posisi sistem sebagai pendukung
+meningkatkan generalisasi, ketepatan prediksi dan retrieval, \textit{usability}, serta kesiapan operasional tanpa mengubah posisi sistem sebagai pendukung
 keputusan yang tetap memerlukan verifikasi klinis.
 
 \textbf{Data dan modul prediksi.} Pengembangan berikutnya dapat menggunakan dataset dengan jumlah pasien yang lebih besar dan karakteristik yang lebih beragam, termasuk variasi
 populasi, perangkat pemantauan, serta pola pengukuran. Penambahan data hipoglikemia juga penting agar kemampuan model dalam mengenali kondisi berisiko
 dapat dievaluasi dengan representasi kelas yang lebih memadai.
 
-Evaluasi prediksi dapat diperluas ke lebih banyak pasien dan lingkungan pengujian eksternal. Selain itu, artefak kalibrasi uncertainty dapat dibangun
+Evaluasi prediksi dapat diperluas ke lebih banyak pasien dan lingkungan pengujian eksternal. Selain itu, artefak kalibrasi ketidakpastian dapat dibangun
 secara konsisten untuk seluruh modalitas dan horizon yang digunakan sistem. Dengan demikian, keluaran interval prediksi tidak hanya tersedia pada
 sebagian konfigurasi, tetapi dapat dipertahankan secara seragam pada jalur produksi.
 
 \textbf{Penelusuran terkondisi-prediksi.} Hasil penelitian menunjukkan bahwa penelusuran terkondisi-prediksi paling bermanfaat pada kasus ketika kondisi saat ini berbeda dari kondisi masa
-depan. Pengembangan berikutnya dapat memanfaatkan informasi uncertainty dan beberapa kemungkinan kondisi masa depan untuk mengurangi ketergantungan
-retrieval terhadap satu kondisi prediksi.
+depan. Pengembangan berikutnya dapat memanfaatkan informasi ketidakpastian dan beberapa kemungkinan kondisi masa depan sekaligus, sehingga retrieval tidak
+bergantung pada satu kondisi prediksi saja.
 
-Knowledge base juga dapat diperluas dengan dokumen klinis yang lebih beragam dan diperbarui secara terkontrol. Setiap perubahan corpus perlu disertai
-proses ingest, metadata, dan evaluasi ulang agar keterlacakan evidence tetap terjaga.
+Basis pengetahuan juga dapat diperluas dengan dokumen klinis yang lebih beragam dan diperbarui secara terkendali. Setiap perubahan korpus perlu disertai
+proses pemasukan dokumen, pembaruan metadata, dan evaluasi ulang agar keterlacakan \textit{evidence} tetap terjaga.
 
-\textbf{Pembangkitan, sitasi, dan keamanan.} Evaluasi generation dapat diperluas dengan jumlah kasus yang lebih banyak dan pengujian berulang pada konfigurasi model produksi yang sama dengan
-lingkungan deployment. Hal ini akan mengurangi perbedaan antara hasil benchmark eksperimen dan perilaku jalur yang benar-benar digunakan pengguna.
+\textbf{\textit{Generation}, sitasi, dan keamanan.} Evaluasi \textit{generation} dapat diperluas dengan lebih banyak kasus dan pengujian berulang pada
+konfigurasi model yang sama dengan jalur produksi, sehingga hasil eksperimen mencerminkan perilaku jalur yang benar-benar dipakai pengguna.
 
-Citation verification dapat dikembangkan menjadi pengujian otomatis yang memeriksa keterhubungan setiap citation dengan evidence dan metadata sumber.
-Pengujian unsupported claim juga dapat diperluas agar fallback dan refusal dapat dinilai pada lebih banyak variasi pertanyaan, termasuk pertanyaan yang
-berada di luar cakupan knowledge base.
+Verifikasi sitasi dapat dikembangkan menjadi pengujian otomatis yang memeriksa keterhubungan setiap sitasi dengan \textit{evidence} dan metadata sumbernya.
+Pengujian terhadap klaim tanpa dukungan juga dapat diperluas agar perilaku \textit{fallback} dan penolakan menjawab dapat dinilai pada lebih banyak
+variasi pertanyaan, termasuk pertanyaan di luar cakupan basis pengetahuan.
 
 \textbf{CDSS dan evaluasi klinis.} Evaluasi pengguna berikutnya dapat melibatkan lebih banyak dokter dengan tingkat pengalaman dan latar belakang klinis yang lebih beragam. Pengujian
-dapat dilakukan menggunakan skenario yang lebih mendekati alur kerja klinis sehingga usability tidak hanya dinilai melalui kuesioner, tetapi juga
-melalui waktu penyelesaian tugas, kesalahan penggunaan, dan kebutuhan bantuan.
+dapat memakai skenario yang lebih dekat dengan alur kerja klinis, sehingga \textit{usability} dinilai bukan hanya dari kuesioner, tetapi juga dari waktu
+penyelesaian tugas, kesalahan penggunaan, dan kebutuhan bantuan.
 
 Untuk menilai kesiapan klinis, penelitian lanjutan dapat melakukan validasi prospektif atau observasional dengan prosedur etis yang sesuai. Evaluasi
-tersebut perlu membandingkan keluaran sistem dengan penilaian klinis dan, pada tahap yang lebih lanjut, menilai apakah penggunaan CDSS memberikan manfaat
-tanpa meningkatkan risiko keputusan yang tidak tepat.
+tersebut perlu membandingkan keluaran sistem dengan penilaian klinis. Pada tahap yang lebih lanjut, perlu dinilai apakah penggunaan CDSS memberi manfaat
+tanpa menambah risiko keputusan yang tidak tepat.
 
 \textbf{Kebergunaan dan antarmuka.} Skor SUS 55,21 dan masukan responden menunjukkan perlunya penyederhanaan antarmuka, dokumentasi penggunaan, dan sosialisasi sistem. Pengembangan
-selanjutnya dapat memperbaiki hierarki informasi agar prediksi, uncertainty, kondisi klinis, evidence, dan rekomendasi dapat dipahami tanpa
-membebani pengguna dengan detail teknis yang tidak diperlukan.
+selanjutnya dapat memperbaiki hierarki informasi agar prediksi, ketidakpastian, kondisi klinis, \textit{evidence}, dan rekomendasi dapat dipahami tanpa
+membebani pengguna dengan rincian teknis yang tidak diperlukan.
 
 Proses iterasi dapat menggunakan hasil evaluasi ahli sebagai dasar prioritas perbaikan, terutama pada aspek yang berhubungan dengan keterbacaan
-assessment dan kejelasan batas sistem. Evaluasi usability kemudian diulang setelah perubahan antarmuka sehingga perbaikan dapat dibandingkan secara
+assessment dan kejelasan batas sistem. Evaluasi \textit{usability} kemudian diulang setelah perubahan antarmuka sehingga perbaikan dapat dibandingkan secara
 terukur.
 
-\textbf{Deployment dan infrastruktur.} Lingkungan deployment dapat dikembangkan dari backend lokal melalui ngrok menjadi layanan yang memiliki sumber daya komputasi yang memadai untuk
-menjalankan model dan pipeline RAG secara stabil. Pemilihan infrastruktur perlu mempertimbangkan kebutuhan memori, waktu respons, biaya, keamanan,
+\textbf{Penyebaran dan infrastruktur.} Lingkungan penyebaran dapat dikembangkan dari \textit{backend} lokal melalui ngrok menjadi layanan dengan sumber
+daya komputasi yang memadai untuk menjalankan model dan pipeline RAG secara stabil. Pemilihan infrastruktur perlu mempertimbangkan kebutuhan memori, waktu respons, biaya, keamanan,
 dan ketersediaan layanan model bahasa.
 
-Untuk penggunaan yang lebih luas, pengelolaan model, knowledge base, konfigurasi, logging, dan monitoring dapat dipisahkan agar pembaruan salah
-satu komponen tidak mengganggu komponen lain. Pengujian beban dan pemantauan latency juga diperlukan sebelum sistem digunakan pada lingkungan dengan
+Untuk penggunaan yang lebih luas, pengelolaan model, basis pengetahuan, konfigurasi, pencatatan log, dan pemantauan dapat dipisahkan agar pembaruan salah
+satu komponen tidak mengganggu komponen lain. Pengujian beban dan pemantauan waktu respons juga diperlukan sebelum sistem digunakan pada lingkungan dengan
 jumlah pengguna yang lebih besar.
 
-\textbf{Arah pengembangan jangka lanjut.} Pengembangan jangka lanjut dapat mengarah pada sistem yang lebih adaptif terhadap perubahan kondisi pasien, tetapi tetap mempertahankan prinsip
-safety-first dan doctor-mediated. Integrasi uncertainty ke dalam penentuan kondisi, retrieval, dan penyajian assessment dapat menjadi arah penelitian
-yang menjanjikan karena ketiga tahap tersebut saling memengaruhi.
+\textbf{Arah pengembangan jangka lanjut.} Pengembangan jangka lanjut dapat mengarah pada sistem yang lebih adaptif terhadap perubahan kondisi pasien, tetapi tetap mengutamakan keselamatan
+dan alur \textit{doctor-mediated}. Integrasi ketidakpastian ke dalam penentuan kondisi, retrieval, dan penyajian \textit{assessment} dapat menjadi arah
+penelitian yang menjanjikan karena ketiga tahap tersebut saling memengaruhi.
 
 Tahap pengembangan tersebut sebaiknya dilakukan secara bertahap, dimulai dari penguatan kualitas data dan validasi eksternal, kemudian perbaikan
-retrieval dan generation, sebelum memperluas evaluasi klinis dan deployment. Pendekatan bertahap menjaga agar peningkatan kemampuan sistem tetap
+retrieval dan \textit{generation}, sebelum memperluas evaluasi klinis dan penyebaran. Pendekatan bertahap menjaga agar peningkatan kemampuan sistem tetap
 disertai bukti evaluasi yang memadai.
