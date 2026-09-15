@@ -357,7 +357,7 @@ Pada validasi silang enam fold, RAG standar memperoleh MRR 0,700 $\pm$ 0,076 dan
 kondisi memberikan MRR 0,663 $\pm$ 0,055. Ketiga lengan tersebut berada pada rentang yang saling bertumpang tindih, dan Hit@1 ketiganya juga berdekatan, yaitu
 0,583, 0,594, dan 0,547.
 
-Hasil tersebut menunjukkan bahwa pada distribusi natural mekanisme conditioning tidak memberikan keuntungan yang dapat dibedakan dari variasi antar-fold. Temuan
+Hasil tersebut menunjukkan bahwa pada distribusi natural pembentukan kueri dari kondisi terprediksi tidak memberikan keuntungan yang dapat dibedakan dari variasi antar-fold. Temuan
 ini konsisten dengan alasan strukturalnya: ketika kondisi saat ini sudah sama dengan kondisi masa depan, kueri yang dibentuk dari kondisi terprediksi hampir
 identik dengan kueri RAG standar sehingga tidak ada perubahan arah retrieval yang dapat diukur.
 
@@ -420,7 +420,7 @@ arah efek, bukan sebagai pembuktian besaran efek.
 \subsection{Evaluasi Oracle}
 \label{subsec:bab6-oracle-evaluation}
 
-Lengan oracle menerima kondisi glukosa masa depan yang sebenarnya sebagai sumber conditioning. Lengan ini tidak dapat dijalankan pada penggunaan nyata karena
+Lengan oracle menerima kondisi glukosa masa depan yang sebenarnya sebagai dasar pembentukan kueri. Lengan ini tidak dapat dijalankan pada penggunaan nyata karena
 kondisi tersebut baru diketahui setelah horizon prediksi berlalu. Fungsinya adalah memisahkan dua sumber keterbatasan: mekanisme retrieval itu sendiri dan ketepatan kondisi yang dipasok kepadanya.
 
 Pada himpunan divergen, oracle memperoleh MRR 0,778 $\pm$ 0,000 dengan Hit@1 sebesar 0,667. Nilai tersebut jauh di atas 0,284 yang dicapai RAG terkondisi-prediksi,
@@ -452,7 +452,7 @@ Ablasi ketiga memeriksa penyertaan interval prediksi pada kueri. Pada himpunan d
 74,2\% dan MRR menjadi 0,412, tetapi Hit@5 tetap 0,650. Pada himpunan natural, MRR justru turun dari 0,780 menjadi 0,314. Konfigurasi gabungan interval dan
 pengklasifikasi memperlihatkan pola yang sama. Karena penggunaan sesungguhnya berlangsung pada distribusi natural, konfigurasi tersebut tidak diadopsi pada jalur produksi.
 
-Ablasi keempat memeriksa horizon yang digunakan sebagai sumber conditioning. Pada set pelaporan, kueri berbasis kondisi saat ini memperoleh MRR 0,564, kueri
+Ablasi keempat memeriksa horizon yang digunakan sebagai dasar pembentukan kueri. Pada set pelaporan, kueri berbasis kondisi saat ini memperoleh MRR 0,564, kueri
 berbasis prediksi +30 menit memperoleh 0,552, dan kueri berbasis prediksi +60 menit memperoleh 0,542, sedangkan oracle pada +60 menit memperoleh 0,839. Tidak ada
 perbedaan yang signifikan antar-horizon yang dapat dicapai, sementara jarak terhadap oracle signifikan pada seluruh perbandingan. Pola tersebut sejalan dengan
 hasil oracle pada bagian sebelumnya.

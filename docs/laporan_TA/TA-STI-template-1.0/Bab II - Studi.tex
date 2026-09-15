@@ -399,17 +399,17 @@ data, keterlacakan informasi, peran klinisi, serta cara keluaran disajikan.
 \section{\textit{Retrieval-Augmented Generation} dan \textit{Clinical Knowledge Retrieval}}
 \label{sec:bab2-rag-clinical-knowledge}
 
-\textit{Retrieval-Augmented Generation} (RAG) merupakan pendekatan yang menggabungkan penelusuran informasi dari sumber eksternal dengan proses pembangkitan keluaran oleh model 
+\textit{Retrieval-Augmented Generation} (RAG) merupakan pendekatan yang menggabungkan penelusuran informasi dari sumber eksternal dengan proses \textit{generation} oleh model 
 bahasa. Berbeda dari pendekatan yang hanya mengandalkan pengetahuan yang tersimpan pada parameter model, RAG menyediakan konteks hasil penelusuran sebagai dasar bagi proses 
 pembangkitan. Pendekatan ini diperkenalkan untuk membantu model menangani tugas yang membutuhkan pengetahuan eksternal dan dapat memperbarui atau memperkaya konteks yang
 digunakan pada saat inferensi \parencite{lewis2020,gao2023}.
 
-Secara umum, RAG terdiri atas tiga tahap utama, yaitu pembentukan atau pengindeksan korpus, penelusuran informasi yang relevan, dan pembangkitan keluaran berdasarkan informasi 
+Secara umum, RAG terdiri atas tiga tahap utama, yaitu pembentukan atau pengindeksan korpus, penelusuran informasi yang relevan, dan \textit{generation} berdasarkan informasi 
 yang telah diperoleh. Korpus terlebih dahulu diproses menjadi unit yang dapat ditelusuri dan dilengkapi representasi yang sesuai. Ketika sebuah kueri diberikan, 
 komponen \textit{retriever} memilih sejumlah konteks yang dianggap relevan. Konteks tersebut kemudian diberikan kepada komponen \textit{generator} untuk membentuk jawaban atau 
 keluaran yang sesuai dengan permintaan \parencite{lewis2020,gao2023}.
 
-Hubungan antara korpus pengetahuan, proses retrieval, dan pembangkitan keluaran dalam arsitektur RAG ditunjukkan pada Gambar~\ref{fig:fig2.8_rag_architecture}.
+Hubungan antara korpus pengetahuan, proses retrieval, dan \textit{generation} dalam arsitektur RAG ditunjukkan pada Gambar~\ref{fig:fig2.8_rag_architecture}.
 
 \begin{figure}[htbp]
     \centering
@@ -418,14 +418,14 @@ Hubungan antara korpus pengetahuan, proses retrieval, dan pembangkitan keluaran 
     \label{fig:fig2.8_rag_architecture}
 \end{figure}
 
-Gambar~\ref{fig:fig2.8_rag_architecture} memperlihatkan bahwa proses RAG memisahkan penelusuran informasi dari proses pembangkitan keluaran. Dengan demikian, informasi yang 
+Gambar~\ref{fig:fig2.8_rag_architecture} memperlihatkan bahwa proses RAG memisahkan penelusuran informasi dari proses \textit{generation}. Dengan demikian, informasi yang 
 digunakan oleh model bahasa tidak hanya berasal dari pengetahuan yang tersimpan pada parameter model, tetapi juga dari konteks yang diperoleh melalui proses retrieval.
 
 \subsection{Retriever dan Generator}
 \label{subsec:bab2-retriever-generator}
 
 Dalam arsitektur RAG, \textit{retriever} bertugas menemukan bagian korpus yang relevan terhadap kueri, sedangkan \textit{generator} menggunakan kueri dan konteks hasil
-penelusuran untuk membentuk keluaran. Pemisahan fungsi tersebut memungkinkan proses pencarian dan proses pembangkitan dievaluasi secara terpisah. Kualitas keluaran karena itu
+penelusuran untuk membentuk keluaran. Pemisahan fungsi tersebut memungkinkan proses pencarian dan proses \textit{generation} dievaluasi secara terpisah. Kualitas keluaran karena itu
 tidak hanya bergantung pada kemampuan model bahasa, tetapi juga pada kemampuan sistem memperoleh konteks yang benar dan cukup relevan \parencite{lewis2020,gao2023}.
 
 Pada lingkungan pengetahuan klinis, fungsi \textit{retriever} menjadi penting karena sistem perlu menemukan bagian pedoman yang berhubungan dengan kondisi pasien atau
@@ -662,7 +662,7 @@ pengetahuan klinis terkurasi tanpa mengharuskan integrasi infrastruktur kesehata
 \label{subsec:bab2-penelitian-rag-klinis}
 
 \textcite{kresevic2024} menunjukkan bahwa RAG dapat digunakan untuk membantu penafsiran pedoman klinis oleh model bahasa dalam konteks sistem pendukung keputusan. Pada penelitian
-tersebut, penelusuran digunakan untuk menyediakan konteks pedoman yang relevan bagi proses pembangkitan, dengan kondisi yang sedang berlaku menjadi bagian dari dasar
+tersebut, penelusuran digunakan untuk menyediakan konteks pedoman yang relevan bagi proses \textit{generation}, dengan kondisi yang sedang berlaku menjadi bagian dari dasar
 pembentukan kueri. Temuan tersebut menunjukkan manfaat \textit{grounding} pada dokumen klinis, tetapi kueri retrieval masih dibentuk dari kondisi yang tersedia saat konsultasi.
 
 Pada domain diabetes, \textcite{lee2024} mengembangkan RAG yang bersandar pada pedoman diabetes dan menggunakan pertanyaan sebagai sumber kueri. Penelitian tersebut
@@ -675,10 +675,10 @@ keadaan fisiologis yang diprediksi.
 \label{subsec:bab2-penelitian-retrieval-antisipatif}
 
 \textcite{jiang2023} memperkenalkan \textit{active retrieval augmented generation}, yaitu mekanisme yang memungkinkan retrieval dilakukan secara aktif ketika model bahasa membutuhkan
-informasi tambahan selama proses pembangkitan. Pendekatan tersebut memperluas gagasan bahwa retrieval tidak selalu harus dilakukan satu kali pada awal proses, tetapi dapat
+informasi tambahan selama proses \textit{generation}. Pendekatan tersebut memperluas gagasan bahwa retrieval tidak selalu harus dilakukan satu kali pada awal proses, tetapi dapat
 dipicu berdasarkan kebutuhan model.
 
-Meskipun bersifat antisipatif dalam proses pembangkitan, kondisi yang digunakan untuk memicu retrieval pada pendekatan tersebut berasal dari prediksi atau kebutuhan model
+Meskipun bersifat antisipatif dalam proses \textit{generation}, kondisi yang digunakan untuk memicu retrieval pada pendekatan tersebut berasal dari prediksi atau kebutuhan model
 bahasa terhadap teks yang sedang dihasilkan, bukan dari prediktor fisiologis eksternal. Perbedaan ini penting karena penelitian ini menempatkan hasil prediksi kadar glukosa
 sebagai keadaan masa depan yang digunakan sebelum penelusuran pedoman klinis dilakukan. Dengan demikian, \textit{query transformation} pada penelitian ini bersumber pada kondisi yang berbeda dari retrieval antisipatif berbasis kebutuhan model bahasa.
 

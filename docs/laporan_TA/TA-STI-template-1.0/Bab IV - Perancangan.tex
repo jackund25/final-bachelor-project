@@ -92,7 +92,7 @@ Representasi \textit{clinical state} selanjutnya digunakan dalam \textit{query t
 penelusuran pengetahuan klinis. Kueri yang dihasilkan menjadi masukan bagi tahap retrieval dan menjadi pembeda utama antara penelusuran berbasis kondisi yang sedang diamati
 dan penelusuran berbasis kondisi terprediksi.
 
-Hasil retrieval berupa kumpulan kandidat evidence dari basis pengetahuan. Kandidat tersebut belum langsung diteruskan ke pembangkitan karena perlu disusun berdasarkan relevansinya
+Hasil retrieval berupa kumpulan kandidat evidence dari basis pengetahuan. Kandidat tersebut belum langsung diteruskan ke \textit{generation} karena perlu disusun berdasarkan relevansinya
 terhadap kebutuhan penelusuran. Oleh karena itu, proses \textit{reranking} mengurutkan ulang kandidat menurut relevansinya sebelum dipakai sebagai konteks \textit{generation}.
 
 Evidence terpilih kemudian digabungkan dengan konteks keadaan klinis pada tahap \textit{grounded generation}. Pada tahap ini, representasi evidence dan konteks digunakan untuk membentuk
@@ -311,7 +311,7 @@ dikondisikan pada keadaan yang diperkirakan.
     \label{fig:fig4.4_rag-terkondisi-prediksi}
 \end{figure}
 
-Perbedaan kedua alur terletak pada sumber conditioning yang digunakan sebelum retrieval. Pada RAG konvensional, kondisi yang tersedia pada saat pengamatan menjadi konteks pembentukan
+Perbedaan kedua alur terletak pada kondisi yang dipakai membentuk kueri sebelum retrieval. Pada RAG konvensional, kondisi yang tersedia pada saat pengamatan menjadi konteks pembentukan
 kueri. Pada pendekatan yang diusulkan, kondisi saat ini digantikan oleh keadaan yang diprediksi sebagai dasar kueri, sehingga retrieval diarahkan pada informasi yang berkaitan dengan
 kondisi masa depan.
 
@@ -361,7 +361,7 @@ Hasil \textit{generation} berupa \textit{assessment} atau rekomendasi yang disus
 \subsection{Keterlacakan dan Verifikasi Sitasi} 
 \label{subsec:bab4-keterlacakan-verifikasi-sitasi}
 
-Keterlacakan dirancang dengan mempertahankan metadata sumber sejak tahap segmentasi dokumen hingga tahap pembangkitan. Evidence yang dipilih tetap membawa identitas dokumen, bagian,
+Keterlacakan dirancang dengan mempertahankan metadata sumber sejak tahap segmentasi dokumen hingga tahap \textit{generation}. Evidence yang dipilih tetap membawa identitas dokumen, bagian,
 halaman, dan identitas potongan sehingga hubungan antara keluaran dan sumber informasi dapat dipertahankan.
 
 Tahap \textit{citation resolution} memetakan informasi pendukung pada keluaran kembali ke evidence yang digunakan. Dengan mekanisme ini, sitasi berfungsi tidak hanya sebagai elemen
@@ -467,7 +467,7 @@ jumlah atau kelayakan temporal, artefak model yang tidak tersedia, \textit{evide
 
 Pada kondisi data tidak mencukupi atau jendela tidak layak, sistem tidak menghasilkan prediksi seolah-olah masukan memenuhi persyaratan. Pada kondisi retrieval tidak menghasilkan
 evidence yang memadai, keluaran tidak diarahkan untuk menghasilkan rekomendasi yang tidak memiliki dukungan sumber. Apabila model bahasa tidak tersedia, sistem dapat menggunakan
-keluaran alternatif yang tetap menandai keterbatasan sumber pembangkitan dan mempertahankan rujukan yang masih tersedia.
+keluaran alternatif yang tetap menandai keterbatasan sumber teks (model bahasa atau templat) dan mempertahankan rujukan yang masih tersedia.
 
 Pemisahan status tersebut dirancang agar kondisi normal dan kondisi degradasi dapat dibedakan oleh pengguna. Dengan demikian, ketahanan sistem tidak dicapai dengan menyembunyikan
 kegagalan, tetapi dengan memberikan keluaran yang sesuai dengan informasi yang benar-benar tersedia.

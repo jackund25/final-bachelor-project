@@ -433,7 +433,7 @@ Keluaran tahap retrieval adalah kumpulan evidence yang menjadi konteks untuk tah
 \subsection{Implementasi Reranking dan Seleksi Evidence}
 \label{subsec:bab5-reranking-evidence-selection}
 
-Hasil retrieval menghasilkan kumpulan kandidat evidence yang kemudian digunakan sebagai konteks pada tahap pembangkitan assessment. Pada konfigurasi produksi final,
+Hasil retrieval menghasilkan kumpulan kandidat evidence yang kemudian digunakan sebagai konteks pada tahap \textit{generation}. Pada konfigurasi produksi final,
 reranking tidak diaktifkan. Dengan demikian, evidence yang digunakan berasal langsung dari lima potongan dengan skor BM25 tertinggi. Keputusan ini dipertahankan agar
 jalur produksi tetap sederhana dan ringan serta tidak menambahkan tahap pemrosesan yang tidak diperlukan pada konfigurasi akhir.
 
