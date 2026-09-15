@@ -134,14 +134,50 @@
 % --- biblatex tidak memiliki berkas pelokalan untuk bahasa Indonesia, sehingga
 % ia memperingatkan "Language 'indonesian' not supported" lalu meminta rerun
 % pada tiap kompilasi tanpa pernah tuntas. Pemetaan ini menyuruhnya memakai
-% cms-american.lbx (pelokalan biblatex-chicago, yang juga dipakai untuk
-% english) bagi bahasa indonesian. Terjemahan istilah di bawah HARUS
-% didaftarkan atas nama bahasa yang dimuat, yaitu indonesian; bila didaftarkan
-% atas nama english, hook-nya tidak pernah dijalankan dan sitasi kembali
-% mencetak "et al."/"and". ---
+% cms-american.lbx (pelokalan biblatex-chicago) bagi bahasa indonesian.
+% Bahasa yang benar-benar dipakai saat mencetak daftar pustaka ditentukan
+% opsi language=english di atas, yang oleh biblatex/biblatex-chicago
+% diselesaikan menjadi 'american' (lihat TA.log: "Trying to load language
+% 'american' -> 'cms-american'"). Karena \DefineBibliographyStrings hanya
+% berlaku bagi nama bahasa yang persis sama, terjemahan di bawah didaftarkan
+% untuk ketiga nama sekaligus agar tidak bergantung pada nama mana yang aktif. ---
 \DeclareLanguageMapping{indonesian}{cms-american}
 
 % --- Terjemahan istilah daftar pustaka ke Bahasa Indonesia ---
+\DefineBibliographyStrings{english}{
+  and          = {dan},
+  andothers    = {dkk.},
+  editor       = {penyunting},
+  editors      = {penyunting},
+  translator   = {penerjemah},
+  byeditor     = {disunting oleh},
+  bytranslator = {diterjemahkan oleh},
+  in           = {dalam},
+  edition      = {edisi},
+  pages        = {hal.},
+  page         = {hal.},
+  volume       = {vol.},
+  number       = {no.},
+  urlseen      = {diakses pada},
+  url          = {tautan},
+}
+\DefineBibliographyStrings{american}{
+  and          = {dan},
+  andothers    = {dkk.},
+  editor       = {penyunting},
+  editors      = {penyunting},
+  translator   = {penerjemah},
+  byeditor     = {disunting oleh},
+  bytranslator = {diterjemahkan oleh},
+  in           = {dalam},
+  edition      = {edisi},
+  pages        = {hal.},
+  page         = {hal.},
+  volume       = {vol.},
+  number       = {no.},
+  urlseen      = {diakses pada},
+  url          = {tautan},
+}
 \DefineBibliographyStrings{indonesian}{
   and          = {dan},
   andothers    = {dkk.},
