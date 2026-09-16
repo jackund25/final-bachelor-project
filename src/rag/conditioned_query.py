@@ -305,7 +305,7 @@ def build_conditioned_query(
 ) -> ConditionedQuery:
     """One-liner helper: model output → ConditionedQuery.
 
-    Typical call from the Streamlit prediction page::
+    Contoh pemanggilan dari layanan prediksi (pola yang dipakai src/rag/pipeline.py)::
 
         cq = build_conditioned_query(
             patient_id=selected_patient,

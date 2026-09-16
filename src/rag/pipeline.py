@@ -506,8 +506,8 @@ class RAGPipeline:
     ) -> Dict[str, Any]:
         # KODE MATI PADA JALUR PRODUKSI. backend/routes/clinical.py hanya membaca
         # `explanation`; medan `advisory` yang disusun di sini tidak pernah sampai
-        # ke antarmuka mana pun. Ia dipertahankan sementara karena masih dipanggil
-        # tes, dan dijadwalkan dicabut pada Tahap 9 bersama alerts.py/decision_log.py.
+        # ke antarmuka mana pun. Ia dipertahankan karena masih dipanggil
+        # tests/test_rag_generation.py dan scripts/eval_generation_safety.py.
         # Jangan menambah logika baru di sini.
         current_glucose = float(patient_state.get("current_glucose", 100.0))
         activity = int(patient_state.get("activity_level", 0))

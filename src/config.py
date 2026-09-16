@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 # Diresolusi relatif terhadap __file__, BUKAN cwd — kalau tidak, pytest (yang rootdir-nya
-# berubah-ubah) dan Streamlit yang diluncurkan dari direktori lain akan diam-diam jatuh
+# berubah-ubah) dan backend yang diluncurkan dari direktori lain akan diam-diam jatuh
 # ke nilai default alih-alih membaca config.yaml.
 DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[1] / "config.yaml"
 

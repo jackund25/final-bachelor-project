@@ -46,22 +46,14 @@ logger = logging.getLogger(__name__)
 
 MODELS_DIR = PROJECT_ROOT / "models"
 
-# ANGKA YANG WAJIB SAMA DENGAN NASKAH.
+# ANGKA YANG WAJIB DAPAT DIREPRODUKSI DARI ARTEFAK PRODUKSI.
 #
-# Berkas ini SENGAJA dikopel ke naskah: bila Bab VI berubah, berkas ini ikut berubah,
-# dan bila artefaknya menyimpang keduanya ketahuan. Itulah gunanya.
-#
-# PERINGATAN — NASKAH BELUM DISELARASKAN. Angka di bawah adalah hasil pipeline
-# tersatukan (24 Agustus 2026). Bab VI dan README saat ini masih memuat angka pipeline
-# LAMA, yang diukur dengan pembagian LINTAS-PASIEN dan target berbasis langkah:
-#
-#     lama (lintas-pasien)      h6  RMSE 20,81 · MAE 14,09 · A+B 95,19
-#                               h12 RMSE 32,24 · MAE 23,46 · A+B 88,07
-#
-# Kedua kelompok angka TIDAK SEBANDING: rancangan pembagiannya berbeda. Pembagian
-# resmi OhioT1DM bersifat TEMPORAL DALAM-PASIEN — seluruh 12 pasien muncul di kedua
-# sisi — sehingga ia lebih ringan daripada pembagian lintas-pasien, dan klaim README
-# tentang "pembagian lintas-pasien yang lebih berat" tidak berlaku bagi angka ini.
+# Nilai di bawah adalah metrik hold-out bundel produksi pada pembagian resmi OhioT1DM
+# (temporal dalam-pasien), sebagaimana tersimpan di models/*_metrics.json. Baris
+# finger-stick juga yang dikutip Bab VI (Tabel VI.5); dua baris CGM tidak dikutip
+# naskah karena Tabel VI.3 membandingkan tiga model pada protokol bersama
+# (results/eval_prediksi/summary_all_horizons.csv), bukan bundel produksi. Bila
+# artefak dilatih ulang, angka di sini dan berkas metrik harus diperbarui bersama.
 DILAPORKAN = {
     ("CGM", 30.0): {"RMSE": 18.67, "MAE": 13.19, "Clarke_A+B": 95.87},
     ("CGM", 60.0): {"RMSE": 31.18, "MAE": 22.96, "Clarke_A+B": 87.49},

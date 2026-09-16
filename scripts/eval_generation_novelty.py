@@ -21,7 +21,7 @@ os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 import json
 from pathlib import Path
 import numpy as np
-from src.rag import RAGPipeline
+from src.rag.pipeline import RAGPipeline
 
 OUT = Path("results/eval_prediksi/generation_novelty.json")
 

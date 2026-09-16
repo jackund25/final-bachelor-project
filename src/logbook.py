@@ -19,8 +19,8 @@ atau menolak dan mengatakan alasannya. Modul ini memilih yang kedua. Menginterpo
 delapan jam akan menghasilkan dua belas baris yang tampak sah bagi model dan bagi dokter,
 padahal sebelas di antaranya karangan — persis kekeliruan yang membuat Tugas 5 diperlukan.
 
-Logikanya ditaruh di ``src/`` dan bukan di ``app/`` supaya dapat diuji tanpa menjalankan
-Streamlit, mengikuti pola yang sama dengan ``src/alerts.py`` dan ``src/conformal.py``.
+Logikanya ditaruh di ``src/`` dan bukan di lapisan antarmuka supaya dapat diuji tanpa
+menjalankan aplikasi, mengikuti pola yang sama dengan ``src/alerts.py`` dan ``src/conformal.py``.
 """
 
 from __future__ import annotations
