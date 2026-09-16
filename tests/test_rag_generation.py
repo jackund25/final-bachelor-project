@@ -42,8 +42,8 @@ def test_pipeline_answer_contains_advisory_and_citations(kb_dir_uji):
         prediction=210.0,
     )
 
-    assert result["advisory"]["doctor_review_required"] is True
-    assert result["advisory"]["source_count"] >= 1
+    assert "keputusan medis final tetap pada dokter" in result["explanation"].lower()
+    assert len(result["retrieved_docs"]) >= 1
     assert "citations" in result
 
 

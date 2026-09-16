@@ -1,8 +1,8 @@
 """Waktu tanggap UJUNG-KE-UJUNG per tahap: masukan pasien -> rekomendasi siap tampil.
 
-Menjawab KNF-10, yang sebelum A4 berstatus TIDAK ADA: nol instrumentasi waktu di `app/`.
-`benchmark_deployability.py` mengukur komponen secara terpisah, yang BUKAN hal yang sama
--- ia tidak pernah menjumlahkan satu permintaan utuh sebagaimana dirasakan dokter.
+Menjawab KNF-10. Tolok ukur per komponen yang terpisah (dahulu `benchmark_deployability.py`,
+kini diarsipkan) BUKAN hal yang sama -- ia tidak pernah menjumlahkan satu permintaan utuh
+sebagaimana dirasakan dokter.
 
 Tahap yang diukur, berurutan sesuai alur aplikasi:
 

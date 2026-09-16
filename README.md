@@ -55,7 +55,7 @@ dokter.
 | Ketidakpastian | Prediksi konformal terpisah per horizon (`src/models/`) |
 | Pipeline RAG | Transformasi kueri terkondisi-prediksi, BM25, resolusi sitasi (`src/rag/`) |
 | Basis pengetahuan | ChromaDB, `all-MiniLM-L6-v2`, potongan 900 karakter dengan tumpang tindih 120 |
-| Keadaan klinis | Representasi terstruktur dan jejak peninjauan dokter (`src/clinical_state/`) |
+| Keadaan klinis | Representasi terstruktur `PatientState` dari keluaran prediktor (`src/patient_state.py`) |
 | Penyimpanan aplikasi | Supabase |
 
 ## Data
@@ -259,7 +259,6 @@ frontend/             Progressive Web Application berbasis Next.js dan React
 src/data/             Parser OhioT1DM, praproses, rekayasa fitur, kontrak data
 src/models/           Model prediksi dan kalibrasi konformal
 src/rag/              Pipeline RAG, kueri terkondisi-prediksi, retriever, sitasi
-src/clinical_state/   Keadaan klinis terstruktur dan jejak peninjauan dokter
 src/utils/            Metrik evaluasi dan logging
 scripts/              Skrip evaluasi yang mereproduksi angka laporan
 tests/                Uji unit dan integrasi

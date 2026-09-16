@@ -198,8 +198,7 @@ def _load_rag_config_cached(path_str: Optional[str]) -> RagConfig:
         ollama_base_url=resolve(
             "ollama_base_url", None, "OLLAMA_BASE_URL", "rag.ollama.base_url",
             "http://localhost:11434", cast=str, path=path),
-        # Nama kunci top_k_retrieval DIPERTAHANKAN karena benchmark_deployability.py
-        # membacanya langsung dari config.
+        # Nama kunci config.yaml adalah rag.top_k_retrieval; di kode dipakai sebagai top_k.
         top_k=resolve(
             "top_k", None, None, "rag.top_k_retrieval", 4, cast=int, path=path),
         fetch_k=resolve(

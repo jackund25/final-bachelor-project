@@ -285,7 +285,6 @@ class RAGPipeline:
             )
 
         explanation = self._ensure_disclaimer(advisory_payload["answer"])
-        advisory = self._build_advisory(patient_state, prediction, retrieved_docs, explanation)
 
         return {
             "query": user_query,
@@ -302,7 +301,6 @@ class RAGPipeline:
                 for doc in retrieved_docs
             ],
             "explanation": explanation,
-            "advisory": advisory,
             "citations": advisory_payload.get("sources", []),
             "llm_provider": self.llm_provider,
             # Apakah jawaban benar-benar ditopang dokumen. UI wajib memakai ini
@@ -496,59 +494,6 @@ class RAGPipeline:
                 "Apa tindakan klinis yang sesuai "
                 "berdasarkan kondisi pasien?"
             )
-
-    def _build_advisory(
-        self,
-        patient_state: Dict[str, Any],
-        prediction: float,
-        retrieved_docs: List[RetrievedDocument],
-        explanation: str,
-    ) -> Dict[str, Any]:
-        # KODE MATI PADA JALUR PRODUKSI. backend/routes/clinical.py hanya membaca
-        # `explanation`; medan `advisory` yang disusun di sini tidak pernah sampai
-        # ke antarmuka mana pun. Ia dipertahankan karena masih dipanggil
-        # tests/test_rag_generation.py dan scripts/eval_generation_safety.py.
-        # Jangan menambah logika baru di sini.
-        current_glucose = float(patient_state.get("current_glucose", 100.0))
-        activity = int(patient_state.get("activity_level", 0))
-        risk_level = _risk_level_from_prediction(prediction)
-
-        key_factors: List[str] = []
-        # Ambang mengikuti skala sebenarnya kanal `activity`: skor intensitas 0-10,
-        # bukan menit. Lihat catatan panjang di conditioned_query._contributing_factors.
-        if activity < 2:
-            key_factors.append("aktivitas fisik rendah")
-        if current_glucose > 150:
-            key_factors.append("glukosa awal tinggi")
-
-        return {
-            "risk_level": risk_level,
-            "summary": f"Prediksi {prediction:.1f} mg/dL dari baseline {current_glucose:.1f} mg/dL.",
-            "key_factors": key_factors or ["kondisi metabolik saat ini"],
-            "actions": self._actions_for_risk(risk_level),
-            "doctor_review_required": True,
-            "source_count": len(retrieved_docs),
-            "llm_summary": explanation,
-        }
-
-    def _actions_for_risk(self, risk_level: str) -> List[str]:
-        if risk_level.startswith("BAHAYA"):
-            return [
-                "Lakukan tatalaksana segera sesuai protokol klinis.",
-                "Pantau ulang glukosa dalam interval singkat.",
-                "Segera lakukan evaluasi dokter sebelum keputusan lanjutan.",
-            ]
-        if risk_level.startswith("HATI-HATI"):
-            return [
-                "Perkuat hidrasi dan review asupan karbohidrat.",
-                "Tambahkan aktivitas ringan bila aman.",
-                "Pantau glukosa ulang dan konsultasikan hasil ke dokter.",
-            ]
-        return [
-            "Lanjutkan monitoring rutin dan pola hidup stabil.",
-            "Pertahankan aktivitas fisik terjadwal.",
-            "Tetap lakukan evaluasi berkala bersama dokter.",
-        ]
 
     def _ensure_disclaimer(self, text: str) -> str:
         disclaimer = "keputusan medis final tetap pada dokter"

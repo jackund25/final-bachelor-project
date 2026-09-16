@@ -19,9 +19,9 @@ Kedua sumber saling konsisten: q rerata T12b (2,162 pada +30) praktis sama
 dengan q produksi di ``conformal_h6.json`` (2,15), sehingga cakupan pada
 Gambar VI.5 dan lebar pada Gambar VI.6 berasal dari kalibrasi yang setara.
 
-JANGAN menyalin angka dari ``results/ringkasan_untuk_bab6.json``. Snapshot di
-sana bertanggal 6 Agustus dan berasal dari era Random Forest
-(``conformal_h{6,12}_RF_arsip.json``); angkanya berbeda dari model produksi.
+JANGAN menyalin angka dari ``ringkasan_untuk_bab6.json`` (kini di
+``arsip/code_eksperimen/results/``). Snapshot itu bertanggal 6 Agustus dan berasal
+dari era Random Forest; angkanya berbeda dari model produksi.
 Skrip ini sengaja tidak memuat satu pun angka hasil secara literal supaya
 kekeliruan salin-angka itu tidak terulang.
 

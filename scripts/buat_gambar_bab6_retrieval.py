@@ -6,15 +6,10 @@ satu-satunya jalan cross-fold yang ``konfigurasi_efektif``-nya cocok dengan
 config.yaml produksi: chunk 900/120, fetch_k 12, top_k 5, lambda_mult 0,0,
 embedding all-MiniLM-L6-v2, prediktor HistGradientBoosting.
 
-JANGAN memakai ``retrieval_realcases_kb12_final/crossfold.json``. Nama berkasnya
-mengandung "final" tetapi tanggalnya 6 Agustus, yaitu sebelum migrasi prediktor
-ke Gradient Boosting, dan ia tidak memuat blok ``konfigurasi_efektif`` sama
-sekali sehingga konfigurasinya tak dapat diperiksa. Angkanya jauh lebih tinggi
-(MRR natural 0,647 lawan 0,260) dan akan menaikkan seluruh klaim retrieval ke
-tingkat yang tidak lagi dihasilkan sistem.
-
-Varian ``kb12_gbm_bm25_v2`` juga ditolak: chunk_size-nya 500, sedangkan
-config.yaml menyatakan eksplisit bahwa chunk_size SENGAJA tetap 900.
+Varian lain (``retrieval_realcases_kb12_final``, ``kb12_gbm_bm25_v2``, dst.) telah
+dipindahkan ke ``arsip/code_eksperimen/results/`` dan JANGAN dipakai: yang pertama
+bertanggal 6 Agustus (sebelum migrasi ke Gradient Boosting, tanpa blok
+``konfigurasi_efektif``), yang kedua memakai chunk_size 500 padahal produksi 900.
 
 Oracle digambar sebagai kontrol, bukan metode: ia memakai kondisi masa depan
 yang sudah diketahui benar, sehingga diberi warna netral dan arsiran serta

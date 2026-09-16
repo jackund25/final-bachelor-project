@@ -136,7 +136,7 @@ def kumpulkan_keluaran() -> dict:
         res = pipe.answer(patient_state=state, prediction=k["pred"])
         docs = res.get("retrieved_docs") or res.get("documents") or []
         mentah[k["id"]] = {
-            "teks": str(res.get("advisory") or res.get("answer") or ""),
+            "teks": str(res.get("explanation") or ""),
             "konteks": [str(d.get("text", d)) for d in docs],
         }
         print(f"  {k['id']}: keluaran LLM diambil")

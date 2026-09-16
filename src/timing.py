@@ -1,9 +1,8 @@
 """Pengukur waktu per tahap untuk jalur ujung-ke-ujung.
 
-KNF-10 menuntut waktu tanggap dari masukan sampai rekomendasi tampil. Sebelum A4
-**tidak ada satu pun instrumentasi waktu di `app/`**; `benchmark_deployability.py`
-mengukur per komponen secara terpisah, yang tidak sama dengan waktu yang benar-benar
-dirasakan dokter.
+KNF-10 menuntut waktu tanggap dari masukan sampai rekomendasi tampil. Tolok ukur per
+komponen yang terpisah tidak sama dengan waktu yang benar-benar dirasakan dokter,
+sehingga jalur ujung-ke-ujung diinstrumentasi sendiri di sini.
 
 Modul ini sengaja sangat ringan: satu ``perf_counter`` per tahap, tanpa dependensi,
 tanpa I/O. Overhead-nya di bawah satu mikrodetik per tahap, sehingga aman dinyalakan

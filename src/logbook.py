@@ -20,7 +20,7 @@ delapan jam akan menghasilkan dua belas baris yang tampak sah bagi model dan bag
 padahal sebelas di antaranya karangan — persis kekeliruan yang membuat Tugas 5 diperlukan.
 
 Logikanya ditaruh di ``src/`` dan bukan di lapisan antarmuka supaya dapat diuji tanpa
-menjalankan aplikasi, mengikuti pola yang sama dengan ``src/alerts.py`` dan ``src/conformal.py``.
+menjalankan aplikasi, mengikuti pola yang sama dengan ``src/conformal.py``.
 """
 
 from __future__ import annotations
