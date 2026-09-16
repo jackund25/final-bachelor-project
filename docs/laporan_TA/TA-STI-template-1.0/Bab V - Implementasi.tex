@@ -834,8 +834,7 @@ sistem menghasilkan perilaku yang sesuai dengan spesifikasi implementasinya, sed
 Verifikasi modul prediksi mencakup pemeriksaan apakah data dengan struktur valid dapat diproses, sekuens dapat dibentuk, artefak model dapat dimuat, dan hasil
 prediksi dapat diteruskan ke tahap berikutnya. Pemeriksaan juga mencakup penolakan terhadap riwayat yang tidak memenuhi batas temporal yang telah ditetapkan.
 
-Hasil verifikasi digunakan untuk memastikan jalur prediksi yang diakses aplikasi konsisten dengan bundle yang dipasang. Evaluasi numerik terhadap hasil prediksi
-tidak disimpulkan pada bagian ini dan dibahas pada Bab~\ref{chap:evaluasi}.
+Hasil verifikasi memastikan jalur prediksi yang diakses aplikasi konsisten dengan bundle yang dipasang; evaluasi numerik hasil prediksi dibahas pada Bab~\ref{chap:evaluasi}.
 
 \subsection{Verifikasi Pipeline RAG}
 \label{subsec:bab5-verifikasi-pipeline-rag}
@@ -844,23 +843,23 @@ Verifikasi RAG mencakup pembentukan kueri, pemanggilan retriever, pengembalian e
 Pemeriksaan dilakukan pada jalur produksi agar komponen yang dinyatakan sebagai komponen produksi benar-benar komponen yang dipanggil aplikasi.
 
 Kondisi tanpa evidence dan kondisi ketika konteks tidak lengkap juga diperiksa untuk memastikan pipeline tidak mengisi kekosongan dengan sumber yang dibuat secara
-sintetik. Kualitas retrieval dan \textit{generation} kemudian dievaluasi menggunakan metrik yang dibahas pada Bab~\ref{chap:evaluasi}.
+sintetik. Kualitas retrieval dan \textit{generation} dievaluasi pada Bab~\ref{chap:evaluasi}.
 
 \subsection{Verifikasi Integrasi CDSS}
 \label{subsec:bab5-verifikasi-integrasi-cdss}
 
-Verifikasi integrasi memastikan keluaran prediksi dan RAG dapat ditampilkan pada antarmuka CDSS tanpa kehilangan informasi penting. Pemeriksaan dilakukan
-terhadap aliran data dari pemilihan pasien hingga assessment dan rujukan dokumen klinis.
+Verifikasi integrasi memastikan keluaran prediksi dan RAG dapat ditampilkan pada antarmuka CDSS tanpa kehilangan informasi penting. Pemeriksaan mencakup
+aliran data dari pemilihan pasien hingga assessment dan rujukan dokumen klinis.
 
-Sistem tetap menempatkan dokter sebagai pengambil keputusan akhir. Assessment diperlakukan sebagai informasi pendukung dan bukan keputusan klinis
-otomatis. Prinsip ini konsisten dengan rancangan \textit{doctor-mediated} yang menjadi bagian dari artefak sistem.
+Sistem tetap menempatkan dokter sebagai pengambil keputusan akhir. Assessment diperlakukan sebagai informasi pendukung, bukan keputusan klinis
+otomatis, sesuai rancangan \textit{doctor-mediated} pada artefak sistem.
 
 \subsection{Verifikasi pada Kondisi Degradasi}
 \label{subsec:bab5-verifikasi-kondisi-degradasi}
 
-Selain alur normal, sistem diperiksa pada kondisi ketika data historis tidak memenuhi syarat, artefak kalibrasi ketidakpastian tidak tersedia, retrieval tidak menghasilkan
-evidence yang memadai, atau proses generation tidak dapat memberikan keluaran lengkap. Pada kondisi tersebut, sistem diharapkan mempertahankan penjelasan
-keterbatasan dan tidak memberikan keluaran yang tampak lebih pasti daripada informasi yang tersedia.
+Sistem juga diperiksa pada kondisi ketika data historis tidak memenuhi syarat, artefak kalibrasi ketidakpastian tidak tersedia, retrieval tidak menghasilkan
+evidence yang memadai, atau proses generation tidak dapat memberikan keluaran lengkap. Pada kondisi tersebut, sistem harus tetap menjelaskan keterbatasan
+dan tidak memberikan keluaran yang tampak lebih pasti daripada informasi yang tersedia.
 
 Verifikasi kondisi degradasi diperlukan karena tujuan sistem bukan hanya menghasilkan assessment pada kondisi ideal, tetapi juga menjaga perilaku yang aman ketika
 komponen atau data pendukung tidak lengkap.
