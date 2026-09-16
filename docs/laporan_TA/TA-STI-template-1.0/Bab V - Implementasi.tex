@@ -43,12 +43,15 @@ prediksi maupun pipeline RAG. Komponen penyimpanan menyediakan data aplikasi, ba
 Struktur implementasi tersebut dipilih agar setiap komponen dapat dikembangkan dan diuji secara terpisah tanpa mengikat logika inti pada antarmuka pengguna. Pemisahan ini juga 
 memungkinkan modul prediksi dan pipeline RAG digunakan melalui layanan backend yang sama. Hubungan antarkomponen pada implementasi sistem ditunjukkan pada Gambar~\ref{fig:fig5.1_struktur_implementasi_sistem}.
 
-\begin{figure}[!htbp]
+% Tidak mengambang: sebagai float gambar ini dilempar ke halaman tersendiri.
+\begin{center}
+\begin{minipage}{\textwidth}
     \centering
-    \includegraphics[width=0.68\textwidth]{images/bab5/fig5.1_struktur_implementasi_sistem.png}
-    \caption{Struktur implementasi sistem.}
+    \includegraphics[width=0.62\textwidth]{images/bab5/fig5.1_struktur_implementasi_sistem.png}
+    \captionof{figure}{Struktur implementasi sistem.}
     \label{fig:fig5.1_struktur_implementasi_sistem}
-\end{figure}
+\end{minipage}
+\end{center}
 
 Gambar~\ref{fig:fig5.1_struktur_implementasi_sistem} menunjukkan hubungan antara antarmuka pengguna, layanan backend, modul prediksi, pipeline RAG, dan komponen penyimpanan. 
 Pengguna berinteraksi dengan sistem melalui frontend berbasis PWA yang berkomunikasi dengan backend menggunakan API. Backend kemudian mengoordinasikan modul prediksi dan 
@@ -571,15 +574,18 @@ model prediksi secara langsung pada perangkat pengguna.
 Pemilihan PWA didasarkan pada kebutuhan implementasi yang ringan dan mudah diakses pada perangkat desktop maupun mobile. Selama pengembangan, pendekatan tersebut
 juga memungkinkan antarmuka yang sama digunakan untuk demonstrasi tanpa membangun dua aplikasi berbeda untuk platform desktop dan mobile.
 
-\begin{figure}[!htbp]
-    \centering
-    \includegraphics[width=0.82\textwidth]{images/bab5/fig5.3_pwa_desktop.png}
-    \caption{Tampilan antarmuka PWA pada perangkat desktop.}
-    \label{fig:bab5-pwa-desktop}
-\end{figure}
-
 Gambar~\ref{fig:bab5-pwa-desktop} menunjukkan bentuk antarmuka sistem pada perangkat desktop. Tampilan ini digunakan sebagai representasi utama antarmuka karena
 seluruh fungsi utama sistem dapat diamati dari satu lingkungan penggunaan.
+
+% Tidak mengambang: sebagai float gambar ini memotong paragraf berikutnya di batas halaman.
+\begin{center}
+\begin{minipage}{\textwidth}
+    \centering
+    \includegraphics[width=0.82\textwidth]{images/bab5/fig5.3_pwa_desktop.png}
+    \captionof{figure}{Tampilan antarmuka PWA pada perangkat desktop.}
+    \label{fig:bab5-pwa-desktop}
+\end{minipage}
+\end{center}
 
 Susunan halaman pada tampilan tersebut mengikuti urutan penggunaan sistem. Bagian kepala memuat penanda pasien yang sedang aktif beserta tautan menuju halaman
 logbook dan riwayat, agar konteks pasien tetap terlihat pada setiap halaman. Di bawahnya terdapat panel identitas pasien dengan tombol untuk mengganti atau

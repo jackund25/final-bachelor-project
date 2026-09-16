@@ -16,13 +16,16 @@ Gambaran keseluruhan komponen dan hubungan antarkomponen ditunjukkan pada Gambar
 % IV.1.1 di tengah. Dengan \captionof dari paket caption, gambar menempel
 % tepat di bawah kalimat yang merujuknya dan paragraf berikutnya utuh.
 \begin{center}
+\begin{minipage}{\textwidth}
+    \centering
     \includegraphics[
         width=\textwidth,
-        height=0.44\textheight,
+        height=0.40\textheight,
         keepaspectratio
     ]{images/bab4/fig4.1_arsitektur_sistem.png}
     \captionof{figure}{Gambaran umum arsitektur sistem RAG terkondisi-prediksi.}
     \label{fig:fig4.1_arsitektur_sistem}
+\end{minipage}
 \end{center}
 
 Arsitektur dirancang pada tingkat fungsi sehingga hubungan antara data masukan, proses pengolahan, artefak yang dihasilkan, dan keluaran sistem dapat ditelusuri. Rancangan mencakup dua
