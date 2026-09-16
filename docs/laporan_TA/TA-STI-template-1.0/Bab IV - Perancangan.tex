@@ -303,19 +303,22 @@ Sebaliknya, Gambar~\ref{fig:fig4.4_rag-terkondisi-prediksi} menunjukkan rancanga
 untuk menghasilkan kadar glukosa terprediksi beserta ketidakpastiannya. Hasil tersebut diterjemahkan menjadi \textit{clinical state} dan kemudian digunakan untuk membentuk kueri yang
 dikondisikan pada keadaan yang diperkirakan.
 
-\begin{figure}[!htbp]
+Perbedaan kedua alur terletak pada kondisi yang dipakai membentuk kueri sebelum retrieval. Pada RAG konvensional, kondisi yang tersedia pada saat pengamatan menjadi konteks pembentukan
+kueri. Pada pendekatan yang diusulkan, kondisi saat ini digantikan oleh keadaan yang diprediksi sebagai dasar kueri, sehingga retrieval diarahkan pada informasi yang berkaitan dengan
+kondisi masa depan.
+
+% Tidak mengambang: sebagai float gambar ini memisahkan Persamaan IV.3 dari kalimat penjelasnya.
+\begin{center}
+\begin{minipage}{\textwidth}
     \centering
     \includegraphics[
         height=0.44\textheight,
         keepaspectratio
     ]{images/bab4/fig4.4_rag_terkondisi_prediksi.png}
-    \caption{Alur RAG terkondisi-prediksi dengan kondisi glukosa terprediksi sebagai konteks kueri.}
+    \captionof{figure}{Alur RAG terkondisi-prediksi dengan kondisi glukosa terprediksi sebagai konteks kueri.}
     \label{fig:fig4.4_rag-terkondisi-prediksi}
-\end{figure}
-
-Perbedaan kedua alur terletak pada kondisi yang dipakai membentuk kueri sebelum retrieval. Pada RAG konvensional, kondisi yang tersedia pada saat pengamatan menjadi konteks pembentukan
-kueri. Pada pendekatan yang diusulkan, kondisi saat ini digantikan oleh keadaan yang diprediksi sebagai dasar kueri, sehingga retrieval diarahkan pada informasi yang berkaitan dengan
-kondisi masa depan.
+\end{minipage}
+\end{center}
 
 Secara konseptual, transformasi kueri pada penelitian ini dituliskan pada Persamaan~\ref{eq:bab4-query-pred-conditioned}, dengan $q$ menyatakan kebutuhan informasi awal, $\hat{s}_{t+h}$ menyatakan \textit{clinical state} yang dibentuk dari hasil prediksi pada horizon $h$, dan $T$ menyatakan fungsi transformasi kueri.
 
