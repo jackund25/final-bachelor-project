@@ -9,7 +9,7 @@ Secara umum, arsitektur mengintegrasikan modul prediksi kadar glukosa dengan mek
 yang dapat digunakan sebagai pendukung keputusan klinis. Sistem dibagi menjadi tiga komponen yang masing-masing mewujudkan satu tujuan artefak penelitian: modul prediksi (T1),
 mekanisme \textit{query transformation} berbasis kondisi terprediksi (T2), dan integrasi ke dalam CDSS beralur \textit{doctor-mediated} (T3).
 
-Gambaran keseluruhan komponen dan hubungan antarkomponen ditunjukkan pada Gambar~\ref{fig:fig4.1_arsitektur_sistem}.
+Gambaran keseluruhan komponen dan hubungan antarkomponen ditunjukkan pada Gambar~\ref{fig:fig4.1_arsitektur_sistem} pada halaman berikutnya.
 
 \begin{figure}[p]
     \centering
@@ -33,6 +33,9 @@ Gambar~\ref{fig:fig4.1_arsitektur_sistem} memperlihatkan hubungan antara proses 
 prediksi, dataset OhioT1DM melalui tahap prapemrosesan, rekayasa fitur, pembentukan vektor fitur, pelatihan model kandidat, evaluasi, dan pemilihan model. Hasil dari rangkaian tersebut
 adalah model prediksi terpilih yang digunakan pada proses prediksi sistem.
 
+% Halaman float Gambar IV.1 menyusul di sini; pindah halaman di batas paragraf
+% agar paragraf berikut tidak terbelah oleh halaman gambar.
+\newpage
 Pada sisi pengetahuan klinis, dokumen pedoman melalui prapemrosesan dokumen, pembentukan representasi pengetahuan, dan pengindeksan. Proses tersebut menghasilkan basis pengetahuan yang
 menyediakan indeks untuk penelusuran informasi klinis. Indeks dibangun dari potongan dokumen yang sudah dilengkapi metadata sumber, sehingga metadata dan struktur informasi tetap terbawa sepanjang proses retrieval.
 
@@ -286,30 +289,33 @@ memasukkan konteks kondisi yang relevan bagi penelusuran. Pada sistem ini, konte
 Untuk memperjelas perbedaan sumber konteks, Gambar~\ref{fig:fig4.3_rag-konvensional} memperlihatkan alur RAG konvensional. Pada alur tersebut, data logbook digunakan untuk memperoleh
 kondisi glukosa saat ini, kemudian kondisi tersebut menjadi dasar pembentukan kueri sebelum pedoman ditelusuri.
 
-\begin{figure}[!htbp]
-    \centering
-    \includegraphics[
-        height=0.44\textheight,
-        keepaspectratio
-    ]{images/bab4/fig4.3_rag_konvensional.png}
-    \caption{Alur RAG konvensional dengan kondisi glukosa saat ini sebagai konteks kueri.}
-    \label{fig:fig4.3_rag-konvensional}
-\end{figure}
-
 Sebaliknya, Gambar~\ref{fig:fig4.4_rag-terkondisi-prediksi} menunjukkan rancangan yang diusulkan. Data logbook terlebih dahulu diproses menjadi fitur dan digunakan oleh model prediksi
 untuk menghasilkan kadar glukosa terprediksi beserta ketidakpastiannya. Hasil tersebut diterjemahkan menjadi \textit{clinical state} dan kemudian digunakan untuk membentuk kueri yang
 dikondisikan pada keadaan yang diperkirakan.
+
+% Tidak mengambang, diletakkan setelah kedua paragraf perujuk agar Gambar IV.3,
+% paragraf pembeda, dan Gambar IV.4 muat berurutan pada satu halaman.
+\begin{center}
+\begin{minipage}{\textwidth}
+    \centering
+    \includegraphics[
+        height=0.34\textheight,
+        keepaspectratio
+    ]{images/bab4/fig4.3_rag_konvensional.png}
+    \captionof{figure}{Alur RAG konvensional dengan kondisi glukosa saat ini sebagai konteks kueri.}
+    \label{fig:fig4.3_rag-konvensional}
+\end{minipage}
+\end{center}
 
 Perbedaan kedua alur terletak pada kondisi yang dipakai membentuk kueri sebelum retrieval. Pada RAG konvensional, kondisi yang tersedia pada saat pengamatan menjadi konteks pembentukan
 kueri. Pada pendekatan yang diusulkan, kondisi saat ini digantikan oleh keadaan yang diprediksi sebagai dasar kueri, sehingga retrieval diarahkan pada informasi yang berkaitan dengan
 kondisi masa depan.
 
-% Tidak mengambang: sebagai float gambar ini memisahkan Persamaan IV.3 dari kalimat penjelasnya.
 \begin{center}
 \begin{minipage}{\textwidth}
     \centering
     \includegraphics[
-        height=0.44\textheight,
+        height=0.34\textheight,
         keepaspectratio
     ]{images/bab4/fig4.4_rag_terkondisi_prediksi.png}
     \captionof{figure}{Alur RAG terkondisi-prediksi dengan kondisi glukosa terprediksi sebagai konteks kueri.}
