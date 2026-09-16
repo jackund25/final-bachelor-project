@@ -450,15 +450,18 @@ Alur penggunaan sampai keluaran \textit{assessment} ditunjukkan pada Gambar~\ref
 digambarkan sebagai satu kesatuan dari sudut pandang pengguna; rinciannya telah dijelaskan pada Gambar~\ref{fig:fig4.2_aliran_data-end-to-end} serta
 Gambar~\ref{fig:fig4.3_rag-konvensional}--\ref{fig:fig4.4_rag-terkondisi-prediksi}.
 
-\begin{figure}[!htbp] 
-    \centering 
+% Tidak mengambang: sebagai float gambar ini memotong paragraf berikutnya di batas halaman.
+\begin{center}
+\begin{minipage}{\textwidth}
+    \centering
     \includegraphics[
         height=0.45\textheight,
         keepaspectratio
     ]{images/bab4/fig4.5_flow_cdss.png}
-    \caption{Alur penggunaan sistem sebagai CDSS pada konteks \textit{doctor-mediated}.} 
-    \label{fig:fig4.5_flow-cdss} 
-\end{figure}
+    \captionof{figure}{Alur penggunaan sistem sebagai CDSS pada konteks \textit{doctor-mediated}.}
+    \label{fig:fig4.5_flow-cdss}
+\end{minipage}
+\end{center}
 
 Setelah \textit{assessment output} tersedia, dokter meninjau informasi prediksi, \textit{clinical state}, rekomendasi, \textit{evidence}, sitasi, informasi keselamatan,
 dan asumsi yang ditampilkan sistem. Hasil tersebut menjadi bahan pertimbangan pada proses pengambilan keputusan klinis. Dengan demikian, keputusan klinis berada setelah tahap peninjauan dokter dan tidak menjadi
