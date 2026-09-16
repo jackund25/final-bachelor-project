@@ -422,8 +422,8 @@ Bagian prediksi memuat taksiran kadar glukosa dan ketidakpastiannya, sedangkan \
 penelusuran. Bagian rekomendasi merupakan hasil \textit{assessment} berbasis konteks prediksi dan \textit{evidence}. Bagian \textit{evidence} dan sitasi menunjukkan dasar
 informasi yang digunakan, sementara bagian informasi keselamatan dan asumsi menyampaikan batas penafsiran serta kondisi yang menyertai keluaran.
 
-Struktur tersebut dirancang agar asal informasi tetap dapat dibedakan. Nilai yang dihasilkan oleh modul prediksi tidak disamakan dengan informasi yang diperoleh dari dokumen pedoman,
-sedangkan keluaran generatif ditempatkan sebagai penyusunan assessment berdasarkan kedua sumber tersebut.
+Struktur tersebut dirancang agar asal informasi tetap dapat dibedakan. Nilai dari modul prediksi tidak disamakan dengan informasi dari dokumen pedoman,
+sedangkan keluaran generatif ditempatkan sebagai penyusunan assessment dari kedua sumber itu.
 
 \subsection{Guardrail Keselamatan dan Batas Keluaran} 
 \label{subsec:bab4-guardrail-keselamatan}
@@ -447,15 +447,14 @@ sistem. Alur penggunaan tersebut dimulai dari pemilihan atau pendaftaran pasien,
 \textit{clinical assessment}. Tahap-tahap interaksi tersebut menjadi konteks penggunaan sebelum sistem menjalankan proses prediksi dan RAG.
 
 Alur penggunaan sampai keluaran \textit{assessment} ditunjukkan pada Gambar~\ref{fig:fig4.5_flow-cdss}. Pada diagram tersebut, proses internal prediksi dan RAG
-digambarkan sebagai satu kesatuan dari sudut pandang pengguna; rinciannya telah dijelaskan pada Gambar~\ref{fig:fig4.2_aliran_data-end-to-end} serta
-Gambar~\ref{fig:fig4.3_rag-konvensional}--\ref{fig:fig4.4_rag-terkondisi-prediksi}.
+digambarkan sebagai satu kesatuan dari sudut pandang pengguna; rinciannya ada pada Gambar~\ref{fig:fig4.2_aliran_data-end-to-end}--\ref{fig:fig4.4_rag-terkondisi-prediksi}.
 
 % Tidak mengambang: sebagai float gambar ini memotong paragraf berikutnya di batas halaman.
 \begin{center}
 \begin{minipage}{\textwidth}
     \centering
     \includegraphics[
-        height=0.45\textheight,
+        height=0.34\textheight,
         keepaspectratio
     ]{images/bab4/fig4.5_flow_cdss.png}
     \captionof{figure}{Alur penggunaan sistem sebagai CDSS pada konteks \textit{doctor-mediated}.}
@@ -470,12 +469,12 @@ keluaran komputasional dari sistem.
 \subsection{Integrasi Fallback dan Status Data} 
 \label{subsec:bab4-integrasi-fallback-status-data}
 
-Integrasi CDSS juga mempertimbangkan kondisi ketika sistem tidak dapat menghasilkan assessment lengkap. Status keluaran dibedakan menurut sumber keterbatasannya. Sumber itu dapat berupa data pasien atau kanal yang diminta tidak tersedia, riwayat yang tidak memenuhi
-jumlah atau kelayakan temporal, artefak model yang tidak tersedia, \textit{evidence} hasil retrieval yang tidak memadai, atau kegagalan \textit{generation}.
+Integrasi CDSS juga mempertimbangkan kondisi ketika sistem tidak dapat menghasilkan assessment lengkap. Status keluaran dibedakan menurut sumber keterbatasannya. Sumbernya dapat berupa data pasien atau kanal yang tidak tersedia, riwayat yang tidak memenuhi
+jumlah atau kelayakan temporal, artefak model yang tidak tersedia, \textit{evidence} retrieval yang tidak memadai, atau kegagalan \textit{generation}.
 
 Pada kondisi data tidak mencukupi atau jendela tidak layak, sistem tidak menghasilkan prediksi seolah-olah masukan memenuhi persyaratan. Pada kondisi retrieval tidak menghasilkan
-evidence yang memadai, keluaran tidak diarahkan untuk menghasilkan rekomendasi yang tidak memiliki dukungan sumber. Apabila model bahasa tidak tersedia, sistem dapat menggunakan
+evidence yang memadai, keluaran tidak diarahkan pada rekomendasi tanpa dukungan sumber. Apabila model bahasa tidak tersedia, sistem dapat menggunakan
 keluaran alternatif yang tetap menandai keterbatasan sumber teks (model bahasa atau templat) dan mempertahankan rujukan yang masih tersedia.
 
-Pemisahan status tersebut dirancang agar kondisi normal dan kondisi degradasi dapat dibedakan oleh pengguna. Dengan demikian, ketahanan sistem tidak dicapai dengan menyembunyikan
-kegagalan, tetapi dengan memberikan keluaran yang sesuai dengan informasi yang benar-benar tersedia.
+Pemisahan status tersebut membuat kondisi normal dan kondisi degradasi dapat dibedakan oleh pengguna. Ketahanan sistem tidak dicapai dengan menyembunyikan
+kegagalan, tetapi dengan memberikan keluaran yang sesuai dengan informasi yang tersedia.
