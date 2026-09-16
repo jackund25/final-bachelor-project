@@ -755,7 +755,11 @@ Pada implementasi yang digunakan untuk demonstrasi, frontend diakses melalui per
 Akses antara frontend dan backend dilakukan melalui endpoint API. Model prediksi, basis pengetahuan, dan konfigurasi disediakan pada sisi backend sehingga pengguna
 tidak perlu menjalankan model secara langsung pada perangkatnya.
 
+Gambar~\ref{fig:bab5-arsitektur-deployment} menunjukkan pemisahan komponen pada saat sistem dijalankan. Frontend berkomunikasi dengan backend melalui API,
+sedangkan backend mengakses artefak model, basis pengetahuan, dan penyimpanan aplikasi yang diperlukan untuk memproses permintaan assessment.
+
 % Tidak mengambang: sebagai float gambar ini memotong paragraf di subbab berikutnya.
+% Paragraf penjelas diletakkan sebelum gambar agar halaman sebelum gambar terisi penuh.
 \begin{center}
 \begin{minipage}{\textwidth}
     \centering
@@ -764,9 +768,6 @@ tidak perlu menjalankan model secara langsung pada perangkatnya.
     \label{fig:bab5-arsitektur-deployment}
 \end{minipage}
 \end{center}
-
-Gambar~\ref{fig:bab5-arsitektur-deployment} menunjukkan pemisahan komponen pada saat sistem dijalankan. Frontend berkomunikasi dengan backend melalui API,
-sedangkan backend mengakses artefak model, basis pengetahuan, dan penyimpanan aplikasi yang diperlukan untuk memproses permintaan assessment.
 
 \subsection{Deployment Backend}
 \label{subsec:bab5-deployment-backend}
