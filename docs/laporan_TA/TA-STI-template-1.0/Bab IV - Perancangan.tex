@@ -11,19 +11,16 @@ mekanisme \textit{query transformation} berbasis kondisi terprediksi (T2), dan i
 
 Gambaran keseluruhan komponen dan hubungan antarkomponen ditunjukkan pada Gambar~\ref{fig:fig4.1_arsitektur_sistem}.
 
-% Diagram arsitektur terlalu kecil bila dimuat bersama teks (terbukti saat dicetak),
-% sehingga diberi satu halaman penuh melintang (sidewaysfigure). Sebagai halaman
-% float utuh ia disisipkan di batas halaman dan tidak memotong paragraf.
-\begin{sidewaysfigure}
+\begin{figure}[p]
     \centering
     \includegraphics[
-        width=0.96\textheight,
-        height=0.92\textwidth,
+        width=\textwidth,
+        height=0.9\textheight,
         keepaspectratio
     ]{images/bab4/fig4.1_arsitektur_sistem.png}
     \caption{Gambaran umum arsitektur sistem RAG terkondisi-prediksi.}
     \label{fig:fig4.1_arsitektur_sistem}
-\end{sidewaysfigure}
+\end{figure}
 
 Arsitektur dirancang pada tingkat fungsi sehingga hubungan antara data masukan, proses pengolahan, artefak yang dihasilkan, dan keluaran sistem dapat ditelusuri. Rancangan mencakup dua
 sumber artefak utama, yaitu dataset OhioT1DM untuk membentuk modul prediksi dan dokumen pedoman klinis untuk membentuk basis pengetahuan. Kedua artefak tersebut kemudian digunakan pada
@@ -62,15 +59,18 @@ Aliran data end-to-end menggambarkan perubahan bentuk data sejak catatan \textit
 tahap ini adalah perubahan bentuk data pada setiap proses, sehingga hubungan antara masukan, keluaran tiap tahap, dan keluaran akhir sistem dapat dipahami secara berurutan. Aliran tersebut
 ditunjukkan pada Gambar~\ref{fig:fig4.2_aliran_data-end-to-end}.
 
-\begin{figure}[!htbp]
+% Tidak mengambang: sebagai float gambar ini memotong paragraf berikutnya di batas halaman.
+\begin{center}
+\begin{minipage}{\textwidth}
     \centering
     \includegraphics[
         height=0.42\textheight,
         keepaspectratio
     ]{images/bab4/fig4.2_aliran_data_end-to-end.png}
-    \caption{Aliran transformasi data dari \textit{patient logbook} hingga \textit{assessment output}.}
+    \captionof{figure}{Aliran transformasi data dari \textit{patient logbook} hingga \textit{assessment output}.}
     \label{fig:fig4.2_aliran_data-end-to-end}
-\end{figure}
+\end{minipage}
+\end{center}
 
 Pada tahap awal, \textit{patient logbook} merupakan data masukan yang memuat riwayat pemantauan pasien. Data tersebut belum berada dalam bentuk yang langsung dapat diproses oleh model
 karena sumber pengukuran glukosa dapat berasal dari modalitas yang berbeda. Oleh karena itu, \textit{modality routing} memilih jalur pemrosesan yang sesuai dengan sumber pengukuran glukosa yang
