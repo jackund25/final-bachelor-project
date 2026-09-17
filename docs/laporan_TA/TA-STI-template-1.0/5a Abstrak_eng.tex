@@ -1,0 +1,43 @@
+\chapter*{ABSTRACT}
+\addcontentsline{toc}{chapter}{ABSTRACT}
+
+\begin{center}
+
+    \textbf{Prediction-Conditioned RAG: Integrating Glucose Level Prediction and Document-Based Clinical Recommendations for Diabetes Management} \\
+    \vspace{0.4cm}
+    by \\
+    \vspace{0.4cm}
+    Daffari Adiyatma\\
+    18222003\\
+\end{center}
+
+
+\begin{spacing}{1.0}
+Clinical decision support systems for diabetes that employ glucose prediction or
+\emph{Retrieval-Augmented Generation} (RAG) generally retrieve knowledge based on the patient's
+current condition, so their recommendations are reactive. No prior study has been found that
+conditions the retrieval process on the predicted glucose level. This final project proposes
+prediction-conditioned RAG, a mechanism that composes the retrieval query from the predicted
+glucose level so that the retrieved documents and the resulting recommendations are anticipatory,
+within a workflow whose output is always verified by a physician. Glucose prediction is performed
+by a \emph{Gradient Boosting} model with physiologically derived features, while clinical knowledge
+is retrieved from 2,233 guideline chunks through lexical retrieval. Evaluation on the OhioT1DM
+dataset uses six-fold cross-patient cross-validation. At the $+30$-minute horizon, the model
+achieves an RMSE of 20.72~mg/dL with 94.69\% of points in zones A+B of the \emph{Clarke Error
+Grid}, comparable to \emph{Random Forest} and LSTM; in the self-monitoring scenario without CGM
+(horizon of about 240 minutes) the error rises to 71.60~mg/dL but remains below the persistence
+\emph{baseline} (95.31~mg/dL). In divergent cases, where the future condition differs from the
+current one, prediction-conditioned RAG consistently outperforms standard RAG across all six
+\emph{folds} (\emph{Mean Reciprocal Rank} 0.190 to 0.284; $p=0.031$) and on 120 real cases
+(0.186 to 0.321; $p<0.001$). The \emph{oracle} arm reaches an MRR of 0.778, so most of the
+remaining gap stems from prediction accuracy rather than from the retrieval mechanism. The same
+limitation appears in hypoglycemia sensitivity, namely 17.3\% with an upper threshold on the
+regression output and 67.2\% with a direct condition classifier. All local computation runs
+without a GPU (median 0.339~s, memory 342~MB), and every reference can be traced to the printed
+page of its guideline. A preliminary evaluation by twelve healthcare professionals rated the
+recommendations as consistent with the guidelines under physician verification, with a
+\emph{System Usability Scale} score of 55.21 indicating that the system's usability still needs
+improvement.
+
+\textbf{Keywords:} prediction-conditioned RAG, glucose level prediction, \emph{Gradient Boosting}, clinical decision support system, diabetes.
+\end{spacing}
